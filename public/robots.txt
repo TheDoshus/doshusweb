@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Optional: Block specific pages if needed
+# Disallow: /private-page.html
+
+Sitemap: https://doshus.net/sitemap.xml

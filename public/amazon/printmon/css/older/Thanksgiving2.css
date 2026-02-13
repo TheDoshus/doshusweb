@@ -1,0 +1,263 @@
+body {
+	color: #000000;
+	font-family: "Amazon Ember", "Arial", sans-serif;
+	/* background-image: url('https://cdn.pixabay.com/photo/2020/09/23/19/58/halloween-5596921_1280.jpg'); */
+	background-size: contain;
+	background-repeat: repeat;
+	height: 80vh; /* Make sure the body takes up the full viewport height */
+	margin: 0; /* Remove default margin */
+}
+
+h1 {
+	color: #FF8C00E5;
+	font-size: 30pt;
+	font-weight: bold;
+	text-shadow: 2px 2px #A50034D9;
+	padding: 0px;
+	margin-top: 5px;
+	margin-bottom: -10px;
+	font-family: "Showcard Gothic", "Helvetica", "Arial", sans-serif;
+}
+
+h2 {
+	color: #FFF;
+	font-weight: bold;
+	padding: 0px;
+	margin: -2px;
+	border-radius: .5rem;
+	background: #A50034CF;
+	padding: 7px;
+	text-align: center;
+}
+
+p {
+	display: inline;
+}
+
+.pm1box {
+	width: 305px;
+	height: 500px;
+	margin-top: 10px;
+	margin-bottom: 5px;
+	border: 2.5px solid #A50034E3;
+	border-radius: 5px;
+	padding-bottom: 5px;
+	font-weight: bold;
+	text-align: center;
+	font-family: "Amazon Ember Medium", "Arial", sans-serif;
+	display: block;
+	color: #ffffff;
+	background: linear-gradient(to bottom, #9f1d3533 0%, rgb(120 80 39 / 15%) 50%, #c55f192b 0%);
+}
+
+.buttons {
+	float: left;
+}
+
+.buttonsleft {
+	float: left;
+	margin-right: 20px;
+}
+
+.buttonsright {
+	float: left;
+}
+
+.titletext {
+	display: block;
+	color: #ffffff;
+}
+
+.apmbutton {
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	font-family: Amazon Ember Medium, helvetica, sans-serif;
+	padding: 10px;
+	margin-top: 25px;
+	margin-bottom: 25px;
+	text-decoration: none;
+	display: inline-block;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+.apmbutton:hover {
+	border: 1px solid #f7b800;
+	background-color: #ffc92b;
+}
+
+.grid-container {
+	display: grid;
+	grid-gap: 1%;
+	width: 98%;
+	margin: auto;
+}
+
+.grid-container-top {
+	display: grid;
+	grid-template-columns: 305px 80%;
+	grid-gap: 1%;
+	width: 98%;
+	margin: auto;
+}
+
+textarea {
+	overflow-y: hidden;
+	overflow-x: scroll;
+	font-size: 16px;
+	resize: none;
+	width: 90%;
+	float: left;
+}
+
+input[type=text] {
+	background: #fffc;
+	border-radius: 5px;
+	border: solid 1px #cd9500f2;
+	height: 20px;
+	padding-left: 10px;
+	width: 250px;
+}
+
+button {
+	border-style: solid;
+	border-width: .12rem;
+	border-radius: .5rem;
+	border-color: #FFF #FFF #FFF;
+	font-family: Bauhaus 93, Amazon Ember Medium, sans-serif;
+	font-weight: bold;
+	padding: 10px;
+	color: #fff9f5;
+	background: linear-gradient(to bottom, #B24E10ED, #CBC947E5);
+	margin-top: 5px;
+	margin-bottom: 2px;
+}
+
+.button2 {
+	border-style: solid;
+	border-width: .1rem;
+	border-radius: .3rem;
+	border-color: #adb1b8 #a2a6ac #8d9096;
+	font-family: arial, helvetica, sans-serif;
+	font-weight: bold;
+	padding: 10px;
+	color: #59227e;
+	background: linear-gradient(to bottom, #f7f8fa, #e7e9ec);
+	margin-top: 5px;
+}
+
+button3 {
+	border-style: solid;
+	border-width: .125rem;
+	border-radius: .5rem;
+	border-color: #57280BD4 #57280BD4 #57280BD4;
+	font-family: Bauhaus 93, Amazon Ember Medium, sans-serif;
+	font-weight: bold;
+	padding: 10px;
+	color: #ffffff;
+	background: linear-gradient(to bottom, #d69e83, #21516E);
+	text-align: center;
+}
+button3:hover {
+	color: #00e7ff;
+	border: 3px solid #9e00f7;
+	background-color: #00ff33;
+	cursor: pointer;
+}
+
+button:hover {
+	color: #A50034;
+	border: 3px solid #F5F5DC;
+	background-color: #00ff33;
+	cursor: pointer;
+}
+
+button:active {
+	border: 2px solid #09ff01;
+	background-color: #ff2f2b;
+	background-image: -moz-linear-gradient(top, #ff2b2b, #ce0101);
+	background-image: linear-gradient(to bottom, #ed1cff, #3e5dbb);
+	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#ffc92b, endColorstr=#ce9a01);
+}
+
+select {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.multiBox {
+	width: 400px;
+	float: left;
+}
+
+.leaf {
+	position: absolute;
+	background-color: #FF6347; /* Red leaf color */
+	width: 12px;
+	height: 17px;
+	border-radius: 50%;
+	animation: fall linear infinite;
+	opacity: 0.75;
+}
+
+/* Keyframe for falling animation */
+@keyframes fall {
+	0% {
+	transform: translateY(0) rotate(0deg);
+	}
+	100% {
+	transform: translateY(100vh) rotate(360deg);
+	}
+}
+
+/* Variations for different leaves */
+.leaf:nth-child(1) {
+	left: 10%;
+	animation-duration: 8s;
+	animation-delay: 2s;
+}
+.leaf:nth-child(2) {
+	left: 30%;
+	animation-duration: 12s;
+	animation-delay: 1s;
+}
+.leaf:nth-child(3) {
+	left: 50%;
+	animation-duration: 10s;
+	animation-delay: 4s;
+}
+.leaf:nth-child(4) {
+	left: 70%;
+	animation-duration: 14s;
+	animation-delay: 3s;
+}
+.leaf:nth-child(5) {
+	left: 90%;
+	animation-duration: 9s;
+	animation-delay: 5s;
+}
+.leaf:nth-child(6) {
+	left: 15%;
+	animation-duration: 11s;
+	animation-delay: 3s;
+}
+.leaf:nth-child(7) {
+	left: 45%;
+	animation-duration: 13s;
+	animation-delay: 1s;
+}
+.leaf:nth-child(8) {
+	left: 75%;
+	animation-duration: 12s;
+	animation-delay: 5s;
+}
+.leaf:nth-child(9) {
+	left: 55%;
+	animation-duration: 10s;
+	animation-delay: 4s;
+}
+.leaf:nth-child(10) {
+	left: 5%;
+	animation-duration: 15s;
+	animation-delay: 2s;
+}

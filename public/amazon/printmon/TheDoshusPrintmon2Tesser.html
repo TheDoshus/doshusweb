@@ -1,0 +1,325 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>The Doshus Printmon 2</title>
+	<link rel="icon" type="image/png" href="https://rockstarintel.com/wp-content/uploads/2023/12/d358ca0f4ef1b724361c30dd82547992.png">
+	<link rel="stylesheet" href="css/swapbtn.css">
+	<link rel="stylesheet" href="css/newer/Shared2PrintmonCSS.css">
+	<link rel="stylesheet" href="css/newer/2GTA.css">
+	<link rel="preload" href="https://drive.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG" as="image">
+			<style>
+    /* Main feedback button */
+    .feedback-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff006e, #8338ec);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 15px rgba(255, 0, 110, 0.4);
+      z-index: 999;
+      overflow: visible;
+      transition: all 0.4s ease-out;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    /* Pulse animation - subtle and smooth */
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 4px 15px rgba(255, 0, 110, 0.4);
+      }
+      50% {
+        box-shadow: 0 4px 25px rgba(255, 0, 110, 0.7);
+      }
+    }
+
+    /* Hover state - smooth expansion */
+    .feedback-btn:hover {
+      width: 75px;
+      height: 75px;
+      box-shadow: 
+        0 0 20px rgba(255, 0, 110, 0.9),
+        0 0 40px rgba(131, 56, 236, 0.7),
+        0 0 60px rgba(255, 0, 110, 0.5);
+      transform: scale(1.1);
+    }
+
+    /* Glow ring effect */
+    .feedback-btn::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 0, 110, 0.3), transparent 70%);
+      animation: glow-pulse 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+      }
+      50% {
+        transform: scale(1.15);
+        opacity: 0.2;
+      }
+    }
+
+    /* Active/click state */
+    .feedback-btn:active {
+      transform: scale(0.95);
+    }		</style>
+</head>
+<body>
+	<div class="dropdown2">
+        <button onclick="toggleDropdown()" class="dropbtn2">Swap Themes</button>
+        <div id="myDropdown" class="dropdown2-content">
+			<h2>Printmon 2</h2>
+            <a href="Printmon2Doshus.html">MAIN</a>
+			<a href="TheDoshusPrintmon2AD.html">Apothecary Diaries</a>
+			<a href="TheDoshusPrintmon2Demon.html">Demon Slayer</a>
+            <a href="TheDoshusPrintmon2Forest.html">Forest</a>
+			<a href="TheDoshusPrintmon2GTA.html">GTA 6</a>
+			<a href="TheDoshusPrintmon2Halloween.html">Halloween</a>
+			<a href="TheDoshusPrintmon2HMC.html">Howl's Moving Castle</a>
+            <a href="TheDoshusPrintmon2Kuromi.html">Kuromi</a>
+            <a href="TheDoshusPrintmon2Melody.html">Melody</a>
+            <a href="TheDoshusPrintmon2Spongebob.html">Spongebob</a>
+            <a href="TheDoshusPrintmon2Toki.html">Toki Doki</a>
+			<a href="TheDoshusPrintmon2Witch.html">Witchery</a>
+			<h2>Classic Printmons</h2>
+			<a href="http://localhost:5965/barcodegenerator">Amazon Printmon 1</a>            
+            <a href="https://drive-render.corp.amazon.com/view/swlls@/Printmon2LATEST.html?version=85239b35-2ee4-4bb7-9149-6d24740369bc">Amazon Printmon 2</a>            
+			<a href="Printmon2Doshus2024.html">2024 New Year</a>
+            <a href="Printmon2DoshusBitcoin.html">Bitcoin</a>
+            <a href="Printmon2DoshusChristmas.html">Christmas 2023</a>
+            <a href="Printmon2DoshusChristmas2.html">Christmas 2024</a>
+            <a href="Printmon2DoshusEaster.html">Easter</a>
+			<a href="Printmon2DoshusVI.html">GTA 6</a>
+			<a href="Printmon2DoshusHalloween.html">Halloween</a>
+            <a href="Printmon2DoshusHarryPotter.html">Harry Potter</a>
+            <a href="Printmon2DoshusHK.html">Hello Kitty</a>
+			<a href="Printmon2DoshusKuromi.html">Kuromi</a>
+			<a href="Printmon2DoshusSummer.html">Summer</a>
+            <a href="Printmon2DoshusThanksGiving2.html">Thanksgiving 2024</a>
+            <a href="Printmon2DoshusThanksGiving.html">Thanksgiving 2023</a>
+			<a href="Printmon2DoshusTheOriginal.html">The OG Printmon</a>
+        </div>
+    </div>
+	<div class="container">
+		<div class="printbox">
+			<h1>Printmon 2</h1>
+			<p class="subtitle">Palms, Parties, and Peril</p>
+			<div class="options">
+				<label><input id="printafter" type="checkbox" checked> Print after scanning</label>
+				<label><input id="jumptoq" type="checkbox"> Jump to quantity</label>
+				<label><input id="nowhitespace" type="checkbox" checked> Trim whitespace characters</label>
+			</div>
+			<div class="input-group">
+				<label for="barcodedata">Enter Barcode Data <span>(43 Characters Max)</span></label>
+				<input id="barcodedata" type="text" maxlength="43">
+			</div>
+			<div class="input-group">
+				<label for="displaytext">Enter Display Text</label>
+				<input id="displaytext" type="text" maxlength="43">
+			</div>
+			<div class="input-group">
+				<label for="quantity">Enter Quantity <span>(500 Max)</span></label>
+				<input id="quantity" type="number" min="1" max="500" value="1" text-align="center">
+			</div>
+			<button type="button" class="print-button" onclick="printlabel();">Print</button>
+		</div>
+
+		<div class="quick-print-buttons">
+			<div class="qb-dropdown" id="quickbuttons-dropdown">
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">ATAC</button>
+				<div class="qb-dropdown-content">
+					<a onclick="printSticker(this.innerHTML);">wsATAC1</a>
+					<a onclick="printSticker(this.innerHTML);">NEEDS ATAC</a>
+				</div>
+			</div>
+			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">AWAITING TRANSSHIP</button>
+			<div class="qb-dropdown" id="quickbuttons-dropdown">
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">DAMAGE</button>
+				<div class="qb-dropdown-content">
+					<a onclick="printSticker('DIST. DAMAGE');">DISTRIBUTOR DAMAGE</a>
+					<a onclick="printSticker('WHSE. DAMAGE');">WAREHOUSE DAMAGE</a>
+					<a onclick="printSticker('EXPIRED');">EXPIRED</a>
+				</div>
+			</div>
+			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">DEFECTIVE</button>
+			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">IN_QUARANTINE</button>
+			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">NON-CON</button>
+			<div class="qb-dropdown" id="quickbuttons-dropdown">
+				<button class="buttonsLine1" onclick="printSticker('POTENTIAL FRAUD');">FRAUD</button>
+				<div class="qb-dropdown-content">
+					<a onclick="printSticker(this.innerHTML);">CODE 5</a>
+				</div>
+			</div>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">PROBLEM RECEIVE</button>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">RECALL</button>
+			<button class="buttonsLine2" onclick="printSticker('TRUE MISSHIP');">MISSHIP</button>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">UNDER THRESHOLD</button>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">1</button>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">C</button>
+            <div class="qb-dropdown" id="quickbuttons-dropdown">
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE_20LB</button>
+				<div class="qb-dropdown-content">
+					<a onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE</a>
+                    <a onclick="printSticker(this.innerHTML);">dz-P-MANSORTTOTE</a>
+				</div>
+			</div>
+            <div class="qb-dropdown" id="quickbuttons-dropdown">
+                <div class="buttonsLine3">UIS Stickers</div>
+                <div class="qb-dropdown-content">
+                    <div class="input-wrapper">
+                        <div class="structured-input">
+                            <span>tsOpx</span>
+                            <input type="text" id="opex-number-ps" maxlength="2" size="2" placeholder="##">
+                            <span>PS</span>
+                        </div>
+                    </div>
+                    <div class="input-wrapper">
+                        <div class="structured-input">
+                            <span>tsOpx</span>
+                            <input type="text" id="opex-number-short" maxlength="2" size="2" placeholder="##">
+                            <span>Short</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+			<div class="scroll-container">
+				<div class="scrollbutton-container">
+					<button onclick="window.open('/amazon/aio/AIO.html')" class="scroll-button" data-tooltip="An All-In-One page with most problem solve tools">AIO Tools</button>					
+					<button onclick="window.open('/amazon/tmb/Tampermonkey-Bookmarks_Tutorial.html')" class="scroll-button" data-tooltip="Download preset bookmarks & TamperMonkey scripts for an easier Problem Solving experience">TamperMonkey & Bookmarks</button>
+					<button onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/sites/printmon/EX/GYR3Doshus-PrintmonEX.html?download=true')" class="scroll-button" data-tooltip="A new and more desktop-like printmon experience for GYR3">PrintmonEX</button>
+					<button onclick="window.open('http://localhost:5965/webui')" class="scroll-button" data-tooltip="Use the original Amazon Printmon installed on your computer">OG Printmon</button>
+					<button onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/sites/corners/CornerSelect.html')" class="scroll-button" data-tooltip="A tool to bring up multiple tool pages at once all in one screen">Corners</button>
+					<button onclick="window.open('https://w.amazon.com/bin/view/GYR3/GYR3_Quality_Hub/GYR3_Basic_Problem_Solve/PS_Cheat_Sheet/')" class="scroll-button" data-tooltip="A page to give new Problem Solvers a handy guide">PS CheatSheet</button>
+					<button onclick="window.open('https://atoz.amazon.work/myvoice')" class="scroll-button" data-tooltip="Where associates can share feedback, suggestions, and concerns directly with leadership">VOA Board</button>
+					<button onclick="window.open('https://chatops.aces.amazon.dev/')" class="scroll-button" data-tooltip="A ChatGPT-like assistant that answers questions about warehouse operations and more">ChatOPS</button>
+					<button onclick="window.open('https://outlook.office.com/')" class="scroll-button" data-tooltip="Access your Amazon work email">Outlook</button>
+					<button onclick="window.open('https://policy.a2z.com/docs/76383/publication')" class="scroll-button" data-tooltip="Reset scanners to Amazon default settings">Scanner Reset</button>
+					<button onclick="window.open('https://atoz.amazon.work/my-performance/home')" class="scroll-button" data-tooltip="A platform that delivers near real-time performance metrics and more">MyPerformance</button>
+					<button onclick="window.open('https://fcmenu-iad-regionalized.corp.amazon.com/GYR3/entry/1344')" class="scroll-button" data-tooltip="A self-service kiosk providing associates with daily updated access to their performance metrics and more">Performance Summary</button>
+				</div>
+			</div>
+			<div class="asin-sticker-container">
+				<h2 class="asin-sticker-header">ASIN Stickering</h2>
+				<div class="asin-sticker-content">
+					<p>Amount of ASINs printed out: 
+						<input maxlength="3" id="quantitySticker" value="1" type="text" style="width: 40px; text-align: center;">
+					</p>
+					<button type="button" onclick="printQuantitySticker();">Print</button>
+				</div>
+			</div>
+			<div class="image-button-container">
+				<img src="media/icons/totepic.png" alt="View Tote Arcs" class="image-button" data-fullimage="https://drive.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG">
+				<img src="https://freepngimg.com/thumb/button/64155-now-computer-button-icons-download-hq-png.png" alt="View Tote Arcs" class="image-button2" onclick="window.open('https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/DoshusTMScriptz.zip?download=true'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true')">
+			</div>
+			<div id="modal" class="modal">
+				<span class="close">&times;</span>
+				<img class="modal-content" id="modal-image">
+			</div>
+			<div class="cryptohopper-web-widget" data-id="3" data-text_color="#ffffff" data-background_color="#360748A3" data-coins="bitcoin" data-theme="custom" data-realtime="on"></div>
+		</div>
+		<div class="MultiBarcode-printer">
+			<h2>Multiple Barcode Printer</h2>
+			<div class="MultiPrinter-content">
+				<textarea id="textAreaID" placeholder="Enter barcodes here..."></textarea>
+				<button type="button" class="multiButton" onclick="printBulk();">Print Multiple Labels</button>
+			</div>
+			<div class="iframe-container">
+				<iframe src="https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop" title="ioPrint"></iframe>
+			</div>
+		</div>
+		<!-- Feedback Button -->
+		<button class="feedback-btn" id="feedbackBtn" title="Send us feedback!">?</button>
+		<div class="feedback-label">Send Feedback</div>
+	</div>
+	<script>
+		// Array of wallpaper URLs (photos and vids)
+		const wallpapers = [
+			'Media/printmonWallpapers/GTA/1000028200.jpg',
+			'Media/printmonWallpapers/GTA/1000028201.jpg',
+			'Media/printmonWallpapers/GTA/1000028202.jpg',
+			'Media/printmonWallpapers/GTA/1000028203.jpg',
+			'Media/printmonWallpapers/GTA/1000028204.jpg',
+			'Media/printmonWallpapers/GTA/1000028205.jpg',
+			'Media/printmonWallpapers/GTA/1000028206.jpg',
+			'Media/printmonWallpapers/GTA/1000028207.jpg',
+			'Media/printmonWallpapers/GTA/1000028208.jpg',
+			'Media/printmonWallpapers/GTA/1000028209.jpg'
+		]
+		// Function to set a random wallpaper
+		function setRandomWallpaper() {
+		const randomIndex = Math.floor(Math.random() * wallpapers.length);
+		const wallpaperUrl = wallpapers[randomIndex];
+		// Check if the wallpaper URL is a video (based on file extension)
+		const isVideo = wallpaperUrl.endsWith('.mp4') || wallpaperUrl.endsWith('.webm');
+		if (isVideo) {
+			// Create a video element for the wallpaper
+			const videoElement = document.createElement('video');
+			videoElement.src = wallpaperUrl;
+			videoElement.autoplay = true;
+			videoElement.loop = true;
+			videoElement.muted = true;
+			videoElement.style.position = 'fixed';
+			videoElement.style.top = 0;
+			videoElement.style.left = 0;
+			videoElement.style.width = '100%';
+			videoElement.style.height = '100%';
+			videoElement.style.objectFit = 'fill';
+			videoElement.style.zIndex = '-1'; // Ensure video is behind other content
+			// Append the video element to the body
+			document.body.appendChild(videoElement);
+		} 
+		else {
+			// For image wallpapers, just set it as the background image
+			document.body.style.backgroundImage = `url('${wallpaperUrl}')`;
+			document.body.style.backgroundSize = 'contain';
+			document.body.style.height =  '100vh';
+		}
+		}
+		// Call the function to set the wallpaper
+		setRandomWallpaper();
+	</script>
+	<script src="js/swapbtn.js"></script>
+	<script src="js/PrintmonPrinter.js"></script>
+	<script src="js/ToteArcsClickableIMG.js"></script>
+	<script src="https://www.cryptohopper.com/widgets/js/script"></script>
+	<script>
+		window.onload = function() {
+			window.scrollTo(0, 0);
+		};
+	</script>
+		<script>
+        const feedbackBtn = document.getElementById('feedbackBtn');
+
+        // Replace with your feedback link
+        const feedbackLink = 'https://admin.pulse.amazon/staffSurvey/CLR0Z6AO';
+        // Or use: 'mailto:feedback@example.com?subject=Website Feedback'
+
+        feedbackBtn.addEventListener('click', () => {
+            window.open(feedbackLink, '_blank');
+        });
+
+        // Optional: Add some extra spazz on click
+        feedbackBtn.addEventListener('click', function() {
+            this.style.animation = 'none';
+            setTimeout(() => {
+                this.style.animation = '';
+            }, 10);
+        });
+    </script>
+</body>
+</html>

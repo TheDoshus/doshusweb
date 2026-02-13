@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Lost in Space | Doshus.NET</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Additional 404-specific styles */
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .error-code {
+            font-size: clamp(6rem, 20vw, 12rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #a78bfa, #60a5fa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            animation: glowPulse 3s ease-in-out infinite;
+            line-height: 1;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { 
+                filter: drop-shadow(0 0 30px rgba(167, 139, 250, 0.6));
+                transform: scale(1);
+            }
+            50% { 
+                filter: drop-shadow(0 0 60px rgba(96, 165, 250, 0.9));
+                transform: scale(1.05);
+            }
+        }
+
+        .error-title {
+            font-size: clamp(2rem, 6vw, 3rem);
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .error-message {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            color: #a0a0a0;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .error-button {
+            padding: 1rem 2.5rem;
+            font-size: clamp(1rem, 3vw, 1.1rem);
+            background: rgba(167, 139, 250, 0.2);
+            border: 2px solid #a78bfa;
+            color: #e0e0e0;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .error-button:hover {
+            background: rgba(167, 139, 250, 0.4);
+            box-shadow: 0 0 30px rgba(167, 139, 250, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .error-button.secondary {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: #60a5fa;
+        }
+
+        .error-button.secondary:hover {
+            background: rgba(96, 165, 250, 0.4);
+            box-shadow: 0 0 30px rgba(96, 165, 250, 0.6);
+        }
+
+        .floating-astronaut {
+            position: absolute;
+            font-size: 4rem;
+            animation: floatAround 15s ease-in-out infinite;
+            opacity: 0.3;
+            z-index: 5;
+        }
+
+        @keyframes floatAround {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(50px, -50px) rotate(90deg);
+            }
+            50% {
+                transform: translate(0, -100px) rotate(180deg);
+            }
+            75% {
+                transform: translate(-50px, -50px) rotate(270deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .error-actions {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .error-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cosmic Background -->
+    <div class="cosmic-bg"></div>
+    <div class="stars" id="stars"></div>
+
+    <!-- Floating Astronaut -->
+    <div class="floating-astronaut">🚀</div>
+
+    <!-- Error Container -->
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <h1 class="error-title">Lost in Space</h1>
+        <p class="error-message">
+            Looks like you've drifted into uncharted territory. This page doesn't exist in the Doshus.NET universe... yet.
+        </p>
+        <div class="error-actions">
+            <a href="/" class="error-button">🏠 Return Home</a>
+            <a href="javascript:history.back()" class="error-button secondary">← Go Back</a>
+        </div>
+    </div>
+
+    <!-- JavaScript for Stars -->
+    <script src="js/main.js"></script>
+</body>
+</html>

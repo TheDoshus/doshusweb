@@ -1,0 +1,175 @@
+<meta charset="UTF-8">
+<html>
+<head>
+	<title>The Doshus Printmon</title>
+	<link rel="icon" type="image/png" href="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3FjeTlrcXFrczVqOWVubm1sanQ0NThwbTB1bXdoeHRxdzZjYnR1MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6ZtjqdcQfuno2WPK/giphy.webp">
+	<link rel="stylesheet" href="css/swapbtn.css">
+	<link rel="stylesheet" href="css/older/Christmas2.css">
+	<script src="js/swapbtn.js"></script>
+	<script src="js/PrintmonPrinter.js" async></script>
+</head>
+<body>
+	<div class="dropdown2">
+        <button onclick="toggleDropdown()" class="dropbtn2">Swap Themes</button>
+        <div id="myDropdown" class="dropdown2-content">
+			<h2>Printmon 2</h2>
+            <a href="Printmon2Doshus.html">MAIN</a>
+			<a href="TheDoshusPrintmon2AD.html">Apothecary Diaries</a>
+			<a href="TheDoshusPrintmon2Demon.html">Demon Slayer</a>
+            <a href="TheDoshusPrintmon2Forest.html">Forest</a>
+			<a href="TheDoshusPrintmon2GTA.html">GTA 6</a>
+			<a href="TheDoshusPrintmon2HMC.html">Howl's Moving Castle</a>
+            <a href="TheDoshusPrintmon2Kuromi.html">Kuromi</a>
+            <a href="TheDoshusPrintmon2Spongebob.html">Spongebob</a>
+			<a href="TheDoshusPrintmon2Witch.html">Witchery</a>
+			<h2>Classic Printmons</h2>
+			<a href="http://localhost:5965/barcodegenerator">Amazon Printmon 1</a>            
+            <a href="https://drive-render.corp.amazon.com/view/swlls@/Printmon2LATEST.html?version=85239b35-2ee4-4bb7-9149-6d24740369bc">Amazon Printmon 2</a>            
+			<a href="Printmon2Doshus2024.html">2024 New Year</a>
+            <a href="Printmon2DoshusBitcoin.html">Bitcoin</a>
+            <a href="Printmon2DoshusChristmas.html">Christmas 2023</a>
+            <a href="Printmon2DoshusChristmas2.html">Christmas 2024</a>
+            <a href="Printmon2DoshusEaster.html">Easter</a>
+			<a href="Printmon2DoshusVI.html">GTA 6</a>
+			<a href="Printmon2DoshusHalloween.html">Halloween</a>
+            <a href="Printmon2DoshusHarryPotter.html">Harry Potter</a>
+            <a href="Printmon2DoshusHK.html">Hello Kitty</a>
+			<a href="Printmon2DoshusKuromi.html">Kuromi</a>
+			<a href="Printmon2DoshusSummer.html">Summer</a>
+            <a href="Printmon2DoshusThanksGiving2.html">Thanksgiving 2024</a>
+            <a href="Printmon2DoshusThanksGiving.html">Thanksgiving 2023</a>
+			<a href="Printmon2DoshusTheOriginal.html">The OG Printmon</a>        </div>
+    </div>
+	<div class="grid-container-top">
+		<div class="pm1box">
+			<h1 style="padding: 0px;text-align: center;">Printmon</h1>
+			<br>
+			<span style="text-align: center; color: #B3E5FC; font-family: Colonna MT; font-style: normal; font-size: 18pt;">Let’s Get Elfed Up! ⛄</span>
+			<br><br>
+			<div style="font-size: small; text-align: left;  padding-left: 50px;">
+				<input id="printafter" checked="checked" type="checkbox"> Print after scanning<br>
+				<input id="jumptoq" type="checkbox"> Jump to quantity<br>
+				<input id="nowhitespace" checked="checked" type="checkbox"> Trim whitespace characters<br>
+			</div>
+			<p class="titletext">Enter Barcode Data<br>
+				<i style="font-size: small">43 Characters Max</i><br>
+				<input maxlength="43" id="barcodedata" value="" type="text">
+			</p>
+			<p class="titletext">Enter Display Text<br>
+				<input maxlength="43" id="displaytext" value="" type="text">
+			</p>
+			<p class="titletext">Enter Quantity<br>
+				<i style="font-size: small">500 Max</i><br>
+				<input maxlength="3" id="quantity" value="1" type="text"><br>
+			</p>
+			<button type="button" class="apmbutton" onclick="printlabel();"> Print Label</button>
+		</div>
+		<div class="buttons">
+			<div class="buttonsleft">
+				<h2> 🎄 Christmas Clickables </h2>
+				<button type="button" onclick="printSticker(this.innerHTML);">ATAC</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">AWAITING TRANSSHIP</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">DAMAGE</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">IN_QUARANTINE</button>
+				<br>
+				<button type="button" onclick="printSticker(this.innerHTML);">NON-CON</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">POTENTIAL FRAUD</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">PROBLEM RECEIVE</button>
+				<br>
+				<button type="button" onclick="printSticker(this.innerHTML);">RECALL</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">TRUE MISSHIP</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">UNDER THRESHOLD</button>
+				<button type="button" onclick="window.open('https://chatops.aces.amazon.dev/')" style="font-family: Berlin Sans FB Demi; color: #DB1A1A; font-size: 18;">Amazon AI</button>
+				<br><br>
+				<h2> 🎅 Frosty Functions ☃️</h2>
+				<button type="button" onclick="printSticker(this.innerHTML);">1</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">C</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE_20LB</button>
+				<button type="button" onclick="window.open('http://localhost:5965/webui')" style="font-family: Showcard Gothic; color:#FFA500; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">OG Printmon</button>
+				<button type="button" onclick="window.open('/amazon/aio/AIO.html')" style="font-family: Showcard Gothic; color:#BD47FF; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">AIO Tools</button>
+				<br>
+				<button type="button" onclick="printSticker(this.innerHTML);">dz-P-MANSORTTOTE</button>
+				<button type="button" onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE</button>
+				<button type="button" onclick="window.open('https://atoz.amazon.work/myvoice')" style="font-family: Showcard Gothic; color:#FFA500; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">VoA Board</button>
+				<button type="button" onclick="window.open('/amazon/tmb/Tampermonkey-Bookmarks_Tutorial.html');" style="font-family: Britannic Bold; color:#FFA500; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">TM Tutorial</button>
+				<br><br>
+				<h2> ASIN Stickering Quantity ❄️ </h2>
+				<p>ASINs Printed: <input maxlength="3" id="quantitySticker" value="1" type="text" style="width: 40px;"> </p>
+				<button type="button" onclick="printQuantitySticker();">Print</button>
+				<br><br>
+				<div class="grid-container">
+					<button3 type="button" onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/Notes/ARCs/ARCs%20Page.pdf')">Tote Arcs</button>
+				</div>
+				<div class="grid-container" style="display: grid;">
+					<button3 type="button" onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true')">Download Bookmarks</button>
+				</div>
+			</div>
+			<div class="multiBox">
+				<h2> Multiple Barcode Printer </h2>
+				<textarea id="textAreaID" style="width: 400px;" rows="22" placeholder="Enter barcodes here..."></textarea>
+				<br>
+				<button type="button" onclick="printBulk();">Print Multiple Labels</button>
+				<br>
+				<script src="https://public.bnbstatic.com/unpkg/growth-widget/cryptoCurrencyWidget@0.0.9.min.js" ></script><div class="binance-widget-marquee" data-cmc-ids="1" data-theme="light" data-transparent="false" data-locale="en" data-powered-by="Powered by" data-disclaimer="Disclaimer" ></div>
+			</div>
+		</div>
+	</div>
+	<script>
+		// Array of wallpaper URLs (photos and vids)
+		const wallpapers = [
+			'https://static.vecteezy.com/system/resources/previews/052/003/656/mp4/christmas-eve-in-the-woods-free-video.mp4',
+			'https://static.vecteezy.com/system/resources/previews/034/892/192/mp4/merry-christmas-greeting-with-snowman-and-tree-free-video.mp4',
+			'https://wallpapers.com/images/hd/icy-cool-christmas-desktop-zehyukli8on10vry.jpg',
+			'https://img.baba-blog.com/2024/05/alibabareads_70244_A_cute_snowman_is_playing_in_the_white_snowy_ce06eba5-0682-441f-9a9d-46bdafa41873.png?x-oss-process=style%2Flarge'
+        ];
+
+		// Function to set a random wallpaper
+		function setRandomWallpaper() {
+			const randomIndex = Math.floor(Math.random() * wallpapers.length);
+			const wallpaperUrl = wallpapers[randomIndex];
+
+			// Check if the wallpaper URL is a video (based on file extension)
+			const isVideo = wallpaperUrl.endsWith('.mp4') || wallpaperUrl.endsWith('.webm');
+
+			if (isVideo) {
+				// Create a video element for the wallpaper
+				const videoElement = document.createElement('video');
+				videoElement.src = wallpaperUrl;
+				videoElement.autoplay = true;
+				videoElement.loop = true;
+				videoElement.muted = true;
+				videoElement.style.position = 'fixed';
+				videoElement.style.top = 0;
+				videoElement.style.left = 0;
+				videoElement.style.width = '100%';
+				videoElement.style.height = '100%';
+				videoElement.style.objectFit = 'fill';
+				videoElement.style.zIndex = '-1'; // Ensure video is behind other content
+
+				// Append the video element to the body
+				document.body.appendChild(videoElement);
+				} 
+			else {
+				// For image wallpapers, just set it as the background image
+				document.body.style.backgroundImage = `url('${wallpaperUrl}')`;
+				document.body.style.backgroundSize = 'contain';
+				document.body.style.height =  '100vh';
+			}
+		}
+
+		// Call the function to set the wallpaper
+		setRandomWallpaper();
+
+		// Create snowflakes
+		for (let i = 0; i < 25; i++) {
+      		const snowflake = document.createElement("div");
+      		snowflake.classList.add("snowflake");
+      		snowflake.style.left = `${Math.random() * 90}vw`;  // Random horizontal position
+      		snowflake.style.animationDuration = `${Math.random() * 3 + 9}s`;  // Random falling speed
+      		snowflake.style.animationDelay = `${Math.random() * 5}s`;  // Random start time
+      		document.body.appendChild(snowflake);
+    	}
+	</script>
+	<div class="btcwdgt-price"; bw-cash="false"></div>
+</body>
+</html>

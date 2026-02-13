@@ -1,0 +1,26 @@
+.routing-button {
+    background-color: #0087ff;
+}
+.routing-button:hover {
+    background-color: #a300ff;
+}
+.routing-button:hover {
+    background-color: #a300ff;
+}
+.navbar ul li a:hover {
+    background-color: #0087ff; /* Bright color on hover */
+}
+/* Navigation dots */
+.nav-dots a {
+    background-color: #0087ff; /* Default dot color */
+}
+/* Optional: Change dot color on hover */
+.nav-dots a:hover {
+    background-color: #a300ff;
+}
+.linkedButton {
+    color: #0087ff;
+}
+button:hover {
+    background-color: #8b97ffad;
+}

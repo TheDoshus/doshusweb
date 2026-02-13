@@ -1,0 +1,174 @@
+.printbox {
+    background-color: #06010196;
+    border: 5px double #691797;
+}
+h1 {
+    color: #8E4585;
+    text-shadow: 2px 2px #FF66C4;
+    font-family: "Showcard Gothic", "Helvetica", "Arial", sans-serif;
+}
+.subtitle {
+    color: #e3339f;
+    font-family: 'Kristen ITC';
+    font-style: italic;
+    font-size: 15pt;
+}
+.input-group label {
+    color: #fff;
+}
+.input-group label span {
+    font-size: 10px;
+    color: #FF66C4;
+}
+input[type="text"] {
+    border: 1.5px solid #FF66C4;
+}
+.print-button {
+    font-family: Amazon Ember;
+    background: linear-gradient(to bottom, #4A017FD9, #72065cfc);
+}
+.print-button:hover {
+    background-color: #00b608;
+}
+.buttonsLine1 {
+    font-family: Amazon Ember, Arial;
+    background: linear-gradient(145deg, #4A017FD9, #72065cfc);
+    font-weight: 705;
+    padding: 15px 15px;
+    color: #fffffff0;
+    border-radius: 8px;
+    border: 2px solid #00000075;
+    transition: all 0.15s ease-in-out;
+}
+.buttonsLine2 {
+    font-family: Amazon Ember, Arial;
+    background: linear-gradient(290deg, #4A017FD9, #72065cfc);
+    font-weight: 705;
+    padding: 15px 15px;
+    color: #fffffff0;
+    border-radius: 8px;
+    border: 2px solid #00000075;
+    transition: all 0.15s ease-in-out;
+}
+.buttonsLine3 {
+    font-family: Amazon Ember, Arial;
+    background: linear-gradient(65deg, #4A017FD9, #72065cfc);
+    font-weight: 705;
+    padding: 15px 15px;
+    color: #fffffff0;
+    border-radius: 8px;
+    border: 2px solid #00000075;
+    transition: all 0.15s ease-in-out;
+}
+.quick-print-buttons button:hover {
+    color: #ff00a7f5;
+    border: 2px solid #ff00008a;
+}
+.quick-print-buttons button:active {
+    background-color: #0212ff;
+    border-color: #0600c7;
+    transform: translateY(2px);
+}
+.scroll-container {
+    scrollbar-color: #691797 #72065cfc; 
+}
+.scroll-button {
+    background-color: #e3339f;
+}
+.asin-sticker-container {
+    background-color: #632150E0;
+    border: 2px dashed #cccc;
+}
+.asin-sticker-header {
+    color: #fff;
+    border-bottom: 1px dotted #fff;
+}
+.asin-sticker-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.asin-sticker-content button {
+    background: linear-gradient(65deg, #4A017FD9, #72065cfc, #4A017FD9);
+}
+.asin-sticker-content button:hover {
+    background-color: #00b367;
+}
+.MultiBarcode-printer {
+    background-color: #06010196;
+    border: 5px double #691797;
+}
+.MultiBarcode-printer h2 {
+    font-family: "Showcard Gothic";
+    color: #ffffff;
+    text-shadow: 2px 2px #FF66C4;
+}
+#textAreaID {
+    border: 1px solid #ddd;
+    font-family: Amazon Ember;
+    font-size: 14px;
+}
+.multiButton {
+    background: linear-gradient(to bottom, #4A017FD9, #72065cfc);
+}
+.multiButton:hover {
+    background-color: #00b608;
+}
+
+#quickbuttons-dropdown {
+  position: relative;
+  display: inline-block;
+  font-family: 'Amazon Ember', Arial, sans-serif;
+}
+#quickbuttons-dropdown .qb-dropbtn {
+  background: linear-gradient(145deg, #a912fdcf, #cdb34e);
+  font-weight: 700;
+  padding: 12.5px 15px;
+  color: #ffffff;
+  border-radius: 8px;
+  border: solid #0000008f 1.5px;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5);
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #e6b7ffcf;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  top: 100%;
+  left: 0;
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+  color: #000000;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
+  cursor: pointer;
+}
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+  background-color: #e3e3e3a0;
+}
+#quickbuttons-dropdown:hover .qb-dropdown-content {
+  display: block;
+}
+#quickbuttons-dropdown:hover .qb-dropbtn {
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7);
+}
+#quickbuttons-dropdown .qb-dropdown-content::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: transparent;
+}	

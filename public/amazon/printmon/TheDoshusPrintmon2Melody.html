@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>The Doshus Printmon 2</title>
+	<link rel="icon" type="image/apng" href="https://i.pinimg.com/originals/fa/ab/a0/faaba0a6e62a815996833191dc3feb24.gif">
+	<link rel="stylesheet" href="css/swapbtn.css">
+	<link rel="stylesheet" href="css/newer/Shared2PrintmonCSS.css">
+	<link rel="stylesheet" href="css/newer/2Melody.css">
+	<link rel="preload" href="https://drive.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG" as="image">
+</head>
+<body>
+	<div class="dropdown2">
+        <button onclick="toggleDropdown()" class="dropbtn2">Swap Themes</button>
+        <div id="myDropdown" class="dropdown2-content">
+			<h2>Printmon 2</h2>
+            <a href="Printmon2Doshus.html">MAIN</a>
+			<a href="TheDoshusPrintmon2AD.html">Apothecary Diaries</a>
+			<a href="TheDoshusPrintmon2Demon.html">Demon Slayer</a>
+            <a href="TheDoshusPrintmon2Forest.html">Forest</a>
+			<a href="TheDoshusPrintmon2GTA.html">GTA 6</a>
+			<a href="TheDoshusPrintmon2Halloween.html">Halloween</a>
+			<a href="TheDoshusPrintmon2HMC.html">Howl's Moving Castle</a>
+            <a href="TheDoshusPrintmon2Kuromi.html">Kuromi</a>
+            <a href="TheDoshusPrintmon2Melody.html">Melody</a>
+            <a href="TheDoshusPrintmon2Spongebob.html">Spongebob</a>
+            <a href="TheDoshusPrintmon2Toki.html">Toki Doki</a>
+			<a href="TheDoshusPrintmon2Witch.html">Witchery</a>
+			<h2>Classic Printmons</h2>
+			<a href="http://localhost:5965/barcodegenerator">Amazon Printmon 1</a>            
+            <a href="https://drive-render.corp.amazon.com/view/swlls@/Printmon2LATEST.html?version=85239b35-2ee4-4bb7-9149-6d24740369bc">Amazon Printmon 2</a>            
+			<a href="Printmon2Doshus2024.html">2024 New Year</a>
+            <a href="Printmon2DoshusBitcoin.html">Bitcoin</a>
+            <a href="Printmon2DoshusChristmas.html">Christmas 2023</a>
+            <a href="Printmon2DoshusChristmas2.html">Christmas 2024</a>
+            <a href="Printmon2DoshusEaster.html">Easter</a>
+			<a href="Printmon2DoshusVI.html">GTA 6</a>
+			<a href="Printmon2DoshusHalloween.html">Halloween</a>
+            <a href="Printmon2DoshusHarryPotter.html">Harry Potter</a>
+            <a href="Printmon2DoshusHK.html">Hello Kitty</a>
+			<a href="Printmon2DoshusKuromi.html">Kuromi</a>
+			<a href="Printmon2DoshusSummer.html">Summer</a>
+            <a href="Printmon2DoshusThanksGiving2.html">Thanksgiving 2024</a>
+            <a href="Printmon2DoshusThanksGiving.html">Thanksgiving 2023</a>
+			<a href="Printmon2DoshusTheOriginal.html">The OG Printmon</a>
+        </div>
+    </div>
+	<div class="container">
+		<div class="printbox">
+			<h1>Printmon 2</h1>
+			<p class="subtitle">Little moments, big smiles</p>
+			<div class="options">
+				<label><input id="printafter" type="checkbox" checked> Print after scanning</label>
+				<label><input id="jumptoq" type="checkbox"> Jump to quantity</label>
+				<label><input id="nowhitespace" type="checkbox" checked> Trim whitespace characters</label>
+			</div>
+			<div class="input-group">
+				<label for="barcodedata">Enter Barcode Data <span>(43 Characters Max)</span></label>
+				<input id="barcodedata" type="text" maxlength="43">
+			</div>
+			<div class="input-group">
+				<label for="displaytext">Enter Display Text</label>
+				<input id="displaytext" type="text" maxlength="43">
+			</div>
+			<div class="input-group">
+				<label for="quantity">Enter Quantity <span>(500 Max)</span></label>
+				<input id="quantity" type="number" min="1" max="500" value="1" text-align="center">
+			</div>
+			<button type="button" class="print-button" onclick="printlabel();">Print</button>
+		</div>
+
+		<div class="quick-print-buttons">
+			<div class="qb-dropdown" id="quickbuttons-dropdown">
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">ATAC</button>
+				<div class="qb-dropdown-content">
+					<a onclick="printSticker(this.innerHTML);">wsATAC1</a>
+					<a onclick="printSticker(this.innerHTML);">NEEDS ATAC</a>
+				</div>
+			</div>
+			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">AWAITING TRANSSHIP</button>
+			<div class="qb-dropdown" id="quickbuttons-dropdown">
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">DAMAGE</button>
+				<div class="qb-dropdown-content">
+					<a onclick="printSticker('DIST. DAMAGE');">DISTRIBUTOR DAMAGE</a>
+					<a onclick="printSticker('WHSE. DAMAGE');">WAREHOUSE DAMAGE</a>
+					<a onclick="printSticker('EXPIRED');">EXPIRED</a>
+				</div>
+			</div>
+			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">DEFECTIVE</button>
+			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">IN_QUARANTINE</button>
+			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">NON-CON</button>
+			<div class="qb-dropdown" id="quickbuttons-dropdown">
+				<button class="buttonsLine1" onclick="printSticker('POTENTIAL FRAUD');">FRAUD</button>
+				<div class="qb-dropdown-content">
+					<a onclick="printSticker(this.innerHTML);">CODE 5</a>
+				</div>
+			</div>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">PROBLEM RECEIVE</button>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">RECALL</button>
+			<button class="buttonsLine2" onclick="printSticker('TRUE MISSHIP');">MISSHIP</button>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">UNDER THRESHOLD</button>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">1</button>
+			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">C</button>
+            <div class="qb-dropdown" id="quickbuttons-dropdown">
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE_20LB</button>
+				<div class="qb-dropdown-content">
+					<a onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE</a>
+                    <a onclick="printSticker(this.innerHTML);">dz-P-MANSORTTOTE</a>
+				</div>
+			</div>
+            <div class="qb-dropdown" id="quickbuttons-dropdown">
+                <div class="buttonsLine3">UIS Stickers</div>
+                <div class="qb-dropdown-content">
+                    <div class="input-wrapper">
+                        <div class="structured-input">
+                            <span>tsOpx</span>
+                            <input type="text" id="opex-number-ps" maxlength="2" size="2" placeholder="##">
+                            <span>PS</span>
+                        </div>
+                    </div>
+                    <div class="input-wrapper">
+                        <div class="structured-input">
+                            <span>tsOpx</span>
+                            <input type="text" id="opex-number-short" maxlength="2" size="2" placeholder="##">
+                            <span>Short</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+			<div class="scroll-container">
+				<div class="scrollbutton-container">
+					<button onclick="window.open('/amazon/aio/AIO.html')" class="scroll-button" data-tooltip="An All-In-One page with most problem solve tools">AIO Tools</button>					
+					<button onclick="window.open('/amazon/tmb/Tampermonkey-Bookmarks_Tutorial.html')" class="scroll-button" data-tooltip="Download preset bookmarks & TamperMonkey scripts for an easier Problem Solving experience">TamperMonkey & Bookmarks</button>
+					<button onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/sites/printmon/EX/GYR3Doshus-PrintmonEX.html?download=true')" class="scroll-button" data-tooltip="A new and more desktop-like printmon experience for GYR3">PrintmonEX</button>
+					<button onclick="window.open('http://localhost:5965/webui')" class="scroll-button" data-tooltip="Use the original Amazon Printmon installed on your computer">OG Printmon</button>
+					<button onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/sites/corners/CornerSelect.html')" class="scroll-button" data-tooltip="A tool to bring up multiple tool pages at once all in one screen">Corners</button>
+					<button onclick="window.open('https://w.amazon.com/bin/view/GYR3/GYR3_Quality_Hub/GYR3_Basic_Problem_Solve/PS_Cheat_Sheet/')" class="scroll-button" data-tooltip="A page to give new Problem Solvers a handy guide">PS CheatSheet</button>
+					<button onclick="window.open('https://atoz.amazon.work/myvoice')" class="scroll-button" data-tooltip="Where associates can share feedback, suggestions, and concerns directly with leadership">VOA Board</button>
+					<button onclick="window.open('https://chatops.aces.amazon.dev/')" class="scroll-button" data-tooltip="A ChatGPT-like assistant that answers questions about warehouse operations and more">ChatOPS</button>
+					<button onclick="window.open('https://outlook.office.com/')" class="scroll-button" data-tooltip="Access your Amazon work email">Outlook</button>
+					<button onclick="window.open('https://policy.a2z.com/docs/76383/publication')" class="scroll-button" data-tooltip="Reset scanners to Amazon default settings">Scanner Reset</button>
+					<button onclick="window.open('https://atoz.amazon.work/my-performance/home')" class="scroll-button" data-tooltip="A platform that delivers near real-time performance metrics and more">MyPerformance</button>
+					<button onclick="window.open('https://fcmenu-iad-regionalized.corp.amazon.com/GYR3/entry/1344')" class="scroll-button" data-tooltip="A self-service kiosk providing associates with daily updated access to their performance metrics and more">Performance Summary</button>
+				</div>
+			</div>
+			<div class="asin-sticker-container">
+				<h2 class="asin-sticker-header">ASIN Stickering</h2>
+				<div class="asin-sticker-content">
+					<p>Amount of ASINs printed out: 
+						<input maxlength="3" id="quantitySticker" value="1" type="text" style="width: 40px; text-align: center;">
+					</p>
+					<button type="button" onclick="printQuantitySticker();">Print</button>
+				</div>
+			</div>
+			<div class="image-button-container">
+				<img src="media/icons/totepic.png" alt="View Tote Arcs" class="image-button" data-fullimage="https://drive.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG">
+				<img src="https://freepngimg.com/thumb/button/64155-now-computer-button-icons-download-hq-png.png" alt="View Tote Arcs" class="image-button2" onclick="window.open('https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/DoshusTMScriptz.zip?download=true'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true')">
+			</div>
+			<div id="modal" class="modal">
+				<span class="close">&times;</span>
+				<img class="modal-content" id="modal-image">
+			</div>
+			<div class="cryptohopper-web-widget" data-id="3" data-text_color="#ffffff" data-background_color="#D532BB78" data-coins="bitcoin" data-theme="custom" data-realtime="on"></div>
+		</div>
+		<div class="MultiBarcode-printer">
+			<h2>Multiple Barcode Printer</h2>
+			<div class="MultiPrinter-content">
+				<textarea id="textAreaID" placeholder="Enter barcodes here..."></textarea>
+				<button type="button" class="multiButton" onclick="printBulk();">Print Multiple Labels</button>
+			</div>
+			<div class="iframe-container">
+				<iframe src="https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop" title="ioPrint"></iframe>
+			</div>
+		</div>
+	</div>
+	<script>
+		// Array of wallpaper URLs (photos and vids)
+		const wallpapers = [
+			'https://i.pinimg.com/736x/d0/6a/f7/d06af747e31945528d29bd925b31c9bb.jpg',
+            'https://cdn.wallpapersafari.com/55/13/o2JeY7.jpg',
+            'https://wallpapers.com/images/hd/my-melody-laptop-pmyzj083849onit5.jpg',
+            'https://wallpapers.com/images/hd/adorable-my-melody-km3lnvqnor7aasw8.jpg',
+            'https://images8.alphacoders.com/139/thumb-1920-1392741.jpg',
+            'https://4kwallpapers.com/images/walls/thumbs_3t/11739.png',
+            'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/48d1527c-b78f-40e7-8ab6-7fcbcbed091b/dk7jj3n-c6569617-8a5a-44ea-a2e6-3b783b2ad4b4.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi80OGQxNTI3Yy1iNzhmLTQwZTctOGFiNi03ZmNiY2JlZDA5MWIvZGs3amozbi1jNjU2OTYxNy04YTVhLTQ0ZWEtYTJlNi0zYjc4M2IyYWQ0YjQuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.9qpBv2jUyxVuqAPCDKXsM67bHPJFLGwGv6K67i1-9m4',
+            'https://i.pinimg.com/736x/ad/e0/d2/ade0d24682e555d6eb3efdbb1ad2541a.jpg',
+            'https://i.ytimg.com/vi/N4dkDCdH1kw/maxresdefault.jpg',
+            '',
+		]
+		// Function to set a random wallpaper
+		function setRandomWallpaper() {
+		const randomIndex = Math.floor(Math.random() * wallpapers.length);
+		const wallpaperUrl = wallpapers[randomIndex];
+		// Check if the wallpaper URL is a video (based on file extension)
+		const isVideo = wallpaperUrl.endsWith('.mp4') || wallpaperUrl.endsWith('.webm');
+		if (isVideo) {
+			// Create a video element for the wallpaper
+			const videoElement = document.createElement('video');
+			videoElement.src = wallpaperUrl;
+			videoElement.autoplay = true
+			videoElement.loop = true;
+			videoElement.muted = true;
+			videoElement.style.position = 'fixed';
+			videoElement.style.top = 0;
+			videoElement.style.left = 0;
+			videoElement.style.width = '100%';
+			videoElement.style.height = '100%';
+			videoElement.style.objectFit = 'fill';
+			videoElement.style.zIndex = '-1'; // Ensure video is behind other content
+			// Append the video element to the body
+			document.body.appendChild(videoElement);
+		} 
+		else {
+			// For image wallpapers, just set it as the background image
+			document.body.style.backgroundImage = `url('${wallpaperUrl}')`;
+			document.body.style.backgroundSize = 'contain';
+			document.body.style.height =  '100vh';
+		}
+		}
+		// Call the function to set the wallpaper
+		setRandomWallpaper();
+	</script>
+	<script src="js/swapbtn.js"></script>
+	<script src="js/PrintmonPrinter.js"></script>
+	<script src="js/ToteArcsClickableIMG.js"></script>
+	<script src="https://www.cryptohopper.com/widgets/js/script"></script>
+	<script>
+		window.onload = function() {
+			window.scrollTo(0, 0);
+		};
+	</script>
+</body>
+</html>

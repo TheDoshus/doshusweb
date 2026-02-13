@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TamperMonkey & Bookmarks Tutorial</title>
+    <link rel="icon" type="image/png" href="amazon/printmon/media/icons/tampmark.png">
+    <style>
+        body {
+            font-family: Amazon Ember, Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: rgb(255, 255, 255);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: #54af4c;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 5px 10%;
+        }
+        .button:hover {
+            background-color: #613d7a;
+        }
+        h1 {
+            text-align: center;
+            color: #048100;
+        }   
+        .tutorial-steps {
+            margin-top: 30px;
+        }
+        .tutorial-steps h2 {
+            color: #048100;
+        }
+        .tutorial-steps ol {
+            padding-left: 20px;
+        }
+        .tutorial-steps li {
+            margin-bottom: 10px;
+        }
+        .tutorial-steps ul {
+            font-size: 14.5px;
+            margin-top: -5px;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* Fixed: added % */
+            height: 0;
+            overflow: hidden;
+            cursor: pointer;
+            margin-bottom: 20px; /* Space between videos */
+        }
+
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Play button circle */
+        .video-container::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            z-index: 1;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Play button triangle */
+        .video-container::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-40%, -50%);
+            border-style: solid;
+            border-width: 27px 0 27px 42px;
+            border-color: transparent transparent transparent white;
+            z-index: 1;
+            transition: border-color 0.3s ease;
+        }
+
+        .video-container:hover::before {
+            background-color: rgba(255, 0, 0, 0.7); /* Red on hover */
+        }
+
+        /* Hide play button when playing */
+        .video-container.playing::before,
+        .video-container.playing::after {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TamperMonkey & Bookmarks Tutorial</h1>
+        <div class="buttons">
+            <a href="amazon/aio/AIO.html" class="button">AIO Homepage</a>
+            <a href="amazon/printmon/Printmon2Doshus.html" class="button">Printmon</a>
+        </div>
+        <div class="video-container">
+        <video 
+            src="TMtutorial.mp4" preload="auto">
+        </video>
+        </div>
+        <div class="buttons">
+            <button class="button" onclick="window.open('https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/')">Install Tampermonkey Addon</button>
+            <button class="button" onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/DoshusTMScriptz.zip?download=true')">Download Tampermonkey Scripts</button>
+        </div>
+        <div class="tutorial-steps">
+            <h2>TM Installation Steps</h2>
+            <ol>
+                <li>Download both the TamperMonkey Addon & Scripts from the download buttons above.</li>
+                    <ul style="color: red;">(Make sure to <b>ALLOW THE POP-UP</b> at the top of the screen <b>FROM THIS PAGE</b> when downloading the Scripts)</ul> <br>
+                <li>Click the Tampermonkey icon then "⚙️Dashboard" from the top-right corner of your browser as in the video.</li>
+                    <ul style="color: red;">If it's missing THEN click the <b>puzzle-piece</b> first!</ul> <br>
+                <li>Then open the "Utilities" Menu and click "Browse" next to the "<b>IMPORT</b> from file" category.</li>
+                <li>Select the downloaded Scripts file and hit ENTER or CLICK "import" to finish.  😁</li>
+            </ol>
+        </div>
+        <br><hr><p style="font-size: 9px; text-align: center;">any issues are user-error 🙄</p><br>
+        
+        <div class="video-container">
+            <video 
+                src="BookmarksTutorial.mp4" preload="auto">
+            </video>
+        </div>
+        <div class="buttons">
+            <button class="button" onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true')">Download JSON Bookmarks <br> (Default)</button>
+            <h2>OR</h2>
+            <button class="button" onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.html?download=true')">Download HTML Bookmarks <br>(Importable too)</button>
+        </div>
+        <div class="tutorial-steps">
+            <h2>Bookmark Importing Steps</h2>
+            <ol>
+                <li>Download the Bookmarks from the download button above.</li>
+                    <ul style="color: red;">(Make sure to click <b>DIRECTLY ON THE PINK</b> text [your cursor should be the shape of a <b>hand, not a pointer</b>] on the download page to begin the download)</ul> <br>
+                <li>Open your browser menu at the top-right corner and under "Bookmarks" click "Show bookmarks toolbar"</li>
+                <li>Then re-open the Bookmarks menu and click "Manage bookmarks" at the bottom of the menu</li>
+                <li>Select <b>"IMPORT AND BACKUP" ➡️ "Restore" ➡️ "Choose File"</b> and select the downloaded Bookmarks file 😁</li>
+            </ol>
+        </div>
+    </div>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Get ALL video containers
+  const videoContainers = document.querySelectorAll('.video-container');
+  console.log('Found video containers:', videoContainers.length);
+  
+  // Set up each container
+  videoContainers.forEach((container, index) => {
+    const video = container.querySelector('video');
+    console.log(`Video ${index+1} source:`, video.src);
+    
+    // Click handler
+    container.addEventListener('click', function() {
+      console.log(`Video ${index+1} clicked`);
+      
+      if (video.paused) {
+        // Try to play the video
+        video.play()
+        .then(() => {
+          console.log(`Video ${index+1} playing successfully`);
+          container.classList.add('playing');
+          video.controls = true;
+        })
+        .catch(error => {
+          console.error(`Error playing video ${index+1}:`, error);
+        });
+      } else {
+        // Pause the video
+        video.pause();
+        container.classList.remove('playing');
+        // Optionally hide controls when paused
+        // video.controls = false;
+      }
+    });
+    
+    // Reset when video ends
+    video.addEventListener('ended', function() {
+      container.classList.remove('playing');
+      video.controls = false;
+    });
+  });
+});
+    </script>
+</body>
+</html>

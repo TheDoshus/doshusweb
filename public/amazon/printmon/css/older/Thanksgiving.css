@@ -1,0 +1,170 @@
+body {
+	color: #000000;
+	font-family: "Helvetica", "Arial", sans-serif;
+	background-image: url('https://www.fabmood.com/wp-content/uploads/2022/10/thanksgiving-wallpaper-3.jpg');
+	background-size: cover;
+		background-repeat: no-repeat;
+}
+
+h1 {
+	color: #0C842A;
+	font-size: 30pt;
+	font-weight: bold;
+	text-shadow: 2px 2px #6a321c;
+	padding: 0px;
+	margin-top: 5px;
+	margin-bottom: -10px;
+	font-family: "Showcard Gothic", "Helvetica", "Arial", sans-serif;
+}
+
+h2 {
+	color: #FFF;
+	font-weight: bold;
+	padding: 0px;
+	margin: 0px;
+	border-radius: .5rem;
+	background: #0C842A;
+	padding: 7px;
+	text-align: center;
+}
+
+p {
+	display: inline;
+}
+
+.pm1box {
+	width: 305px;
+	height: 500px;
+	margin-top: 10px;
+	margin-bottom: 5px;
+	border: 2px solid #d51626;
+	border-radius: 5px;
+	padding-bottom: 5px;
+	font-weight: bold;
+	text-align: center;
+	font-family: "Amazon Ember Medium", "Arial", sans-serif;
+	display: block;
+	color: #232F3E;
+	background: linear-gradient(to bottom, rgba(234, 231, 222, 1) 0%, rgba(237, 241, 244, 0.2) 50%, rgba(202, 204, 206, 1) 100%);
+}
+
+.buttons {
+	float: left;
+}
+
+.buttonsleft {
+	float: left;
+	margin-right: 20px;
+}
+
+.buttonsright {
+	float: left;
+}
+
+.titletext {
+	display: block;
+	color: #1f1616;
+}
+
+.apmbutton {
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	font-family: Amazon Ember Medium, helvetica, sans-serif;
+	padding: 10px;
+	margin-top: 25px;
+	margin-bottom: 25px;
+	text-decoration: none;
+	display: inline-block;
+	font-weight: bold;
+	color: #ffffff;
+}
+
+.apmbutton:hover {
+	border: 1px solid #f7b800;
+	background-color: #ffc92b;
+}
+
+.grid-container {
+	display: grid;
+	grid-template-columns: repeat(3, 33%);
+	grid-gap: 1%;
+	width: 98%;
+	margin: auto;
+}
+
+.grid-container-top {
+	display: grid;
+	grid-template-columns: 305px 80%;
+	grid-gap: 1%;
+	width: 98%;
+	margin: auto;
+}
+
+textarea {
+	overflow-y: hidden;
+	overflow-x: scroll;
+	font-size: 16px;
+	resize: none;
+	width: 90%;
+	float: left;
+}
+
+input[type=text] {
+	background: #fff0f0;
+	border-radius: 5px;
+	border: solid 1px #999999;
+	height: 20px;
+	padding-left: 10px;
+	width: 250px;
+}
+
+button {
+	border-style: solid;
+	border-width: .1rem;
+	border-radius: .5rem;
+	border-color: #b65959 #ad4444 #5e3434;
+	font-family: Bauhaus 93, Amazon Ember Medium, sans-serif;
+	font-weight: bold;
+	padding: 10px;
+	color: #ffdede;
+	background: linear-gradient(to bottom, #fb822a, #6a321c);
+	margin-top: 5px;
+}
+
+.button2 {
+	border-style: solid;
+	border-width: .1rem;
+	border-radius: .3rem;
+	border-color: #adb1b8 #a2a6ac #8d9096;
+	font-family: arial, helvetica, sans-serif;
+	font-weight: bold;
+	padding: 10px;
+	color: #59227e;
+	background: linear-gradient(to bottom, #f7f8fa, #e7e9ec);
+	margin-top: 5px;
+}
+
+button:hover {
+	color: #000000;
+	border: 3px solid #1500ff;
+	background-color: #00ff33;
+	cursor: pointer;
+}
+
+button:active {
+	border: 2px solid #09ff01;
+	background-color: #ff2f2b;
+	background-image: -moz-linear-gradient(top, #ff2b2b, #ce0101);
+	background-image: linear-gradient(to bottom, #ed1cff, #3e5dbb);
+	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#ffc92b, endColorstr=#ce9a01);
+}
+
+select {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.multiBox {
+	width: 400px;
+	float: left;
+}

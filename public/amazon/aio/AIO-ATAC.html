@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIO ATAC</title>
+    <link rel="stylesheet" href="css/SharedAIO.css">
+    <link rel="stylesheet" href="css/ATAC.css">
+    <script src="https://www.cryptohopper.com/widgets/js/script"></script>
+    <script src="iFrame.js"></script>
+    <link rel="icon" href="https://media.tenor.com/gWRoYtw_NpwAAAAM/cat-cat-jam.gif" type="image/gif">
+</head>
+<body>
+    <video autoplay muted loop class="video-background">
+        <source src="https://videos.pexels.com/video-files/855507/855507-hd_1920_1080_25fps.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <a href="#top" aria-label="Back to Top"></a> <!-- Link to top -->
+    
+    <div class="floating-btc-container">
+        <div class="cryptohopper-web-widget" data-id="7" data-label_design="3" data-coins="bitcoin" data-numcoins="undefined" data-realtime="on"></div>
+    </div>
+    
+    <!-- Navigation bar -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="AIO.html">Main Page</a></li>
+            <li><a href="amazon/printmon/Printmon2Doshus.html">Themed Printmon</a></li>
+        </ul>
+    </nav>
+
+    <!-- Navigation bar LEFTSIDE-VERTICAL -->
+    <div class="nav-dots">
+        <a href="#top" aria-label="Back to Top"></a> <!-- Link to top -->
+        <a href="#frame1" aria-label="Section 1"></a>
+        <a href="#frame2" aria-label="Section 2"></a>
+        <a href="#frame3" aria-label="Section 3"></a>
+        <a href="#frame4" aria-label="Section 3"></a>
+    </div>
+
+    <div id="flying-images-container"></div>
+
+    <div class="routing-buttons">
+        <button class="routing-button" onclick="window.open('https://routing-tool-iad.aka.amazon.com/tote-route?jobName=CheckDestination')";>Check Destination</button>
+        <button class="routing-button" onclick="window.open('https://routing-tool-iad.aka.amazon.com/tote-route?jobName=RouteSingle')";>Route Single</button>
+        <button class="routing-button" onclick="window.open('https://routing-tool-iad.aka.amazon.com/tote-route?jobName=DeleteRouting')";>Delete Routing</button>
+    </div>
+   <!-- Arcs Image -->
+    <div class="image-container" style="text-align: center;">
+        <img src="https://drive.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG" alt="Tote Arcs">
+    </div>
+
+    <!-- First Horizontal iFrame -->
+    <div class="iframe-wrapper">
+        <div class="iframe-header" onclick="openIframeInNewTab('frame1')" style="cursor: pointer; font-size: 21px; color: #4169E1;">Duplicate Tab</div>        
+        <div class="iframe-content">
+            <iframe id="frame1" src="https://atac-tunnel-ui-iad.corp.amazon.com/atac/ingress"></iframe>
+        </div>
+        <div class="button-container">
+            <button onclick="document.getElementById('frame1').src='https://atac-tunnel-ui-iad.corp.amazon.com/atac/ingress';">ATAC Ingress</button>
+            <button onclick="window.open('https://madcat-iad.corp.amazon.com/');"  class="linkedButton">MadCat*</button>
+            <button onclick="document.getElementById('frame1').src='https://atac-tunnel-ui-iad.corp.amazon.com/atac/egress';">ATAC Egress</button>
+            <button onclick="document.getElementById('frame1').src='https://na.item-measurement.aft.a2z.com/workOrders?warehouseId=GYR3&workOrderStatuses=WORK_IN_PROGRESS&workOrderStatuses=READY&workOrderTypes=CUBISCAN&workOrderTypes=ATAC&workOrderTypes=PHOTOGRAPH&workOrderTypes=AMAZON_PHOTO1';">Current WorkOrders</button>
+            <button onclick="document.getElementById('frame1').src='https://na.item-measurement.aft.a2z.com/item';">Item Measurements</button>
+            <button onclick="window.open('https://monitorportal.amazon.com/igraph?SchemaName1=Service&DataSet1=Prod&Marketplace1=NAFulfillment&HostGroup1=ALL&Host1=ALL&ServiceName1=FCInboundWorkOrderService&MethodName1=ALL&Client1=ALL&MetricClass1=WarehouseId&Instance1=GYR3&Metric1=WorkOrder.StatusUpdate.SYSTEM_CANCELED&Period1=OneMinute&Stat1=sum&Label1=Cancelled&UserLabel1=Cancelled&SchemaName2=Service&Marketplace2=GYR3&MetricClass2=WorkOrderType&Instance2=ATAC&Metric2=WorkOrderCreated&Label2=Created&UserLabel2=Created&SchemaName3=Service&Instance3=ALL&Metric3=WorkOrder.Success&Label3=Completed&UserLabel3=Completed&HeightInPixels=250&WidthInPixels=600&DecoratePoints=true&GraphType=pie');" class="linkedButton">WorkOrders Graph*</button>
+            <button onclick="document.getElementById('frame1').src='https://fcresearch-na.aka.amazon.com/GYR3/search';">FCResearch</button>
+            <button onclick="document.getElementById('frame1').src='https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop';">ioPrint</button>
+        </div>
+    </div>
+    <!-- Second iFrame -->
+    <div class="iframe-wrapper">
+        <div class="iframe-header" onclick="openIframeInNewTab('frame2')" style="cursor: pointer; font-size: 21px; color: #4169E1;">Duplicate Tab</div>        
+        <div class="iframe-content">
+            <iframe id="frame2" src="https://atac-tunnel-ui-iad.corp.amazon.com/atac/egress"></iframe>
+        </div>
+        <div class="button-container">
+            <button onclick="document.getElementById('frame2').src='https://atac-tunnel-ui-iad.corp.amazon.com/atac/ingress';">ATAC Ingress</button>
+            <button onclick="window.open('https://madcat-iad.corp.amazon.com/');" class="linkedButton">MadCat*</button>
+            <button onclick="document.getElementById('frame2').src='https://atac-tunnel-ui-iad.corp.amazon.com/atac/egress';">ATAC Egress</button>
+            <button onclick="document.getElementById('frame2').src='https://na.item-measurement.aft.a2z.com/workOrders?warehouseId=GYR3&workOrderStatuses=WORK_IN_PROGRESS&workOrderStatuses=READY&workOrderTypes=CUBISCAN&workOrderTypes=ATAC&workOrderTypes=PHOTOGRAPH&workOrderTypes=AMAZON_PHOTO1';">Current WorkOrders</button>
+            <button onclick="document.getElementById('frame2').src='https://na.item-measurement.aft.a2z.com/item';">Item Measurements</button>
+            <button onclick="window.open('https://monitorportal.amazon.com/igraph?SchemaName1=Service&DataSet1=Prod&Marketplace1=NAFulfillment&HostGroup1=ALL&Host1=ALL&ServiceName1=FCInboundWorkOrderService&MethodName1=ALL&Client1=ALL&MetricClass1=WarehouseId&Instance1=GYR3&Metric1=WorkOrder.StatusUpdate.SYSTEM_CANCELED&Period1=OneMinute&Stat1=sum&Label1=Cancelled&UserLabel1=Cancelled&SchemaName2=Service&Marketplace2=GYR3&MetricClass2=WorkOrderType&Instance2=ATAC&Metric2=WorkOrderCreated&Label2=Created&UserLabel2=Created&SchemaName3=Service&Instance3=ALL&Metric3=WorkOrder.Success&Label3=Completed&UserLabel3=Completed&HeightInPixels=250&WidthInPixels=600&DecoratePoints=true&GraphType=pie');" class="linkedButton">WorkOrders Graph*</button>
+            <button onclick="document.getElementById('frame2').src='https://fcresearch-na.aka.amazon.com/GYR3/search';">FCResearch</button>
+            <button onclick="document.getElementById('frame2').src='https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop';">ioPrint</button>
+        </div>
+    </div>
+    <!-- Third iFrame -->
+    <div class="iframe-wrapper">
+        <div class="iframe-header" onclick="openIframeInNewTab('frame3')" style="cursor: pointer; font-size: 21px; color: #4169E1;">Duplicate Tab</div>        
+        <div class="iframe-content">
+            <iframe id="frame3" src="https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop"></iframe>
+        </div>
+        <div class="button-container">
+            <button onclick="document.getElementById('frame3').src='https://atac-tunnel-ui-iad.corp.amazon.com/atac/ingress';">ATAC Ingress</button>
+            <button onclick="window.open('https://madcat-iad.corp.amazon.com/');"  class="linkedButton">MadCat*</button>
+            <button onclick="document.getElementById('frame3').src='https://atac-tunnel-ui-iad.corp.amazon.com/atac/egress';">ATAC Egress</button>
+            <button onclick="document.getElementById('frame3').src='https://na.item-measurement.aft.a2z.com/workOrders?warehouseId=GYR3&workOrderStatuses=WORK_IN_PROGRESS&workOrderStatuses=READY&workOrderTypes=CUBISCAN&workOrderTypes=ATAC&workOrderTypes=PHOTOGRAPH&workOrderTypes=AMAZON_PHOTO1';">Current WorkOrders</button>
+            <button onclick="document.getElementById('frame3').src='https://na.item-measurement.aft.a2z.com/item';">Item Measurements</button>
+            <button onclick="window.open('https://monitorportal.amazon.com/igraph?SchemaName1=Service&DataSet1=Prod&Marketplace1=NAFulfillment&HostGroup1=ALL&Host1=ALL&ServiceName1=FCInboundWorkOrderService&MethodName1=ALL&Client1=ALL&MetricClass1=WarehouseId&Instance1=GYR3&Metric1=WorkOrder.StatusUpdate.SYSTEM_CANCELED&Period1=OneMinute&Stat1=sum&Label1=Cancelled&UserLabel1=Cancelled&SchemaName2=Service&Marketplace2=GYR3&MetricClass2=WorkOrderType&Instance2=ATAC&Metric2=WorkOrderCreated&Label2=Created&UserLabel2=Created&SchemaName3=Service&Instance3=ALL&Metric3=WorkOrder.Success&Label3=Completed&UserLabel3=Completed&HeightInPixels=250&WidthInPixels=600&DecoratePoints=true&GraphType=pie');" class="linkedButton">WorkOrders Graph*</button>
+            <button onclick="document.getElementById('frame3').src='https://fcresearch-na.aka.amazon.com/GYR3/search';">FCResearch</button>
+            <button onclick="document.getElementById('frame3').src='https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop';">ioPrint</button>
+        </div>
+    </div>
+
+    <!-- Fourth iFrame -->
+    <div class="iframe-wrapper">
+        <div class="iframe-header" onclick="openIframeInNewTab('frame4')" style="cursor: pointer; font-size: 21px; color: #4169E1;">Duplicate Tab</div>
+        <div class="iframe-content">
+            <iframe id="frame4" src="https://na.item-measurement.aft.a2z.com/workOrders?warehouseId=GYR3&workOrderStatuses=WORK_IN_PROGRESS&workOrderStatuses=READY&workOrderTypes=CUBISCAN&workOrderTypes=ATAC&workOrderTypes=PHOTOGRAPH&workOrderTypes=AMAZON_PHOTO1"></iframe>
+        </div>
+        <div class="button-container">
+            <button onclick="document.getElementById('frame4').src='https://atac-tunnel-ui-iad.corp.amazon.com/atac/ingress';">ATAC Ingress</button>
+            <button onclick="window.open('https://madcat-iad.corp.amazon.com/');" class="linkedButton">MadCat*</button>
+            <button onclick="document.getElementById('frame4').src='https://atac-tunnel-ui-iad.corp.amazon.com/atac/egress';">ATAC Egress</button>
+            <button onclick="document.getElementById('frame4').src='https://na.item-measurement.aft.a2z.com/workOrders?warehouseId=GYR3&workOrderStatuses=WORK_IN_PROGRESS&workOrderStatuses=READY&workOrderTypes=CUBISCAN&workOrderTypes=ATAC&workOrderTypes=PHOTOGRAPH&workOrderTypes=AMAZON_PHOTO1';">Current WorkOrders</button>
+            <button onclick="document.getElementById('frame4').src='https://na.item-measurement.aft.a2z.com/item';">Item Measurements</button>
+            <button onclick="window.open('https://monitorportal.amazon.com/igraph?SchemaName1=Service&DataSet1=Prod&Marketplace1=NAFulfillment&HostGroup1=ALL&Host1=ALL&ServiceName1=FCInboundWorkOrderService&MethodName1=ALL&Client1=ALL&MetricClass1=WarehouseId&Instance1=GYR3&Metric1=WorkOrder.StatusUpdate.SYSTEM_CANCELED&Period1=OneMinute&Stat1=sum&Label1=Cancelled&UserLabel1=Cancelled&SchemaName2=Service&Marketplace2=GYR3&MetricClass2=WorkOrderType&Instance2=ATAC&Metric2=WorkOrderCreated&Label2=Created&UserLabel2=Created&SchemaName3=Service&Instance3=ALL&Metric3=WorkOrder.Success&Label3=Completed&UserLabel3=Completed&HeightInPixels=250&WidthInPixels=600&DecoratePoints=true&GraphType=pie');" class="linkedButton">WorkOrders Graph*</button>
+            <button onclick="document.getElementById('frame4').src='https://fcresearch-na.aka.amazon.com/GYR3/search';">FCResearch</button>
+            <button onclick="document.getElementById('frame4').src='https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop';">ioPrint</button>
+        </div>
+    </div>
+    <script>
+    const images = [
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png',
+        'https://media.tenor.com/1MG3j4q4W5AAAAAj/cat-jam.gif',
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png',
+        // Add more image paths as needed
+    ];
+
+
+    function createFlyingImage() {
+        const container = document.getElementById('flying-images-container');
+        const img = document.createElement('img');
+        img.src = images[Math.floor(Math.random() * images.length)];
+        img.classList.add('flying-image');
+
+        // Set random size
+        const size = Math.random() * 50 + 20; // Random size between 20px and 70px
+        img.style.width = `${size}px`;
+        img.style.height = 'auto';
+
+        // Set random starting position (off-screen)
+        const startSide = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+        let startX, startY, endX, endY;
+
+        switch (startSide) {
+            case 0: // top
+                startX = Math.random() * window.innerWidth;
+                startY = -size;
+                endX = Math.random() * window.innerWidth;
+                endY = window.innerHeight + size;
+                break;
+            case 1: // right
+                startX = window.innerWidth + size;
+                startY = Math.random() * window.innerHeight;
+                endX = -size;
+                endY = Math.random() * window.innerHeight;
+                break;
+            case 2: // bottom
+                startX = Math.random() * window.innerWidth;
+                startY = window.innerHeight + size;
+                endX = Math.random() * window.innerWidth;
+                endY = -size;
+                break;
+            case 3: // left
+                startX = -size;
+                startY = Math.random() * window.innerHeight;
+                endX = window.innerWidth + size;
+                endY = Math.random() * window.innerHeight;
+                break;
+        }
+
+        img.style.left = `${startX}px`;
+        img.style.top = `${startY}px`;
+
+        container.appendChild(img);
+
+        // Calculate the distance and duration
+        const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+        const duration = distance / 100; // Adjust this value to change speed
+
+        // Start animation
+        setTimeout(() => {
+            img.style.opacity = '1';
+            img.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
+            img.style.transition = `transform ${duration}s linear, opacity 0.5s ease-in-out`;
+        }, 100);
+
+        // Remove the image after animation
+        setTimeout(() => {
+            img.remove();
+        }, duration * 1000 + 600);
+    }
+
+    function startRandomFlying() {
+        setInterval(() => {
+            if (Math.random() < 0.3) { // 30% chance to create a flying image
+                createFlyingImage();
+            }
+        }, 3000); // Check every 3 seconds
+    }
+
+    // Start the random flying effect when the page loads
+    window.addEventListener('load', startRandomFlying);
+    </script>
+    <script>
+        document.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', function() {
+            // Add a temporary class for the click effect
+            this.classList.add('clicked');
+            
+            // Remove the class after the animation completes
+            setTimeout(() => {
+                this.classList.remove('clicked');
+            }, 300);
+
+            // You can add your click functionality here
+            console.log('Button clicked:', this.textContent);
+        });
+    });
+    </script>
+    <script>
+        window.onload = function() {
+            window.scrollTo(0, 0);
+        };
+    </script>
+</body>
+</html>
