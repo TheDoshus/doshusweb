@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><script async src="https://www.googletagmanager.com/gtag/js?id=G-KQ1RGHNMZG"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-KQ1RGHNMZG");</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="The Lounge - Doshus.NET's entertainment hub featuring games, interesting sites, and fun stuff">
+    <title>The Lounge | Doshus.NET</title>
+    <link rel="icon" type="image/png" href="https://doshus.net/favicons/LogoFavi.png">
+
+    <!-- Link your CSS -->
+    <style>
+        
+        /* Fix mobile background scrolling issue */
+        html {
+            height: 100%;
+            overflow: auto;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e0e0e0;
+            overflow-x: hidden;
+            background: #000000;
+            min-height: 100vh;
+            min-height: -webkit-fill-available; /* iOS Safari fix */
+            position: relative;
+        }
+
+        /* Cosmic Background with AMOLED Black */
+        .cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height - newer browsers */
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%);
+            animation: gradientShiftWithBlack 20s ease infinite;
+            z-index: -2;
+        }
+
+        @keyframes gradientShiftWithBlack {
+            0%, 100% { background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f0520 100%); opacity: 1; }
+            25% { background: linear-gradient(135deg, #0f0520 0%, #0a0a1a 50%, #1a0a2e 100%); opacity: 1; }
+            50% { opacity: 0; }
+            75% { background: linear-gradient(135deg, #1a0a2e 0%, #0f0520 50%, #0a0a1a 100%); opacity: 1; }
+        }
+
+        /* Stars */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height */
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 7vw, 5rem);
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #a78bfa, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(167, 139, 250, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(96, 165, 250, 0.8)); }
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            padding: 1rem 2rem;
+            font-size: clamp(1rem, 3vw, 1.1rem);
+            background: rgba(167, 139, 250, 0.2);
+            border: 2px solid #a78bfa;
+            color: #e0e0e0;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background: rgba(167, 139, 250, 0.4);
+            box-shadow: 0 0 30px rgba(167, 139, 250, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .random-meme:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.3);
+        }
+
+        .random-meme img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        /* Content Section */
+        .content-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(7px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: clamp(2rem, 5vw, 3rem);
+            max-width: 900px;
+            width: 100%;
+            margin: 2rem 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card h2 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 2rem;
+            color: #a78bfa;
+            text-align: center;
+        }
+
+        /* Social Media Carousel */
+        .social-carousel {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .social-container {
+            display: flex;
+            gap: clamp(1rem, 3vw, 2rem);
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 2rem 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(167, 139, 250, 0.5) rgba(255, 255, 255, 0.1);
+        }
+
+        .social-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .social-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .social-container::-webkit-scrollbar-thumb {
+            background: rgba(167, 139, 250, 0.5);
+            border-radius: 10px;
+        }
+
+        .social-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(167, 139, 250, 0.8);
+        }
+
+        .social-item {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #e0e0e0;
+            min-width: clamp(120px, 20vw, 150px);
+        }
+
+        .social-item:hover {
+            transform: translateY(-10px);
+            background: rgba(167, 139, 250, 0.1);
+            border-color: #a78bfa;
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.4);
+        }
+
+        .social-icon {
+            width: clamp(50px, 12vw, 60px);
+            height: clamp(50px, 12vw, 60px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(167, 139, 250, 0.2);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .social-icon img {
+            width: 62%;
+            height: 62%;
+            object-fit: contain;
+        }
+
+        .social-item:hover .social-icon {
+            background: rgba(167, 139, 250, 0.4);
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.6);
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .social-name {
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .scroll-hint {
+            text-align: center;
+            margin-top: 1rem;
+            opacity: 0.6;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: clamp(1rem, 3vw, 2rem);
+            max-width: 1200px;
+            width: 100%;
+            padding: 1rem;
+        }
+
+        .grid-item {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: clamp(1.5rem, 4vw, 2rem);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+            overflow: hidden; /* ADD THIS */
+            max-width: 100%; /* ADD THIS */
+        }
+
+        .grid-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 40px rgba(167, 139, 250, 0.3);
+            border-color: #a78bfa;
+        }
+
+        .grid-item h3 {
+            color: #60a5fa;
+            margin-bottom: 0.5rem;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+        }
+
+        .grid-item p {
+            opacity: 0.9;
+            line-height: 1.6;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        /* Category Tags */
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            width: 55%;
+        }
+
+        .category-tag {
+            padding: 0.4rem 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: clamp(0.75rem, 2vw, 0.85rem);
+            opacity: 0.8;
+        }
+
+        /* Coworkers Spot - Amazon Themed */
+        .coworkers-spot {
+            border: 1px solid rgba(255, 153, 0, 0.2);
+        }
+
+        .coworkers-spot:hover {
+            border-color: #FF9900;
+            box-shadow: 0 10px 40px rgba(255, 153, 0, 0.2);
+        }
+
+        .coworkers-spot h3 {
+            color: #FF9900;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .work-email {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem;
+            background: rgba(255, 153, 0, 0.05);
+            border: 1px solid rgba(255, 153, 0, 0.2);
+            border-radius: 10px;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .work-email:hover {
+            background: rgba(255, 153, 0, 0.1);
+            border-color: #FF9900;
+        }
+
+        .email-hidden {
+            filter: blur(8px);
+            user-select: none;
+        }
+
+        .email-revealed {
+            filter: blur(0);
+        }
+
+        .tool-description {
+            background: rgba(255, 153, 0, 0.03);
+            border-left: 3px solid rgba(255, 153, 0, 0.3);
+            padding: 0.8rem;
+            border-radius: 5px;
+            font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+            opacity: 0.85;
+            line-height: 1.5;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Control the size of your PNG icons */
+        .btn-icon {
+            width: 20px;  /* Adjust based on your preference */
+            height: 20px; 
+            object-fit: contain;
+        }
+        .lounge-button {
+            padding: 0.8rem 1.5rem;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            background: rgba(96, 165, 250, 0.2);
+            border: 2px solid #60a5fa;
+            color: #e0e0e0;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .lounge-button:hover {
+            background: rgba(96, 165, 250, 0.4);
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.6);
+            transform: translateX(5px);
+        }
+
+        .lounge-button.primary {
+            background: rgba(255, 153, 0, 0.2);
+            border-color: #FF9900;
+            font-weight: 600;
+        }
+
+        .lounge-button.primary:hover {
+            background: rgba(255, 153, 0, 0.4);
+            box-shadow: 0 0 25px rgba(255, 153, 0, 0.6);
+        }
+
+        .lounge-button.shortcut {
+            background: rgba(167, 139, 250, 0.15);
+            border-color: #a78bfa;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+        }
+
+        .lounge-button.shortcut:hover {
+            background: rgba(167, 139, 250, 0.3);
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.5);
+        }
+
+        /* Entertainment Box */
+        .entertainment-box {
+            border: 1px solid rgba(236, 72, 153, 0.2);
+        }
+
+        .entertainment-box:hover {
+            border-color: #ec4899;
+            box-shadow: 0 10px 40px rgba(236, 72, 153, 0.2);
+        }
+
+        .entertainment-box h3 {
+            color: #ec4899;
+        }
+
+        .entertainment-box .category-tag {
+            border-color: rgba(236, 72, 153, 0.3);
+        }
+
+        /* Entertainment Content Layout */
+        .entertainment-content {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .spotify-section {
+            flex: 1;
+            min-width: 0;
+            max-width: 50%;
+        }
+
+        .spotify-embed {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .spotify-embed iframe {
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        /* Random Meme - Inside Entertainment Box */
+        .entertainment-box .random-meme {
+            width: 48%;
+            height: auto;
+            aspect-ratio: 1;
+            background: rgba(236, 72, 153, 0.05);
+            border: 1px solid rgba(236, 72, 153, 0.2);
+            border-radius: 15px;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .entertainment-box .random-meme:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
+        }
+
+        .entertainment-box .random-meme img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .meme-label {
+            text-align: center;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 0.4rem;
+        }
+
+        /* Featured Sites - Smaller, More Square */
+        .featured-sites {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(60px, 1fr));
+            gap: 0.4rem;
+            width: 100%;
+        }
+
+        .site-card {
+            background: rgba(236, 72, 153, 0.05);
+            border: 1px solid rgba(236, 72, 153, 0.2);
+            border-radius: 6px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            aspect-ratio: 1;
+        }
+
+        .site-card:hover {
+            background: rgba(236, 72, 153, 0.1);
+            border-color: #ec4899;
+            transform: translateY(-3px);
+        }
+
+        .site-card img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 2px;
+            margin: auto;
+        }
+
+        .site-card span {
+            display: ruby;
+            font-size: 0.8rem;
+            opacity: 0.9;
+            line-height: 1.1;
+        }
+
+        /* Finance Box */
+        .finance-box {
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            position: relative;
+        }
+
+        .finance-box:hover {
+            border-color: #22c55e;
+            box-shadow: 0 10px 40px rgba(34, 197, 94, 0.2);
+        }
+
+        .finance-box h3 {
+            color: #22c55e;
+        }
+
+        .btc-chart-widget gecko-coin-price-chart-widget {
+            display: block;
+            width: 100%;
+        }
+
+        .finance-box .category-tag {
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        .finance-quick-links {
+            background: rgba(34, 197, 94, 0.05);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .quick-links-header {
+            text-align: center;
+            font-size: 0.95rem;
+            color: #22c55e;
+            font-weight: 600;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .quick-links-buttons {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .finance-quick-links .quick-link-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 0.7rem 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            color: #22c55e;
+            text-decoration: none;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        /* Credit Card Carousel */
+        .credit-card-carousel {
+            margin: 3.5rem 0 2rem 0;
+            width: 75%;
+            max-width: 100%; /* Keep this */
+            overflow: hidden; /* Keep this */
+            align-self: center;
+        }
+
+        .card-scroll-container {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 0.8rem 0.3rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(34, 197, 94, 0.5) rgba(255, 255, 255, 0.1);
+            max-width: 100%; /* Keep this */
+            -webkit-overflow-scrolling: touch; /* ADD THIS for smooth mobile scrolling */
+        }
+
+        .credit-card-carousel h4 {
+            font-size: 0.9rem;
+            color: #22c55e;
+            margin-bottom: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .card-scroll-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .card-scroll-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .card-scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(34, 197, 94, 0.5);
+            border-radius: 10px;
+        }
+
+        .card-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(34, 197, 94, 0.8);
+        }
+
+        .credit-card-item {
+            flex: 0 0 160px; /* Increased from 140px for more space */
+            width: 160px;
+            min-width: 160px;
+            border-radius: 8px;
+            overflow: visible;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            /*border: 2px solid rgba(34, 197, 94, 0.2);*/
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem; /* Increased gap */
+            padding: 0.5rem; /* Add padding */
+            text-decoration: none;
+        }
+        .card-title {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #22c55e;
+            font-weight: 600;
+            opacity: 0.9;
+            line-height: 1.2;
+            min-height: 2.4rem; /* Reserve space for 2 lines */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .credit-card-item:hover .card-title {
+            opacity: 1;
+            color: #34d399;
+        }
+
+        .credit-card-item img {
+            width: 100%;
+            height: 88px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .card-bonus {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #22c55e;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 10;
+        }
+
+        footer p {
+            opacity: 0.7;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 900px) {
+            .nav-modal-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .nav-modal-btn {
+                padding: 1rem 1.5rem;
+            }
+            
+            .category-tags {
+                width: 100%;
+            }
+            .content-section {
+                padding: 3rem 0.5rem;
+            }
+            .site-card span {
+                font-size: 1rem;
+        }
+
+            .glass-card {
+                margin: 1rem 0.5rem;
+            }
+            .btc-chart-widget {
+                margin-bottom: 1rem;
+                position: inherit;
+                align-self: center;
+                width: 100%;
+            }
+
+            .social-container {
+                padding: 1.5rem 0.25rem;
+            }
+
+            .grid-container {
+                padding: 0.5rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .lounge-button {
+                width: 100%;
+            }
+
+            /* Entertainment Box Mobile Fixes */
+            .entertainment-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .spotify-section {
+                min-width: 100%;
+            }
+
+            .spotify-embed iframe {
+                min-height: 300px; /* Shorter on mobile */
+            }
+
+            .entertainment-box .random-meme {
+                margin: 0 auto;
+            }
+
+            /* Featured Sites - 3 columns on mobile */
+            .featured-sites {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .site-card {
+                padding: .5rem;
+            }
+
+            /* Finance Box Mobile */
+            .btc-ticker {
+                position: static; /* Remove absolute positioning */
+                margin-bottom: 1rem;
+                width: fit-content;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .finance-box h3 {
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .finance-quick-links {
+                flex-direction: column;
+            }
+
+            .quick-links-buttons {
+                flex-direction: column;
+            }
+
+            .finance-quick-links .quick-link-btn {
+                width: 100%;
+            }
+
+            /* Credit Card Carousel Mobile */
+            .credit-card-carousel {
+                width: 100%; /* Full width on mobile */
+            }
+
+            .credit-card-item {
+                flex: 0 0 130px;
+                width: 130px;
+                min-width: 130px;
+            }
+
+            .card-title {
+                font-size: 0.7rem;
+                min-height: 2.2rem;
+            }
+
+            .credit-card-item img {
+                height: 70px;
+            }
+
+            .card-bonus {
+                font-size: 0.65rem;
+            }
+            .link-toggle-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .category-tags {
+                width: 100%;
+            }
+            
+            .hero {
+                padding: 1rem;
+            }
+
+            .cta-button {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .social-item {
+                min-width: 100px;
+                padding: 1rem;
+            }
+
+            /* Even smaller featured sites on tiny screens */
+            .featured-sites {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .site-card {
+                padding: .9rem;
+            }
+
+            /* Smaller credit cards on tiny screens */
+            .credit-card-item {
+                flex: 0 0 100px;
+                width: 100px;
+                min-width: 100px;
+            }
+
+            .credit-card-item {
+                flex: 0 0 120px;
+                width: 120px;
+                min-width: 120px;
+            }
+
+            .card-title {
+                font-size: 0.65rem;
+                min-height: 2rem;
+            }
+            .entertainment-box .random-meme {
+                width: 80%;
+            }
+        }
+
+        /* Toggle Container */
+        .link-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: rgba(255, 153, 0, 0.05);
+            border: 1px solid rgba(255, 153, 0, 0.2);
+            border-radius: 10px;
+            align-self: center;
+        }
+
+        .toggle-label {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+            cursor: pointer;
+        }
+
+        .toggle-checkbox {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 153, 0, 0.3);
+            border-radius: 26px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-checkbox:checked + .toggle-slider {
+            background: #FF9900;
+        }
+
+        .toggle-checkbox:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .toggle-slider:hover {
+            box-shadow: 0 0 15px rgba(255, 153, 0, 0.4);
+        }
+
+        .toggle-text {
+            font-size: 0.95rem;
+            color: #FF9900;
+            font-weight: 600;
+        }
+
+        /* Navigation Modal */
+        .nav-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .nav-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .nav-modal-content {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(30px);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .nav-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .nav-modal-close:hover {
+            background: rgba(167, 139, 250, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .nav-modal-title {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(45deg, #a78bfa, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .nav-modal-btn {
+            padding: 1.2rem 2rem;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            background: rgba(167, 139, 250, 0.15);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            color: #e0e0e0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .nav-modal-btn:hover {
+            background: rgba(167, 139, 250, 0.3);
+            border-color: #a78bfa;
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(167, 139, 250, 0.4);
+        }
+
+        .nav-modal-btn:active {
+            transform: translateX(10px) scale(0.98);
+        }
+    </style>
+    <style>
+        /* Content Sections */
+        .content-section {
+            max-width: 1400px;
+            margin: 0 auto 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #a78bfa, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #a0a0a0;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin-bottom: 2rem;
+        }
+
+        /* ===================================
+        MY FAVORITES GRID
+        =================================== */
+
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .favorite-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            text-decoration: none;
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .favorite-card:hover {
+            transform: translateY(-5px);
+            border-color: #a78bfa;
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.4);
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.5));
+        }
+
+        .favorite-card h3 {
+            font-size: 1.3rem;
+            margin: 0;
+            color: #e0e0e0;
+        }
+
+        .favorite-card p {
+            font-size: 0.95rem;
+            color: #a0a0a0;
+            margin: 0;
+        }
+
+        /* ===================================
+        GAMING ZONE GRID
+        =================================== */
+
+        .gaming-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(96, 165, 250, 0.3);
+            border-radius: 15px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            text-decoration: none;
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .game-card:hover {
+            transform: scale(1.05);
+            border-color: #60a5fa;
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.4);
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .game-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.5));
+        }
+
+        .game-card h3 {
+            font-size: 1.1rem;
+            margin: 0;
+            color: #e0e0e0;
+        }
+
+        /* ===================================
+        EMBEDDED GAME SECTION
+        =================================== */
+
+        .embedded-game {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 3rem;
+            overflow: hidden;
+        }
+
+        .embedded-game iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 10px;
+        }
+
+        /* ===================================
+        INTERESTING SITES SECTION
+        =================================== */
+
+        .sites-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-bar {
+            flex: 1;
+            min-width: 250px;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 50px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #a78bfa;
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.3);
+        }
+
+        .search-bar::placeholder {
+            color: #808080;
+        }
+
+        .surprise-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, #a78bfa, #60a5fa);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .surprise-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(167, 139, 250, 0.5);
+        }
+
+        .surprise-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Category Filters */
+        .category-filters {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 50px;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: #a78bfa;
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(45deg, #a78bfa, #60a5fa);
+            border-color: transparent;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Sites Container */
+        .sites-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            border-radius: 15px;
+        }
+
+        /* Custom Scrollbar */
+        .sites-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .sites-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .sites-container::-webkit-scrollbar-thumb {
+            background: rgba(167, 139, 250, 0.5);
+            border-radius: 10px;
+        }
+
+        .sites-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(167, 139, 250, 0.7);
+        }
+
+        /* ===================================
+        CATEGORY BOXES LAYOUT
+        =================================== */
+
+        .category-boxes-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .category-box {
+            flex: 1 1 calc(50% - 1rem); /* Two boxes per row, accounting for gap */
+            min-width: 400px; /* Minimum width before wrapping */
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(1.5px);
+        }
+
+        .category-box.hidden {
+            display: none;
+        }
+
+        .category-header {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #a78bfa;
+            text-align: center;
+        }
+
+        .category-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        /* Custom Scrollbar for Category Links */
+        .category-links::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .category-links::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .category-links::-webkit-scrollbar-thumb {
+            background: rgba(167, 139, 250, 0.5);
+            border-radius: 10px;
+        }
+
+        .category-links::-webkit-scrollbar-thumb:hover {
+            background: rgba(167, 139, 250, 0.7);
+        }
+
+        /* Site Links - Updated for wider layout */
+        .site-link {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 10px;
+            text-decoration: none;
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .site-link:hover {
+            transform: translateX(5px);
+            border-color: #a78bfa;
+            background: rgba(167, 139, 250, 0.1);
+            box-shadow: 0 5px 15px rgba(167, 139, 250, 0.3);
+        }
+
+        .site-emoji {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .site-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Hidden state for filtering */
+        .site-link.hidden {
+            display: none;
+        }
+
+        /* ===================================
+        RANDOM MEME BOXES - FIXED IN SECTIONS
+        =================================== */
+
+        .random-meme-fixed {
+            flex: 1 1 calc(50% - 1rem);
+            width: 250px;
+            max-width: 300px;
+            height: 350px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(236, 72, 153, 0.3);
+            border-radius: 15px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            margin: 2rem auto;
+        }
+
+        .random-meme-fixed:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+        }
+
+        .random-meme-fixed img,
+        .random-meme-fixed video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        /* Meme Positions */
+        .meme-top-right {
+            top: 120px;
+            right: 20px;
+        }
+
+        .meme-middle-left {
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+        }
+
+        .meme-bottom-right {
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* ===================================
+        RESPONSIVE DESIGN
+        =================================== */
+
+        @media (max-width: 1080px) {
+            .favorites-grid {
+                grid-template-columns: repeat(2, minmax(150px, 1fr));
+            }
+
+            .gaming-grid {
+                grid-template-columns: repeat(4, minmax(150px, 1fr));
+            }
+        /*
+            .category-boxes-container {
+                flex-direction: column;
+            }
+        */
+            .category-box {
+                /*flex: 1 1 100%;*/
+                min-width: 50%;
+            }
+
+            .sites-container {
+                grid-template-columns: repeat(2, minmax(200px, 1fr));
+                max-height: 500px;
+            }
+
+            .category-links {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                max-height: 300px;
+            }
+
+            .random-meme-fixed {
+                width: 200px;
+                height: 375px;
+                margin: 1rem auto;
+            }
+        }
+
+        @media (max-width: 725px) {
+            .content-section {
+                padding: 0 1rem;
+            }
+
+            .gaming-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            .game-card{
+                padding: 1.5rem 1rem;
+            }
+
+            .sites-controls {
+                flex-direction: column;
+            }
+
+            .search-bar {
+                min-width: 100%;
+            }
+
+            .surprise-btn {
+                width: 100%;
+            }
+
+            .category-filters {
+                gap: 0.5rem;
+            }
+
+            .filter-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .sites-container {
+                grid-template-columns: 1fr;
+                max-height: 400px;
+            }
+
+            .embedded-game iframe {
+                height: 60vh;
+            }
+            .category-links {
+                grid-template-columns: 1fr;
+            }
+
+            .random-meme-fixed {
+                min-width: 45vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cosmic Background -->
+    <div class="cosmic-bg"></div>
+    <div class="stars" id="stars"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1 class="hero-title">The Lounge</h1>
+        <p class="hero-subtitle">Where the fun stuff lives</p>
+    </section>
+    
+    <!-- My Favorites Section -->
+    <section class="content-section">
+        <h2 class="section-title">Doshus Picks 🧤</h2>
+        <p class="section-subtitle">The cream of the crop — my Go-To spots when bored</p>
+
+        <div class="favorites-grid">
+            <a href="https://dos.zone/" class="favorite-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">🎮</div>
+                <h3>DOS Zone</h3>
+                <p>Classic DOS games in browser</p>
+            </a>
+
+            <a href="https://neal.fun/" class="favorite-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">🎨</div>
+                <h3>Neal.fun</h3>
+                <p>Interactive experiments</p>
+            </a>
+
+            <a href="https://archive.org/" class="favorite-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">🎬</div>
+                <h3>Playphrase.me</h3>
+                <p>Search for phrases from TV</p>
+            </a>
+
+            <a href="https://www.futuretimeline.net/" class="favorite-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">🔮</div>
+                <h3>Future Timeline</h3>
+                <p>Predictions & future tech</p>
+            </a>
+
+            <a href="https://theuselessweb.com/" class="favorite-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">🌐</div>
+                <h3>The Useless Web</h3>
+                <p>Just cause</p>
+            </a>
+
+            <a href="https://humanbenchmark.com/" class="favorite-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">🧠</div>
+                <h3>Human Benchmark</h3>
+                <p>Test your abilities</p>
+            </a>
+
+            <a href="https://joshworth.com/" class="favorite-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">💻</div>
+                <h3>Josh Worth A&D</h3>
+                <p>Check out Josh Worth's site</p>
+            </a>
+
+            <a href="https://radio.garden/" class="favorite-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">📻</div>
+                <h3>Radio Garden</h3>
+                <p>Global radio stations</p>
+            </a>
+        </div>
+    </section>
+
+    <!-- Gaming Zone Section -->
+    <section class="content-section">
+        <h2 class="section-title">🎮 Game Zone</h2>
+        <p class="section-subtitle">Fire up some classics and other fun games</p>
+
+        <div class="gaming-grid">
+            <a href="https://dos.zone/" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">🕹️</div>
+                <h3>DOS Zone</h3>
+            </a>
+
+            <a href="https://agar.io/" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">🟢</div>
+                <h3>Agar.io™</h3>
+            </a>
+
+            <a href="https://typer.io/" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">⌨️</div>
+                <h3>Typer.io</h3>
+            </a>
+
+            <a href="https://8ballpool.com/en/game" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">🎱</div>
+                <h3>8 Ball Pool™</h3>
+            </a>
+
+            <a href="https://neal.fun/stimulation-clicker/" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">🖱️</div>
+                <h3>Stimulation Clicker</h3>
+            </a>
+
+            <a href="https://win11.oimmi.com/lock-screen" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">🪟</div>
+                <h3>Windows 11</h3>
+            </a>
+
+            <a href="https://neal.fun/not-a-robot/" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">🤖</div>
+                <h3>I'm Not A Robot</h3>
+            </a>
+
+            <a href="https://tetris.com/play-tetris" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">🟦</div>
+                <h3>Tetris</h3>
+            </a>
+
+            <a href="https://play2048.co/" class="game-card" target="_blank" rel="noopener noreferrer">
+                <div class="game-icon">🔢</div>
+                <h3>2048</h3>
+            </a>
+        </div>
+    </section>
+    
+    <!-- Embedded Experience Section -->
+    <section class="content-section" style="align-items: inherit;">
+        <h2 class="section-title">🕹️ The Sandspiel Game</h2>
+        <p class="section-subtitle">Try out this minigame</p>
+
+        <div class="embedded-game">
+            <iframe
+                title="Sandspiel Game"
+                src="https://sandspiel.club/"
+                sandbox="allow-same-origin allow-scripts allow-popups"
+                width="100%"
+                height="500"
+                frameborder="0"
+                loading="lazy"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </section>
+
+    <!-- Interesting Sites Section -->
+    <section class="content-section">
+        <h2 class="section-title">🌐 Intriguing Sites</h2>
+        <p class="section-subtitle">Some interesting places that I've come across on the Web</p>
+
+        <!-- Controls -->
+        <div class="sites-controls">
+            <button class="surprise-btn" id="surpriseBtn">🎲 Surprise Me!</button>
+        </div>
+
+        <!-- Category Filter Buttons -->
+        <div class="category-filters">
+            <button class="filter-btn active" data-category="all">Show All</button>
+            <button class="filter-btn" data-category="fun">🎨 Fun</button>
+            <button class="filter-btn" data-category="mind-bending">🧠 Mind-Bending</button>
+            <button class="filter-btn" data-category="archives">📚 Archives</button>
+            <button class="filter-btn" data-category="stats">📊 Stats</button>
+            <button class="filter-btn" data-category="weird">👽 Weird</button>
+            <button class="filter-btn" data-category="beer">🍺 Skittles</button>
+
+        </div>
+
+        <!-- Category Boxes Container -->
+        <div class="category-boxes-container">
+
+            <!-- Fun/Interactive Category -->
+            <div class="category-box" data-category="fun">
+                <h3 class="category-header">🎨 Fun & Interactive</h3>
+                <div class="category-links">
+                    <a href="https://objectiveunclear.com/airloom.html" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">✈️</span>
+                        <span class="site-name">Air Loom - 3D Flights</span>
+                    </a>
+                    <a href="https://cursordance.party/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">💃</span>
+                        <span class="site-name">Cursor Dance Party</span>
+                    </a>
+                    <a href="https://neal.fun/deep-sea/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🌊</span>
+                        <span class="site-name">Deep Sea</span>
+                    </a>
+                    <a href="https://peaceandquiet.io/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🧘</span>
+                        <span class="site-name">Find your Quiet Zone</span>
+                    </a>
+                    <a href="https://humanbenchmark.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🧠</span>
+                        <span class="site-name">Human Benchmark</span>
+                    </a>
+                    <a href="https://letmegooglethat.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🔎</span>
+                        <span class="site-name">Lemme Google That</span>
+                    </a>
+                    <a href="https://neal.fun/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🎨</span>
+                        <span class="site-name">Neal.fun</span>
+                    </a>
+                    <a href="https://sandspiel.club/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🏖️</span>
+                        <span class="site-name">Sandspiel</span>
+                    </a>
+                    <a href="https://thebomb.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">💣</span>
+                        <span class="site-name">TheBomb.com</span>
+                    </a>
+                    <a href="https://you.dj/free-dj-software" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🪩</span>
+                        <span class="site-name">YouDJ</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Random Meme Box 1 -->
+            <div class="random-meme-fixed" id="randomMeme1">
+                <!-- Meme will load here -->
+            </div>
+
+            <!-- Mind-Bending Category -->
+            <div class="category-box" data-category="mind-bending">
+                <h3 class="category-header">🧠 Mind-Bending</h3>
+                <div class="category-links">
+                    <a href="https://www.4dv.ai/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📽️</span>
+                        <span class="site-name">4D Video AI</span>
+                    </a>
+                    <a href="https://spicylemonade.github.io/AI-2027-tracker/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🤖</span>
+                        <span class="site-name">AI 2027 Tracker</span>
+                    </a>
+                    <a href="https://deepmind.google.com/science/weatherlab" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🌦️</span>
+                        <span class="site-name">DeepMind WeatherLab</span>
+                    </a>
+                    <a href="https://www.futuretimeline.net/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🔮</span>
+                        <span class="site-name">Future Timeline</span>
+                    </a>
+                    <a href="https://labs.google/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🔬</span>
+                        <span class="site-name">Google Labs</span>
+                    </a>
+                    <a href="https://deepmind.google/research/breakthroughs/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">💭</span>
+                        <span class="site-name">Google Projects</span>
+                    </a>
+                    <a href="https://nuclearsecrecy.com/nukemap/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">💥</span>
+                        <span class="site-name">NUKEMAP</span>
+                    </a>
+                    <a href="https://win11.oimmi.com/lock-screen" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🪟</span>
+                        <span class="site-name">Windows 11</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Archives Category -->
+            <div class="category-box" data-category="archives">
+                <h3 class="category-header">📚 Archives</h3>
+                <div class="category-links">
+                    <a href="https://www.archives.gov/founding-docs/bill-of-rights-transcript#toc-amendment-ii-2" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📜</span>
+                        <span class="site-name">Bill of Rights</span>
+                    </a>
+                    <a href="https://grokipedia.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📑</span>
+                        <span class="site-name">Grokipedia</span>
+                    </a>
+                    <a href="https://archive.org/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📚</span>
+                        <span class="site-name">Internet Archive</span>
+                    </a>
+                    <a href="https://jmail.world/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📧</span>
+                        <span class="site-name">Jmail</span>
+                    </a>
+                    <a href="https://www.project2025.observer/en" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🎢</span>
+                        <span class="site-name">Project 2025</span>
+                    </a>
+                    <a href="https://www.trafficcamarchive.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📹</span>
+                        <span class="site-name">Traffic Cam Archive</span>
+                    </a>
+                    <a href="https://archive.org/web/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🕰️</span>
+                        <span class="site-name">Wayback Machine</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Random Meme Box 2 -->
+            <div class="random-meme-fixed" id="randomMeme2">
+                <!-- Meme will load here -->
+            </div>
+
+            <!-- Stats/Monitoring Category -->
+            <div class="category-box" data-category="stats">
+                <h3 class="category-header">📊 Stats & Monitoring</h3>
+                <div class="category-links">
+                    <a href="https://jacky-liang.github.io/age-timer/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">⌛</span>
+                        <span class="site-name">Age Timer</span>
+                    </a>
+                    <a href="https://deflock.me/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📸</span>
+                        <span class="site-name">DeFlock</span>
+                    </a>
+                    <a href="https://thebulletin.org/doomsday-clock/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">⏰</span>
+                        <span class="site-name">DoomsDay Clock</span>
+                    </a>
+                    <a href="https://www.elonmusk.today/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🚀</span>
+                        <span class="site-name">Elon Musk Today</span>
+                    </a>
+                    <a href="https://www.flightradar24.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">✈️</span>
+                        <span class="site-name">Flight Radar</span>
+                    </a>
+                    <a href="https://www.forbes.com/real-time-billionaires/#a2b73d33d788" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🧐</span>
+                        <span class="site-name">Forbes Realtime Billionaires</span>
+                    </a>
+                    <a href="https://haveibeenpwned.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">♟️</span>
+                        <span class="site-name">HaveIBeenPwned</span>
+                    </a>
+                    <a href="https://cybermap.kaspersky.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🛡️</span>
+                        <span class="site-name">Kaspersky Cyberthreat Map</span>
+                    </a>
+                    <a href="https://www.pizzint.watch/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🍕</span>
+                        <span class="site-name">Pentagon Pizza Index</span>
+                    </a>
+                    <a href="https://www.ransomlook.io/recent" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🦹</span>
+                        <span class="site-name">Ransom Look</span>
+                    </a>
+                    <a href="https://theoceancleanup.com/dashboard/#" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🐳</span>
+                        <span class="site-name">The Ocean Cleanup</span>
+                    </a>
+                    <a href="https://www.theworldcounts.com/challenges" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🌎</span>
+                        <span class="site-name">The World Counts</span>
+                    </a>
+                    <a href="https://www.defconlevel.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">☢️</span>
+                        <span class="site-name">Unofficial DEFCON Level</span>
+                    </a>
+                    <a href="https://www.worldometers.info/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🌍</span>
+                        <span class="site-name">Worldometer</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Weird Internet Category -->
+            <div class="category-box" data-category="weird">
+                <h3 class="category-header">👽 Weird Internet</h3>
+                <div class="category-links">
+                    <a href="https://badaliens.info/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🛸</span>
+                        <span class="site-name">Bad Aliens</span>
+                    </a>
+                    <a href="https://blackscreen.app/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">⬛</span>
+                        <span class="site-name">Blank</span>
+                    </a>
+                    <a href="https://coconote.app/brainrot" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🧟</span>
+                        <span class="site-name">PDF to Brainrot</span>
+                    </a>
+                    <a href="https://websitesfromhell.net/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🔥</span>
+                        <span class="site-name">Websites from Hell</span>
+                    </a>
+                    <a href="http://www.yyyyyyy.info/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">❓</span>
+                        <span class="site-name">yyyyyyy.info</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Random Meme Box 3 -->
+            <div class="random-meme-fixed" id="randomMeme3">
+                <!-- Meme will load here -->
+            </div>
+
+            <!-- Beer & Skittles Category -->
+            <div class="category-box" data-category="beer">
+                <h3 class="category-header">🍻 Beer & Skittles</h3>
+                <div class="category-links">
+                    <a href="https://join1440.com/today" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🗞️</span>
+                        <span class="site-name">1440 Todays News</span>
+                    </a>
+                    <a href="https://www.broadcastify.com/listen/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📡</span>
+                        <span class="site-name">Broadcastify</span>
+                    </a>
+                    <a href="https://fmoviesz.to/home" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🎥</span>
+                        <span class="site-name">Fmovies</span>
+                    </a>
+                    <a href="https://movies2watch.tv/movie" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🍿</span>
+                        <span class="site-name">Movies 2</span>
+                    </a>
+                    <a href="https://movies2watch.tv/movie" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🎞️</span>
+                        <span class="site-name">More Movies</span>
+                    </a>
+                    <a href="https://www.myretrotvs.com/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📺</span>
+                        <span class="site-name">My RetroTVs</span>
+                    </a>
+                    <a href="https://radiocast.co/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">📻</span>
+                        <span class="site-name">Radiocast</span>
+                    </a>
+                    <a href="https://www.viprow.nu/" class="site-link" target="_blank" rel="noopener noreferrer">
+                        <span class="site-emoji">🏇</span>
+                        <span class="site-name">VIPRow Sports</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Link your JavaScript -->
+    <script>
+        // Generate twinkling stars
+        const starsContainer = document.getElementById('stars');
+        const numberOfStars = 100;
+
+        for (let i = 0; i < numberOfStars; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            
+            // Random position
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            
+            // Random size
+            const size = Math.random() * 3 + 1;
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            
+            // Random animation delay
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            
+            starsContainer.appendChild(star);
+        }
+
+        // Email reveal function
+        let emailRevealed = false;
+        function revealEmail() {
+            const emailText = document.getElementById('emailText');
+            const emailBox = document.getElementById('emailBox');
+            
+            if (!emailRevealed) {
+                emailText.classList.remove('email-hidden');
+                emailText.classList.add('email-revealed');
+                emailRevealed = true;
+            } else {
+                navigator.clipboard.writeText('aaustinp@amazon.com').then(() => {
+                    const originalText = emailText.textContent;
+                    emailText.textContent = 'Copied to clipboard!';
+                    setTimeout(() => {
+                        emailText.textContent = originalText;
+                    }, 2000);
+                });
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Amazon Link Toggle - Switch between internal and external links
+        function initAmazonLinkToggle() {
+            const toggle = document.getElementById('linkToggle');
+            const toggleText = document.getElementById('toggleText');
+            const amazonLinks = document.querySelectorAll('.amazon-link');
+        
+            if (!toggle || !toggleText || amazonLinks.length === 0) {
+            return; // Elements don't exist on this page
+            }
+        
+            // Load saved preference or default to false (internal links)
+            const savedPreference = localStorage.getItem('amazonLinkPreference');
+            toggle.checked = savedPreference ? JSON.parse(savedPreference) : false;
+        
+            // Function to update all links
+            function updateLinks() {
+            const isExternal = toggle.checked;
+        
+            amazonLinks.forEach(link => {
+                const internalUrl = link.getAttribute('data-internal');
+                const externalUrl = link.getAttribute('data-external');
+                const internalText = link.getAttribute('data-internal-text');
+                const externalText = link.getAttribute('data-external-text');
+        
+                if (isExternal) {
+                // Switch to external links
+                link.href = externalUrl;
+                link.textContent = externalText;
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+                toggleText.textContent = 'External Links';
+                } else {
+                // Switch to internal links
+                link.href = internalUrl;
+                link.textContent = internalText;
+        
+                // Remove target="_blank" for internal links (optional)
+                if (!internalUrl.startsWith('http')) {
+                    link.removeAttribute('target');
+                    link.removeAttribute('rel');
+                }
+                toggleText.textContent = 'Internal Links';
+                }
+            });
+            }
+        
+            // Initialize on page load
+            updateLinks();
+        
+            // Toggle function
+            toggle.addEventListener('change', function() {
+            updateLinks();
+        
+            // Save preference to localStorage
+            localStorage.setItem('amazonLinkPreference', JSON.stringify(this.checked));
+        
+            // Visual feedback
+            toggleText.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                toggleText.style.transform = 'scale(1)';
+            }, 200);
+            });
+        }
+        
+        // Call the function when DOM is ready
+        document.addEventListener('DOMContentLoaded', initAmazonLinkToggle);
+
+        // Navigation Modal - "What's the move?" popup
+        function initNavigationModal() {
+            const openBtn = document.getElementById('openNavModal');
+            const modal = document.getElementById('navModal');
+            const closeBtn = document.getElementById('closeModal');
+            const navButtons = document.querySelectorAll('.nav-modal-btn');
+
+            if (!openBtn || !modal || !closeBtn) {
+                return; // Elements don't exist
+            }
+
+            // Open modal
+            openBtn.addEventListener('click', function() {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            });
+
+            // Close modal
+            closeBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = ''; // Re-enable scrolling
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Navigation buttons - smooth scroll to sections
+            navButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetSection = document.getElementById(targetId);
+
+                    if (targetSection) {
+                        // Close modal
+                        modal.classList.remove('active');
+                        document.body.style.overflow = '';
+
+                        // Smooth scroll to section
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initNavigationModal);
+    </script>
+    <script>
+        async function loadRandomMemes() {
+            try {
+                const response = await fetch('/memes/meme-list.json');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const memeFiles = await response.json();
+
+                if (memeFiles.length === 0) {
+                    console.warn('⚠️  No memes found in meme-list.json');
+                    return;
+                }
+
+                // Load memes into all three boxes
+                for (let i = 1; i <= 3; i++) {
+                    const memeContainer = document.getElementById(`randomMeme${i}`);
+
+                    if (memeContainer) {
+                        // Pick a random file
+                        const randomIndex = Math.floor(Math.random() * memeFiles.length);
+                        const randomFile = memeFiles[randomIndex];
+
+                        // Check if it's a video or image
+                        const isVideo = /\.(mp4|webm|mov)$/i.test(randomFile);
+
+                        // Clear the container
+                        memeContainer.innerHTML = '';
+
+                        if (isVideo) {
+                            // Create video element
+                            const video = document.createElement('video');
+                            video.src = randomFile;
+                            video.autoplay = true;
+                            video.loop = true;
+                            video.muted = true;
+                            video.playsInline = true;
+                            video.style.width = '100%';
+                            video.style.height = '100%';
+                            video.style.objectFit = 'cover';
+                            video.style.borderRadius = '10px';
+
+                            video.onerror = function() {
+                                console.error('Failed to load video:', this.src);
+                                memeContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637" alt="Error">';
+                            };
+
+                            memeContainer.appendChild(video);
+                        } else {
+                            // Create image element
+                            const img = document.createElement('img');
+                            img.src = randomFile;
+                            img.alt = 'Random Meme';
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            img.style.borderRadius = '10px';
+
+                            img.onerror = function() {
+                                console.error('Failed to load image:', this.src);
+                                this.src = 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637';
+                            };
+
+                            memeContainer.appendChild(img);
+                        }
+                    }
+                }
+
+                console.log('✅ Loaded random memes into all boxes');
+
+            } catch (error) {
+                console.error('❌ Error loading memes:', error);
+            }
+        }
+
+        // Category filter functionality
+        function initCategoryFilters() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const categoryBoxes = document.querySelectorAll('.category-box');
+
+            if (filterButtons.length === 0 || categoryBoxes.length === 0) {
+                return;
+            }
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const selectedCategory = this.getAttribute('data-category');
+
+                    // Update active button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Show/hide category boxes
+                    if (selectedCategory === 'all') {
+                        // Show all boxes
+                        categoryBoxes.forEach(box => box.classList.remove('hidden'));
+                    } else {
+                        // Show only selected category
+                        categoryBoxes.forEach(box => {
+                            const boxCategory = box.getAttribute('data-category');
+                            if (boxCategory === selectedCategory) {
+                                box.classList.remove('hidden');
+                            } else {
+                                box.classList.add('hidden');
+                            }
+                        });
+                    }
+
+                    // Visual feedback
+                    this.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 200);
+                });
+            });
+        }
+
+        // Surprise Me! button - opens random link
+        function initSurpriseButton() {
+            const surpriseBtn = document.getElementById('surpriseBtn');
+            const allLinks = document.querySelectorAll('.site-link');
+
+            if (!surpriseBtn || allLinks.length === 0) {
+                return;
+            }
+
+            surpriseBtn.addEventListener('click', function() {
+                // Get only visible links
+                const visibleLinks = Array.from(allLinks).filter(link => {
+                    const parentBox = link.closest('.category-box');
+                    return !parentBox || !parentBox.classList.contains('hidden');
+                });
+
+                if (visibleLinks.length === 0) {
+                    alert('No sites available! Try selecting a different category.');
+                    return;
+                }
+
+                // Pick random link
+                const randomIndex = Math.floor(Math.random() * visibleLinks.length);
+                const randomLink = visibleLinks[randomIndex];
+
+                // Visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+
+                // Open the link
+                window.open(randomLink.href, '_blank', 'noopener,noreferrer');
+
+                console.log('🎲 Surprise! Opening:', randomLink.href);
+            });
+        }
+
+        // Save and restore filter selection
+        function initFilterMemory() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+
+            // Load saved filter on page load
+            const savedFilter = localStorage.getItem('loungeFilter') || 'all';
+
+            filterButtons.forEach(button => {
+                const category = button.getAttribute('data-category');
+
+                // Apply saved filter
+                if (category === savedFilter) {
+                    button.click();
+                }
+
+                // Save filter when clicked
+                button.addEventListener('click', function() {
+                    localStorage.setItem('loungeFilter', category);
+                });
+            });
+        }
+
+        // Add to your DOMContentLoaded event
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 The Lounge is loading...');
+            loadRandomMemes();
+            initCategoryFilters();
+            initSurpriseButton();
+            initFilterMemory(); // Add this line
+            console.log('✅ The Lounge is ready!');
+        });
+    </script>
+</body>
+</html>

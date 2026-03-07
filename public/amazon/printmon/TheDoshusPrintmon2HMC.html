@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
 <html>
-<head>
-	<title>The Doshus Printmon 2</title>
+<head><script async src="https://www.googletagmanager.com/gtag/js?id=G-KQ1RGHNMZG"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-KQ1RGHNMZG");</script>
+	<title>Howls Moving Castle - External Printmon2</title>
 	<link rel="icon" type="image/png" href="https://64.media.tumblr.com/9d73b20b691958c92ae0286a7977f011/tumblr_pfbtaieWFd1se015qo1_540.gif">
 	<link rel="stylesheet" href="css/swapbtn.css">
-	<link rel="stylesheet" href="css/newer/Shared2PrintmonCSS.css">
+	<link rel="stylesheet" href="css/newer/Shared2Printmon.css">
 	<link rel="stylesheet" href="css/newer/2HMC.css">
 	<link rel="preload" href="https://drive.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG" as="image">
 </head>
@@ -45,130 +45,134 @@
 		</div>
     </div>
 	<div class="container">
-		<div class="printbox">
-			<h1>Printmon 2</h1>
-			<p class="subtitle">Here's another curse for you - may all your bacon burn</p>
-			<div class="options">
-				<label><input id="printafter" type="checkbox" checked> Print after scanning</label>
-				<label><input id="jumptoq" type="checkbox"> Jump to quantity</label>
-				<label><input id="nowhitespace" type="checkbox" checked> Trim whitespace characters</label>
+		<div class="left">
+			<div class="printbox">
+				<h1>Printmon 2</h1>
+				<p class="subtitle">Here's another curse for you - may all your bacon burn</p>
+				<div class="options">
+					<label><input id="printafter" type="checkbox" checked> Print after scanning</label>
+					<label><input id="jumptoq" type="checkbox"> Jump to quantity</label>
+					<label><input id="nowhitespace" type="checkbox" checked> Trim whitespace characters</label>
+				</div>
+				<div class="input-group">
+					<label for="barcodedata">Enter Barcode Data <span>(43 Characters Max)</span></label>
+					<input id="barcodedata" type="text" maxlength="43">
+				</div>
+				<div class="input-group">
+					<label for="displaytext">Enter Display Text</label>
+					<input id="displaytext" type="text" maxlength="43">
+				</div>
+				<div class="input-group">
+					<label for="quantity">Enter Quantity <span>(500 Max)</span></label>
+					<input id="quantity" type="number" min="1" max="500" value="1" text-align="center">
+				</div>
+				<button type="button" class="print-button" onclick="printlabel();">Print</button>
 			</div>
-			<div class="input-group">
-				<label for="barcodedata">Enter Barcode Data <span>(43 Characters Max)</span></label>
-				<input id="barcodedata" type="text" maxlength="43">
+			<div class="MultiBarcode-printer">
+				<h2>Multiple Barcode Printer</h2>
+				<div class="MultiPrinter-content">
+					<textarea id="textAreaID" placeholder="Enter barcodes here..."></textarea>
+					<button type="button" class="multiButton" onclick="printBulk();">Print Multiple Labels</button>
+				</div>
 			</div>
-			<div class="input-group">
-				<label for="displaytext">Enter Display Text</label>
-				<input id="displaytext" type="text" maxlength="43">
-			</div>
-			<div class="input-group">
-				<label for="quantity">Enter Quantity <span>(500 Max)</span></label>
-				<input id="quantity" type="number" min="1" max="500" value="1" text-align="center">
-			</div>
-			<button type="button" class="print-button" onclick="printlabel();">Print</button>
 		</div>
-
-		<div class="quick-print-buttons">
-			<div class="qb-dropdown" id="quickbuttons-dropdown">
-				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">ATAC</button>
-				<div class="qb-dropdown-content">
-					<a onclick="printSticker(this.innerHTML);">wsATAC1</a>
-					<a onclick="printSticker(this.innerHTML);">NEEDS ATAC</a>
+		<div class="right">
+			<div class="quick-print-buttons">
+				<div class="qb-dropdown" id="quickbuttons-dropdown">
+					<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">ATAC</button>
+					<div class="qb-dropdown-content">
+						<a onclick="printSticker(this.innerHTML);">wsATAC1</a>
+						<a onclick="printSticker(this.innerHTML);">NEEDS ATAC</a>
+						<a onclick="printSticker(this.innerHTML);">WORK_ORDER</a>
+					</div>
 				</div>
-			</div>
-			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">AWAITING TRANSSHIP</button>
-			<div class="qb-dropdown" id="quickbuttons-dropdown">
-				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">DAMAGE</button>
-				<div class="qb-dropdown-content">
-					<a onclick="printSticker('DIST. DAMAGE');">DISTRIBUTOR DAMAGE</a>
-					<a onclick="printSticker('WHSE. DAMAGE');">WAREHOUSE DAMAGE</a>
-					<a onclick="printSticker('EXPIRED');">EXPIRED</a>
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">AWAITING TRANSSHIP</button>
+				<div class="qb-dropdown" id="quickbuttons-dropdown">
+					<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">DAMAGE</button>
+					<div class="qb-dropdown-content">
+						<a onclick="printSticker('DIST. DAMAGE');">DISTRIBUTOR DAMAGE</a>
+						<a onclick="printSticker('WHSE. DAMAGE');">WAREHOUSE DAMAGE</a>
+						<a onclick="printSticker('EXPIRED');">EXPIRED</a>
+					</div>
 				</div>
-			</div>
-			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">DEFECTIVE</button>
-			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">IN_QUARANTINE</button>
-			<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">NON-CON</button>
-			<div class="qb-dropdown" id="quickbuttons-dropdown">
-				<button class="buttonsLine1" onclick="printSticker('POTENTIAL FRAUD');">FRAUD</button>
-				<div class="qb-dropdown-content">
-					<a onclick="printSticker(this.innerHTML);">CODE 5</a>
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">DEFECTIVE</button>
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">IN_QUARANTINE</button>
+				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">NON-CON</button>
+				<div class="qb-dropdown" id="quickbuttons-dropdown">
+					<button class="buttonsLine1" onclick="printSticker('POTENTIAL FRAUD');">FRAUD</button>
+					<div class="qb-dropdown-content">
+						<a onclick="printSticker(this.innerHTML);">CODE 5</a>
+					</div>
 				</div>
-			</div>
-			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">PROBLEM RECEIVE</button>
-			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">RECALL</button>
-			<button class="buttonsLine2" onclick="printSticker('TRUE MISSHIP');">MISSHIP</button>
-			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">UNDER THRESHOLD</button>
-			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">1</button>
-			<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">C</button>
-            <div class="qb-dropdown" id="quickbuttons-dropdown">
-				<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE_20LB</button>
-				<div class="qb-dropdown-content">
-					<a onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE</a>
-                    <a onclick="printSticker(this.innerHTML);">dz-P-MANSORTTOTE</a>
+				<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">PROBLEM RECEIVE</button>
+				<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">RECALL</button>
+				<button class="buttonsLine2" onclick="printSticker('TRUE MISSHIP');">MISSHIP</button>
+				<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">UNDER THRESHOLD</button>
+				<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">1</button>
+				<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">C</button>
+				<div class="qb-dropdown" id="quickbuttons-dropdown">
+					<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE_20LB</button>
+					<div class="qb-dropdown-content">
+						<a onclick="printSticker(this.innerHTML);">dz-P-AUTOSORTTOTE</a>
+						<a onclick="printSticker(this.innerHTML);">dz-P-MANSORTTOTE</a>
+					</div>
 				</div>
-			</div>
-            <div class="qb-dropdown" id="quickbuttons-dropdown">
-                <div class="buttonsLine3">UIS Stickers</div>
-                <div class="qb-dropdown-content">
-                    <div class="input-wrapper">
-                        <div class="structured-input">
-                            <span>tsOpx</span>
-                            <input type="text" id="opex-number-ps" maxlength="2" size="2" placeholder="##">
-                            <span>PS</span>
-                        </div>
-                    </div>
-                    <div class="input-wrapper">
-                        <div class="structured-input">
-                            <span>tsOpx</span>
-                            <input type="text" id="opex-number-short" maxlength="2" size="2" placeholder="##">
-                            <span>Short</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-			<div class="scroll-container">
-				<div class="scrollbutton-container">
-					<button onclick="window.open('/amazon/aio/AIO.html')" class="scroll-button" data-tooltip="An All-In-One page with most problem solve tools">AIO Tools</button>					
-					<button onclick="window.open('/amazon/tmb/Tampermonkey-Bookmarks_Tutorial.html')" class="scroll-button" data-tooltip="Download preset bookmarks & TamperMonkey scripts for an easier Problem Solving experience">TamperMonkey & Bookmarks</button>
-					<button onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/sites/printmon/EX/GYR3Doshus-PrintmonEX.html?download=true')" class="scroll-button" data-tooltip="A new and more desktop-like printmon experience for GYR3">PrintmonEX</button>
-					<button onclick="window.open('http://localhost:5965/webui')" class="scroll-button" data-tooltip="Use the original Amazon Printmon installed on your computer">OG Printmon</button>
-					<button onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/sites/corners/CornerSelect.html')" class="scroll-button" data-tooltip="A tool to bring up multiple tool pages at once all in one screen">Corners</button>
-					<button onclick="window.open('https://w.amazon.com/bin/view/GYR3/GYR3_Quality_Hub/GYR3_Basic_Problem_Solve/PS_Cheat_Sheet/')" class="scroll-button" data-tooltip="A page to give new Problem Solvers a handy guide">PS CheatSheet</button>
-					<button onclick="window.open('https://atoz.amazon.work/myvoice')" class="scroll-button" data-tooltip="Where associates can share feedback, suggestions, and concerns directly with leadership">VOA Board</button>
-					<button onclick="window.open('https://chatops.aces.amazon.dev/')" class="scroll-button" data-tooltip="A ChatGPT-like assistant that answers questions about warehouse operations and more">ChatOPS</button>
-					<button onclick="window.open('https://outlook.office.com/')" class="scroll-button" data-tooltip="Access your Amazon work email">Outlook</button>
-					<button onclick="window.open('https://policy.a2z.com/docs/76383/publication')" class="scroll-button" data-tooltip="Reset scanners to Amazon default settings">Scanner Reset</button>
-					<button onclick="window.open('https://atoz.amazon.work/my-performance/home')" class="scroll-button" data-tooltip="A platform that delivers near real-time performance metrics and more">MyPerformance</button>
-					<button onclick="window.open('https://fcmenu-iad-regionalized.corp.amazon.com/GYR3/entry/1344')" class="scroll-button" data-tooltip="A self-service kiosk providing associates with daily updated access to their performance metrics and more">Performance Summary</button>
+				<div class="qb-dropdown" id="quickbuttons-dropdown">
+					<div class="buttonsLine3">UIS Stickers</div>
+					<div class="qb-dropdown-content">
+						<div class="input-wrapper">
+							<div class="structured-input">
+								<span>tsOpx</span>
+								<input type="text" id="opex-number-ps" maxlength="2" size="2" placeholder="##">
+								<span>PS</span>
+							</div>
+						</div>
+						<div class="input-wrapper">
+							<div class="structured-input">
+								<span>tsOpx</span>
+								<input type="text" id="opex-number-short" maxlength="2" size="2" placeholder="##">
+								<span>Short</span>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div class="asin-sticker-container">
-				<h2 class="asin-sticker-header">ASIN Stickering</h2>
-				<div class="asin-sticker-content">
-					<p>Amount of ASINs printed out: 
-						<input maxlength="3" id="quantitySticker" value="1" type="text" style="width: 40px; text-align: center;">
-					</p>
-					<button type="button" onclick="printQuantitySticker();">Print</button>
+				<div class="scroll-container">
+					<div class="scrollbutton-container">
+						<button onclick="window.open('/amazon/aio/AIO.html')" class="scroll-button" data-tooltip="An All-In-One page with most problem solve tools">AIO Tools</button>					
+						<button onclick="window.open('/amazon/tmb/Tampermonkey-Bookmarks_Tutorial.html')" class="scroll-button" data-tooltip="Download preset bookmarks & TamperMonkey scripts for an easier Problem Solving experience">TamperMonkey & Bookmarks</button>
+						<button onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/sites/printmon/EX/GYR3Doshus-PrintmonEX.html?download=true')" class="scroll-button" data-tooltip="A new and more desktop-like printmon experience for GYR3">PrintmonEX</button>
+						<button onclick="window.open('http://localhost:5965/webui')" class="scroll-button" data-tooltip="Use the original Amazon Printmon installed on your computer">OG Printmon</button>
+						<button onclick="window.open('https://drive-render.corp.amazon.com/view/aaustinp@/sites/corners/CornerSelect.html')" class="scroll-button" data-tooltip="A tool to bring up multiple tool pages at once all in one screen">Corners</button>
+						<button onclick="window.open('https://w.amazon.com/bin/view/GYR3/GYR3_Quality_Hub/GYR3_Basic_Problem_Solve/PS_Cheat_Sheet/')" class="scroll-button" data-tooltip="A page to give new Problem Solvers a handy guide">PS CheatSheet</button>
+						<button onclick="window.open('https://atoz.amazon.work/myvoice')" class="scroll-button" data-tooltip="Where associates can share feedback, suggestions, and concerns directly with leadership">VOA Board</button>
+						<button onclick="window.open('https://chatops.aces.amazon.dev/')" class="scroll-button" data-tooltip="A ChatGPT-like assistant that answers questions about warehouse operations and more">ChatOPS</button>
+						<button onclick="window.open('https://outlook.office.com/')" class="scroll-button" data-tooltip="Access your Amazon work email">Outlook</button>
+						<button onclick="window.open('https://policy.a2z.com/docs/76383/publication')" class="scroll-button" data-tooltip="Reset scanners to Amazon default settings">Scanner Reset</button>
+						<button onclick="window.open('https://atoz.amazon.work/my-performance/home')" class="scroll-button" data-tooltip="A platform that delivers near real-time performance metrics and more">MyPerformance</button>
+						<button onclick="window.open('https://fcmenu-iad-regionalized.corp.amazon.com/GYR3/entry/1344')" class="scroll-button" data-tooltip="A self-service kiosk providing associates with daily updated access to their performance metrics and more">Performance Summary</button>
+					</div>
 				</div>
-			</div>
-			<div class="image-button-container">
-				<img src="media/icons/totepic.png" alt="View Tote Arcs" class="image-button" data-fullimage="https://drive.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG">
-				<img src="https://freepngimg.com/thumb/button/64155-now-computer-button-icons-download-hq-png.png" alt="View Tote Arcs" class="image-button2" onclick="window.open('https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/DoshusTMScriptz.zip?download=true'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true')">
-			</div>
-			<div id="modal" class="modal">
-				<span class="close">&times;</span>
-				<img class="modal-content" id="modal-image">
-			</div>
-			<div class="cryptohopper-web-widget" style="margin: 10px;" data-id="3" data-price_format="3" data-background_color="#000000" data-fullwidth="0" data-coins="bitcoin" data-theme="dark" data-card_design="3"></div>
-		</div>
-		<div class="MultiBarcode-printer">
-			<h2>Multiple Barcode Printer</h2>
-			<div class="MultiPrinter-content">
-				<textarea id="textAreaID" placeholder="Enter barcodes here..."></textarea>
-				<button type="button" class="multiButton" onclick="printBulk();">Print Multiple Labels</button>
-			</div>
-			<div class="iframe-container">
-				<iframe src="https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop" title="ioPrint"></iframe>
+				<div class="asin-sticker-container">
+					<h2 class="asin-sticker-header">ASIN Stickering</h2>
+					<div class="asin-sticker-content">
+						<p>Amount of ASINs printed out: 
+							<input maxlength="3" id="quantitySticker" value="1" type="text" style="width: 40px; text-align: center;">
+						</p>
+						<button type="button" onclick="printQuantitySticker();">Print</button>
+					</div>
+				</div>
+				<div class="image-button-container">
+					<img src="media/icons/totepic.png" alt="View Tote Arcs" class="image-button" data-fullimage=https://drive-render.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG>
+					<img src="https://upload.wikimedia.org/wikipedia/commons/1/1e/Download-Icon.png" alt="Download stuff" class="image-button2" onclick="window.open('https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/DoshusTMScriptz.zip?download=true'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true')">
+				</div>
+				<div id="modal" class="modal">
+					<span class="close">&times;</span>
+					<img class="modal-content" id="modal-image">
+				</div>
+				<div class="cryptohopper-web-widget" data-id="3" data-text_color="#e7e7e7" data-background_color="#8b4513b5" data-coins="bitcoin" data-theme="custom"></div>
+				<div class="iframe-container">
+					<iframe src="https://aft-qt-na.aka.amazon.com/app/ioprint?experience=Desktop" title="ioPrint"></iframe>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -215,9 +219,8 @@
 		// Call the function to set the wallpaper
 		setRandomWallpaper();
 	</script>
-	<script src="js/swapbtn.js"></script>
 	<script src="js/PrintmonPrinter.js"></script>
-	<script src="js/ToteArcsClickableIMG.js"></script>
+	<script src="js/swap-img.js"></script>
 	<script src="https://www.cryptohopper.com/widgets/js/script"></script>
 	<script>
 		window.onload = function() {

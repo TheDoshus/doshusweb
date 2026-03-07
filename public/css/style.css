@@ -9,6 +9,9 @@ body {
     color: #e0e0e0;
     overflow-x: hidden;
     background: #000000;
+    min-height: 100vh;
+    min-height: -webkit-fill-available; /* iOS Safari fix */
+    position: relative;
 }
 
 /* Cosmic Background with AMOLED Black */
@@ -16,8 +19,10 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height - newer browsers */
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%);
     animation: gradientShiftWithBlack 20s ease infinite;
     z-index: -2;
 }
@@ -34,8 +39,10 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height */
+    overflow: hidden;
     z-index: 1;
     pointer-events: none;
 }
@@ -131,7 +138,7 @@ body {
 
 .glass-card {
     background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(7px);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 20px;
     padding: clamp(2rem, 5vw, 3rem);
@@ -560,13 +567,14 @@ body {
 
 /* BTC Chart Widget */
 .btc-chart-widget {
+    margin-top: -45px;
     margin-bottom: 1.5rem;
     border-radius: 12px;
     overflow: hidden;
     width: 40%;
     position: absolute;
     align-self: end;
-    height: 280px;
+    height: 275px;
 }
 
 .btc-chart-widget gecko-coin-price-chart-widget {

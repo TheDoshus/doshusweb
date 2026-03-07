@@ -43,7 +43,7 @@ async function loadRandomMeme() {
             const randomFile = memeFiles[randomIndex];
 
             // Check if it's a video or image
-            const isVideo = /\.(mp4|webm|mov)$/i.test(randomFile);
+            const isVideo = /\.(mp4|webm|mov|gif|avi|wmv|flv|mkv|mov)$/i.test(randomFile);
 
             // Clear the container
             memeContainer.innerHTML = '';
