@@ -162,12 +162,50 @@
 					</div>
 				</div>
 				<div class="image-button-container">
-					<img src="media/icons/totepic.png" alt="View Tote Arcs" class="image-button" data-fullimage=https://drive-render.corp.amazon.com/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG>
-					<img src="https://upload.wikimedia.org/wikipedia/commons/1/1e/Download-Icon.png" alt="Download stuff" class="image-button2" onclick="window.open('https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/DoshusTMScriptz.zip?download=true'); window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true')">
+					<img src="media/icons/totepic.png" alt="View Tote Arcs" class="image-button" data-fullimage="/view/aaustinp@/Notes/ARCs/Arcs%20Photo.PNG">
+					<img
+					src="https://upload.wikimedia.org/wikipedia/commons/1/1e/Download-Icon.png"
+					alt="Download"
+					onclick="openArcsModal()"
+					class="arcs-download-trigger"
+					style="cursor: pointer;"
+					/>
 				</div>
+
 				<div id="modal" class="modal">
 					<span class="close">&times;</span>
 					<img class="modal-content" id="modal-image">
+				</div>
+				<!--  ARCS DOWNLOAD MODAL  -->
+				<div id="arcsDownloadModal" class="arcs-modal-overlay" style="display:none;">
+					<div class="arcs-modal-box">
+
+						<!-- Close button in top-right corner -->
+						<button class="arcs-modal-close" onclick="closeArcsModal()">&#x2715;</button>
+
+						<h2 class="arcs-modal-title">Download Scripts & Bookmarks</h2>
+						<p class="arcs-modal-subtitle">Choose individual installs or click download all for everything including bookmarks.</p>
+
+						<!-- Individual download buttons laid out horizontally -->
+						<div class="arcs-modal-buttons">
+							<a href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/" download class="arcs-dl-btn" target="_blank">Install TM Addon</a>
+							<a href="https://drive.corp.amazon.com/view/aaustinp@/Backups/DoshusTMScriptz.zip?download=true" download class="arcs-dl-btn">Full Scripts Package</a>
+							<a href="https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true" download class="arcs-dl-btn" target="_blank">Download Bookmarks</a>
+							<!--  Second row of smaller buttons  -->
+							<div class="arcs-modal-buttons arcs-modal-buttons--small">
+								<a href="https://axzile.corp.amazon.com/-/carthamus/download_script/transship-qa-auto-enter.user.js" download class="arcs-dl-btn arcs-dl-btn--small">Auto TransshipQA</a>
+								<a href="https://axzile.corp.amazon.com/-/carthamus/download_script/fcr-highlight-work-order-rows.user.js" download class="arcs-dl-btn arcs-dl-btn--small">FCR Highlight</a>
+								<a href="https://axzile.corp.amazon.com/-/carthamus/download_script/fcr-plus-doshus-modified.user.js" download class="arcs-dl-btn arcs-dl-btn--small">FCR Plus</a>
+								<a href="https://axzile.corp.amazon.com/-/carthamus/download_script/ps-labor-tracking-buttons-gyr3.user.js" download class="arcs-dl-btn arcs-dl-btn--small">GYR3 LT</a>
+								<a href="https://axzile.corp.amazon.com/-/carthamus/download_script/iss-command-center-ticket-sla-counter.user.js" download class="arcs-dl-btn arcs-dl-btn--small">ISS Ticket Count</a>
+								<a href="https://axzile.corp.amazon.com/-/carthamus/download_script/routing-tool-floating-navigation-buttons.user.js" download class="arcs-dl-btn arcs-dl-btn--small">Routing Tool</a>
+							</div>
+						</div>
+						<!-- Download All button centered below -->
+						<div class="arcs-modal-all">
+							<button onclick="downloadAllArcs()" class="arcs-dl-all-btn">Download All</button>
+						</div>
+					</div>
 				</div> 
 				<div class="cryptohopper-web-widget" data-id="3" data-text_color="#e7e7e7" data-background_color="#004404c9" data-coins="bitcoin" data-theme="custom"></div>
 				<div class="iframe-container">

@@ -41,3 +41,25 @@ window.onclick = function(event) {
         }
     }
 }
+
+//  ARCS DOWNLOAD MODAL 
+function openArcsModal() {
+	document.getElementById('arcsDownloadModal').style.display = 'flex';
+}
+function closeArcsModal() {
+	document.getElementById('arcsDownloadModal').style.display = 'none';
+}
+//  DOWNLOAD ALL â€” opens each file in a new tab with a small delay 
+function downloadAllArcs() {
+	const files = [
+	'https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/',   // swap these with your actual file URLs
+	'https://drive.corp.amazon.com/view/aaustinp@/Backups/DoshusTMScriptz.zip?download=true',
+	'https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true'
+	];
+
+	files.forEach(function(url, index) {
+	setTimeout(function() {
+		window.open(url, '_blank');   // opens each one in a new tab
+	}, index * 300);               // 300ms gap between each to avoid browser blocking
+	});
+}
