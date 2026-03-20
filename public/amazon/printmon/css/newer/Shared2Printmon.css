@@ -12,9 +12,7 @@ body {
 }
 .right {
     display: flex; flex-wrap: wrap; flex-direction: column;
-}
-
-.printbox {
+}.printbox {
     margin: 0px 35px 0px 0px; border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 30px;
     min-width: 275px;
