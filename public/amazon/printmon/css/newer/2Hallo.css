@@ -5,19 +5,16 @@
 h1 {
     color: #B20000C2;
     text-shadow: 2px 2px #FF8024B2;
-    font-family: "Showcard Gothic", "Helvetica", "Arial", sans-serif;
 }
 .subtitle {
     color: #D4AF37F2;
     font-family: 'Blackadder ITC';
-    font-style: italic;
     font-size: 20pt;
 }
 .input-group label {
-    color: #fff;
+    color: #ffffff;
 }
 .input-group label span {
-    font-size: 10px;
     color: #D20000ED;
 }
 input[type="text"] {
@@ -26,123 +23,43 @@ input[type="text"] {
 .print-button {
     background: linear-gradient(90deg, #CA3900D1, #000000E3);
     color: #ffffffba;
-    font-family: 'Amazon Ember', Arial, sans-serif;
-    font-weight: bold;
-    border: solid 1.33px #D4AF378F;
-    border-radius: 8px;
-    padding: 12px 24px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 30px rgba(54, 155, 46, 0.48);
-    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 15px rgba(253, 171, 0, 0.5), 0 0 30px rgba(202, 57, 0, 0.6);
 }
 
 .print-button:hover {
     background: linear-gradient(145deg, #00122EF0, #54006CEB);
     transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.7),
-                0 0 40px rgba(78, 205, 196, 0.5);
+    box-shadow: 0 0 20px rgba(84, 0, 108, 0.7), 0 0 40px rgba(0, 18, 46, 0.5);
 }
 
 .buttonsLine1 {
-font-family: 'Amazon Ember', Arial, sans-serif;
-  background: linear-gradient(145deg, #D28900, #B40000C4);
-  font-weight: 700;
-  padding: 12.5px 15px;
-  color: #ffffff;
-  border-radius: 8px;
-  border: solid 1px;
+    background: linear-gradient(145deg, #D28900, #B40000C4);
+    color: #ffffff;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.51);
-  transition: all 0.3s ease-in-out;
-  position: relative;
-  overflow: hidden;
-  border: solid #0000008f 1.5px;
-}
-.buttonsLine1:before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: rgba(255, 255, 255, 0.1);
-    transform: rotate(45deg);
-    transition: all 0.3s ease-in-out;
 }
 .buttonsLine1:hover {
     background: linear-gradient(165deg, #000, #4a0073b2);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(158, 0, 215, 0.64);
-    transform: scale(1.05);
-}
-.buttonsLine1:hover:before {
-    left: -100%;
-    top: -100%;
 }
 
 .buttonsLine2 {
-font-family: 'Amazon Ember', Arial, sans-serif;
-  background: linear-gradient(195deg, #D28900, #B40000C4);
-  font-weight: 700;
-  padding: 12.5px 15px;
-  color: #ffffff;
-  border-radius: 8px;
-  border: solid 1px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.51);  transition: all 0.3s ease-in-out;
-  position: relative;
-  overflow: hidden;
-  border: solid #0000008f 1.5px;
-}
-.buttonsLine2:before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: rgba(255, 255, 255, 0.1);
-    transform: rotate(45deg);
-    transition: all 0.3s ease-in-out;
+    background: linear-gradient(195deg, #D28900, #B40000C4);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.51);
 }
 .buttonsLine2:hover {
     background: linear-gradient(165deg, #000, #4a0073b2);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(158, 0, 215, 0.64);
-    transform: scale(1.05);
-}
-.buttonsLine2:hover:before {
-    left: -100%;
-    top: -100%;
 }
 
 .buttonsLine3 {
-font-family: 'Amazon Ember', Arial, sans-serif;
-  background: linear-gradient(70deg, #D28900, #B40000C4);
-  font-weight: 700;
-  padding: 12.5px 15px;
-  color: #ffffff;
-  border-radius: 8px;
-  border: solid 1px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.51);  transition: all 0.3s ease-in-out;
-  position: relative;
-  overflow: hidden;
-  border: solid #0000008f 1.5px;
-}
-.buttonsLine3:before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: rgba(255, 255, 255, 0.1);
-    transform: rotate(45deg);
-    transition: all 0.3s ease-in-out;
+    background: linear-gradient(70deg, #D28900, #B40000C4);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.51);
 }
 .buttonsLine3:hover {
     background: linear-gradient(165deg, #000, #4a0073b2);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(158, 0, 215, 0.64);
-    transform: scale(1.05);
-}
-.buttonsLine3:hover:before {
-    left: -100%;
-    top: -100%;
 }
 
 .quick-print-buttons button:hover {
@@ -152,16 +69,15 @@ font-family: 'Amazon Ember', Arial, sans-serif;
 .quick-print-buttons button:active {
     background-color: #000;
     border-color: #0da400;
-    transform: translateY(2px);
 }
 .scroll-container {
-    scrollbar-color: #000000E3 #8000EA6E; 
+    scrollbar-color: #000000E3 #8000EA6E;
 }
 .scroll-button {
     background-color: #8637D4BF;
 }
 .scroll-button:hover {
-    background-color: #cb8316;
+    background-color: #54006C;
 }
 .asin-sticker-container {
     background-color: #C61A1A42;
@@ -169,12 +85,6 @@ font-family: 'Amazon Ember', Arial, sans-serif;
 }
 .asin-sticker-header {
     color: #fff;
-    border-bottom: 1px dotted #fff;
-}
-.asin-sticker-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 .asin-sticker-content button {
     background-color: #f04a0aa1;
@@ -187,88 +97,38 @@ font-family: 'Amazon Ember', Arial, sans-serif;
     border: 5px double #FDAB00B2;
 }
 .MultiBarcode-printer h2 {
-    font-family: "Showcard Gothic";
     color: #ffffff;
     text-shadow: 2px 2px #FF0000B2;
 }
 #textAreaID {
-    border: 1px solid #ddd;
-    font-family: Amazon Ember;
-    font-size: 14px;
+    border: 1.5px solid #D4AF37F2;
 }
 .multiButton {
     background: linear-gradient(90deg, #CA3900D1, #000000E3);
     color: #ffffff;
-    font-family: 'Amazon Ember', Arial, sans-serif;
-    font-weight: bold;
-    border: solid 1.33px #D4AF378F;
-    border-radius: 8px;
-    padding: 12px 24px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 30px rgba(54, 155, 46, 0.48);
-    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 15px rgba(253, 171, 0, 0.5), 0 0 30px rgba(202, 57, 0, 0.6);
 }
 
 .multiButton:hover {
     background: linear-gradient(145deg, #00122EF0, #54006CEB);
     transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 30px rgba(54, 155, 46, 0.48);
+    box-shadow: 0 0 20px rgba(84, 0, 108, 0.7), 0 0 40px rgba(0, 18, 46, 0.5);
 }
 
-
-#quickbuttons-dropdown {
-  position: relative;
-  display: inline-block;
-  font-family: 'Amazon Ember', Arial, sans-serif;
-}
 #quickbuttons-dropdown .qb-dropbtn {
-  background: linear-gradient(145deg, #a912fdcf, #cdb34e);
-  font-weight: 700;
-  padding: 12.5px 15px;
-  color: #ffffff;
-  border-radius: 8px;
-  border: solid #0000008f 1.5px;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5);
-  transition: all 0.3s ease-in-out;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
+    background: linear-gradient(145deg, #D28900, #B40000C4);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.51);
 }
 #quickbuttons-dropdown .qb-dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #941b1bd4;;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-radius: 8px;
-  overflow: hidden;
-  top: 100%;
-  left: 0;
+    background-color: #941b1bd4;
 }
 #quickbuttons-dropdown .qb-dropdown-content a {
-  color: #ffffff;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  transition: background-color 0.3s ease;
-  font-weight: 500;
-  cursor: pointer;
+    color: #ffffff;
 }
 #quickbuttons-dropdown .qb-dropdown-content a:hover {
-  background-color: #e3e3e3a0;
-}
-#quickbuttons-dropdown:hover .qb-dropdown-content {
-  display: block;
+    background-color: #e3e3e3a0;
 }
 #quickbuttons-dropdown:hover .qb-dropbtn {
-  box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(158, 0, 215, 0.64);
 }
-#quickbuttons-dropdown .qb-dropdown-content::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: transparent;
-}	

@@ -5,60 +5,57 @@
 h1 {
     color: #CED420;
     text-shadow: 2px 2px #0e9316;
-    font-family: "Showcard Gothic", "Helvetica", "Arial", sans-serif;
 }
 .subtitle {
     color: #00C1FF;
     font-family: 'Vivaldi', cursive;
-    font-style: italic;
     font-size: 20pt;
 }
 .input-group label {
-    color: #fff;
+    color: #ffffff;
 }
 .input-group label span {
-    font-size: 10px;
     color: #00C1FF;
 }
-input[type="text"] {
-    border: 1.5px solid #0e9316;
+.structured-input span {
+    color: #CED420ED;
 }
 .print-button {
-    font-family: Amazon Ember;
-    background-color: #0e9316;
+    background: linear-gradient(120deg, #0e9316, #4E972E);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(14, 147, 22, 0.5), 0 0 30px rgba(78, 151, 46, 0.6);
 }
 .print-button:hover {
-    background-color: #00b608;
+    background: linear-gradient(145deg, #00b608, #CED420);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(14, 147, 22, 0.7), 0 0 40px rgba(206, 212, 32, 0.5);
 }
 .buttonsLine1 {
-    font-family: Amazon Ember, Arial;
     background: linear-gradient(145deg, #977e42d6, #4E972EDB);
-    font-weight: 705;
-    padding: 15px 15px;
     color: #fffffff0;
-    border-radius: 8px;
-    border: 2px solid #00000075;
-    transition: all 0.15s ease-in-out;
+    box-shadow: 0 0 15px rgba(151, 126, 66, 0.7), 0 0 30px rgba(78, 151, 46, 0.6);
+}
+.buttonsLine1:hover {
+    background: linear-gradient(145deg, #CED420, #0e9316);
+    box-shadow: 0 0 20px rgba(206, 212, 32, 0.9), 0 0 40px rgba(14, 147, 22, 0.7);
 }
 .buttonsLine2 {
-    font-family: Amazon Ember, Arial;
     background: linear-gradient(290deg, #977e42d6, #4E972EDB);
-    font-weight: 705;
-    padding: 15px 15px;
     color: #fffffff0;
-    border-radius: 8px;
-    border: 2px solid #00000075;
-    transition: all 0.15s ease-in-out;
+    box-shadow: 0 0 15px rgba(151, 126, 66, 0.7), 0 0 30px rgba(78, 151, 46, 0.6);
+}
+.buttonsLine2:hover {
+    background: linear-gradient(145deg, #CED420, #0e9316);
+    box-shadow: 0 0 20px rgba(206, 212, 32, 0.9), 0 0 40px rgba(14, 147, 22, 0.7);
 }
 .buttonsLine3 {
-    font-family: Amazon Ember, Arial;
     background: linear-gradient(65deg, #977e42d6, #4E972EDB);
-    font-weight: 705;
-    padding: 15px 15px;
     color: #fffffff0;
-    border-radius: 8px;
-    border: 2px solid #00000075;
-    transition: all 0.15s ease-in-out;
+    box-shadow: 0 0 15px rgba(151, 126, 66, 0.7), 0 0 30px rgba(78, 151, 46, 0.6);
+}
+.buttonsLine3:hover {
+    background: linear-gradient(145deg, #CED420, #0e9316);
+    box-shadow: 0 0 20px rgba(206, 212, 32, 0.9), 0 0 40px rgba(14, 147, 22, 0.7);
 }
 .quick-print-buttons button:hover {
     background-color: #000000b0;
@@ -67,16 +64,15 @@ input[type="text"] {
 .quick-print-buttons button:active {
     background-color: #0212ff;
     border-color: #0600c7;
-    transform: translateY(2px);
 }
 .scroll-container {
-    scrollbar-color: #00c115 #2f8e43; 
+    scrollbar-color: #00c115 #2f8e43;
 }
 .scroll-button {
     background-color: #43338d;
 }
 .scroll-button:hover {
-    background-color: #cb8316;
+    background-color: #0e9316;
 }
 .asin-sticker-container {
     background-color: #004404c9;
@@ -84,15 +80,9 @@ input[type="text"] {
 }
 .asin-sticker-header {
     color: #fff;
-    border-bottom: 1px dotted #fff;
-}
-.asin-sticker-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 .asin-sticker-content button {
-    background-color: #9f370fe8;
+    background-color: #977e42d6;
 }
 .asin-sticker-content button:hover {
     background-color: #00b367;
@@ -102,75 +92,36 @@ input[type="text"] {
     border: 5px double #0e9316b5;
 }
 .MultiBarcode-printer h2 {
-    font-family: "Showcard Gothic";
     color: #ffffff;
     text-shadow: 2px 2px #0e9316;
 }
 #textAreaID {
-    border: 1px solid #ddd;
-    font-family: Amazon Ember;
-    font-size: 14px;
+    border: 1.5px solid #0e9316;
 }
 .multiButton {
-    background-color: #0e9316;
+    background: linear-gradient(90deg, #0e9316, #4E972E);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(14, 147, 22, 0.5), 0 0 30px rgba(78, 151, 46, 0.6);
 }
 .multiButton:hover {
-    background-color: #00b608;
-}
-#quickbuttons-dropdown {
-  position: relative;
-  display: inline-block;
-  font-family: 'Amazon Ember', Arial, sans-serif;
+    background: linear-gradient(145deg, #00b608, #CED420);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(14, 147, 22, 0.7), 0 0 40px rgba(206, 212, 32, 0.5);
 }
 #quickbuttons-dropdown .qb-dropbtn {
-  background: linear-gradient(145deg, #a912fdcf, #cdb34e);
-  font-weight: 700;
-  padding: 12.5px 15px;
-  color: #ffffff;
-  border-radius: 8px;
-  border: solid #0000008f 1.5px;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5);
-  transition: all 0.3s ease-in-out;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
+    background: linear-gradient(145deg, #977e42d6, #4E972EDB);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(151, 126, 66, 0.7), 0 0 30px rgba(78, 151, 46, 0.6);
 }
 #quickbuttons-dropdown .qb-dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #e6b7ffcf;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-radius: 8px;
-  overflow: hidden;
-  top: 100%;
-  left: 0;
+    background-color: #004404de;
 }
 #quickbuttons-dropdown .qb-dropdown-content a {
-  color: #000000;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  transition: background-color 0.3s ease;
-  font-weight: 500;
-  cursor: pointer;
+    color: #CED420;
 }
 #quickbuttons-dropdown .qb-dropdown-content a:hover {
-  background-color: #e3e3e3a0;
-}
-#quickbuttons-dropdown:hover .qb-dropdown-content {
-  display: block;
+    background-color: #0e9316a0;
 }
 #quickbuttons-dropdown:hover .qb-dropbtn {
-  box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7);
-}
-#quickbuttons-dropdown .qb-dropdown-content::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: transparent;
+    box-shadow: 0 0 20px rgba(206, 212, 32, 0.9), 0 0 40px rgba(14, 147, 22, 0.7);
 }

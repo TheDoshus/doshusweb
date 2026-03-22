@@ -5,61 +5,58 @@
 h1 {
     color: #708090;
     text-shadow: 2px 2px #87CEEB;
-    font-family: "Showcard Gothic", "Helvetica", "Arial", sans-serif;
 }
 .subtitle {
     color: #a4a4fdad;
     font-family: 'Blackadder ITC';
-    font-style: italic;
     font-size: 18pt;
 }
 .input-group label {
-    color: #fff;
+    color: #ffffff;
 }
 .input-group label span {
-    font-size: 10px;
     color: #a4a4fd;
 }
 input[type="text"] {
     border: 1.5px solid #87cfebe6;
 }
 .print-button {
-    font-family: Amazon Ember;
-    color: #8B4513;
     background: linear-gradient(45deg, #D8A7B1, #FFFDD0);
+    color: #8B4513;
+    box-shadow: 0 0 15px rgba(216, 167, 177, 0.5), 0 0 30px rgba(255, 253, 208, 0.6);
 }
 .print-button:hover {
     background: linear-gradient(168deg, #74e57ad9, #067223fc);
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(116, 229, 122, 0.7), 0 0 40px rgba(6, 114, 35, 0.5);
 }
 .buttonsLine1 {
-    font-family: Amazon Ember, Arial;
     background: linear-gradient(145deg, #60c960da, #0a0aaead);
-    font-weight: 705;
-    padding: 15px 15px;
     color: #fffffff0;
-    border-radius: 8px;
-    border: 3px solid #00000075;
-    transition: all 0.15s ease-in-out;
+    box-shadow: 0 0 15px rgba(96, 201, 96, 0.7), 0 0 30px rgba(10, 10, 174, 0.6);
+}
+.buttonsLine1:hover {
+    background: linear-gradient(145deg, #87CEEB, #708090);
+    box-shadow: 0 0 20px rgba(135, 206, 235, 0.9), 0 0 40px rgba(112, 128, 144, 0.7);
 }
 .buttonsLine2 {
-    font-family: Amazon Ember, Arial;
     background: linear-gradient(290deg, #4db14dda, #111194ad);
-    font-weight: 705;
-    padding: 15px 15px;
     color: #fffffff0;
-    border-radius: 8px;
-    border: 3px solid #00000075;
-    transition: all 0.15s ease-in-out;
+    box-shadow: 0 0 15px rgba(77, 177, 77, 0.7), 0 0 30px rgba(17, 17, 148, 0.6);
+}
+.buttonsLine2:hover {
+    background: linear-gradient(145deg, #87CEEB, #708090);
+    box-shadow: 0 0 20px rgba(135, 206, 235, 0.9), 0 0 40px rgba(112, 128, 144, 0.7);
 }
 .buttonsLine3 {
-    font-family: Amazon Ember, Arial;
     background: linear-gradient(65deg, #55ca55da, #0a0aaead);
-    font-weight: 705;
-    padding: 15px 15px;
     color: #fffffff0;
-    border-radius: 8px;
-    border: 3px solid #00000075;
-    transition: all 0.15s ease-in-out;
+    box-shadow: 0 0 15px rgba(85, 202, 85, 0.7), 0 0 30px rgba(10, 10, 174, 0.6);
+}
+.buttonsLine3:hover {
+    background: linear-gradient(145deg, #87CEEB, #708090);
+    box-shadow: 0 0 20px rgba(135, 206, 235, 0.9), 0 0 40px rgba(112, 128, 144, 0.7);
 }
 .quick-print-buttons button:hover {
     color: #C41AAFBF;
@@ -68,14 +65,17 @@ input[type="text"] {
 .quick-print-buttons button:active {
     background-color: #0212ff;
     border-color: #0600c7;
-    transform: translateY(2px);
 }
 .scroll-container {
-    scrollbar-color: #87CEEB #72065cfc; 
+    scrollbar-color: #87CEEB #72065cfc;
 }
 .scroll-button {
     background-color: #fffdd0d0;
     color: #000000b9;
+}
+.scroll-button:hover {
+    background-color: #74e57a;
+    color: #000000;
 }
 .asin-sticker-container {
     background-color: #8b4513b5;
@@ -83,12 +83,6 @@ input[type="text"] {
 }
 .asin-sticker-header {
     color: #fff;
-    border-bottom: 1px dotted #fff;
-}
-.asin-sticker-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 .asin-sticker-content button {
     background: linear-gradient(65deg, #19197073, #ff6b35b1, #19197073);
@@ -101,75 +95,37 @@ input[type="text"] {
     border: 5px double #87CEEB;
 }
 .MultiBarcode-printer h2 {
-    font-family: "Showcard Gothic";
     color: #ffffff;
     text-shadow: 2px 2px #87CEEB;
 }
 #textAreaID {
-    border: 1px solid #ddd;
-    font-family: Amazon Ember;
-    font-size: 14px;
+    border: 1.5px solid #87cfebe6;
 }
 .multiButton {
     background: linear-gradient(168deg, #D8A7B1, #FFFDD0);
+    color: #8B4513;
+    box-shadow: 0 0 15px rgba(216, 167, 177, 0.5), 0 0 30px rgba(255, 253, 208, 0.6);
 }
 .multiButton:hover {
     background: linear-gradient(168deg, #74e57ad9, #067223fc);
-}
-#quickbuttons-dropdown {
-  position: relative;
-  display: inline-block;
-  font-family: 'Amazon Ember', Arial, sans-serif;
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(116, 229, 122, 0.7), 0 0 40px rgba(6, 114, 35, 0.5);
 }
 #quickbuttons-dropdown .qb-dropbtn {
-  background: linear-gradient(145deg, #a912fdcf, #cdb34e);
-  font-weight: 700;
-  padding: 12.5px 15px;
-  color: #ffffff;
-  border-radius: 8px;
-  border: solid #0000008f 1.5px;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5);
-  transition: all 0.3s ease-in-out;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
+    background: linear-gradient(145deg, #60c960da, #0a0aaead);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(96, 201, 96, 0.7), 0 0 30px rgba(10, 10, 174, 0.6);
 }
 #quickbuttons-dropdown .qb-dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #e6b7ffcf;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-radius: 8px;
-  overflow: hidden;
-  top: 100%;
-  left: 0;
+    background-color: #8b4513cf;
 }
 #quickbuttons-dropdown .qb-dropdown-content a {
-  color: #000000;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  transition: background-color 0.3s ease;
-  font-weight: 500;
-  cursor: pointer;
+    color: #ffffff;
 }
 #quickbuttons-dropdown .qb-dropdown-content a:hover {
-  background-color: #e3e3e3a0;
-}
-#quickbuttons-dropdown:hover .qb-dropdown-content {
-  display: block;
+    background-color: #87CEEBa0;
 }
 #quickbuttons-dropdown:hover .qb-dropbtn {
-  box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7);
-}
-#quickbuttons-dropdown .qb-dropdown-content::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: transparent;
+    box-shadow: 0 0 20px rgba(135, 206, 235, 0.9), 0 0 40px rgba(112, 128, 144, 0.7);
 }

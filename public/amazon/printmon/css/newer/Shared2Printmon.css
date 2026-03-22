@@ -8,11 +8,12 @@ body {
     display: flex;
     flex-direction: column;
     margin: 45px 10px 0px 0px;
-
 }
 .right {
     display: flex; flex-wrap: wrap; flex-direction: column;
-}.printbox {
+}
+
+.printbox {
     margin: 0px 35px 0px 0px; border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 30px;
     min-width: 275px;
@@ -27,6 +28,7 @@ body {
     margin-top: 200px;
 }
 .MultiBarcode-printer h2 {
+    font-family: "Showcard Gothic";
     text-align: center;
     margin: 10px auto;
     font-size: 27.5px;
@@ -44,6 +46,8 @@ body {
     resize: none;
     line-height: 1.5;
     overflow-x: hidden;
+    font-family: Amazon Ember;
+    font-size: 14px;
 }
 .multiButton {
     font-family: Amazon Ember;
@@ -57,17 +61,24 @@ body {
     cursor: pointer;
     transition: background-color 0.3s;
     font-weight: 505;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-family: 'Amazon Ember', Arial, sans-serif;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
 }
-
 h1 {
     text-align: center;
     font-size: 30pt;
     margin-top: -10px;
     margin-bottom: -10px;
+    font-family: "Showcard Gothic", "Helvetica", "Arial", sans-serif;
 }
 .subtitle {
-    text-align: center; 
+    text-align: center;
     margin-top: 15px;
+    font-style: italic;
+    font-size: 19pt;
 }
 .options {
     margin-bottom: 20px;
@@ -86,9 +97,11 @@ h1 {
     margin-bottom: 5px;
     font-weight: bold;
     padding-right: 30px;
+    color: #fff;
 }
 .input-group label span {
     font-weight: lighter;
+    font-size: 10px;
 }
 input[type="text"] {
     width: 95.5%;
@@ -108,6 +121,41 @@ input[type="text"] {
     cursor: pointer;
     transition: background-color 0.3s;
     font-weight: 505;
+    font-family: 'Amazon Ember', Arial, sans-serif;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 12px 24px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 30px rgba(220, 220, 220, 0.6);
+    transition: all 0.3s ease-in-out;
+}
+.buttonsLine1, .buttonsLine2, .buttonsLine3 {
+    font-family: 'Amazon Ember', Arial, sans-serif;
+    font-weight: 700;
+    padding: 12.5px 15px;
+    border-radius: 8px;
+    border: solid 1px;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    border: solid #0000008f 1.5px;
+}
+.buttonsLine1:before, .buttonsLine2:before, .buttonsLine3:before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+    transition: all 0.3s ease-in-out;
+}
+.buttonsLine1:hover:before, .buttonsLine2:hover:before, .buttonsLine3:hover:before {
+    left: -100%;
+    top: -100%;
+}
+.buttonsLine1:hover, .buttonsLine2:hover, .buttonsLine3:hover {
+    transform: scale(1.05);
 }
 
 .quick-print-buttons {
@@ -121,6 +169,9 @@ input[type="text"] {
 .quick-print-buttons button {
     cursor: pointer;
     font-size: 15px;
+}
+.quick-print-buttons button:active {
+    transform: translateY(2px);
 }
 
 .scroll-container {
@@ -184,6 +235,13 @@ input[type="text"] {
     margin-top: 0;
     margin-bottom: 5px;
     padding-bottom: 10px;
+    color: #fff;
+    border-bottom: 1px dotted #fff;
+}
+.asin-sticker-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 .asin-sticker-content p {
     margin-bottom: 15px;
@@ -197,19 +255,110 @@ input[type="text"] {
     cursor: pointer;
 }
 
+.dropdown {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+}
+
+.dropbtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+
+#quickbuttons-dropdown {
+    position: relative;
+    display: inline-block;
+    font-family: 'Amazon Ember', Arial, sans-serif;
+}
+#quickbuttons-dropdown .qb-dropbtn {
+    font-weight: 700;
+    padding: 12.5px 15px;
+    border-radius: 8px;
+    border: solid #0000008f 1.5px;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+    display: none;
+    position: absolute;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    top: 100%;
+    left: 0;
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s ease;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+}
+#quickbuttons-dropdown:hover .qb-dropdown-content {
+    display: block;
+}
+#quickbuttons-dropdown .qb-dropdown-content::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: transparent;
+}
+
 .image-button-container {
     display: inline-flex;
     flex-direction: column;
 }
 .image-button, .image-button2 {
-    width: 80px; /* Adjust size as needed */
+    width: 80px;
     cursor: pointer;
-    transition: transform 0.5s ease; /* Add smooth transition */
+    transition: transform 0.5s ease;
     transform-origin: center center;
     padding: 15px 2.5px;
 }
 .image-button:hover, .image-button2:hover {
-    transform: scale(1.5); /* Grow to 150% of original size */
+    transform: scale(1.5);
 }
 .modal {
     display: none;
@@ -258,21 +407,18 @@ iframe {
     transform: scale(.875);
     transform-origin: 0 0;
 }
-#quickbuttons-dropdown .qb-dropdown-content a {
-    text-align: center;
-}
 
 .input-wrapper {
-  padding: 10px 5px;
-  display: flex;
-  align-items: center;
+    padding: 10px 5px;
+    display: flex;
+    align-items: center;
 }
 
 .structured-input {
-  display: flex;
-  align-items: center;
-  margin-right: 5px;
-  padding: 2px 10px;
+    display: flex;
+    align-items: center;
+    margin-right: 5px;
+    padding: 2px 10px;
 }
 .structured-input span {
     font-family: inherit;
@@ -282,10 +428,10 @@ iframe {
     font-size: 20px;
 }
 .structured-input input {
-  width: 24px;
-  text-align: center;
-  font-family: inherit;
-  margin: 0 2px;
+    width: 24px;
+    text-align: center;
+    font-family: inherit;
+    margin: 0 2px;
 }
 
 .arcs-download-trigger {
@@ -299,7 +445,6 @@ iframe {
     transform: scale(1.5);
     opacity: 0.85;
 }
-/* Dark overlay behind the modal */
 .arcs-modal-overlay {
     position: fixed;
     top: 0; left: 0;
@@ -308,9 +453,8 @@ iframe {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;                      /* sits on top of everything */
+    z-index: 9999;
 }
-/* The modal box itself */
 .arcs-modal-box {
     background: #1a1c2ec9;
     border: 1px solid #444444d1;
@@ -322,7 +466,6 @@ iframe {
     position: relative;
     box-shadow: 0 0 30px rgba(97, 97, 97, 0.6)
 }
-/* Close (X) button in top-right */
 .arcs-modal-close {
     position: absolute;
     top: 12px; right: 16px;
@@ -334,31 +477,26 @@ iframe {
     transition: color 0.2s;
 }
 .arcs-modal-close:hover {
-color: #fff;
+    color: #fff;
 }
-
-/* Modal title */
 .arcs-modal-title {
     color: #fff;
     margin-bottom: 6px;
     font-size: 1.4rem;
 }
-/* Subtitle/description */
 .arcs-modal-subtitle {
     color: #aaa;
     font-size: 0.9rem;
     margin-bottom: 24px;
 }
 
-/* Row of individual download buttons */
 .arcs-modal-buttons {
     display: flex;
-    flex-wrap: wrap;                    /* wraps on small screens */
+    flex-wrap: wrap;
     justify-content: center;
     gap: 12px;
     margin-bottom: 20px;
 }
-/* Individual file download button */
 .arcs-dl-btn {
     background: #247547;
     color: #fff;
@@ -373,14 +511,12 @@ color: #fff;
     background: #3a3aaee8;
     border-color: #888888c4;
 }
-/* Download All section */
 .arcs-modal-all {
     margin-top: 10px;
 }
-/* Download All button */
 .arcs-dl-all-btn {
     display: inline-block;
-    background: #e63946;                /* accent color â€” swap to match your theme */
+    background: #e63946;
     color: #fff;
     border-radius: 8px;
     padding: 12px 28px;
@@ -393,19 +529,18 @@ color: #fff;
     background: #c1121f;
 }
 
-/*  ARCS MODAL â€” Small button row  */
 .arcs-modal-buttons--small {
-margin-top: 8px;                    /* small gap between the two rows */
+    margin-top: 8px;
 }
 
 .arcs-dl-btn--small {
-padding: 6px 12px;                  /* smaller padding than the main buttons */
-font-size: 0.78rem;                 /* slightly smaller text */
-opacity: 0.85;                      /* slightly muted to visually de-emphasize */
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    opacity: 0.85;
 }
 
 .arcs-dl-btn--small:hover {
-opacity: 1;                         /* full opacity on hover */
+    opacity: 1;
 }
 
 @media (max-width: 1175px) {
