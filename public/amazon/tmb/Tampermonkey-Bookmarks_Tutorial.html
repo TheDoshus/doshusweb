@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TamperMonkey & Bookmarks Tutorial external</title>
     <link rel="icon" type="image/png" href="/amazon/printmon/media/icons/tampmark.png">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/html/cdn/video-minimal.js"></script>
     <style>
         body {
             font-family: Amazon Ember, Arial, sans-serif;
@@ -76,15 +77,6 @@
             margin-bottom: 20px; /* Space between videos */
         }
 
-        .video-container video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
         /* Play button circle */
         .video-container::before {
             content: "";
@@ -133,9 +125,13 @@
             <a href="/amazon/printmon/Printmon2Doshus.html" class="button">Printmon</a>
         </div>
         <div class="video-container">
-        <video 
-            src="TMtutorial.mp4" preload="auto">
-        </video>
+            <video-player>
+                <video-minimal-skin>
+                    <video 
+                        src="TMtutorial.mp4" preload="auto">
+                    </video>
+                </video-minimal-skin>
+            </video-player>
         </div>
         <div class="buttons">
             <button class="button" onclick="window.open('https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/')">Install Tampermonkey Addon</button>
@@ -155,9 +151,13 @@
         <br><hr><p style="font-size: 9px; text-align: center;">any issues are user-error 🙄</p><br>
         
         <div class="video-container">
-            <video 
-                src="BookmarksTutorial.mp4" preload="auto">
-            </video>
+            <video-player>
+                <video-minimal-skin>
+                    <video 
+                        src="BookmarksTutorial.mp4" preload="auto">
+                    </video>
+                </video-minimal-skin>
+            </video-player>
         </div>
         <div class="buttons">
             <button class="button" onclick="window.open('https://drive.corp.amazon.com/view/aaustinp@/Backups/Bookmarks.json?download=true')">Download JSON Bookmarks <br> (Default)</button>
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(() => {
           console.log(`Video ${index+1} playing successfully`);
           container.classList.add('playing');
-          video.controls = true;
+          video.controls = false;
         })
         .catch(error => {
           console.error(`Error playing video ${index+1}:`, error);
