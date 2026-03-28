@@ -1,0 +1,530 @@
+/* ═══════════════════════════════════════ */
+/* FINANCE PAGE SPECIFIC STYLES           */
+/* ═══════════════════════════════════════ */
+
+/* ─── CARD TOOLTIP ─── */
+.card-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.75rem;
+    color: #e0e0e0;
+    white-space: normal;
+    width: 200px;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+    pointer-events: none;
+    line-height: 1.4;
+}
+
+.card-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(34, 197, 94, 0.4);
+}
+
+.credit-card-item {
+    position: relative;
+}
+
+.credit-card-item:hover .card-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-8px);
+}
+/* ─── CREDIT CARD GRID ─── */
+.credit-card-grid-section {
+    margin-top: 1rem;
+}
+
+.credit-card-grid-section h4 {
+    text-align: center;
+    color: #22c55e;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.credit-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.credit-card-item {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-radius: 12px;
+    padding: 1rem 0.6rem;
+    text-align: center;
+    text-decoration: none;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.3s ease;
+}
+
+.credit-card-item:hover {
+    transform: translateY(-5px);
+    border-color: #22c55e;
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.credit-card-item img {
+    width: 55px;
+    height: 35px;
+    object-fit: contain;
+    filter: brightness(0.9);
+    transition: filter 0.3s ease;
+}
+
+.credit-card-item:hover img {
+    filter: brightness(1.1);
+}
+
+.card-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.95;
+    line-height: 1.3;
+}
+
+.card-bonus {
+    font-size: 0.7rem;
+    color: #22c55e;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
+@media (max-width: 900px) {
+    .credit-card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 500px) {
+    .credit-card-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    .credit-card-item {
+        padding: 0.8rem 0.4rem;
+    }
+
+    .credit-card-item img {
+        width: 40px;
+        height: 28px;
+    }
+}
+
+/* ─── FINANCE INFO BOX ─── */
+.finance-info-box {
+    background: rgba(34, 197, 94, 0.03);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.info-box-title {
+    font-size: 1.1rem;
+    color: #22c55e;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* ─── MYTHS GRID ─── */
+.myths-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.myth-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.myth-card:hover {
+    border-color: rgba(34, 197, 94, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(34, 197, 94, 0.1);
+}
+
+.myth-label {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ef4444;
+    margin-bottom: 0.3rem;
+}
+
+.truth-label {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #22c55e;
+    margin-top: 0.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.myth-card p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+/* ─── TIPS LIST ─── */
+.tips-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.tips-list li {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding-left: 1.2rem;
+    position: relative;
+    opacity: 0.9;
+}
+
+.tips-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.tips-description {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    line-height: 1.5;
+    margin-bottom: 0.8rem;
+}
+
+/* ─── SOURCES CORNER ─── */
+.sources-corner {
+    margin-top: 1.5rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+.sources-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a78bfa;
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.sources-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.sources-links a {
+    font-size: 0.75rem;
+    color: #60a5fa;
+    text-decoration: none;
+    padding: 0.3rem 0.6rem;
+    background: rgba(96, 165, 250, 0.05);
+    border: 1px solid rgba(96, 165, 250, 0.15);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.sources-links a:hover {
+    background: rgba(96, 165, 250, 0.15);
+    border-color: #60a5fa;
+}
+
+/* ─── COLLAPSIBLE SECTIONS ─── */
+.collapsible-section {
+    background: rgba(34, 197, 94, 0.03);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.collapsible-toggle {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: rgba(34, 197, 94, 0.05);
+    border: none;
+    color: #22c55e;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.collapsible-toggle:hover {
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.toggle-arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.collapsible-section.open .toggle-arrow {
+    transform: rotate(180deg);
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 1.5rem;
+    transition: max-height 0.4s ease, padding 0.3s ease;
+}
+
+.collapsible-section.open .collapsible-content {
+    max-height: 2000px;
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+}
+
+/* ─── BANKS GRID ─── */
+.banks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.bank-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-radius: 12px;
+    padding: 1.2rem 0.8rem;
+    text-align: center;
+    text-decoration: none;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.3s ease;
+}
+
+.bank-card:hover {
+    transform: translateY(-5px);
+    border-color: #22c55e;
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.bank-card img {
+    width: 60px;
+    height: 40px;
+    object-fit: contain;
+    filter: brightness(0.9);
+    transition: filter 0.3s ease;
+}
+
+.bank-card:hover img {
+    filter: brightness(1.1);
+}
+
+.bank-card span {
+    font-size: 0.8rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.bank-bonus {
+    font-size: 0.7rem !important;
+    color: #22c55e !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+}
+
+/* ─── CRYPTO TICKER WRAPPER ─── */
+.crypto-ticker-wrapper {
+    margin: 1rem 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    background: rgba(34, 197, 94, 0.03);
+}
+
+/* ─── UNCLAIMED MONEY BOX ─── */
+.unclaimed-money-box {
+    background: rgba(234, 179, 8, 0.05);
+    border: 2px solid rgba(234, 179, 8, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.unclaimed-money-box:hover {
+    border-color: rgba(234, 179, 8, 0.6);
+    box-shadow: 0 8px 30px rgba(234, 179, 8, 0.15);
+}
+
+.unclaimed-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #eab308;
+    margin-bottom: 0.8rem;
+}
+
+.unclaimed-btn {
+    background: rgba(234, 179, 8, 0.1) !important;
+    border-color: rgba(234, 179, 8, 0.3) !important;
+    color: #eab308 !important;
+}
+
+.unclaimed-btn:hover {
+    background: rgba(234, 179, 8, 0.2) !important;
+    border-color: #eab308 !important;
+    box-shadow: 0 5px 15px rgba(234, 179, 8, 0.3) !important;
+}
+
+/* ─── WIDGETS ROW ─── */
+.widgets-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* ─── TRACKER WIDGET ─── */
+.tracker-widget {
+    flex: 1;
+    min-width: 200px;
+    max-width: 350px;
+    background: rgba(34, 197, 94, 0.05);
+    border: 2px solid rgba(34, 197, 94, 0.25);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.tracker-widget:hover {
+    border-color: #22c55e;
+    box-shadow: 0 10px 30px rgba(34, 197, 94, 0.2);
+    transform: translateY(-5px);
+}
+
+.widget-icon {
+    font-size: 2.5rem;
+    filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.4));
+}
+
+.widget-label {
+    font-size: 0.9rem;
+    color: #22c55e;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.widget-value {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(45deg, #22c55e, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.widget-updated {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    color: #a0a0a0;
+}
+
+/* ═══════════════════════════════════════ */
+/* FINANCE PAGE RESPONSIVE                */
+/* ═══════════════════════════════════════ */
+
+@media (max-width: 900px) {
+    .myths-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .banks-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .widgets-row {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tracker-widget {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 500px) {
+    .banks-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    .bank-card {
+        padding: 0.8rem 0.5rem;
+    }
+
+    .bank-card img {
+        width: 45px;
+        height: 30px;
+    }
+
+    .collapsible-toggle {
+        font-size: 0.9rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .unclaimed-money-box {
+        padding: 1rem;
+    }
+
+    .sources-links {
+        flex-direction: column;
+    }
+}

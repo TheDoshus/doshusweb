@@ -1096,3 +1096,68 @@ footer p {
 .nav-modal-btn:active {
     transform: translateX(10px) scale(0.98);
 }
+
+/* ─── STICKY FOOTER ─── */
+.sticky-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 1.5rem;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(167, 139, 250, 0.2);
+    z-index: 999;
+    transition: transform 0.3s ease;
+}
+
+.sticky-footer.footer-hidden {
+    transform: translateY(100%);
+}
+
+.footer-copyright {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    color: #e0e0e0;
+}
+
+.footer-nav {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.footer-nav a {
+    color: #a0a0a0;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.footer-nav a:hover {
+    color: #a78bfa;
+}
+
+.footer-nav a.footer-active {
+    color: #22c55e;
+    font-weight: 600;
+}
+
+@media (max-width: 500px) {
+    .sticky-footer {
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .footer-nav {
+        gap: 1rem;
+    }
+
+    .footer-nav a {
+        font-size: 0.8rem;
+    }
+}

@@ -183,3 +183,40 @@ function initNavigationModal() {
 
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', initNavigationModal);
+
+// ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
+let lastScrollY = window.scrollY;
+const stickyFooter = document.getElementById('sticky-footer');
+
+window.addEventListener('scroll', () => {
+    const currentScrollY = window.scrollY;
+    const scrollPosition = window.scrollY + window.innerHeight;
+    const pageHeight = document.documentElement.scrollHeight;
+
+    // Always show footer when near the bottom (within 50px)
+    if (pageHeight - scrollPosition < 50) {
+        stickyFooter.classList.remove('footer-hidden');
+    }
+    // Scrolling DOWN — hide footer
+    else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        stickyFooter.classList.add('footer-hidden');
+    }
+    // Scrolling UP — show footer
+    else {
+        stickyFooter.classList.remove('footer-hidden');
+    }
+
+    lastScrollY = currentScrollY;
+});
+
+// ─── COLLAPSIBLE SECTIONS ───
+// (The onclick is already inline on the buttons,
+//  but this adds keyboard accessibility)
+document.querySelectorAll('.collapsible-toggle').forEach(btn => {
+    btn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            btn.click();
+        }
+    });
+});
