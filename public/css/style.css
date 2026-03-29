@@ -1,3 +1,8 @@
+/* Fix mobile background scrolling issue */
+html {
+    height: 100%;
+    overflow: auto;
+}
 * {
     margin: 0;
     padding: 0;
@@ -848,10 +853,6 @@ footer p {
     .card-title {
         font-size: 0.7rem;
         min-height: 2.2rem;
-    }
-
-    .credit-card-item img {
-        height: 70px;
     }
 
     .card-bonus {
