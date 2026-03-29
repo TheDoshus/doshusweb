@@ -1,0 +1,1 @@
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('sources-modal')?.classList.remove('open'); });
