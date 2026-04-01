@@ -1,25 +1,154 @@
-// Generate twinkling stars
+// ═══════════════════════════════════════
+// DEEP SPACE STARS: 3 LAYERS + PARALLAX + CONTINUOUS DRIFT + GYROSCOPE
+// ═══════════════════════════════════════
 const starsContainer = document.getElementById('stars');
-const numberOfStars = 100;
 
-for (let i = 0; i < numberOfStars; i++) {
-    const star = document.createElement('div');
-    star.className = 'star';
-    
-    // Random position
-    star.style.left = Math.random() * 100 + '%';
-    star.style.top = Math.random() * 100 + '%';
-    
-    // Random size
-    const size = Math.random() * 3 + 1;
-    star.style.width = size + 'px';
-    star.style.height = size + 'px';
-    
-    // Random animation delay
-    star.style.animationDelay = Math.random() * 3 + 's';
-    star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-    
-    starsContainer.appendChild(star);
+if (starsContainer) {
+
+    // ─── STAR LAYER CONFIG ───
+    // Far = tiny & slow, Mid = medium, Close = big & fast
+    const starLayers = [
+        { count: 200, minSize: 0.5, maxSize: 1.5, className: 'star star-far',   drift: 0.3 },
+        { count: 100, minSize: 1.5, maxSize: 2.8, className: 'star star-mid',   drift: 0.7 },
+        { count: 35,  minSize: 2.8, maxSize: 4.5, className: 'star star-close', drift: 1.2 },
+    ];
+
+    // ─── CREATE STARS ───
+    starLayers.forEach(layer => {
+        for (let i = 0; i < layer.count; i++) {
+            const star = document.createElement('div');
+            star.className = layer.className;
+
+            // Random position across the viewport
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+
+            // Random size within this layer's range
+            const size = Math.random() * (layer.maxSize - layer.minSize) + layer.minSize;
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+
+            // Random twinkle timing
+            star.style.animationDelay = Math.random() * 5 + 's';
+            star.style.animationDuration = (Math.random() * 4 + 3) + 's';
+
+            // Store drift speed for parallax calculations
+            star.dataset.drift = layer.drift;
+
+            starsContainer.appendChild(star);
+        }
+    });
+
+    // ─── CACHE STAR ELEMENTS ───
+    const allStars = starsContainer.querySelectorAll('.star');
+
+    // ─── PARALLAX + DRIFT VARIABLES ───
+    let mouseX = 0;
+    let mouseY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    // ─── MOUSE PARALLAX (DESKTOP) ───
+    document.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5);
+        mouseY = (e.clientY / window.innerHeight - 0.5);
+    });
+
+    // ─── GYROSCOPE PARALLAX (MOBILE) ───
+    let gyroSupported = false;
+
+    if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', (e) => {
+            if (e.gamma === null) return;
+            gyroSupported = true;
+
+            mouseX = Math.max(-0.5, Math.min(0.5, (e.gamma || 0) / 60));
+            mouseY = Math.max(-0.5, Math.min(0.5, ((e.beta || 0) - 45) / 60));
+        }, { passive: true });
+    }
+
+    // ─── FPS PERFORMANCE MONITOR ───
+    let enableParallax = true;
+    let frameCount = 0;
+    let lastFpsCheck = performance.now();
+
+    function checkPerformance() {
+        frameCount++;
+        const now = performance.now();
+
+        if (now - lastFpsCheck >= 2000) {
+            const fps = frameCount / ((now - lastFpsCheck) / 1000);
+
+            if (fps < 30) {
+                enableParallax = false;
+                allStars.forEach(star => {
+                    star.style.transform = '';
+                });
+            } else if (!enableParallax && fps > 45) {
+                enableParallax = true;
+            }
+
+            frameCount = 0;
+            lastFpsCheck = now;
+        }
+    }
+
+    // ─── MAIN ANIMATION LOOP: PARALLAX + CONTINUOUS DRIFT ───
+    function animateStars() {
+        checkPerformance();
+
+        if (enableParallax) {
+            // Lerp: smoothly interpolate toward target mouse/gyro position
+            currentX += (mouseX - currentX) * 0.05;
+            currentY += (mouseY - currentY) * 0.05;
+
+            // Update each star's position
+            allStars.forEach(star => {
+                const drift = parseFloat(star.dataset.drift) || 0.5;
+
+                // Parallax offset from mouse/gyroscope
+                const parallaxX = currentX * drift * 30;
+                const parallaxY = currentY * drift * 30;
+
+                // Get current position (or initialize if first frame)
+                if (!star.dataset.x) {
+                    const initialX = parseFloat(star.style.left);
+                    const initialY = parseFloat(star.style.top);
+                    star.dataset.x = isNaN(initialX) ? Math.random() * 100 : initialX;
+                    star.dataset.y = isNaN(initialY) ? Math.random() * 100 : initialY;
+                }
+
+                // Continuous drift — stars slowly move diagonally
+                // Faster drift for close stars, slower for far stars
+                const driftSpeedX = drift * 0.09; // horizontal drift speed
+                const driftSpeedY = drift * 0.02; // vertical drift speed
+
+                // Update stored position
+                let x = parseFloat(star.dataset.x) + driftSpeedX;
+                let y = parseFloat(star.dataset.y) + driftSpeedY;
+
+                // Wrap around screen edges
+                if (x > 100) x = 0;
+                if (x < 0) x = 100;
+                if (y > 100) y = 0;
+                if (y < 0) y = 100;
+
+                // Store updated position
+                star.dataset.x = x;
+                star.dataset.y = y;
+
+                // Apply position + parallax offset
+                star.style.left = x + '%';
+                star.style.top = y + '%';
+                star.style.transform = `translate(${parallaxX}px, ${parallaxY}px)`;
+            });
+        }
+
+        requestAnimationFrame(animateStars);
+    }
+
+    // Kick off the animation loop
+    animateStars();
 }
 
 // Email reveal function

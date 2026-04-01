@@ -19,49 +19,72 @@ body {
     position: relative;
 }
 
-/* Cosmic Background with AMOLED Black */
+/* ─── COSMIC BACKGROUND: DEEP SPACE DRIFT ─── */
 .cosmic-bg {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    height: 100dvh; /* Dynamic viewport height - newer browsers */
+    height: 100dvh;
     background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%);
-    animation: gradientShiftWithBlack 20s ease infinite;
+    animation: deepSpaceDrift 60s ease infinite;
     z-index: -2;
 }
 
-@keyframes gradientShiftWithBlack {
-    0%, 100% { background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f0520 100%); opacity: 1; }
-    25% { background: linear-gradient(135deg, #0f0520 0%, #0a0a1a 50%, #1a0a2e 100%); opacity: 1; }
-    50% { opacity: 0; }
-    75% { background: linear-gradient(135deg, #1a0a2e 0%, #0f0520 50%, #0a0a1a 100%); opacity: 1; }
+@keyframes deepSpaceDrift {
+    0%   { background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f0520 100%); }
+    12%  { background: linear-gradient(160deg, #0d0a1f 0%, #0a1628 50%, #0f0520 100%); }
+    25%  { background: linear-gradient(180deg, #050d1a 0%, #0a0a1a 50%, #1a0a2e 100%); }
+    37%  { background: linear-gradient(200deg, #0a0a1a 0%, #0f1a0a 50%, #0a1628 100%); }
+    50%  { background: linear-gradient(225deg, #0d0520 0%, #0a0a1a 50%, #0a1020 100%); }
+    62%  { background: linear-gradient(250deg, #0a1020 0%, #1a0a2e 50%, #050d1a 100%); }
+    75%  { background: linear-gradient(270deg, #1a0a2e 0%, #0f0520 50%, #0a0a1a 100%); }
+    87%  { background: linear-gradient(300deg, #0f0520 0%, #0a1628 50%, #0d0a1f 100%); }
+    100% { background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f0520 100%); }
 }
 
-/* Stars */
-.stars {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height */
-    overflow: hidden;
-    z-index: 1;
-    pointer-events: none;
-}
-
+/* ─── STAR BASE ─── */
 .star {
     position: absolute;
     background: white;
     border-radius: 50%;
-    animation: twinkle 3s infinite;
+    will-change: transform, opacity;
 }
 
-@keyframes twinkle {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
+/* ─── FAR STARS: tiny, dim, slow twinkle ─── */
+.star-far {
+    opacity: 0.35;
+    animation: twinkleFar 6s ease-in-out infinite;
+}
+
+/* ─── MID STARS: medium, moderate glow ─── */
+.star-mid {
+    opacity: 0.5;
+    animation: twinkleMid 4s ease-in-out infinite;
+    box-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* ─── CLOSE STARS: big, bright, purple-white glow halo ─── */
+.star-close {
+    opacity: 0.8;
+    animation: twinkleClose 3s ease-in-out infinite;
+    box-shadow: 0 0 4px rgba(200, 200, 255, 0.5), 0 0 8px rgba(167, 139, 250, 0.2);
+}
+
+@keyframes twinkleFar {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes twinkleMid {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+@keyframes twinkleClose {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
 }
 
 /* Hero Section */
