@@ -6,7 +6,7 @@
 .content-section {
     max-width: 1400px;
     margin: 0 auto 4rem auto;
-    padding: 0 2rem;
+    padding: 3rem 2rem;
 }
 
 .section-title {
@@ -452,7 +452,7 @@
 
 @media (max-width: 725px) {
     .content-section {
-        padding: 0 1rem;
+        padding: 5rem 1rem;
     }
 
     .gaming-grid {

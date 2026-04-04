@@ -8,9 +8,9 @@ if (starsContainer) {
     // ─── STAR LAYER CONFIG ───
     // Far = tiny & slow, Mid = medium, Close = big & fast
     const starLayers = [
-        { count: 180, minSize: 0.5, maxSize: 1.5, className: 'star star-far',   drift: 0.3 },
-        { count: 75, minSize: 1.5, maxSize: 2.8, className: 'star star-mid',   drift: 0.7 },
-        { count: 25,  minSize: 2.8, maxSize: 4.5, className: 'star star-close', drift: 1.2 },
+        { count: 170, minSize: 0.5, maxSize: 1.5, className: 'star star-far',   drift: 0.3 },
+        { count: 55, minSize: 1.5, maxSize: 2.8, className: 'star star-mid',   drift: 0.7 },
+        { count: 20,  minSize: 2.8, maxSize: 4.5, className: 'star star-close', drift: 1.2 },
     ];
 
     // ─── CREATE STARS ───
