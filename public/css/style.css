@@ -37,20 +37,34 @@ h3 {
     height: 100vh;
     height: 100dvh;
     background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%);
-    animation: deepSpaceDrift 60s ease infinite;
+    animation: deepSpaceDrift 40s ease-in-out infinite;
     z-index: -2;
 }
 
 @keyframes deepSpaceDrift {
-    0%   { background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f0520 100%); }
-    12%  { background: linear-gradient(160deg, #0d0a1f 0%, #0a1628 50%, #0f0520 100%); }
-    25%  { background: linear-gradient(180deg, #050d1a 0%, #0a0a1a 50%, #1a0a2e 100%); }
-    37%  { background: linear-gradient(200deg, #0a0a1a 0%, #0f1a0a 50%, #0a1628 100%); }
-    50%  { background: linear-gradient(225deg, #0d0520 0%, #0a0a1a 50%, #0a1020 100%); }
-    62%  { background: linear-gradient(250deg, #0a1020 0%, #1a0a2e 50%, #050d1a 100%); }
-    75%  { background: linear-gradient(270deg, #1a0a2e 0%, #0f0520 50%, #0a0a1a 100%); }
-    87%  { background: linear-gradient(300deg, #0f0520 0%, #0a1628 50%, #0d0a1f 100%); }
-    100% { background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0f0520 100%); }
+
+    0%   { background: linear-gradient(135deg, #000000 0%, rgba(35,  0,  70, 0.85) 30%, rgba(0,  10, 55, 0.65) 65%, #000000 100%); }
+    5%   { background: linear-gradient(153deg, #000000 0%, rgba(30,  0,  65, 0.80) 32%, rgba(0,  12, 58, 0.60) 64%, #000000 100%); }
+    10%  { background: linear-gradient(171deg, #000000 0%, rgba(20,  0,  55, 0.78) 33%, rgba(0,  15, 62, 0.68) 63%, #000000 100%); }
+    15%  { background: linear-gradient(189deg, #000000 0%, rgba(0,   12, 55, 0.82) 31%, rgba(25,  0, 60, 0.58) 66%, #000000 100%); }
+    20%  { background: linear-gradient(207deg, #000000 0%, rgba(0,   15, 60, 0.88) 34%, rgba(28,  0, 62, 0.52) 65%, #000000 100%); }
+    25%  { background: linear-gradient(225deg, #000000 0%, rgba(0,   18, 65, 0.90) 35%, rgba(30,  0, 58, 0.55) 64%, #000000 100%); }
+    30%  { background: linear-gradient(243deg, #000000 0%, rgba(18,   0, 60, 0.85) 33%, rgba(0,  10, 52, 0.72) 62%, #000000 100%); }
+    35%  { background: linear-gradient(261deg, #000000 0%, rgba(38,   0, 78, 0.82) 30%, rgba(0,   8, 48, 0.70) 61%, #000000 100%); }
+    40%  { background: linear-gradient(279deg, #000000 0%, rgba(42,   0, 82, 0.78) 29%, rgba(0,  10, 45, 0.68) 63%, #000000 100%); }
+    45%  { background: linear-gradient(297deg, #000000 0%, rgba(30,   0, 65, 0.74) 31%, rgba(48,  0, 16, 0.30) 68%, #000000 100%); }
+    50%  { background: linear-gradient(315deg, #000000 0%, rgba(0,    8, 48, 0.88) 30%, rgba(18,  0, 52, 0.72) 65%, #000000 100%); }
+    55%  { background: linear-gradient(333deg, #000000 0%, rgba(0,   10, 52, 0.84) 32%, rgba(22,  0, 58, 0.68) 64%, #000000 100%); }
+    60%  { background: linear-gradient(351deg, #000000 0%, rgba(15,   0, 55, 0.86) 34%, rgba(0,  14, 58, 0.62) 63%, #000000 100%); }
+    65%  { background: linear-gradient(  9deg, #000000 0%, rgba(0,   16, 60, 0.82) 31%, rgba(32,  0, 68, 0.58) 66%, #000000 100%); }
+    70%  { background: linear-gradient( 27deg, #000000 0%, rgba(0,   20, 64, 0.78) 33%, rgba(38,  0, 72, 0.62) 64%, #000000 100%); }
+    75%  { background: linear-gradient( 45deg, #000000 0%, rgba(52,   0, 20, 0.38) 25%, rgba(32,  0, 68, 0.80) 58%, #000000 100%); }
+    80%  { background: linear-gradient( 63deg, #000000 0%, rgba(45,   0, 75, 0.85) 30%, rgba(0,  12, 52, 0.62) 65%, #000000 100%); }
+    85%  { background: linear-gradient( 81deg, #000000 0%, rgba(40,   0, 72, 0.82) 32%, rgba(0,  10, 50, 0.66) 64%, #000000 100%); }
+    90%  { background: linear-gradient( 99deg, #000000 0%, rgba(28,   0, 62, 0.80) 33%, rgba(0,  13, 56, 0.70) 63%, #000000 100%); }
+    95%  { background: linear-gradient(117deg, #000000 0%, rgba(22,   0, 58, 0.83) 31%, rgba(0,  11, 55, 0.67) 65%, #000000 100%); }
+    100% { background: linear-gradient(135deg, #000000 0%, rgba(35,  0,  70, 0.85) 30%, rgba(0,  10, 55, 0.65) 65%, #000000 100%); }
+
 }
 
 /* ─── STAR BASE ─── */
@@ -1135,7 +1149,7 @@ h3 {
     justify-content: space-between;
     align-items: center;
     padding: 0.6rem 1.5rem;
-    background: rgba(0, 0, 0, 0.85);
+    background: linear-gradient(135deg, #0000008a 0% 0%, rgb(35 0 70 / 55%) 35%, rgba(0, 10, 55, 0.55) 65%, #0000008a 100%);
     backdrop-filter: blur(15px);
     border-top: 1px solid rgba(167, 139, 250, 0.2);
     z-index: 999;
