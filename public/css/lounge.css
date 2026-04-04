@@ -282,7 +282,7 @@
     border-radius: 15px;
     padding: 1.5rem;
     transition: all 0.3s ease;
-    backdrop-filter: blur(1.5px);
+    backdrop-filter: blur(5px);
 }
 
 .category-box.hidden {

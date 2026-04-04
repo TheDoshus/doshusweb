@@ -896,34 +896,60 @@
     max-width: 1200px;
     margin: 250px auto auto auto;
     position: relative;
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
 }
 
+/* 1. The Window */
+.finance-slides-viewport {
+    width: 100%;
+    overflow: hidden;
+    transition: height 0.4s ease;
+    will-change: height;
+    /* 👇 This stops the browser from freezing your scrolling! */
+    overflow-anchor: none; 
+}
+
+/* 2. The Track (No more flexbox!) */
+.finance-slides {
+    position: relative;
+    width: 100%;
+}
+
+/* 3. The Cards (Stacked & Invisible) */
 .finance-slide {
-    min-width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
     padding: 2rem 1.5rem;
     box-sizing: border-box;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
 }
 
-.finance-slides {
-    display: flex;
-    align-items: flex-start;
-    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), height 0.5s ease;
-    will-change: transform, height;
+/* 4. The Active Card (Visible) */
+.finance-slide.active-slide {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 2;
 }
 
 /* ─── NAVIGATION TIMELINE BAR ─── */
 .finance-nav-bar {
     display: flex;
-    gap: 0.8rem;
-    padding: 1.2rem 1rem;
+    gap: 1.5rem;
+    padding: 1.2rem 1.2rem;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     position: sticky;
-    top: 0;
+    top: 2rem;
     z-index: 50;
-    border-radius: 0 0 15px 15px; /* rounded bottom corners only */
+    border-radius: 0 50px; /* rounded bottom corners only */
     margin: auto;
 }
 
@@ -959,23 +985,22 @@
 /* ─── DOTS TRACK ─── */
 .nav-dots-track {
     display: flex;
-    align-items: center;
-    gap: 1.5rem;
+    align-items: flex-start;
     position: relative;
     flex: 1;
-    justify-content: space-between;
-    padding: 0 0.5rem;
+    justify-content: center;
+    padding: 0; /* Remove padding */
+    gap: 0;     /* Remove gap so flex math works perfectly */
 }
 
 /* ─── PROGRESS LINE (behind dots) ─── */
 .nav-progress-line {
     position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
+    top: 13px; /* 👈 Locks exactly to the center of the visual dot (ignoring text) */
+    left: 10%; /* 👈 Starts exactly in the middle of the first dot */
+    right: 10%; /* 👈 Ends exactly in the middle of the last dot */
     height: 2px;
     background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-50%);
     z-index: 0;
     border-radius: 2px;
 }
@@ -990,6 +1015,7 @@
 
 /* ─── NAV DOTS ─── */
 .nav-dot {
+    flex: 1; 
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1000,7 +1026,7 @@
     position: relative;
     z-index: 1;
     transition: all 0.3s ease;
-    padding: 0.3rem;
+    padding: 0.3rem 0; /* Standardize padding */
 }
 
 .dot-indicator {
@@ -1043,11 +1069,12 @@
     }
 
     .nav-dots-track {
-        gap: 1rem;
+        gap: 0;
+        margin: auto;
     }
 
     .finance-nav-bar {
-        padding: 0.8rem;
+        padding: .8rem 1.2rem;
         margin: 0 0.5rem;
     }
 

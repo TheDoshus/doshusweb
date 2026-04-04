@@ -1,7 +1,6 @@
 /* Fix mobile background scrolling issue */
 html {
     height: 100%;
-    overflow: auto;
 }
 * {
     margin: 0;
@@ -12,7 +11,7 @@ html {
 body {
     font-family: 'Nata Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #e0e0e0;
-    overflow-x: hidden;
+    overflow-x: clip;
     background: #000000;
     min-height: 100vh;
     min-height: -webkit-fill-available; /* iOS Safari fix */

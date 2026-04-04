@@ -3,6 +3,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.g
 // ═══════════════════════════════════════
 // FINANCE CARD SLIDER: SWIPE + NAV + LOCALSTORAGE + DYNAMIC HEIGHT
 // ═══════════════════════════════════════
+const viewport = document.querySelector('.finance-slides-viewport');
 const slides = document.getElementById('finance-slides');
 const allSlides = document.querySelectorAll('.finance-slide');
 const navDots = document.querySelectorAll('.nav-dot');
@@ -16,18 +17,32 @@ const STORAGE_KEY = 'financeSlidePosition';
 // ─── GO TO SLIDE FUNCTION ───
 // Handles slide navigation, nav dot updates, progress bar, and localStorage
 function goToSlide(index, saveToStorage = true) {
-    if (index < 0 || index >= totalSlides) return;
+    if (index < 0) index = totalSlides - 1;
+    else if (index >= totalSlides) index = 0;
     currentSlide = index;
 
-    // Slide the container horizontally
-    slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+    // ─── FADE EFFECT ───
+    allSlides.forEach((slide, i) => {
+        slide.classList.toggle('active-slide', i === currentSlide);
+    });
 
-    // ─── DYNAMIC HEIGHT ADJUSTMENT ───
-    // Use requestAnimationFrame to ensure the DOM has updated before measuring
+    // ─── SMART SCROLL CORRECTION ───
+    // If you switch from a long card to a short card, jump up to the nav bar
+    // so you don't end up stranded in empty space!
+    const navBar = document.querySelector('.finance-nav-bar');
+    if (navBar) {
+        const navRect = navBar.getBoundingClientRect();
+        if (navRect.top < 0) {
+            window.scrollBy({ top: navRect.top - 20, behavior: 'instant' });
+        }
+    }
+
+    // ─── DYNAMIC HEIGHT ───
     requestAnimationFrame(() => {
         const activeSlide = allSlides[currentSlide];
         const slideHeight = activeSlide.scrollHeight;
-        slides.style.height = slideHeight + 'px';
+        const viewport = document.querySelector('.finance-slides-viewport') || slides;
+        viewport.style.height = slideHeight + 'px';
     });
 
     // Update nav dots
@@ -40,18 +55,11 @@ function goToSlide(index, saveToStorage = true) {
         }
     });
 
-    // Update progress line fill (0% at first slide, 100% at last slide)
+    // Update progress line fill
     const progressPercent = (currentSlide / (totalSlides - 1)) * 100;
     progressFill.style.width = progressPercent + '%';
 
-    // Update arrow states (disable at edges)
-    prevBtn.disabled = currentSlide === 0;
-    nextBtn.disabled = currentSlide === totalSlides - 1;
-
-    // Save to localStorage (unless we're restoring from it)
-    if (saveToStorage) {
-        localStorage.setItem(STORAGE_KEY, currentSlide);
-    }
+    if (saveToStorage) localStorage.setItem(STORAGE_KEY, currentSlide);
 }
 
 // ─── ARROW CLICKS ───
@@ -65,29 +73,48 @@ navDots.forEach(dot => {
     });
 });
 
-// ─── TOUCH SWIPE (MOBILE) ───
-let touchStartX = 0;
-let touchEndX = 0;
-const swipeThreshold = 50; // minimum px to count as a swipe
+// ─── TOUCH SWIPE (FADE OPTIMIZED) ───
+let startX = 0;
+let startY = 0;
+let isSwiping = null;
 
 slides.addEventListener('touchstart', (e) => {
-    touchStartX = e.changedTouches[0].screenX;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isSwiping = null; // Reset
 }, { passive: true });
+
+slides.addEventListener('touchmove', (e) => {
+    const diffX = e.touches[0].clientX - startX;
+    const diffY = e.touches[0].clientY - startY;
+
+    if (isSwiping === null) {
+        // Did they move horizontally more than vertically?
+        isSwiping = Math.abs(diffX) > Math.abs(diffY);
+    }
+
+    if (isSwiping) {
+        e.preventDefault(); // Lock screen from scrolling up/down while swiping
+    }
+}, { passive: false });
 
 slides.addEventListener('touchend', (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    const diff = touchStartX - touchEndX;
+    if (isSwiping) {
+        const endX = e.changedTouches[0].clientX;
+        const diffX = endX - startX;
+        
+        // Require a 25% screen swipe to trigger the next card
+        const threshold = window.innerWidth * 0.25; 
 
-    if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-            // Swiped left → next slide
-            goToSlide(currentSlide + 1);
-        } else {
-            // Swiped right → previous slide
-            goToSlide(currentSlide - 1);
+        if (Math.abs(diffX) > threshold) {
+            if (diffX < 0) {
+                goToSlide(currentSlide + 1);
+            } else {
+                goToSlide(currentSlide - 1);
+            }
         }
     }
-}, { passive: true });
+});
 
 // ─── KEYBOARD NAVIGATION ───
 document.addEventListener('keydown', (e) => {
@@ -118,6 +145,6 @@ window.addEventListener('resize', () => {
     requestAnimationFrame(() => {
         const activeSlide = allSlides[currentSlide];
         const slideHeight = activeSlide.scrollHeight;
-        slides.style.height = slideHeight + 'px';
+        viewport.style.height = slideHeight + 'px';
     });
 });
