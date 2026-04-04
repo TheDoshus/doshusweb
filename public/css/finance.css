@@ -2,6 +2,11 @@
 /* FINANCE PAGE SPECIFIC STYLES           */
 /* ═══════════════════════════════════════ */
 
+.quick-links-header {
+    color: #f59e0be8;
+    align-self: center;
+}
+
 /* ─── CARD TOOLTIP ─── */
 .card-tooltip {
     position: absolute;
@@ -73,9 +78,9 @@
     margin-top: 1rem;
 }
 
-.credit-card-grid-section h4 {
+.credit-card-grid-section h3 {
     text-align: center;
-    color: #22c55e;
+    color: #f59e0be8;
     margin-bottom: 1rem;
     font-size: 1rem;
     font-weight: 600;
@@ -141,7 +146,7 @@
     opacity: 0.85;
 }
 
-@media (max-width: 550px) {
+@media (max-width: 560px) {
     .credit-card-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
@@ -663,7 +668,7 @@
     letter-spacing: 1px;
 }
 
-@media (max-width: 550px) {
+@media (max-width: 560px) {
     .credit-scores-row {
         align-items: center;
     }
@@ -728,33 +733,28 @@
 }
 
 /* ─── SECTION HEADERS ─── */
-.finance-box > h3 {
-    font-size: clamp(1.3rem, 3vw, 1.6rem);
+.finance-box h3 {
+    font-family: 'Carter One';
+    font-size: clamp(1.45rem, 3vw, 1.525rem);
     margin-bottom: 0.3rem;
 }
 
-.finance-box > p {
+.finance-box p {
     font-size: 0.9rem;
     opacity: 0.7;
     line-height: 1.5;
     margin-bottom: 1.5rem;
-    max-width: 700px;
 }
 
 /* ─── SECTION SPACING & DIVIDERS ─── */
 .finance-box {
     margin-bottom: 2.5rem;
-    padding-bottom: 2rem;
 }
 
 /* ─── SECTION ACCENT OVERRIDES ─── */
 
 /* Crypto section — blue-purple accent */
 #crypto-section .info-box-title {
-    color: #a78bfa;
-}
-
-#crypto-section .quick-links-header {
     color: #a78bfa;
 }
 
@@ -778,10 +778,6 @@
     color: #f59e0b;
 }
 
-#investing-section .quick-links-header {
-    color: #f59e0b;
-}
-
 #investing-section .finance-info-box {
     background: rgba(245, 158, 11, 0.03);
     border-color: rgba(245, 158, 11, 0.15);
@@ -798,10 +794,6 @@
 
 /* Taxes section — neutral cool blue accent */
 #taxes-section .info-box-title {
-    color: #60a5fa;
-}
-
-#taxes-section .quick-links-header {
     color: #60a5fa;
 }
 
@@ -861,29 +853,19 @@
 }
 
 /* ─── SECTION TITLE ACCENT BARS ─── */
-.finance-box > h3::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 3px;
-    background: #22c55e;
-    border-radius: 2px;
-    margin-top: 0.5rem;
-}
-
-#crypto-section > h3::after {
+#crypto-section h3::after {
     background: #a78bfa;
 }
 
-#investing-section > h3::after {
+#investing-section h3::after {
     background: #f59e0b;
 }
 
-#taxes-section > h3::after {
+#taxes-section h3::after {
     background: #60a5fa;
 }
 
-#networth-section > h3::after {
+#networth-section h3::after {
     background: #14b8a6;
 }
 
@@ -906,4 +888,170 @@
 
 #networth-section .finance-info-box {
     border-left: 3px solid rgba(20, 184, 166, 0.4);
+}
+
+/* ─── FINANCE CARD SLIDER ─── */
+.finance-slider-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 250px auto auto auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.finance-slide {
+    min-width: 100%;
+    padding: 2rem 1.5rem;
+    box-sizing: border-box;
+}
+
+.finance-slides {
+    display: flex;
+    align-items: flex-start;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), height 0.5s ease;
+    will-change: transform, height;
+}
+
+/* ─── NAVIGATION TIMELINE BAR ─── */
+.finance-nav-bar {
+    display: flex;
+    gap: 0.8rem;
+    padding: 1.2rem 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-radius: 0 0 15px 15px; /* rounded bottom corners only */
+    margin: auto;
+}
+
+/* ─── ARROWS ─── */
+.nav-arrow {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    color: #e0e0e0;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.nav-arrow:hover {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: #a78bfa;
+    transform: scale(1.1);
+}
+
+.nav-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ─── DOTS TRACK ─── */
+.nav-dots-track {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    flex: 1;
+    justify-content: space-between;
+    padding: 0 0.5rem;
+}
+
+/* ─── PROGRESS LINE (behind dots) ─── */
+.nav-progress-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-50%);
+    z-index: 0;
+    border-radius: 2px;
+}
+
+.nav-progress-fill {
+    height: 100%;
+    background: #a78bfa;
+    border-radius: 2px;
+    transition: width 0.5s ease, background 0.5s ease;
+    width: 0%;
+}
+
+/* ─── NAV DOTS ─── */
+.nav-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+    padding: 0.3rem;
+}
+
+.dot-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.nav-dot.active .dot-indicator {
+    background: var(--dot-color, #a78bfa);
+    border-color: var(--dot-color, #a78bfa);
+    box-shadow: 0 0 12px var(--dot-color, rgba(167, 139, 250, 0.5));
+    transform: scale(1.2);
+}
+
+.nav-dot:hover .dot-indicator {
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.15);
+}
+
+.dot-label {
+    font-size: 0.7rem;
+    color: #a0a0a0;
+    white-space: nowrap;
+    transition: color 0.3s ease;
+}
+
+.nav-dot.active .dot-label {
+    color: #e0e0e0;
+    font-weight: 600;
+}
+
+/* ─── MOBILE: Hide labels, smaller bar ─── */
+@media (max-width: 700px) {
+    .dot-label {
+        display: none;
+    }
+
+    .nav-dots-track {
+        gap: 1rem;
+    }
+
+    .finance-nav-bar {
+        padding: 0.8rem;
+        margin: 0 0.5rem;
+    }
+
+    .finance-slide {
+        padding: 1.5rem 0.8rem;
+    }
 }
