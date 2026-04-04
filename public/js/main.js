@@ -8,9 +8,9 @@ if (starsContainer) {
     // ─── STAR LAYER CONFIG ───
     // Far = tiny & slow, Mid = medium, Close = big & fast
     const starLayers = [
-        { count: 200, minSize: 0.5, maxSize: 1.5, className: 'star star-far',   drift: 0.3 },
-        { count: 100, minSize: 1.5, maxSize: 2.8, className: 'star star-mid',   drift: 0.7 },
-        { count: 35,  minSize: 2.8, maxSize: 4.5, className: 'star star-close', drift: 1.2 },
+        { count: 180, minSize: 0.5, maxSize: 1.5, className: 'star star-far',   drift: 0.3 },
+        { count: 75, minSize: 1.5, maxSize: 2.8, className: 'star star-mid',   drift: 0.7 },
+        { count: 25,  minSize: 2.8, maxSize: 4.5, className: 'star star-close', drift: 1.2 },
     ];
 
     // ─── CREATE STARS ───
@@ -62,8 +62,8 @@ if (starsContainer) {
             if (e.gamma === null) return;
             gyroSupported = true;
 
-            mouseX = Math.max(-0.5, Math.min(0.5, (e.gamma || 0) / 60));
-            mouseY = Math.max(-0.5, Math.min(0.5, ((e.beta || 0) - 45) / 60));
+            mouseX = Math.max(-0.5, Math.min(0.5, (e.gamma || 0) / 30));
+            mouseY = Math.max(-0.5, Math.min(0.5, ((e.beta || 0) - 45) / 30));
         }, { passive: true });
     }
 
@@ -107,8 +107,8 @@ if (starsContainer) {
                 const drift = parseFloat(star.dataset.drift) || 0.5;
 
                 // Parallax offset from mouse/gyroscope
-                const parallaxX = currentX * drift * 30;
-                const parallaxY = currentY * drift * 30;
+                const parallaxX = currentX * drift * 40;
+                const parallaxY = currentY * drift * 40;
 
                 // Get current position (or initialize if first frame)
                 if (!star.dataset.x) {

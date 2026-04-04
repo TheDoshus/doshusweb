@@ -104,7 +104,7 @@ slides.addEventListener('touchend', (e) => {
         const diffX = endX - startX;
         
         // Require a 25% screen swipe to trigger the next card
-        const threshold = window.innerWidth * 0.25; 
+        const threshold = window.innerWidth * 0.20; 
 
         if (Math.abs(diffX) > threshold) {
             if (diffX < 0) {

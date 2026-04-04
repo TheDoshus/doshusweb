@@ -906,7 +906,6 @@
     overflow: hidden;
     transition: height 0.4s ease;
     will-change: height;
-    /* 👇 This stops the browser from freezing your scrolling! */
     overflow-anchor: none; 
 }
 
@@ -919,6 +918,7 @@
 /* 3. The Cards (Stacked & Invisible) */
 .finance-slide {
     position: absolute;
+    backdrop-filter: blur(5px);
     top: 0;
     left: 0;
     width: 100%;
