@@ -90,10 +90,14 @@
                         <h2>💳 Credit & Banking</h2>
                         <p>My card collection, credit tips, and everything I've learned about building credit. Don't believe everything you hear — here's what I know matters.</p>
                     
-                        <!-- ─── CREDIT CARD GRID ─── -->
-                        <div class="ccGridWrap">
-                            <h3>My credit card collection:</h3>
-                            <div class="ccGrid">
+                        <!-- ─── CREDIT CARD GRID (COLLAPSIBLE) ─── -->
+                        <div class="collapse open">
+                            <button class="collapseBtn" onclick="this.parentElement.classList.toggle('open')">
+                                My credit card collection:
+                                <span class="toggle-arrow">▼</span>
+                            </button>
+                            <div class="collapseBody">
+                                <div class="ccGrid">
         
                                 <!-- Prime Store Card -->
                                 <a class="ccCard" href="https://www.amazon.com/Synchrony-Bank-Amazon-com-Store-Card/dp/B008A0GNA8" target="_blank" rel="noopener">
@@ -337,9 +341,82 @@
                                         </ul>
                                     </div>
                                 </a>
-        
+                                </div>
+                                <!-- ─── CREDIT MYTHS ─── -->
+                                <div class="infoBox">
+                                    <h4 class="infoTitle">💡 Credit Myths & Tips</h4>
+
+                                    <div class="myths-grid">
+
+                                        <!-- Myth 1: Carrying a Balance -->
+                                        <div class="myth-card">
+                                            <span class="myth-label">❌ Myth</span>
+                                            <p>"Carrying a balance builds credit"</p>
+                                            <span class="truth-label">✅ Truth</span>
+                                            <p>Pay it off every month. You build credit by using the card and paying on time — not by paying interest.</p>
+                                        </div>
+
+                                        <!-- Myth 2: Credit Karma Scores -->
+                                        <div class="myth-card">
+                                            <span class="myth-label">❌ Myth</span>
+                                            <p>"Credit Karma scores are fake and unreliable"</p>
+                                            <span class="truth-label">✅ Truth</span>
+                                            <p>Credit Karma and other credit tools may use VantageScore 3.0, which is a real scoring model created by the three major credit bureaus (Equifax, Experian, TransUnion). It's not fake — it's just a different model than FICO. It still reflects your credit health and trends accurately.</p>
+                                        </div>
+
+                                        <!-- Myth 3: Only FICO Matters -->
+                                        <div class="myth-card">
+                                            <span class="myth-label">❌ Myth</span>
+                                            <p>"Only your FICO score matters"</p>
+                                            <span class="truth-label">✅ Truth</span>
+                                            <p>FICO is used by ~90% of lenders for decisions, so it does carry more weight. But VantageScore (what Credit Karma shows) tracks the same factors — payment history, utilization, age of accounts. If your VantageScore is trending up, your FICO likely is too. Use Credit Karma to monitor trends for free, but check your FICO through your bank or Experian before applying for big loans.</p>
+                                        </div>
+
+                                        <!-- Myth 4: Closing Old Cards -->
+                                        <div class="myth-card">
+                                            <span class="myth-label">❌ Myth</span>
+                                            <p>"Closing old cards helps your score"</p>
+                                            <span class="truth-label">✅ Truth</span>
+                                            <p>Closing old cards kills your average age of accounts and reduces total credit limit — both hurt your score.</p>
+                                        </div>
+
+                                        <!-- Myth 5: Checking Credit -->
+                                        <div class="myth-card">
+                                            <span class="myth-label">❌ Myth</span>
+                                            <p>"Checking your credit hurts your score"</p>
+                                            <span class="truth-label">✅ Truth</span>
+                                            <p>Checking your own credit is a soft pull — it has zero impact. Only hard pulls from applications affect your score.</p>
+                                        </div>
+
+                                        <!-- Myth 6: All Debt is Bad -->
+                                        <div class="myth-card">
+                                            <span class="myth-label">❌ Myth</span>
+                                            <p>"All debt is bad"</p>
+                                            <span class="truth-label">✅ Truth</span>
+                                            <p>Your utilization ratio matters more than zero balance. Keep it under 30%, ideally under 10%.</p>
+                                        </div>
+
+                                        <!-- Myth 7: Paying Interest -->
+                                        <div class="myth-card">
+                                            <span class="myth-label">❌ Myth</span>
+                                            <p>"You have to pay interest on credit cards"</p>
+                                            <span class="truth-label">✅ Truth</span>
+                                            <p>If you pay your full statement balance by the due date every month, you'll never pay a cent in interest. The goal is to never pay it — treat your credit card like a debit card with rewards.</p>
+                                        </div>
+
+                                        <!-- Myth 8: Opening New Cards -->
+                                        <div class="myth-card">
+                                            <span class="myth-label">❌ Myth</span>
+                                            <p>"Opening new cards always tanks your score"</p>
+                                            <span class="truth-label">✅ Truth</span>
+                                            <p>Short-term dip from the hard pull, but long-term gain from increased total credit and lower utilization — if managed right.</p>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
                         <!-- ─── CREDIT FREEZE QUICK LINKS ─── -->
                         <div class="quickLinks">
                             <h3 class="qlHeader">🧊 Freeze Your Credit</h3>
