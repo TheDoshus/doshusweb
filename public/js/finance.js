@@ -1,11 +1,11 @@
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('sources-modal')?.classList.remove('open'); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('srcOverlay')?.classList.remove('open'); });
 
 // ═══════════════════════════════════════
 // FINANCE CARD SLIDER: SWIPE + NAV + LOCALSTORAGE + DYNAMIC HEIGHT
 // ═══════════════════════════════════════
-const viewport = document.querySelector('.finance-slides-viewport');
-const slides = document.getElementById('finance-slides');
-const allSlides = document.querySelectorAll('.finance-slide');
+const viewport = document.querySelector('.sliderView');
+const slides = document.getElementById('sliderTrack');
+const allSlides = document.querySelectorAll('.slide');
 const navDots = document.querySelectorAll('.nav-dot');
 const prevBtn = document.getElementById('slide-prev');
 const nextBtn = document.getElementById('slide-next');
@@ -29,7 +29,7 @@ function goToSlide(index, saveToStorage = true) {
     // ─── SMART SCROLL CORRECTION ───
     // If you switch from a long card to a short card, jump up to the nav bar
     // so you don't end up stranded in empty space!
-    const navBar = document.querySelector('.finance-nav-bar');
+    const navBar = document.querySelector('.slideNav');
     if (navBar) {
         const navRect = navBar.getBoundingClientRect();
         if (navRect.top < 0) {
@@ -37,12 +37,23 @@ function goToSlide(index, saveToStorage = true) {
         }
     }
 
-    // ─── DYNAMIC HEIGHT ───
+    // ─── DYNAMIC HEIGHT + SCROLL CORRECTION ───
     requestAnimationFrame(() => {
-        const activeSlide = allSlides[currentSlide];
-        const slideHeight = activeSlide.scrollHeight;
-        const viewport = document.querySelector('.finance-slides-viewport') || slides;
-        viewport.style.height = slideHeight + 'px';
+        requestAnimationFrame(() => {
+            const activeSlide = allSlides[currentSlide];
+            const slideHeight = activeSlide.scrollHeight;
+            const vp = document.querySelector('.sliderView') || slides;
+            vp.style.height = slideHeight + 'px';
+
+            // Smart scroll correction — after height is set
+            const navBar = document.querySelector('.slideNav');
+            if (navBar) {
+                const navRect = navBar.getBoundingClientRect();
+                if (navRect.top < 0) {
+                    window.scrollBy({ top: navRect.top - 20, behavior: 'instant' });
+                }
+            }
+        });
     });
 
     // Update nav dots
@@ -143,8 +154,10 @@ if (savedSlide !== null) {
 // If user rotates device or resizes browser, recalculate active slide height
 window.addEventListener('resize', () => {
     requestAnimationFrame(() => {
-        const activeSlide = allSlides[currentSlide];
-        const slideHeight = activeSlide.scrollHeight;
-        viewport.style.height = slideHeight + 'px';
+        requestAnimationFrame(() => {
+            const activeSlide = allSlides[currentSlide];
+            const slideHeight = activeSlide.scrollHeight;
+            viewport.style.height = slideHeight + 'px';
+        });
     });
 });

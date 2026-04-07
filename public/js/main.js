@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════
-// DEEP SPACE STARS: 3 LAYERS + PARALLAX + CONTINUOUS DRIFT + GYROSCOPE
+// DEEP SPACE STARS: 3 LAYERS + PARALLAX + CONTINUOUS DRIFT
 // ═══════════════════════════════════════
 const starsContainer = document.getElementById('stars');
 
@@ -54,19 +54,6 @@ if (starsContainer) {
         mouseY = (e.clientY / window.innerHeight - 0.5);
     });
 
-    // ─── GYROSCOPE PARALLAX (MOBILE) ───
-    let gyroSupported = false;
-
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', (e) => {
-            if (e.gamma === null) return;
-            gyroSupported = true;
-
-            mouseX = Math.max(-0.5, Math.min(0.5, (e.gamma || 0) / 30));
-            mouseY = Math.max(-0.5, Math.min(0.5, ((e.beta || 0) - 45) / 30));
-        }, { passive: true });
-    }
-
     // ─── FPS PERFORMANCE MONITOR ───
     let enableParallax = true;
     let frameCount = 0;
@@ -99,16 +86,16 @@ if (starsContainer) {
 
         if (enableParallax) {
             // Lerp: smoothly interpolate toward target mouse/gyro position
-            currentX += (mouseX - currentX) * 0.05;
-            currentY += (mouseY - currentY) * 0.05;
+            currentX += (mouseX - currentX) * 0.12;
+            currentY += (mouseY - currentY) * 0.12;
 
             // Update each star's position
             allStars.forEach(star => {
                 const drift = parseFloat(star.dataset.drift) || 0.5;
 
-                // Parallax offset from mouse/gyroscope
-                const parallaxX = currentX * drift * 40;
-                const parallaxY = currentY * drift * 40;
+                // Parallax offset from mouse
+                const parallaxX = currentX * drift * 80;
+                const parallaxY = currentY * drift * 80;
 
                 // Get current position (or initialize if first frame)
                 if (!star.dataset.x) {
@@ -120,8 +107,8 @@ if (starsContainer) {
 
                 // Continuous drift — stars slowly move diagonally
                 // Faster drift for close stars, slower for far stars
-                const driftSpeedX = drift * 0.09; // horizontal drift speed
-                const driftSpeedY = drift * 0.02; // vertical drift speed
+                const driftSpeedX = drift * 0.04; // horizontal drift speed
+                const driftSpeedY = drift * 0.01; // vertical drift speed
 
                 // Update stored position
                 let x = parseFloat(star.dataset.x) + driftSpeedX;
@@ -341,7 +328,7 @@ window.addEventListener('scroll', () => {
 // ─── COLLAPSIBLE SECTIONS ───
 // (The onclick is already inline on the buttons,
 //  but this adds keyboard accessibility)
-document.querySelectorAll('.collapsible-toggle').forEach(btn => {
+document.querySelectorAll('.collapseBtn').forEach(btn => {
     btn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();

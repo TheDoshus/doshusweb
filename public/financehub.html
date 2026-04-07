@@ -41,15 +41,15 @@
     <!-- ─── HERO SECTION ─── -->
     <section class="hero">
         <h1>Finance Hub</h1>
-        <p>💸 All my finance stuff in one spot 💰</p>
+        <p>💸 Everything finance right here 💰</p>
         <a href="#financebar" class="cta-button">Let's Get Into It</a>
     </section>
 
     <!-- ─── FINANCE CARD SLIDER ─── -->
-    <div class="finance-slider-container" id="financebar">
+    <div class="sliderWrap" id="financebar">
 
         <!-- NAVIGATION TIMELINE BAR -->
-        <div class="finance-nav-bar">
+        <div class="slideNav">
             <button class="nav-arrow nav-prev" id="slide-prev"><span class="material-symbols-outlined">line_start_arrow</span></button>
 
             <div class="nav-dots-track">
@@ -80,23 +80,23 @@
 
             <button class="nav-arrow nav-next" id="slide-next"><span class="material-symbols-outlined">line_end_arrow</span></button>
         </div>
-        <div class="finance-slides-viewport">
+        <div class="sliderView">
             <!-- THE SLIDES -->
-            <div class="finance-slides" id="finance-slides">
+            <div class="sliderTrack" id="sliderTrack">
 
                 <!-- SLIDE 1: Credit & Banking -->
-                <div class="finance-slide" id="slide-credit" data-accent="#22c55e">
+                <div class="slide" id="slide-credit" data-accent="#22c55e">
                     <div class="grid-item finance-box" id="credit-section">
                         <h2>💳 Credit & Banking</h2>
                         <p>My card collection, credit tips, and everything I've learned about building credit. Don't believe everything you hear — here's what I know matters.</p>
                     
                         <!-- ─── CREDIT CARD GRID ─── -->
-                        <div class="credit-card-grid-section">
+                        <div class="ccGridWrap">
                             <h3>My credit card collection:</h3>
-                            <div class="credit-card-grid">
+                            <div class="ccGrid">
         
                                 <!-- Prime Store Card -->
-                                <a class="cc-grid-item" href="https://www.amazon.com/Synchrony-Bank-Amazon-com-Store-Card/dp/B008A0GNA8" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://www.amazon.com/Synchrony-Bank-Amazon-com-Store-Card/dp/B008A0GNA8" target="_blank" rel="noopener">
                                     <img src="https://www.creditcards.com/credit-card-news/wp-content/uploads/amazon-prime-store-card.png" alt="Prime Store Card">
                                     <span class="card-title">Prime Store Card</span>
                                     <div class="card-tooltip">
@@ -109,7 +109,7 @@
                                 </a>
         
                                 <!-- Prime Visa -->
-                                <a class="cc-grid-item" href="https://www.amazon.com/dp/BT00LN946S?externalReferenceId=92652e1d-0a34-44d3-8a28-9f0504fc65f0" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://www.amazon.com/dp/BT00LN946S?externalReferenceId=92652e1d-0a34-44d3-8a28-9f0504fc65f0" target="_blank" rel="noopener">
                                     <img src="https://images.ctfassets.net/8qmz0ef3xzub/7kmiz4jVmrVYfvdI7GpHPk/9cdec435c065a943c87a4d69d7620946/prime-visa.png" alt="Prime Visa">
                                     <span class="card-title">Prime Visa</span>
                                     <div class="card-tooltip">
@@ -123,7 +123,7 @@
                                 </a>
         
                                 <!-- Blue Cash Preferred -->
-                                <a class="cc-grid-item" href="https://americanexpress.com/en-us/referral/blue-cash-preferred-credit-card?ref=ARMaNa2Ei0&XL=MNANS" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://americanexpress.com/en-us/referral/blue-cash-preferred-credit-card?ref=ARMaNa2Ei0&XL=MNANS" target="_blank" rel="noopener">
                                     <img src="https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/blue-cash-preferred.png" alt="Blue Cash Preferred">
                                     <span class="card-title">Blue Cash Preferred</span>
                                     <div class="card-tooltip">
@@ -137,7 +137,7 @@
                                 </a>
         
                                 <!-- Everyday Card -->
-                                <a class="cc-grid-item" href="https://americanexpress.com/en-us/referral/all-cards?ref=ARMaNadMCl&XL=MNANS" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://americanexpress.com/en-us/referral/all-cards?ref=ARMaNadMCl&XL=MNANS" target="_blank" rel="noopener">
                                     <img src="https://creditkarma-cms.imgix.net/wp-content/uploads/2024/06/image_34f895.png" alt="Everyday Card">
                                     <span class="card-title">Everyday Card</span>
                                     <div class="card-tooltip">
@@ -150,7 +150,7 @@
                                 </a>
         
                                 <!-- Customized Cash Rewards -->
-                                <a class="cc-grid-item" href="https://promo.bankofamerica.com/ccsearchlp10/compare-cards-3/" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://promo.bankofamerica.com/ccsearchlp10/compare-cards-3/" target="_blank" rel="noopener">
                                     <img src="https://cdn.wallethub.com/common/product/images/creditcards/500/bank-of-america-cash-rewards-credit-card-1515128c.jpeg" alt="Customized Cash Rewards">
                                     <span class="card-title">Customized Cash Rewards</span>
                                     <div class="card-tooltip">
@@ -164,7 +164,7 @@
                                 </a>
         
                                 <!-- SavorOne -->
-                                <a class="cc-grid-item" href="https://i.capitalone.com/GvOgXGlvz" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://i.capitalone.com/GvOgXGlvz" target="_blank" rel="noopener">
                                     <img src="https://s.yimg.com/lo/api/res/1.2/lM8YSHKd9XPoe0uuAPcFsQ--/YXBwaWQ9ZWNfaG9yaXpvbnRhbDtzcz0x/https://cdn.prodstatic.com/shared/images/cards/9c6328e0-7b14-11ed-ab2b-c7b2c0f4db79.png.cf.jpg" alt="SavorOne">
                                     <span class="card-title">SavorOne</span>
                                     <div class="card-tooltip">
@@ -179,7 +179,7 @@
                                 </a>
         
                                 <!-- Freedom Flex -->
-                                <a class="cc-grid-item" href="https://www.referyourchasecard.com/18e/FNLBCK9RAI" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://www.referyourchasecard.com/18e/FNLBCK9RAI" target="_blank" rel="noopener">
                                     <img src="https://www.chase.com/content/dam/chase-ux/heroimage/primary/personal/credit-cards/freedom/freedom-flex-credit-card-v2.png" alt="Freedom Flex">
                                     <span class="card-title">Freedom Flex</span>
                                     <div class="card-tooltip">
@@ -193,7 +193,7 @@
                                 </a>
         
                                 <!-- Custom Cash -->
-                                <a class="cc-grid-item" href="https://online.citi.com/US/ag/cards/pre-qualify" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://online.citi.com/US/ag/cards/pre-qualify" target="_blank" rel="noopener">
                                     <img src="https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-custom-cash-credit-card/citi-custom-cash-credit-card_306x192.webp" alt="Custom Cash">
                                     <span class="card-title">Custom Cash</span>
                                     <div class="card-tooltip">
@@ -207,7 +207,7 @@
                                 </a>
         
                                 <!-- Double Cash -->
-                                <a class="cc-grid-item" href="https://online.citi.com/US/ag/cards/pre-qualify" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://online.citi.com/US/ag/cards/pre-qualify" target="_blank" rel="noopener">
                                     <img src="https://www.citi.com/CRD/images/citi-double-cash/citi-double-cash_222x140.png" alt="Double Cash">
                                     <span class="card-title">Double Cash</span>
                                     <div class="card-tooltip">
@@ -220,7 +220,7 @@
                                 </a>
         
                                 <!-- Simplicity -->
-                                <a class="cc-grid-item" href="https://online.citi.com/US/ag/cards/pre-qualify" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://online.citi.com/US/ag/cards/pre-qualify" target="_blank" rel="noopener">
                                     <img src="https://www.citi.com/CRD/images/citi-simplicity/citi-simplicity_222x140.png" alt="Simplicity">
                                     <span class="card-title">Simplicity</span>
                                     <div class="card-tooltip">
@@ -234,7 +234,7 @@
                                 </a>
         
                                 <!-- Coinbase Card -->
-                                <a class="cc-grid-item" href="https://www.coinbase.com/creditcard" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://www.coinbase.com/creditcard" target="_blank" rel="noopener">
                                     <img src="https://framerusercontent.com/images/VWYMwX3HKtmJv0WjQiv4x2uDg.png?scale-down-to=240&width=1025&height=649" alt="Coinbase Card">
                                     <span class="card-title">Coinbase Card</span>
                                     <div class="card-tooltip">
@@ -247,7 +247,7 @@
                                 </a>
         
                                 <!-- It Cashback -->
-                                <a class="cc-grid-item" href="https://refer.discover.com/s/armandaustin121?advocate.partner_share_id=9525237221" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://refer.discover.com/s/armandaustin121?advocate.partner_share_id=9525237221" target="_blank" rel="noopener">
                                     <img src="https://cdn.nextinsure.com/imaging/opt?u=aHR0cHM6Ly9jZG4ubmV4dGluc3VyZS5jb20vaW1hZ2VzL2FjY291bnRzLzBmZDBmNTYzLWZhNTgtNGJmMi1hNzQ2LTAwZGExMDViN2FmMC5wbmc%3D&w=150" alt="It Cashback">
                                     <span class="card-title">It Cashback</span>
                                     <div class="card-tooltip">
@@ -261,7 +261,7 @@
                                 </a>
         
                                 <!-- It Chrome -->
-                                <a class="cc-grid-item" href="https://refer.discover.com/s/armandaustin19?advocate.partner_share_id=6418950413" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://refer.discover.com/s/armandaustin19?advocate.partner_share_id=6418950413" target="_blank" rel="noopener">
                                     <img src="https://cdn.wallethub.com/common/product/images/creditcards/500/discover-it-chrome-credit-card-0957507c.png" alt="It Chrome">
                                     <span class="card-title">It Chrome</span>
                                     <div class="card-tooltip">
@@ -275,7 +275,7 @@
                                 </a>
         
                                 <!-- Fidelity Visa -->
-                                <a class="cc-grid-item" href="https://www.fidelity.com/spend-save/visa-signature-card" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://www.fidelity.com/spend-save/visa-signature-card" target="_blank" rel="noopener">
                                     <img src="https://cdn.wallethub.com/common/product/images/creditcards/500/fidelity-credit-card-06451636c.png" alt="Fidelity Visa">
                                     <span class="card-title">Fidelity Visa</span>
                                     <div class="card-tooltip">
@@ -288,7 +288,7 @@
                                 </a>
         
                                 <!-- IHG Premier OneRewards -->
-                                <a class="cc-grid-item" href="https://www.referyourchasecard.com/210y/Q80W4OL8DC" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://www.referyourchasecard.com/210y/Q80W4OL8DC" target="_blank" rel="noopener">
                                     <img src="https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ihg_premier_card.png" alt="IHG Premier OneRewards">
                                     <span class="card-title">IHG Premier OneRewards</span>
                                     <div class="card-tooltip">
@@ -302,7 +302,7 @@
                                 </a>
         
                                 <!-- PlayStation Visa -->
-                                <a class="cc-grid-item" href="https://www.playstation.com/en-us/playstation-credit-card" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://www.playstation.com/en-us/playstation-credit-card" target="_blank" rel="noopener">
                                     <img src="https://creditkarma-cms.imgix.net/wp-content/uploads/2024/08/PlayStation-Visa-Credit-Card.png?auto=compress&fm=webp" alt="PlayStation Visa">
                                     <span class="card-title">PlayStation Visa</span>
                                     <div class="card-tooltip">
@@ -315,7 +315,7 @@
                                 </a>
         
                                 <!-- T-Mobile Visa -->
-                                <a class="cc-grid-item" href="https://referral.t-mobile.com/ixU9Ust" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://referral.t-mobile.com/ixU9Ust" target="_blank" rel="noopener">
                                     <img src="https://ecm.capitalone.com/WCM/card/pages/t-mobile-set/t-mobile-card-art.png" alt="T-Mobile Visa">
                                     <span class="card-title">T-Mobile Visa</span>
                                     <div class="card-tooltip">
@@ -327,7 +327,7 @@
                                 </a>
         
                                 <!-- Preferred Cash Rewards Visa -->
-                                <a class="cc-grid-item" href="https://www.usaa.com/banking/credit-cards-member/cash-back/preferred-cash/apply?productId=101" target="_blank" rel="noopener">
+                                <a class="ccCard" href="https://www.usaa.com/banking/credit-cards-member/cash-back/preferred-cash/apply?productId=101" target="_blank" rel="noopener">
                                     <img src="https://www.creditcards.com/ext/cdn.prodstatic.com/shared/images/cards/500x315/55f04060-fe97-11ef-b098-8d7006a57d16.png" alt="Preferred Cash Rewards Visa">
                                     <span class="card-title">Preferred Cash Rewards Visa</span>
                                     <div class="card-tooltip">
@@ -341,13 +341,13 @@
                             </div>
                         </div>
                         <!-- ─── CREDIT FREEZE QUICK LINKS ─── -->
-                        <div class="finance-quick-links">
-                            <h3 class="quick-links-header">🧊 Freeze Your Credit</h3>
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">🧊 Freeze Your Credit</h3>
                             <p class="tips-description" style="text-align: center; font-size: 0.85rem; opacity: 0.7;">A credit freeze prevents new accounts from being opened in your name. A credit <em>lock</em> does the same but is usually app-based and instant. Freezing is free and recommended.</p>
-                            <div class="quick-links-buttons">
-                                <a href="https://service.transunion.com/dss/freezeStatus.page?" class="quick-link-btn" target="_blank" rel="noopener">🧊 TransUnion Freeze</a>
-                                <a href="https://my.equifax.com/membercenter/#/freeze" class="quick-link-btn" target="_blank" rel="noopener">🧊 Equifax Freeze</a>
-                                <a href="https://usa.experian.com/mfe/member/security-freeze" class="quick-link-btn" target="_blank" rel="noopener">🧊 Experian Freeze</a>
+                            <div class="qlBtns">
+                                <a href="https://service.transunion.com/dss/freezeStatus.page?" class="qlBtn" target="_blank" rel="noopener">🧊 TransUnion Freeze</a>
+                                <a href="https://my.equifax.com/membercenter/#/freeze" class="qlBtn" target="_blank" rel="noopener">🧊 Equifax Freeze</a>
+                                <a href="https://usa.experian.com/mfe/member/security-freeze" class="qlBtn" target="_blank" rel="noopener">🧊 Experian Freeze</a>
                             </div>
                         </div>
                         <!-- ─── TIPS COLUMNS ─── -->
@@ -355,7 +355,7 @@
         
                             <!-- LEFT COLUMN: Credit Building -->
                             <div class="tips-column">
-                                <h4 class="info-box-title">🏗️ Credit Building Strategies</h4>
+                                <h4 class="infoTitle">🏗️ Credit Building Strategies</h4>
                                 <ul class="tips-list">
                                     <li><strong>Utilization ratio:</strong> Keep it under 30%, ideally under 10% of your total credit limit</li>
                                     <li><strong>Payment history:</strong> This is 35% of your score — never miss a payment</li>
@@ -368,7 +368,7 @@
                             <hr style="border: none; border-left: 1px solid rgba(255, 255, 255, 0.11); margin: 0;">
                             <!-- RIGHT COLUMN: Rewards Stacking -->
                             <div class="tips-column">
-                                <h4 class="info-box-title">🎯 Rewards Stacking</h4>
+                                <h4 class="infoTitle">🎯 Rewards Stacking</h4>
                                 <p class="tips-description">Use the right card for the right purchase to maximize cashback:</p>
                                 <ul class="tips-list">
                                     <li><strong>Groceries:</strong> Blue Cash Preferred (6%)</li>
@@ -380,13 +380,13 @@
                                 </ul>
                             </div>
                             <!-- ─── SOURCES ICON (opens modal) ─── -->
-                            <button class="sources-icon-btn" onclick="document.getElementById('sources-modal').classList.add('open')" title="Where I learned this stuff">
+                            <button class="srcBtn" onclick="document.getElementById('sources-modal').classList.add('open')" title="Where I learned this stuff">
                                 ?
                             </button>
                             <!-- ─── SOURCES MODAL ─── -->
-                            <div class="sources-modal-overlay" id="sources-modal" onclick="if(event.target===this) this.classList.remove('open')">
+                            <div class="srcOverlay" id="sources-modal" onclick="if(event.target===this) this.classList.remove('open')">
                                 <div class="sources-modal">
-                                    <button class="sources-modal-close" onclick="document.getElementById('sources-modal').classList.remove('open')">✕</button>
+                                    <button class="srcClose" onclick="document.getElementById('sources-modal').classList.remove('open')">✕</button>
                                     <h4>📎 Sources</h4>
                                     <p style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 1rem;">Where I've learned this stuff:</p>
                                     <div class="sources-links">
@@ -399,24 +399,24 @@
                             </div>
                         </div>
                         <!-- ─── CREDIT MONITORING TOOLS ─── -->
-                        <div class="finance-quick-links">
-                            <h3 class="quick-links-header">📊 Credit Monitoring & Comparison Tools</h3>
-                            <div class="quick-links-buttons">
-                                <a href="https://www.creditkarma.com/" class="quick-link-btn" target="_blank" rel="noopener">Credit Karma</a>
-                                <a href="https://www.annualcreditreport.com/requestReport/requestForm.action" class="quick-link-btn" target="_blank" rel="noopener">Annual Credit Report</a>
-                                <a href="https://consumerprivacy.experian.com/" class="quick-link-btn" target="_blank" rel="noopener">Experian Consumer Privacy</a>
-                                <a href="https://www.nerdwallet.com/" class="quick-link-btn" target="_blank" rel="noopener">NerdWallet</a>
-                                <a href="https://www.consumerfinance.gov/consumer-tools/credit-cards/explore-cards/" class="quick-link-btn" target="_blank" rel="noopener">CFPB Card Comparisons</a>
-                                <a href="https://www.doctorofcredit.com/best-bank-account-bonuses" class="quick-link-btn" target="_blank" rel="noopener">Doctor of Credit</a>
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">📊 Credit Monitoring & Comparison Tools</h3>
+                            <div class="qlBtns">
+                                <a href="https://www.creditkarma.com/" class="qlBtn" target="_blank" rel="noopener">Credit Karma</a>
+                                <a href="https://www.annualcreditreport.com/requestReport/requestForm.action" class="qlBtn" target="_blank" rel="noopener">Annual Credit Report</a>
+                                <a href="https://consumerprivacy.experian.com/" class="qlBtn" target="_blank" rel="noopener">Experian Consumer Privacy</a>
+                                <a href="https://www.nerdwallet.com/" class="qlBtn" target="_blank" rel="noopener">NerdWallet</a>
+                                <a href="https://www.consumerfinance.gov/consumer-tools/credit-cards/explore-cards/" class="qlBtn" target="_blank" rel="noopener">CFPB Card Comparisons</a>
+                                <a href="https://www.doctorofcredit.com/best-bank-account-bonuses" class="qlBtn" target="_blank" rel="noopener">Doctor of Credit</a>
                             </div>
                         </div>
         
                         <!-- ─── MY BANKS (COLLAPSIBLE) ─── -->
-                        <div class="collapsible-section">
-                            <button class="collapsible-toggle" onclick="this.parentElement.classList.toggle('open')">
+                        <div class="collapse">
+                            <button class="collapseBtn" onclick="this.parentElement.classList.toggle('open')">
                                 🏦 My Banks <span class="toggle-arrow">▾</span>
                             </button>
-                            <div class="collapsible-content">
+                            <div class="collapseBody">
                                 <p class="tips-description">Banks I use — some may have signup bonuses for new checking accounts. Sites like <a href="https://www.doctorofcredit.com/best-bank-account-bonuses" target="_blank" rel="noopener" style="color: #22c55e;">Doctor of Credit</a> and <a href="https://www.nerdwallet.com/best/banking/best-bank-bonuses-and-promotions" target="_blank" rel="noopener" style="color: #22c55e;">NerdWallet</a> track the latest offers.</p>
         
                                 <div class="banks-grid">
@@ -460,7 +460,7 @@
                                 </div>
         
                                 <!-- ─── BANKING TIPS ─── -->
-                                <h4 class="info-box-title" style="margin-top: 1.5rem;">🏦 Banking Tips</h4>
+                                <h4 class="infoTitle" style="margin-top: 1.5rem;">🏦 Banking Tips</h4>
                                 <ul class="tips-list">
                                     <li><strong>High-yield savings:</strong> Your money should be earning interest — look for 4%+ APY accounts</li>
                                     <li><strong>FDIC insurance:</strong> Your deposits are insured up to $250,000 per depositor, per bank</li>
@@ -474,7 +474,7 @@
                 </div>
 
                 <!-- SLIDE 2: Crypto -->
-                <div class="finance-slide" id="slide-crypto" data-accent="#a78bfa">
+                <div class="slide" id="slide-crypto" data-accent="#a78bfa">
                     <div class="grid-item finance-box" id="crypto-section">
                         <h2>🪙 Crypto</h2>
                         <p>The rabbit hole goes deep. Here's a quick look at my crypto world — hit the full page for the deep dive.</p>
@@ -485,24 +485,24 @@
                         </div>
                     
                         <!-- ─── BRIEF EXPLAINER ─── -->
-                        <div class="finance-info-box" style="margin-top: 1rem;">
-                            <h4 class="info-box-title">What's the deal with crypto?</h4>
+                        <div class="infoBox" style="margin-top: 1rem;">
+                            <h4 class="infoTitle">What's the deal with crypto?</h4>
                             <p class="tips-description">Cryptocurrency is digital money that runs on blockchain technology — no banks, no middlemen. <strong>DeFi</strong> (Decentralized Finance) lets you lend, borrow, trade, and earn interest without traditional financial institutions. <strong>Web3</strong> is the next evolution of the internet where users own their data, identity, and digital assets. It's still early — and that's what makes it exciting.</p>
                             <p class="tips-description" style="opacity: 0.6; font-size: 0.8rem; margin-top: 0.5rem;">My focus is on the real-world utility — cutting through the noise to find what actually works.</p>
                         </div>
                     
                         <!-- ─── CURATED QUICK LINKS ─── -->
-                        <div class="finance-quick-links" style="margin-top: 1rem;">
-                            <h3 class="quick-links-header">⭐ Favorites & Essentials</h3>
-                            <div class="quick-links-buttons">
-                                <a href="https://bitcoin.org/bitcoin.pdf" class="quick-link-btn" target="_blank" rel="noopener noreferrer">📄 Bitcoin Whitepaper</a>
-                                <a href="https://ethereum.org/en/whitepaper/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">📄 Ethereum Whitepaper</a>
-                                <a href="https://www.coinbase.com/" class="quick-link-btn" target="_blank" rel="noopener">🔵 Coinbase</a>
-                                <a href="https://coinmarketcap.com/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">📊 CoinMarketCap</a>
-                                <a href="https://app.layer3.xyz/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">🏆 Layer3</a>
-                                <a href="https://defillama.com/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">📈 DefiLlama</a>
-                                <a href="https://suite.trezor.io/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">🔐 Trezor Suite</a>
-                                <a href="#" class="quick-link-btn" target="_blank" rel="noopener noreferrer">🟤 Brownie Points (BP)</a>
+                        <div class="quickLinks" style="margin-top: 1rem;">
+                            <h3 class="qlHeader">⭐ Favorites & Essentials</h3>
+                            <div class="qlBtns">
+                                <a href="https://bitcoin.org/bitcoin.pdf" class="qlBtn" target="_blank" rel="noopener noreferrer">📄 Bitcoin Whitepaper</a>
+                                <a href="https://ethereum.org/en/whitepaper/" class="qlBtn" target="_blank" rel="noopener noreferrer">📄 Ethereum Whitepaper</a>
+                                <a href="https://www.coinbase.com/" class="qlBtn" target="_blank" rel="noopener">🔵 Coinbase</a>
+                                <a href="https://coinmarketcap.com/" class="qlBtn" target="_blank" rel="noopener noreferrer">📊 CoinMarketCap</a>
+                                <a href="https://app.layer3.xyz/" class="qlBtn" target="_blank" rel="noopener noreferrer">🏆 Layer3</a>
+                                <a href="https://defillama.com/" class="qlBtn" target="_blank" rel="noopener noreferrer">📈 DefiLlama</a>
+                                <a href="https://suite.trezor.io/" class="qlBtn" target="_blank" rel="noopener noreferrer">🔐 Trezor Suite</a>
+                                <a href="#" class="qlBtn" target="_blank" rel="noopener noreferrer">🟤 Brownie Points (BP)</a>
                                 <!-- Add more favorites here -->
                             </div>
                         </div>
@@ -515,60 +515,60 @@
                 </div>
 
                 <!-- SLIDE 3: Investing & Markets -->
-                <div class="finance-slide" id="slide-investing" data-accent="#f59e0b">
+                <div class="slide" id="slide-investing" data-accent="#f59e0b">
                     <div class="grid-item finance-box" id="investing-section">
-                        <h2>📈 Investing & Markets</h2>
+                        <h2>📈 Investing & Retirement</h2>
                         <p>Stocks, ETFs, market vibes, and the tools I use to stay informed. Whether you're researching or just watching the chaos — it's all here.</p>
                     
                         <!-- ─── BROKERAGE QUICK LINKS ─── -->
-                        <div class="finance-quick-links">
-                            <h3 class="quick-links-header">🏦 My Brokerages</h3>
-                            <div class="quick-links-buttons">
-                                <a href="https://oltx.fidelity.com/ftgw/fbc/oftop/portfolio#summary" class="quick-link-btn" target="_blank" rel="noopener">Fidelity Portfolio</a>
-                                <a href="https://digital.fidelity.com/ftgw/digital/trader-dashboard" class="quick-link-btn" target="_blank" rel="noopener">Fidelity Trading Dashboard</a>
-                                <a href="https://robinhood.com/legend/layout" class="quick-link-btn" target="_blank" rel="noopener">Robinhood Legend</a>
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">🏦 My Brokerages</h3>
+                            <div class="qlBtns">
+                                <a href="https://oltx.fidelity.com/ftgw/fbc/oftop/portfolio#summary" class="qlBtn" target="_blank" rel="noopener">Fidelity Portfolio</a>
+                                <a href="https://digital.fidelity.com/ftgw/digital/trader-dashboard" class="qlBtn" target="_blank" rel="noopener">Fidelity Trading Dashboard</a>
+                                <a href="https://robinhood.com/legend/layout" class="qlBtn" target="_blank" rel="noopener">Robinhood Legend</a>
                             </div>
                         </div>
                     
                         <!-- ─── RESEARCH & ANALYSIS TOOLS ─── -->
-                        <div class="finance-quick-links">
-                            <h3 class="quick-links-header">🔬 Research & Analysis Tools</h3>
-                            <div class="quick-links-buttons">
-                                <a href="https://danelfin.com/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Danelfin AI Stock Analyzer</a>
-                                <a href="https://www.etfrc.com/funds/overlap.php" class="quick-link-btn" target="_blank" rel="noopener noreferrer">ETF Fund Overlap Tool</a>
-                                <a href="https://testfol.io/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">testfol.io (Backtesting)</a>
-                                <a href="https://www.thenew.money/trends" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Stock Trends</a>
-                                <a href="https://www.thenew.money/trend/psychedelic-stocks" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Psychedelic Stock Trends</a>
-                                <a href="https://www.tradingview.com/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">TradingView</a>
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">🔬 Research & Analysis Tools</h3>
+                            <div class="qlBtns">
+                                <a href="https://danelfin.com/" class="qlBtn" target="_blank" rel="noopener noreferrer">Danelfin AI Stock Analyzer</a>
+                                <a href="https://www.etfrc.com/funds/overlap.php" class="qlBtn" target="_blank" rel="noopener noreferrer">ETF Fund Overlap Tool</a>
+                                <a href="https://testfol.io/" class="qlBtn" target="_blank" rel="noopener noreferrer">testfol.io (Backtesting)</a>
+                                <a href="https://www.thenew.money/trends" class="qlBtn" target="_blank" rel="noopener noreferrer">Stock Trends</a>
+                                <a href="https://www.thenew.money/trend/psychedelic-stocks" class="qlBtn" target="_blank" rel="noopener noreferrer">Psychedelic Stock Trends</a>
+                                <a href="https://www.tradingview.com/" class="qlBtn" target="_blank" rel="noopener noreferrer">TradingView</a>
                             </div>
                         </div>
                     
                         <!-- ─── MARKET MONITORING & INDICATORS ─── -->
-                        <div class="finance-quick-links">
-                            <h3 class="quick-links-header">🌍 Market Monitoring & Indicators</h3>
-                            <div class="quick-links-buttons">
-                                <a href="https://www.cnn.com/markets/fear-and-greed" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Fear & Greed Index (CNN)</a>
-                                <a href="https://finviz.com/map.ashx" class="quick-link-btn" target="_blank" rel="noopener noreferrer">S&P 500 Map (Finviz)</a>
-                                <a href="https://www.usdebtclock.org/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">US Debt Clock</a>
-                                <a href="https://www.debtinperspective.com/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">US Debt in Perspective</a>
-                                <a href="https://goldprice.org/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Gold Price</a>
-                                <a href="https://www.marketwatch.com/investing/fund/djia/holdings" class="quick-link-btn" target="_blank" rel="noopener noreferrer">DJIA Holdings</a>
-                                <a href="https://companiesmarketcap.com/assets-by-market-cap/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Top World Assets by Market Cap</a>
-                                <a href="https://www.marketwatch.com/tools/ipo-calendar" class="quick-link-btn" target="_blank" rel="noopener noreferrer">IPO Calendar (MarketWatch)</a>
-                                <a href="https://www.nasdaq.com/market-activity/ipos" class="quick-link-btn" target="_blank" rel="noopener noreferrer">IPO Listings (Nasdaq)</a>
-                                <a href="https://www.visualcapitalist.com/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Visual Capitalist</a>
-                                <a href="https://www.marketwatch.com/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">MarketWatch</a>
-                                <a href="https://www.capitoltrades.com/politicians" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Capitol Trades (Politician Tracker)</a>
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">🌍 Market Monitoring & Indicators</h3>
+                            <div class="qlBtns">
+                                <a href="https://www.cnn.com/markets/fear-and-greed" class="qlBtn" target="_blank" rel="noopener noreferrer">Fear & Greed Index (CNN)</a>
+                                <a href="https://finviz.com/map.ashx" class="qlBtn" target="_blank" rel="noopener noreferrer">S&P 500 Map (Finviz)</a>
+                                <a href="https://www.usdebtclock.org/" class="qlBtn" target="_blank" rel="noopener noreferrer">US Debt Clock</a>
+                                <a href="https://www.debtinperspective.com/" class="qlBtn" target="_blank" rel="noopener noreferrer">US Debt in Perspective</a>
+                                <a href="https://goldprice.org/" class="qlBtn" target="_blank" rel="noopener noreferrer">Gold Price</a>
+                                <a href="https://www.marketwatch.com/investing/fund/djia/holdings" class="qlBtn" target="_blank" rel="noopener noreferrer">DJIA Holdings</a>
+                                <a href="https://companiesmarketcap.com/assets-by-market-cap/" class="qlBtn" target="_blank" rel="noopener noreferrer">Top World Assets by Market Cap</a>
+                                <a href="https://www.marketwatch.com/tools/ipo-calendar" class="qlBtn" target="_blank" rel="noopener noreferrer">IPO Calendar (MarketWatch)</a>
+                                <a href="https://www.nasdaq.com/market-activity/ipos" class="qlBtn" target="_blank" rel="noopener noreferrer">IPO Listings (Nasdaq)</a>
+                                <a href="https://www.visualcapitalist.com/" class="qlBtn" target="_blank" rel="noopener noreferrer">Visual Capitalist</a>
+                                <a href="https://www.marketwatch.com/" class="qlBtn" target="_blank" rel="noopener noreferrer">MarketWatch</a>
+                                <a href="https://www.capitoltrades.com/politicians" class="qlBtn" target="_blank" rel="noopener noreferrer">Capitol Trades (Politician Tracker)</a>
                             </div>
                         </div>
                     
                         <!-- ─── INVESTING INFO BLURB ─── -->
-                        <div class="finance-info-box" style="margin-top: 1rem;">
-                            <button class="sources-icon-btn" onclick="document.getElementById('sources-modal-investing').classList.add('open')" title="Sources">
+                        <div class="infoBox" style="margin-top: 1rem;">
+                            <button class="srcBtn" onclick="document.getElementById('sources-modal-investing').classList.add('open')" title="Sources">
                                 ?
                             </button>
             
-                            <h4 class="info-box-title">📚 Investing Basics & Tips</h4>
+                            <h4 class="infoTitle">📚 Investing Basics & Tips</h4>
                             <ul class="tips-list">
                                 <li><strong>ETFs (Exchange-Traded Funds):</strong> Bundles of stocks/bonds you can buy like a single stock — instant diversification without picking individual companies</li>
                                 <li><strong>Dollar-Cost Averaging (DCA):</strong> Invest a fixed amount on a regular schedule regardless of price — smooths out volatility over time</li>
@@ -578,9 +578,9 @@
                                 <li><strong>401k / Employer Match:</strong> If your employer matches contributions, always contribute at least enough to get the full match — it's literally free money you're leaving on the table</li>
                             </ul>
             
-                            <div class="sources-modal-overlay" id="sources-modal-investing" onclick="if(event.target===this) this.classList.remove('open')">
+                            <div class="srcOverlay" id="sources-modal-investing" onclick="if(event.target===this) this.classList.remove('open')">
                                 <div class="sources-modal">
-                                    <button class="sources-modal-close" onclick="document.getElementById('sources-modal-investing').classList.remove('open')">✕</button>
+                                    <button class="srcClose" onclick="document.getElementById('sources-modal-investing').classList.remove('open')">✕</button>
                                     <h4>📎 Sources</h4>
                                     <p style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 1rem;">Where I've learned this stuff:</p>
                                     <div class="sources-links">
@@ -595,48 +595,48 @@
                 </div>
 
                 <!-- SLIDE 4: Taxes & Legal -->
-                <div class="finance-slide" id="slide-taxes" data-accent="#60a5fa">
+                <div class="slide" id="slide-taxes" data-accent="#60a5fa">
                     <div class="grid-item finance-box" id="taxes-section">
                         <h2>📋 Taxes & Legal</h2>
                         <p>The boring but important stuff — taxes, government resources, and money you might not know you're owed. Seriously, check the unclaimed money sites.</p>
                     
                         <!-- ─── TAX FILING ─── -->
-                        <div class="finance-quick-links">
-                            <h3 class="quick-links-header">🧾 Tax Filing & Tools</h3>
-                            <div class="quick-links-buttons">
-                                <a href="https://www.freetaxusa.com/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">FreeTaxUSA</a>
-                                <a href="https://www.irs.gov/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">IRS.gov</a>
-                                <a href="https://www.cointracker.io/home" class="quick-link-btn" target="_blank" rel="noopener noreferrer">CoinTracker (Crypto Taxes)</a>
-                                <a href="https://www.fidelity.com/learning-center/trading-investing/crypto/crypto-tax-guide" class="quick-link-btn" target="_blank" rel="noopener noreferrer">Fidelity Crypto Tax Guide</a>
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">🧾 Tax Filing & Tools</h3>
+                            <div class="qlBtns">
+                                <a href="https://www.freetaxusa.com/" class="qlBtn" target="_blank" rel="noopener noreferrer">FreeTaxUSA</a>
+                                <a href="https://www.irs.gov/" class="qlBtn" target="_blank" rel="noopener noreferrer">IRS.gov</a>
+                                <a href="https://www.cointracker.io/home" class="qlBtn" target="_blank" rel="noopener noreferrer">CoinTracker (Crypto Taxes)</a>
+                                <a href="https://www.fidelity.com/learning-center/trading-investing/crypto/crypto-tax-guide" class="qlBtn" target="_blank" rel="noopener noreferrer">Fidelity Crypto Tax Guide</a>
                             </div>
                         </div>
             
                         <!-- ─── W-2 WITHHOLDING ESTIMATOR ─── -->
-                        <div class="finance-quick-links">
-                            <h3 class="quick-links-header">🧮 W-2 Withholding Estimator</h3>
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">🧮 W-2 Withholding Estimator</h3>
                             <p class="tips-description" style="text-align: center; font-size: 0.85rem; opacity: 0.7;">Make sure you're not over- or under-withholding from your paycheck. The IRS tool walks you through income, filing status, dependents, and deductions — then tells you exactly how to fill out your W-2.</p>
-                            <div class="quick-links-buttons">
-                                <a href="https://www.irs.gov/individuals/tax-withholding-estimator" class="quick-link-btn" target="_blank" rel="noopener noreferrer">IRS Tax Withholding Estimator</a>
+                            <div class="qlBtns">
+                                <a href="https://www.irs.gov/individuals/tax-withholding-estimator" class="qlBtn" target="_blank" rel="noopener noreferrer">IRS Tax Withholding Estimator</a>
                             </div>
                         </div>
             
                         <!-- ─── REFUND STATUS ─── -->
-                        <div class="finance-quick-links">
-                            <h3 class="quick-links-header">💸 Where's My Refund?</h3>
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">💸 Where's My Refund?</h3>
                             <p class="tips-description" style="text-align: center; font-size: 0.85rem; opacity: 0.7;">Track your federal and state tax refund status.</p>
-                            <div class="quick-links-buttons">
-                                <a href="https://www.irs.gov/refunds" class="quick-link-btn" target="_blank" rel="noopener noreferrer">🇺🇸 IRS — Where's My Refund?</a>
-                                <a href="https://www.usa.gov/check-tax-status/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">🏛️ USA.gov — Federal + State Refund</a>
-                                <a href="https://refundtalk.com/state-tax-refund-hub/" class="quick-link-btn" target="_blank" rel="noopener noreferrer">🗺️ State Refund Hub (All 50 States)</a>
+                            <div class="qlBtns">
+                                <a href="https://www.irs.gov/refunds" class="qlBtn" target="_blank" rel="noopener noreferrer">🇺🇸 IRS — Where's My Refund?</a>
+                                <a href="https://www.usa.gov/check-tax-status/" class="qlBtn" target="_blank" rel="noopener noreferrer">🏛️ USA.gov — Federal + State Refund</a>
+                                <a href="https://refundtalk.com/state-tax-refund-hub/" class="qlBtn" target="_blank" rel="noopener noreferrer">🗺️ State Refund Hub (All 50 States)</a>
                             </div>
                         </div>
                     
                         <!-- ─── TAX INFO BLURB ─── -->
-                        <div class="finance-info-box" style="margin-top: 1rem;">
-                            <button class="sources-icon-btn" onclick="document.getElementById('sources-modal-taxes').classList.add('open')" title="Sources">
+                        <div class="infoBox" style="margin-top: 1rem;">
+                            <button class="srcBtn" onclick="document.getElementById('sources-modal-taxes').classList.add('open')" title="Sources">
                                 ?
                             </button>
-                            <h4 class="info-box-title">📚 Tax Tips & Things to Know</h4>
+                            <h4 class="infoTitle">📚 Tax Tips & Things to Know</h4>
                             <ul class="tips-list">
                                 <li><strong>Key deadlines:</strong> Federal taxes are typically due April 15th. Extensions give you until October 15th to file, but you still owe by April 15th</li>
                                 <li><strong>File even if you don't owe:</strong> You might be leaving refundable credits on the table (like the Earned Income Tax Credit)</li>
@@ -645,9 +645,9 @@
                                 <li><strong>Withholding matters:</strong> If you get a huge refund every year, you're giving the IRS an interest-free loan. Adjust your W-2 to keep more in each paycheck</li>
                             </ul>
             
-                            <div class="sources-modal-overlay" id="sources-modal-taxes" onclick="if(event.target===this) this.classList.remove('open')">
+                            <div class="srcOverlay" id="sources-modal-taxes" onclick="if(event.target===this) this.classList.remove('open')">
                                 <div class="sources-modal">
-                                    <button class="sources-modal-close" onclick="document.getElementById('sources-modal-taxes').classList.remove('open')">✕</button>
+                                    <button class="srcClose" onclick="document.getElementById('sources-modal-taxes').classList.remove('open')">✕</button>
                                     <h4>📎 Sources</h4>
                                     <p style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 1rem;">Where I've learned this stuff:</p>
                                     <div class="sources-links">
@@ -660,8 +660,8 @@
                         </div>
                     
                         <!-- ─── Government & Identity Protection ─── -->
-                        <div class="finance-info-box">
-                            <h4 class="info-box-title">🏛️ Government & Identity Protection</h4>
+                        <div class="infoBox">
+                            <h4 class="infoTitle">🏛️ Government & Identity Protection</h4>
             
                             <p class="tips-description">Essential government services and what to do if your identity is compromised. Freeze your credit (Section 1 above), report it, and use these resources to recover.</p>
             
@@ -670,12 +670,12 @@
                                 <div class="tips-column">
                                     <h5 style="color: #60a5fa; font-size: 0.95rem; margin-bottom: 0.6rem;">📋 Government Services</h5>
                                     <p style="font-size: 0.85rem; opacity: 0.8; line-height: 1.5; margin-bottom: 0.8rem;">These are the big ones — Social Security for benefits and earnings history, IRS for taxes and refunds, USA.gov as the central hub for all federal services, and VA benefits if you or a family member served. Bookmark these and check in every once in awhile.</p>
-                                    <div class="finance-quick-links" style="background: rgba(96, 165, 250, 0.03); border-color: rgba(96, 165, 250, 0.15);">
-                                        <div class="quick-links-buttons" style="flex-direction: column;">
-                                            <a href="https://www.ssa.gov/" target="_blank" rel="noopener noreferrer" class="quick-link-btn">🏛️ Social Security</a>
-                                            <a href="https://www.irs.gov/" target="_blank" rel="noopener noreferrer" class="quick-link-btn">🪙 IRS.gov</a>
-                                            <a href="https://www.usa.gov/" target="_blank" rel="noopener noreferrer" class="quick-link-btn">🇺🇸 USA.gov</a>
-                                            <a href="https://www.va.gov/" target="_blank" rel="noopener noreferrer" class="quick-link-btn">🎖️ Veteren Affairs</a>
+                                    <div class="quickLinks" style="background: rgba(96, 165, 250, 0.03); border-color: rgba(96, 165, 250, 0.15);">
+                                        <div class="qlBtns" style="flex-direction: column;">
+                                            <a href="https://www.ssa.gov/" target="_blank" rel="noopener noreferrer" class="qlBtn">🏛️ Social Security</a>
+                                            <a href="https://www.irs.gov/" target="_blank" rel="noopener noreferrer" class="qlBtn">🪙 IRS.gov</a>
+                                            <a href="https://www.usa.gov/" target="_blank" rel="noopener noreferrer" class="qlBtn">🇺🇸 USA.gov</a>
+                                            <a href="https://www.va.gov/" target="_blank" rel="noopener noreferrer" class="qlBtn">🎖️ Veteren Affairs</a>
                                         </div>
                                     </div>
                                 </div>
@@ -685,12 +685,12 @@
                                 <div class="tips-column">
                                     <h5 style="color: #60a5fa; font-size: 0.95rem; margin-bottom: 0.6rem;">🛡️ Identity Theft & Recovery</h5>
                                     <p style="font-size: 0.85rem; opacity: 0.8; line-height: 1.5; margin-bottom: 0.8rem;">If your identity is stolen: freeze your credit immediately (Section 1), report it at IdentityTheft.gov, and file a police report. The FTC walks you through a personalized recovery plan.</p>
-                                    <div class="finance-quick-links" style="background: rgba(96, 165, 250, 0.03); border-color: rgba(96, 165, 250, 0.15);">
-                                        <div class="quick-links-buttons" style="flex-direction: column;">
-                                            <a href="https://www.identitytheft.gov/" target="_blank" rel="noopener noreferrer" class="quick-link-btn">🛡️ IdentityTheft.gov (FTC)</a>
-                                            <a href="https://www.bulkorder.ftc.gov/system/files/publications/pdf-0204_identitytheftwhat_to_do_right_away_0.pdf" target="_blank" rel="noopener noreferrer" class="quick-link-btn">🔒 What to do right away</a>
-                                            <a href="https://www.annualcreditreport.com/" target="_blank" rel="noopener noreferrer" class="quick-link-btn">📊 Annual Credit Report</a>
-                                            <a href="https://haveibeenpwned.com/" target="_blank" rel="noopener noreferrer" class="quick-link-btn">♟️ HaveIBeenPwned</a>
+                                    <div class="quickLinks" style="background: rgba(96, 165, 250, 0.03); border-color: rgba(96, 165, 250, 0.15);">
+                                        <div class="qlBtns" style="flex-direction: column;">
+                                            <a href="https://www.identitytheft.gov/" target="_blank" rel="noopener noreferrer" class="qlBtn">🛡️ IdentityTheft.gov (FTC)</a>
+                                            <a href="https://www.bulkorder.ftc.gov/system/files/publications/pdf-0204_identitytheftwhat_to_do_right_away_0.pdf" target="_blank" rel="noopener noreferrer" class="qlBtn">🔒 What to do right away</a>
+                                            <a href="https://www.annualcreditreport.com/" target="_blank" rel="noopener noreferrer" class="qlBtn">📊 Annual Credit Report</a>
+                                            <a href="https://haveibeenpwned.com/" target="_blank" rel="noopener noreferrer" class="qlBtn">♟️ HaveIBeenPwned</a>
                                         </div>
                                     </div>
                                 </div>
@@ -699,13 +699,13 @@
                         </div>
                     
                         <!-- ─── UNCLAIMED MONEY (EYE-CATCHING) ─── -->
-                        <div class="unclaimed-money-box">
+                        <div class="unclaimedBox">
                             <p class="unclaimed-title">💰 You might have money sitting out there waiting for you 👀</p>
                             <p class="tips-description" style="text-align: center; font-size: 0.85rem;">States hold billions in unclaimed property — old bank accounts, forgotten deposits, insurance payouts, utility refunds. It takes 2 minutes to check. Do it every year.</p>
-                            <div class="quick-links-buttons" style="justify-content: center;">
-                                <a href="https://www.usa.gov/unclaimed-money" class="quick-link-btn unclaimed-btn" target="_blank" rel="noopener noreferrer">USAGov Unclaimed Money</a>
-                                <a href="https://unclaimed.org/" class="quick-link-btn unclaimed-btn" target="_blank" rel="noopener noreferrer">Unclaimed.org</a>
-                                <a href="https://missingmoney.com/" class="quick-link-btn unclaimed-btn" target="_blank" rel="noopener noreferrer">MissingMoney.com</a>
+                            <div class="qlBtns" style="justify-content: center;">
+                                <a href="https://www.usa.gov/unclaimed-money" class="qlBtn unclaimed-btn" target="_blank" rel="noopener noreferrer">USAGov Unclaimed Money</a>
+                                <a href="https://unclaimed.org/" class="qlBtn unclaimed-btn" target="_blank" rel="noopener noreferrer">Unclaimed.org</a>
+                                <a href="https://missingmoney.com/" class="qlBtn unclaimed-btn" target="_blank" rel="noopener noreferrer">MissingMoney.com</a>
                             </div>
                         </div>
                     
@@ -713,7 +713,7 @@
                 </div>
 
                 <!-- SLIDE 5: Net Worth & Budget -->
-                <div class="finance-slide" id="slide-networth" data-accent="#14b8a6">
+                <div class="slide" id="slide-networth" data-accent="#14b8a6">
                     <div class="grid-item finance-box" id="networth-section">
                         <h2>📊 My Credit & Budget</h2>
                         <p>Here's my credit limit, credit score, and the budget sheet I use.</p>
@@ -756,8 +756,8 @@
                         </div>
                     
                         <!-- ─── BUDGET SPREADSHEET SHARE ─── -->
-                        <div class="finance-info-box" style="margin-top: 1.5rem;">
-                            <h4 class="info-box-title">📝 My Budget Spreadsheet</h4>
+                        <div class="infoBox" style="margin-top: 1.5rem;">
+                            <h4 class="infoTitle">📝 My Budget Spreadsheet</h4>
                             <p class="tips-description">Budgeting is the foundation of everything else on this page. If you don't know where your money's going, you can't make it grow. I use a simple Excel sheet to track income, expenses, savings goals, and subscriptions every month. Feel free to download it and make it your own.</p>
                             <div style="text-align: center; margin-top: 1rem;">
                                 <a href="#" class="cta-button" style="display: inline-block; font-size: 0.9rem; border-color: #22c55e; background: rgba(34, 197, 94, 0.15);">📥 Download My Budget Template (Coming Soon)</a>
