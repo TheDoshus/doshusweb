@@ -1,8 +1,16 @@
-// ═══════════════════════════════════════
-// DEEP SPACE STARS: 3 LAYERS + PARALLAX + CONTINUOUS DRIFT
-// ═══════════════════════════════════════
-const starsContainer = document.getElementById('stars');
+// Smooth scrolling
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
 
+// Deep Space Stars
+const starsContainer = document.getElementById('stars');
 if (starsContainer) {
 
     // ─── STAR LAYER CONFIG ───
@@ -159,17 +167,6 @@ function revealEmail() {
     }
 }
 
-// Smooth scrolling
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-});
-
 // Amazon Link Toggle - Switch between internal and external links
 function initAmazonLinkToggle() {
     const toggle = document.getElementById('linkToggle');
@@ -186,37 +183,34 @@ function initAmazonLinkToggle() {
   
     // Function to update all links
     function updateLinks() {
-      const isExternal = toggle.checked;
-  
-      amazonLinks.forEach(link => {
+        const isExternal = toggle.checked;
+
+        amazonLinks.forEach(link => {
         const internalUrl = link.getAttribute('data-internal');
         const externalUrl = link.getAttribute('data-external');
         const internalText = link.getAttribute('data-internal-text');
         const externalText = link.getAttribute('data-external-text');
-  
+
         if (isExternal) {
-          // Switch to external links
-          link.href = externalUrl;
-          link.textContent = externalText;
-          link.setAttribute('target', '_blank');
-          link.setAttribute('rel', 'noopener noreferrer');
-          toggleText.textContent = 'External Links';
+            // Switch to external links
+            link.href = externalUrl;
+            link.textContent = externalText;
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+            toggleText.textContent = 'External Links';
         } else {
-          // Switch to internal links
-          link.href = internalUrl;
-          link.textContent = internalText;
-  
-          // Remove target="_blank" for internal links (optional)
-          if (!internalUrl.startsWith('http')) {
+            // Switch to internal links
+            link.href = internalUrl;
+            link.textContent = internalText;
+
+            if (!internalUrl.startsWith('http')) {
             link.removeAttribute('target');
             link.removeAttribute('rel');
-          }
-          toggleText.textContent = 'Internal Links';
+            }
+            toggleText.textContent = 'Internal Links';
         }
-      });
+        });
     }
-  
-    // Initialize on page load
     updateLinks();
   
     // Toggle function
@@ -233,77 +227,11 @@ function initAmazonLinkToggle() {
       }, 200);
     });
   }
-  
-  // Call the function when DOM is ready
   document.addEventListener('DOMContentLoaded', initAmazonLinkToggle);
-
-// Navigation Modal - "What's the move?" popup
-function initNavigationModal() {
-    const openBtn = document.getElementById('openNavModal');
-    const modal = document.getElementById('navModal');
-    const closeBtn = document.getElementById('closeModal');
-    const navButtons = document.querySelectorAll('.nav-modal-btn');
-
-    if (!openBtn || !modal || !closeBtn) {
-        return; // Elements don't exist
-    }
-
-    // Open modal
-    openBtn.addEventListener('click', function() {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-    });
-
-    // Close modal
-    closeBtn.addEventListener('click', function() {
-        modal.classList.remove('active');
-        document.body.style.overflow = ''; // Re-enable scrolling
-    });
-
-    // Close modal when clicking outside
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-
-    // Navigation buttons - smooth scroll to sections
-    navButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const targetId = this.getAttribute('data-target');
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                // Close modal
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
-
-                // Smooth scroll to section
-                targetSection.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-}
-
-// Initialize on page load
-window.addEventListener('DOMContentLoaded', initNavigationModal);
 
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
 let lastScrollY = window.scrollY;
 const stickyFooter = document.getElementById('sticky-footer');
-
 window.addEventListener('scroll', () => {
     const currentScrollY = window.scrollY;
     const scrollPosition = window.scrollY + window.innerHeight;
@@ -321,13 +249,10 @@ window.addEventListener('scroll', () => {
     else {
         stickyFooter.classList.remove('footer-hidden');
     }
-
     lastScrollY = currentScrollY;
 });
 
 // ─── COLLAPSIBLE SECTIONS ───
-// (The onclick is already inline on the buttons,
-//  but this adds keyboard accessibility)
 document.querySelectorAll('.collapseBtn').forEach(btn => {
     btn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {

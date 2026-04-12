@@ -8,7 +8,6 @@
     margin: 0 auto 4rem auto;
     padding: 3rem 2rem;
 }
-
 .section-title {
     font-size: clamp(2rem, 5vw, 3rem);
     text-align: center;
@@ -18,7 +17,6 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-
 .section-subtitle {
     text-align: center;
     color: #a0a0a0;
@@ -28,15 +26,13 @@
 
 /* ===================================
    MY FAVORITES GRID
-   =================================== */
-
+====================================== */
 .favorites-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(250px, 1fr));
     gap: 1.5rem;
     margin-bottom: 3rem;
 }
-
 .favorite-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -52,25 +48,21 @@
     align-items: center;
     gap: 1rem;
 }
-
 .favorite-card:hover {
     transform: translateY(-5px);
     border-color: #a78bfa;
     box-shadow: 0 10px 30px rgba(167, 139, 250, 0.4);
     background: rgba(167, 139, 250, 0.1);
 }
-
 .card-icon {
     font-size: 3rem;
     filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.5));
 }
-
 .favorite-card h3 {
     font-size: 1.3rem;
     margin: 0;
     color: #e0e0e0;
 }
-
 .favorite-card p {
     font-size: 0.95rem;
     color: #a0a0a0;
@@ -79,15 +71,13 @@
 
 /* ===================================
    GAMING ZONE GRID
-   =================================== */
-
+===================================== */
 .gaming-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-bottom: 3rem;
 }
-
 .game-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -103,19 +93,16 @@
     align-items: center;
     gap: 1rem;
 }
-
 .game-card:hover {
     transform: scale(1.05);
     border-color: #60a5fa;
     box-shadow: 0 10px 30px rgba(96, 165, 250, 0.4);
     background: rgba(96, 165, 250, 0.1);
 }
-
 .game-icon {
     font-size: 2.5rem;
     filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.5));
 }
-
 .game-card h3 {
     font-size: 1.1rem;
     margin: 0;
@@ -124,8 +111,7 @@
 
 /* ===================================
    EMBEDDED GAME SECTION
-   =================================== */
-
+===================================== */
 .embedded-game {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -135,7 +121,6 @@
     margin-bottom: 3rem;
     overflow: hidden;
 }
-
 .embedded-game iframe {
     width: 100%;
     height: 500px;
@@ -145,35 +130,12 @@
 
 /* ===================================
    INTERESTING SITES SECTION
-   =================================== */
-
+===================================== */
 .sites-controls {
     display: flex;
     gap: 1rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
-}
-
-.search-bar {
-    flex: 1;
-    min-width: 250px;
-    padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(167, 139, 250, 0.3);
-    border-radius: 50px;
-    color: #e0e0e0;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.search-bar:focus {
-    outline: none;
-    border-color: #a78bfa;
-    box-shadow: 0 0 20px rgba(167, 139, 250, 0.3);
-}
-
-.search-bar::placeholder {
-    color: #808080;
 }
 
 .surprise-btn {
@@ -188,12 +150,10 @@
     transition: all 0.3s ease;
     white-space: nowrap;
 }
-
 .surprise-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 5px 20px rgba(167, 139, 250, 0.5);
 }
-
 .surprise-btn:active {
     transform: scale(0.98);
 }
@@ -206,7 +166,6 @@
     flex-wrap: wrap;
     justify-content: center;
 }
-
 .filter-btn {
     padding: 0.8rem 1.5rem;
     background: rgba(255, 255, 255, 0.05);
@@ -217,12 +176,10 @@
     cursor: pointer;
     transition: all 0.3s ease;
 }
-
 .filter-btn:hover {
     border-color: #a78bfa;
     background: rgba(167, 139, 250, 0.1);
 }
-
 .filter-btn.active {
     background: linear-gradient(45deg, #a78bfa, #60a5fa);
     border-color: transparent;
@@ -247,33 +204,28 @@
 .sites-container::-webkit-scrollbar {
     width: 10px;
 }
-
 .sites-container::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
 }
-
 .sites-container::-webkit-scrollbar-thumb {
     background: rgba(167, 139, 250, 0.5);
     border-radius: 10px;
 }
-
 .sites-container::-webkit-scrollbar-thumb:hover {
     background: rgba(167, 139, 250, 0.7);
 }
 
 /* ===================================
    CATEGORY BOXES LAYOUT
-   =================================== */
-
-   .category-boxes-container {
+===================================== */
+.category-boxes-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 2rem;
     align-items: flex-start;
 }
-
 .category-box {
     flex: 1 1 calc(50% - 1rem); /* Two boxes per row, accounting for gap */
     min-width: 400px; /* Minimum width before wrapping */
@@ -284,18 +236,15 @@
     transition: all 0.3s ease;
     backdrop-filter: blur(5px);
 }
-
 .category-box.hidden {
     display: none;
 }
-
 .category-header {
     font-size: 1.5rem;
     margin-bottom: 1rem;
     color: #a78bfa;
     text-align: center;
 }
-
 .category-links {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -309,17 +258,14 @@
 .category-links::-webkit-scrollbar {
     width: 8px;
 }
-
 .category-links::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
 }
-
 .category-links::-webkit-scrollbar-thumb {
     background: rgba(167, 139, 250, 0.5);
     border-radius: 10px;
 }
-
 .category-links::-webkit-scrollbar-thumb:hover {
     background: rgba(167, 139, 250, 0.7);
 }
@@ -337,19 +283,16 @@
     color: #e0e0e0;
     transition: all 0.3s ease;
 }
-
 .site-link:hover {
     transform: translateX(5px);
     border-color: #a78bfa;
     background: rgba(167, 139, 250, 0.1);
     box-shadow: 0 5px 15px rgba(167, 139, 250, 0.3);
 }
-
 .site-emoji {
     font-size: 1.5rem;
     flex-shrink: 0;
 }
-
 .site-name {
     font-size: 0.95rem;
     font-weight: 500;
@@ -362,9 +305,9 @@
 
 /* ===================================
    RANDOM MEME BOXES - FIXED IN SECTIONS
-   =================================== */
+===================================== */
 
-   .random-meme-fixed {
+.random-meme-fixed {
     flex: 1 1 calc(50% - 1rem);
     width: 250px;
     max-width: 300px;
