@@ -354,6 +354,8 @@
     right: 20px;
 }
 
+.footer-nav a.footer-active { color: #ec4899; font-weight: 600; }
+
 /* ===================================
    RESPONSIVE DESIGN
    =================================== */

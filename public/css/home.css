@@ -59,7 +59,7 @@
     padding: clamp(2rem, 5vw, 3rem);
     max-width: 900px;
     width: 100%;
-    margin: 2rem 1rem;
+    margin: 20rem 1rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 .glass-card h2 {
@@ -342,6 +342,7 @@
 .btc-chart-widget gecko-coin-price-chart-widget { display: block; width: 100%; }
 
 /* Finance Box */
+#finance.grid-item { margin-bottom: 1rem; }
 .finance-box .category-tag { border-color: rgba(34, 197, 94, 0.3); }
 
 /* Credit Card Carousel */
@@ -388,13 +389,14 @@
     opacity: 0.9;
 }
 
+.footer-nav a.footer-active { color: #FF9900; font-weight: 600; }
+
 /* Tab & Phone Optimizations */
 @media (max-width: 900px) {
     .ctaPopup-content { padding: 2rem 1.5rem; }
     .ctaPopup-btn { padding: 1rem 1.5rem; }
     .category-tags { width: 100%; }
     .site-card span { font-size: 1rem; }
-    .glass-card { margin: 1rem 0.5rem; }
     .btc-chart-widget { margin-bottom: 1rem; position: static; width: 100%; }
     .social-container { padding: 1.5rem 0.25rem; }
     .grid-container { padding: 0.5rem; }

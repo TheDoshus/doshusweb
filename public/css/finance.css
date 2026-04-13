@@ -624,6 +624,7 @@
 #crypto-section:hover { border: 1px solid #a78bfa; box-shadow: 0 10px 40px rgba(132, 34, 197, 0.15); }
 #crypto-section h2 { color: #a78bfa; }
 #crypto-section .finance-box { color: #a78bfa; }
+#crypto-section .quickLinks { background: rgba(167, 139, 250, 0.03); border: 1px solid rgba(138, 34, 197, 0.3);}
 #crypto-section .quickLinks .qlBtn { color: #a78bfa; background: rgba(123, 34, 197, 0.11); border: 1px solid rgba(138, 34, 197, 0.3);}
 #crypto-section .infoTitle {
     color: #a78bfa;
@@ -648,6 +649,7 @@
 #investing-section:hover { border: 1px solid #f59e0be8; box-shadow: 0 10px 40px rgba(197, 129, 34, 0.15); }
 #investing-section h2 { color: #f59e0be8; }
 #investing-section .finance-box { color: #f59e0be8; }
+#investing-section .quickLinks { background: rgb(197 164 34 / 4%); border: 1px solid rgba(197, 116, 34, 0.3);}
 #investing-section .quickLinks .qlBtn { color: #f59e0be8; background: rgba(197, 164, 34, 0.11); border: 1px solid rgba(197, 116, 34, 0.3);}
 #investing-section .infoTitle {
     color: #f59e0b;
@@ -672,6 +674,7 @@
 #taxes-section:hover { border: 1px solid #60a5fae0; box-shadow: 0 10px 40px rgba(34, 118, 197, 0.15); }
 #taxes-section h2 { color: #60a5fae0; }
 #taxes-section .finance-box { color: #60a5fae0; }
+#taxes-section .quickLinks { background: rgb(34 75 197 / 4.5%); border: 1px solid rgba(34, 82, 197, 0.3); }
 #taxes-section .quickLinks .qlBtn { color: #60a5fae0; background: rgba(34, 75, 197, 0.11); border: 1px solid rgba(34, 82, 197, 0.3); }
 #taxes-section .infoTitle {
     color: #60a5fa;
@@ -947,6 +950,8 @@
     color: #e0e0e0;
     font-weight: 600;
 }
+
+.footer-nav a.footer-active { color: #22c55e; font-weight: 600; }
 
 /* ─── MOBILE: Hide labels, smaller bar ─── */
 @media (max-width: 700px) {
