@@ -1,3 +1,9 @@
+/* --- GLOBAL ANALYTICS --- */
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-KQ1RGHNMZG');
+
 // Smooth scrolling
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -146,24 +152,21 @@ if (starsContainer) {
     animateStars();
 }
 
-// Email reveal function
-let emailRevealed = false;
-function revealEmail() {
-    const emailText = document.getElementById('emailText');
-    const emailBox = document.getElementById('emailBox');
+// old revealEmail() function
+let slackRevealed = false;
+
+function handleSlackClick() {
+    const slackText = document.getElementById('slackText');
     
-    if (!emailRevealed) {
-        emailText.classList.remove('email-hidden');
-        emailText.classList.add('email-revealed');
-        emailRevealed = true;
+    if (!slackRevealed) {
+        // First click: Remove the blur to reveal the handle
+        slackText.classList.remove('email-hidden');
+        slackText.classList.add('email-revealed');
+        slackRevealed = true;
     } else {
-        navigator.clipboard.writeText('aaustinp@amazon.com').then(() => {
-            const originalText = emailText.textContent;
-            emailText.textContent = 'Copied to clipboard!';
-            setTimeout(() => {
-                emailText.textContent = originalText;
-            }, 2000);
-        });
+        // Second click: Execute the redirect to Slack
+        const slackUrl = 'https://amazon.enterprise.slack.com/messages/aaustinp'; 
+        window.open(slackUrl, '_blank', 'noopener,noreferrer');
     }
 }
 

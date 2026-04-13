@@ -242,6 +242,7 @@ h3 {
     .quickLinks .qlBtn { width: 100%; }
 }
 @media (max-width: 550px) {
+    .qlBtns { grid-template-columns: repeat(2, minmax(100px, 1fr)); }
     .hero { padding: 1rem; }
     .cta-button { padding: 0.8rem 1.5rem; }
 

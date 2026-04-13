@@ -300,7 +300,7 @@
 }
 
 .collapse.open .collapseBody {
-    max-height: 2000px;
+    max-height: fit-content;
     padding: 1rem 1.5rem 1.5rem 1.5rem;
 }
 
@@ -546,9 +546,6 @@
 
     .collapse {
         overflow: hidden;
-    }
-    .collapseBody {
-        overflow-y: scroll;
     }
 
     .myths-grid {
