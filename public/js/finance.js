@@ -161,3 +161,56 @@ window.addEventListener('resize', () => {
         });
     });
 });
+
+// ─── COLLAPSIBLE SECTIONS ───
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Helper function to sync slider height with the current active slide
+    function syncSliderHeight() {
+        const activeSlide = document.querySelector('.slide.active-slide');
+        const viewport = document.querySelector('.sliderView');
+        if (activeSlide && viewport) {
+            // Use requestAnimationFrame to ensure the browser has finished 
+            // the 'open' animation before measuring height
+            requestAnimationFrame(() => {
+                viewport.style.height = activeSlide.scrollHeight + 'px';
+            });
+        }
+    }
+
+    // 1. Handle all Collapsible Sections
+    document.querySelectorAll('.collapseBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.parentElement.classList.toggle('open');
+            // FIX: Trigger height sync after the section opens/closes
+            syncSliderHeight();
+        });
+    });
+
+    // 2. Handle opening Modals via data-target
+    document.querySelectorAll('.srcBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const targetModal = document.getElementById(targetId);
+            if (targetModal) targetModal.classList.add('open');
+        });
+    });
+
+    // 3. Handle closing Modals (Clicking the X)
+    document.querySelectorAll('.srcClose').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Find the closest parent with the overlay class and close it
+            this.closest('.srcOverlay').classList.remove('open');
+        });
+    });
+
+    // 4. Handle closing Modals (Clicking the dark background)
+    document.querySelectorAll('.srcOverlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            // Only close if clicking the background, not the modal content itself
+            if (e.target === this) {
+                this.classList.remove('open');
+            }
+        });
+    });
+});

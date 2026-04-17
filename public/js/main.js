@@ -152,85 +152,76 @@ if (starsContainer) {
     animateStars();
 }
 
-// old revealEmail() function
-let slackRevealed = false;
+// Random meme/video loader - Auto-loads from JSON
+async function loadRandomMeme() {
+    try {
+        const response = await fetch('/memes/meme-list.json');
 
-function handleSlackClick() {
-    const slackText = document.getElementById('slackText');
-    
-    if (!slackRevealed) {
-        // First click: Remove the blur to reveal the handle
-        slackText.classList.remove('email-hidden');
-        slackText.classList.add('email-revealed');
-        slackRevealed = true;
-    } else {
-        // Second click: Execute the redirect to Slack
-        const slackUrl = 'https://amazon.enterprise.slack.com/team/U03AWNH0XJ8'; 
-        window.open(slackUrl, '_blank', 'noopener,noreferrer');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const memeFiles = await response.json();
+        const memeContainer = document.getElementById('meme-container');
+
+        if (memeContainer && memeFiles.length > 0) {
+            const randomIndex = Math.floor(Math.random() * memeFiles.length);
+            const randomFile = memeFiles[randomIndex];
+
+            // Removed 'gif' - Gifs must be handled as images, not videos!
+            const isVideo = /\.(mp4|webm|avi|wmv|flv|mkv|mov)$/i.test(randomFile);
+
+            memeContainer.innerHTML = '';
+
+            if (isVideo) {
+                const video = document.createElement('video');
+                video.src = randomFile;
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.style.width = '100%';
+                video.style.height = '100%';
+                video.style.objectFit = 'cover';
+                video.style.borderRadius = '10px';
+
+                video.onerror = function() {
+                    console.error('Failed to load video:', this.src);
+                    memeContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637" alt="Error">';
+                };
+
+                memeContainer.appendChild(video);
+                console.log(`🎬 Loaded random video: ${randomFile}`);
+            } else {
+                const img = document.createElement('img');
+                img.src = randomFile;
+                img.alt = 'Random Meme';
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '10px';
+
+                img.onerror = function() {
+                    console.error('Failed to load image:', this.src);
+                    this.src = 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637';
+                };
+
+                memeContainer.appendChild(img);
+                console.log(`🎲 Loaded random meme: ${randomFile}`);
+            }
+        } else if (memeFiles.length === 0) {
+            console.warn('⚠️  No memes found in meme-list.json');
+        }
+
+    } catch (error) {
+        console.error('❌ Error loading memes:', error);
+        const memeContainer = document.getElementById('meme-container');
+        if (memeContainer) {
+            memeContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637" alt="Loading">';
+        }
     }
 }
-
-// Amazon Link Toggle - Switch between internal and external links
-function initAmazonLinkToggle() {
-    const toggle = document.getElementById('linkToggle');
-    const toggleText = document.getElementById('toggleText');
-    const amazonLinks = document.querySelectorAll('.amazon-link');
-  
-    if (!toggle || !toggleText || amazonLinks.length === 0) {
-      return; // Elements don't exist on this page
-    }
-  
-    // Load saved preference or default to false (internal links)
-    const savedPreference = localStorage.getItem('amazonLinkPreference');
-    toggle.checked = savedPreference ? JSON.parse(savedPreference) : false;
-  
-    // Function to update all links
-    function updateLinks() {
-        const isExternal = toggle.checked;
-
-        amazonLinks.forEach(link => {
-        const internalUrl = link.getAttribute('data-internal');
-        const externalUrl = link.getAttribute('data-external');
-        const internalText = link.getAttribute('data-internal-text');
-        const externalText = link.getAttribute('data-external-text');
-
-        if (isExternal) {
-            // Switch to external links
-            link.href = externalUrl;
-            link.textContent = externalText;
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-            toggleText.textContent = 'External Links';
-        } else {
-            // Switch to internal links
-            link.href = internalUrl;
-            link.textContent = internalText;
-
-            if (!internalUrl.startsWith('http')) {
-            link.removeAttribute('target');
-            link.removeAttribute('rel');
-            }
-            toggleText.textContent = 'Internal Links';
-        }
-        });
-    }
-    updateLinks();
-  
-    // Toggle function
-    toggle.addEventListener('change', function() {
-      updateLinks();
-  
-      // Save preference to localStorage
-      localStorage.setItem('amazonLinkPreference', JSON.stringify(this.checked));
-  
-      // Visual feedback
-      toggleText.style.transform = 'scale(1.1)';
-      setTimeout(() => {
-        toggleText.style.transform = 'scale(1)';
-      }, 200);
-    });
-  }
-  document.addEventListener('DOMContentLoaded', initAmazonLinkToggle);
+window.addEventListener('DOMContentLoaded', loadRandomMeme);
 
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
 let lastScrollY = window.scrollY;
@@ -253,14 +244,4 @@ window.addEventListener('scroll', () => {
         stickyFooter.classList.remove('footer-hidden');
     }
     lastScrollY = currentScrollY;
-});
-
-// ─── COLLAPSIBLE SECTIONS ───
-document.querySelectorAll('.collapseBtn').forEach(btn => {
-    btn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            btn.click();
-        }
-    });
 });

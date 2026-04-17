@@ -69,6 +69,63 @@
     text-align: center;
 }
 
+/* ─── DESERT DIAMOND PROMO SPOT ─── */
+.promo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: -10rem auto 4rem auto; /* Provides breathing room below the socials card */
+    width: 100%;
+}
+
+.promo-link {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    
+    /* The Engine: 4-second continuous organic loop */
+    animation: floatAndBreathe 4s ease-in-out infinite;
+    transition: all 0.3s ease;
+}
+
+/* Pause the breathing and snap to attention when the user hovers */
+.promo-link:hover {
+    animation-play-state: paused; 
+    transform: scale(1.05) translateY(-5px);
+    filter: drop-shadow(0 0 30px rgba(96, 165, 250, 0.5)); /* Cool blue aura */
+}
+
+.promo-text {
+    font-family: 'Braah One', system-ui, sans-serif;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    color: #60a5fa; /* Matches the cool blue aesthetic */
+    letter-spacing: 1px;
+    opacity: 0.9;
+    text-shadow: 0 4px 15px rgba(96, 165, 250, 0.3);
+}
+
+.promo-image {
+    width: clamp(180px, 40vw, 300px); /* Responsive sizing */
+    height: auto;
+    object-fit: contain;
+    /* If your logo is a transparent PNG, this applies the shadow to the logo shape itself, not a square box */
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5)); 
+}
+
+/* ─── THE MATH BEHIND THE BREATH ─── */
+@keyframes floatAndBreathe {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        filter: drop-shadow(0 5px 15px rgba(96, 165, 250, 0.1));
+    }
+    50% {
+        transform: translateY(-15px) scale(1.04); /* Up 15px, expand 4% */
+        filter: drop-shadow(0 20px 25px rgba(96, 165, 250, 0.3)); /* Shadow drops lower as it rises */
+    }
+}
+
 /* Social Media Carousel */
 .social-carousel { position: relative; width: 100%; overflow: hidden; }
 .social-container { display: flex; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: rgba(167, 139, 250, 0.5) rgba(255, 255, 255, 0.1);
@@ -183,6 +240,11 @@
 .email-revealed {
     filter: blur(0);
 }
+.slack-icon {
+    width: 18px; 
+    height: 18px; 
+    object-fit: contain;
+}
 
 .tool-description {
     background: rgba(255, 153, 0, 0.03);
@@ -201,7 +263,7 @@
     margin-top: 1rem;
 }
 
-.btn-icon { width: 20px; height: 20px; object-fit: contain; }
+.btn-icon { width: 20px; height: 20px; object-fit: contain; border-radius: 5px;}
 .pillBtn {
     padding: 0.8rem 1.5rem;
     font-size: clamp(0.9rem, 2.5vw, 1rem);
@@ -282,6 +344,7 @@
     box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
 }
 .entertainment-box .random-meme img { width: 100%; height: auto; object-fit: cover; border-radius: 10px; }
+#entertainment p { margin-top: 1.5rem; opacity: 0.9; font-weight: 500; font-size: 0.95rem; }
 
 /* Category Tags */
 .category-tags { display: flex; flex-wrap: wrap;
@@ -431,4 +494,6 @@
     .credit-card-item { flex: 0 0 120px; width: 120px; min-width: 120px; }
     .card-title { font-size: 0.65rem; min-height: 2rem; }
     .entertainment-box .random-meme { width: 95%; }
+
+    .qlBtns { grid-template-columns: repeat(3, minmax(100px, 1fr)); }
 }

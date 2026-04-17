@@ -789,7 +789,7 @@
 .sliderView {
     width: 100%;
     overflow: hidden;
-    transition: height 0.4s ease;
+    transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     will-change: height;
     overflow-anchor: none; 
 }

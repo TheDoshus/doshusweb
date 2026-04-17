@@ -90,11 +90,11 @@
                     </a>
 
                     <!-- GitHub -->
-                    <a href="https://psnprofiles.com/Doshus2" class="social-item" target="_blank" rel="noopener noreferrer">
+                    <a href="https://github.com/TheDoshus" class="social-item" target="_blank" rel="noopener noreferrer">
                         <div class="social-icon">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c2/GitHub_Invertocat_Logo.svg" alt="PlayStation">
                         </div>
-                        <span class="social-name">PlayStation</span>
+                        <span class="social-name">Github</span>
                     </a>
 
                     <!-- Instagram -->
@@ -138,6 +138,12 @@
                 </div>
             </div>
         <p class="scroll-hint">← Scroll to explore →</p>
+            </div> <div class="promo-container">
+                <a href="https://desertdiamondautodetailing.org" target="_blank" rel="noreferrer" class="promo-link">
+                    <span class="promo-text">✨ Need your vehicle to shine inside & out? ✨</span>
+                    <img src="https://desertdiamondautodetailing.org/images/logo/logo163p.jpg" alt="Desert Diamond Auto Detailing" class="promo-image">
+                </a>
+            </div>
         </div>
     </section>
 
@@ -159,8 +165,8 @@
 
                 <p>Useful tools and resource pages I've created for my Amazon team that makes our work life easier.</p>
                 
-                <div class="work-email" onclick="handleSlackClick()">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg" alt="Slack" style="width: 18px; height: 18px; object-fit: contain;"> 
+                <div class="work-email">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg" alt="Slack" class="slack-icon"> 
                     <span id="slackText" class="email-hidden">aaustinp@amazon.com</span>
                 </div>
                                 
@@ -230,7 +236,7 @@
                     <div class="random-meme" id="meme-container"></div>
                 </div>
 
-                <p style="margin-top: 1.5rem; opacity: 0.9; font-weight: 500; font-size: 0.95rem;">A few interesting sites:</p>
+                <p>A few interesting sites:</p>
                 <div class="featured-sites">
                     <a href="https://dos.zone/" class="site-card" target="_blank" rel="noopener noreferrer">
                         <img src="https://dos.zone/assets/favicon.ico" alt="dos.zone">
@@ -297,10 +303,10 @@
                 <div class="button-group">
                     <a href="financehub.html" class="pillBtn fin">Finance Hub →</a>
                     <a href="https://app.zerion.io/0x8aa7964e556ac724e920483423928f8e63ded4b1/overview" class="pillBtn reg" target="_blank" rel="noopener noreferrer">
-                        <img src="https://cdn.prod.website-files.com/625440d0613eaa2ace513f45/68e7e809aa6bd76e62f7b730_Zerion%20icon.png" style="border-radius: 5px;" alt="" class="btn-icon">doshus.eth Zerion →
+                        <img src="https://cdn.prod.website-files.com/625440d0613eaa2ace513f45/68e7e809aa6bd76e62f7b730_Zerion%20icon.png" alt="" class="btn-icon rounded">doshus.eth Zerion →
                     </a>
                     <a href="https://app.layer3.xyz/doshus" class="pillBtn reg" target="_blank" rel="noopener noreferrer">
-                        <img src="https://coin-images.coingecko.com/coins/images/37768/large/Square.png?1722045128" style="border-radius: 5px;" alt="" class="btn-icon">Doshus Layer3 →
+                        <img src="https://coin-images.coingecko.com/coins/images/37768/large/Square.png?1722045128" alt="" class="btn-icon rounded">Doshus Layer3 →
                     </a>
                 </div>
                 
@@ -427,110 +433,5 @@
     
     <script src="js/main.js"></script>
     <script src="js/home.js"></script>
-
-    <script>
-        (function() {
-            // 1. List your Spotify Playlist IDs here
-            const playlistIds = [
-                '7oanTkXtuVwcAUx882IQqD', // WTF Doshus
-                '1lHiEucVsKf04tip7VetOo', // Gimme Music
-                '0s3TtgkY01p1L8PRqUggVV', // Spaceland
-                '1YnNTk8GPvXPDJdzktSwwJ',  // TIME2005
-                '6BIUohSTfEaLfuFlWvtAVd',  // kODAK
-                '1Z5J2B3Y218mcndyLLLOCN',  // Doshus   
-                '4BCpeg24zmnImrDSEVfEm0',  // Meme   
-                '0dtsgsCgovlqVMCf5DNraj',  // Chill   
-                '1BC12paN2yVqj81zHzB2B1',  // Espanol   
-                '2HrlpE0Cu2fXDubcHaBpsF'  // Rave Favs
-            ];
-
-            // 2. Pick a random index from the array
-            const randomIndex = Math.floor(Math.random() * playlistIds.length);
-            const selectedId = playlistIds[randomIndex];
-
-            // 3. Target the iframe and update the source
-            // Note: The URL format must be https://open.spotify.com/embed/playlist/ID
-            const iframe = document.getElementById('spotify-embed');
-            iframe.src = `https://open.spotify.com/embed/playlist/${selectedId}`;
-        })();
-
-        // Random meme/video loader - Auto-loads from JSON
-        async function loadRandomMeme() {
-            try {
-                const response = await fetch('/memes/meme-list.json');
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const memeFiles = await response.json();
-
-                // Get the container element
-                const memeContainer = document.getElementById('meme-container');
-
-                if (memeContainer && memeFiles.length > 0) {
-                    // Pick a random file
-                    const randomIndex = Math.floor(Math.random() * memeFiles.length);
-                    const randomFile = memeFiles[randomIndex];
-
-                    // Check if it's a video or image
-                    const isVideo = /\.(mp4|webm|mov)$/i.test(randomFile);
-
-                    // Clear the container
-                    memeContainer.innerHTML = '';
-
-                    if (isVideo) {
-                        // Create video element
-                        const video = document.createElement('video');
-                        video.src = randomFile;
-                        video.autoplay = true;
-                        video.loop = true;
-                        video.muted = true; // Muted for autoplay to work
-                        video.playsInline = true; // For mobile
-                        video.style.width = '100%';
-                        video.style.height = '100%';
-                        video.style.objectFit = 'cover';
-                        video.style.borderRadius = '10px';
-
-                        video.onerror = function() {
-                            console.error('Failed to load video:', this.src);
-                            memeContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637" alt="Error">';
-                        };
-
-                        memeContainer.appendChild(video);
-                        console.log(`🎬 Loaded random video: ${randomFile}`);
-                    } else {
-                        // Create image element
-                        const img = document.createElement('img');
-                        img.src = randomFile;
-                        img.alt = 'Random Meme';
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        img.style.borderRadius = '10px';
-
-                        img.onerror = function() {
-                            console.error('Failed to load image:', this.src);
-                            this.src = 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637';
-                        };
-
-                        memeContainer.appendChild(img);
-                        console.log(`🎲 Loaded random meme: ${randomFile}`);
-                    }
-                } else if (memeFiles.length === 0) {
-                    console.warn('⚠️  No memes found in meme-list.json');
-                }
-
-            } catch (error) {
-                console.error('❌ Error loading memes:', error);
-
-                const memeContainer = document.getElementById('meme-container');
-                if (memeContainer) {
-                    memeContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637" alt="Loading">';
-                }
-            }
-        }
-        window.addEventListener('DOMContentLoaded', loadRandomMeme);
-    </script>
   </body>
 </html>
