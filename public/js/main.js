@@ -165,7 +165,7 @@ function handleSlackClick() {
         slackRevealed = true;
     } else {
         // Second click: Execute the redirect to Slack
-        const slackUrl = 'https://amazon.enterprise.slack.com/messages/aaustinp'; 
+        const slackUrl = 'https://amazon.enterprise.slack.com/team/U03AWNH0XJ8'; 
         window.open(slackUrl, '_blank', 'noopener,noreferrer');
     }
 }
