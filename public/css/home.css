@@ -88,6 +88,7 @@
     /* The Engine: 4-second continuous organic loop */
     animation: floatAndBreathe 4s ease-in-out infinite;
     transition: all 0.3s ease;
+    will-change: transform, filter;
 }
 
 /* Pause the breathing and snap to attention when the user hovers */
@@ -112,6 +113,7 @@
     object-fit: contain;
     /* If your logo is a transparent PNG, this applies the shadow to the logo shape itself, not a square box */
     filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5)); 
+    will-change: filter;
 }
 
 /* ─── THE MATH BEHIND THE BREATH ─── */
