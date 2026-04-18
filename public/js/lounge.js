@@ -4,7 +4,6 @@
 
 // Random meme/video loader for multiple boxes
 async function loadRandomMemes() {
-    memeContainer.innerHTML = '<div class="loading-spinner">Loading...</div>';
     try {
         const response = await fetch('/memes/meme-list.json');
 
@@ -22,8 +21,8 @@ async function loadRandomMemes() {
         // Load memes into all three boxes
         for (let i = 1; i <= 3; i++) {
             const memeContainer = document.getElementById(`randomMeme${i}`);
-
             if (memeContainer) {
+                memeContainer.innerHTML = '<div class="loading-spinner">Loading...</div>';
                 // Pick a random file
                 const randomIndex = Math.floor(Math.random() * memeFiles.length);
                 const randomFile = memeFiles[randomIndex];
@@ -37,7 +36,7 @@ async function loadRandomMemes() {
                 if (isVideo) {
                     // Create video element
                     const video = document.createElement('video');
-                    video.src = randomFile;
+                    video.src = `.${randomFile}`;
                     video.autoplay = true;
                     video.loop = true;
                     video.muted = true;
@@ -56,7 +55,7 @@ async function loadRandomMemes() {
                 } else {
                     // Create image element
                     const img = document.createElement('img');
-                    img.src = randomFile;
+                    img.src = `.${randomFile}`;
                     img.alt = 'Random Meme';
                     img.style.width = '100%';
                     img.style.height = '100%';

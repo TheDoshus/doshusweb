@@ -2,14 +2,14 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuration
-const memesDir = './public/memes';
-const outputFile = './public/memes/meme-list.json';
+const memesDir = './public/assets/memes';
+const outputFile = './public/assets/memes/meme-list.json';
 
 // Read the memes directory
 fs.readdir(memesDir, (err, files) => {
     if (err) {
         console.error('❌ Error reading directory:', err);
-        console.error('Make sure the ./public/memes folder exists!');
+        console.error('Make sure the ./public/assets/memes folder exists!');
         return;
     }
 
@@ -20,12 +20,12 @@ fs.readdir(memesDir, (err, files) => {
 
     if (imageFiles.length === 0) {
         console.warn('⚠️  No image files found in the memes directory!');
-        console.warn('Add some .jpg, .png, or .gif files to ./public/memes/');
+        console.warn('Add some .jpg, .png, or .gif files to ./public/assets/memes/');
         return;
     }
 
     // Create array of paths
-    const memePaths = imageFiles.map(file => `/memes/${file}`);
+    const memePaths = imageFiles.map(file => `/assets/memes/${file}`);
 
     // Write to JSON file
     fs.writeFile(outputFile, JSON.stringify(memePaths, null, 2), err => {
@@ -33,12 +33,11 @@ fs.readdir(memesDir, (err, files) => {
             console.error('❌ Error writing file:', err);
         } else {
             console.log('✅ Successfully generated meme list!');
-            console.log(`�� Found ${memePaths.length} images:`);
+            console.log(`🖼️ Found ${memePaths.length} images:`);
             memePaths.forEach((path, index) => {
                 console.log(`   ${index + 1}. ${path}`);
             });
-            console.log(`
-�� Saved to: ${outputFile}`);
+            console.log(`\n🗺️ Saved to: ${outputFile}`);
         }
     });
 });

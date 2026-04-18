@@ -59,7 +59,7 @@
     padding: clamp(2rem, 5vw, 3rem);
     max-width: 900px;
     width: 100%;
-    margin: 20rem 1rem;
+    margin: 25rem auto 10rem auto;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 .glass-card h2 {
@@ -74,8 +74,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: -10rem auto 4rem auto; /* Provides breathing room below the socials card */
-    width: 100%;
+    margin: 0rem auto 25rem auto;
 }
 
 .promo-link {
@@ -83,7 +82,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.2rem;
     
     /* The Engine: 4-second continuous organic loop */
     animation: floatAndBreathe 4s ease-in-out infinite;
@@ -95,23 +93,20 @@
 .promo-link:hover {
     animation-play-state: paused; 
     transform: scale(1.05) translateY(-5px);
-    filter: drop-shadow(0 0 30px rgba(96, 165, 250, 0.5)); /* Cool blue aura */
+    filter: drop-shadow(0 0 30px rgba(96, 165, 250, 0.5));
 }
 
 .promo-text {
-    font-family: 'Braah One', system-ui, sans-serif;
-    font-size: clamp(1.2rem, 3vw, 1.5rem);
-    color: #60a5fa; /* Matches the cool blue aesthetic */
-    letter-spacing: 1px;
+    font-family: 'Braah One', system-ui, sans-serif; text-align: center;
+    font-size: clamp(0.75rem, 6vw, 1.5rem);
+    color: #60a5fa;
     opacity: 0.9;
-    text-shadow: 0 4px 15px rgba(96, 165, 250, 0.3);
+    margin-bottom: -3.5rem;
 }
 
 .promo-image {
-    width: clamp(180px, 40vw, 300px); /* Responsive sizing */
-    height: auto;
+    width: clamp(175px, 50vw, 400px); /* Responsive sizing */
     object-fit: contain;
-    /* If your logo is a transparent PNG, this applies the shadow to the logo shape itself, not a square box */
     filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5)); 
     will-change: filter;
 }
@@ -123,7 +118,7 @@
         filter: drop-shadow(0 5px 15px rgba(96, 165, 250, 0.1));
     }
     50% {
-        transform: translateY(-15px) scale(1.04); /* Up 15px, expand 4% */
+        transform: translateY(-12px) scale(1.03); /* Up 15px, expand 4% */
         filter: drop-shadow(0 20px 25px rgba(96, 165, 250, 0.3)); /* Shadow drops lower as it rises */
     }
 }

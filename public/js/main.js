@@ -155,7 +155,7 @@ if (starsContainer) {
 // Random meme/video loader - Auto-loads from JSON
 async function loadRandomMeme() {
     try {
-        const response = await fetch('/memes/meme-list.json');
+        const response = await fetch('/assets/memes/meme-list.json');
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
