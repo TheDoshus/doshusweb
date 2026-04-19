@@ -2,84 +2,6 @@
 // THE LOUNGE - INTERACTIVE FEATURES
 // ===================================
 
-// Random meme/video loader for multiple boxes
-async function loadRandomMemes() {
-    try {
-        const response = await fetch('/assets/memes/meme-list.json');
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const memeFiles = await response.json();
-
-        if (memeFiles.length === 0) {
-            console.warn('⚠️  No memes found in meme-list.json');
-            return;
-        }
-
-        // Load memes into all three boxes
-        for (let i = 1; i <= 3; i++) {
-            const memeContainer = document.getElementById(`randomMeme${i}`);
-            if (memeContainer) {
-                memeContainer.innerHTML = '<div class="loading-spinner">Loading...</div>';
-                // Pick a random file
-                const randomIndex = Math.floor(Math.random() * memeFiles.length);
-                const randomFile = memeFiles[randomIndex];
-
-                // Check if it's a video or image
-                const isVideo = /\.(mp4|webm|mov)$/i.test(randomFile);
-
-                // Clear the container
-                memeContainer.innerHTML = '';
-
-                if (isVideo) {
-                    // Create video element
-                    const video = document.createElement('video');
-                    video.src = `.${randomFile}`;
-                    video.autoplay = true;
-                    video.loop = true;
-                    video.muted = true;
-                    video.playsInline = true;
-                    video.style.width = '100%';
-                    video.style.height = '100%';
-                    video.style.objectFit = 'cover';
-                    video.style.borderRadius = '10px';
-
-                    video.onerror = function() {
-                        console.error('Failed to load video:', this.src);
-                        memeContainer.innerHTML = '<img src="assets/images/Image_not_available.webp" alt="Error">';
-                    };
-
-                    memeContainer.appendChild(video);
-                } else {
-                    // Create image element
-                    const img = document.createElement('img');
-                    img.src = `.${randomFile}`;
-                    img.alt = 'Random Meme';
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.objectFit = 'cover';
-                    img.style.borderRadius = '10px';
-
-                    img.onerror = function() {
-                        console.error('Failed to load image:', this.src);
-                        this.src = 'assets/images/Image_not_available.webp';
-                    };
-
-                    memeContainer.appendChild(img);
-                }
-            }
-        }
-
-        console.log('✅ Loaded random memes into all boxes');
-
-    } catch (error) {
-        console.error('❌ Error loading memes:', error);
-    }
-}
-// In loadRandomMemes(), add a loading placeholder
-
 // Category filter functionality
 function initCategoryFilters() {
     const filterButtons = document.querySelectorAll('.filter-btn');
@@ -185,7 +107,6 @@ function initFilterMemory() {
 // Add to your DOMContentLoaded event
 window.addEventListener('DOMContentLoaded', function() {
     console.log('🎮 The Lounge is loading...');
-    loadRandomMemes();
     initCategoryFilters();
     initSurpriseButton();
     initFilterMemory(); // Add this line

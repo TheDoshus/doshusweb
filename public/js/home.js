@@ -8,11 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (slackText) slackText.addEventListener('click', handleSlackClick);
 
     initSpotifyEmbed();
-
-    // Safety check: Ensure the global function from main.js exists before calling it
-    if (typeof loadRandomMeme === 'function') {
-        loadRandomMeme();
-    }
 });
 
 // --- Feature Functions Below ---

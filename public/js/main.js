@@ -152,9 +152,14 @@ if (starsContainer) {
     animateStars();
 }
 
-// Random meme/video loader - Auto-loads from JSON
-async function loadRandomMeme() {
+// Universal meme/video loader - Auto-loads from JSON on ANY page
+async function loadUniversalMemes() {
     try {
+        // Find ALL meme containers on the current page using their CSS classes
+        const containers = document.querySelectorAll('.random-meme, .random-meme-fixed');
+        
+        if (containers.length === 0) return; // If no containers exist on this page, silently stop running
+
         const response = await fetch('/assets/memes/meme-list.json');
 
         if (!response.ok) {
@@ -162,16 +167,19 @@ async function loadRandomMeme() {
         }
 
         const memeFiles = await response.json();
-        const memeContainer = document.getElementById('meme-container');
 
-        if (memeContainer && memeFiles.length > 0) {
+        if (memeFiles.length === 0) {
+            console.warn('⚠️ No memes found in meme-list.json');
+            return;
+        }
+
+        // Loop through every container found and inject a random meme into each
+        containers.forEach((container, index) => {
             const randomIndex = Math.floor(Math.random() * memeFiles.length);
             const randomFile = memeFiles[randomIndex];
-
-            // Removed 'gif' - Gifs must be handled as images, not videos!
             const isVideo = /\.(mp4|webm|avi|wmv|flv|mkv|mov)$/i.test(randomFile);
 
-            memeContainer.innerHTML = '';
+            container.innerHTML = ''; // Clear any existing content
 
             if (isVideo) {
                 const video = document.createElement('video');
@@ -186,12 +194,11 @@ async function loadRandomMeme() {
                 video.style.borderRadius = '10px';
 
                 video.onerror = function() {
-                    console.error('Failed to load video:', this.src);
-                    memeContainer.innerHTML = '<img src="assets/images/Image_not_available.webp" alt="Error">';
+                    container.innerHTML = '<img src="assets/images/Image_not_available.webp" alt="Error">';
                 };
 
-                memeContainer.appendChild(video);
-                console.log(`🎬 Loaded random video: ${randomFile}`);
+                container.appendChild(video);
+                console.log(`🎬 Loaded video in container ${index + 1}: ${randomFile}`);
             } else {
                 const img = document.createElement('img');
                 img.src = randomFile;
@@ -202,26 +209,23 @@ async function loadRandomMeme() {
                 img.style.borderRadius = '10px';
 
                 img.onerror = function() {
-                    console.error('Failed to load image:', this.src);
                     this.src = 'assets/images/Image_not_available.webp';
                 };
 
-                memeContainer.appendChild(img);
-                console.log(`🎲 Loaded random meme: ${randomFile}`);
+                container.appendChild(img);
+                console.log(`🎲 Loaded meme in container ${index + 1}: ${randomFile}`);
             }
-        } else if (memeFiles.length === 0) {
-            console.warn('⚠️  No memes found in meme-list.json');
-        }
+        });
 
     } catch (error) {
         console.error('❌ Error loading memes:', error);
-        const memeContainer = document.getElementById('meme-container');
-        if (memeContainer) {
-            memeContainer.innerHTML = '<img src="assets/images/Image_not_available.webp" alt="Loading">';
-        }
+        // Fallback: Fill all broken containers with the error image
+        document.querySelectorAll('.random-meme, .random-meme-fixed').forEach(c => {
+            c.innerHTML = '<img src="assets/images/Image_not_available.webp" alt="Loading Error">';
+        });
     }
 }
-window.addEventListener('DOMContentLoaded', loadRandomMeme);
+window.addEventListener('DOMContentLoaded', loadUniversalMemes);
 
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
 let lastScrollY = window.scrollY;

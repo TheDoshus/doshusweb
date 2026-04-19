@@ -3,9 +3,7 @@ html { height: 100vh; height: 100dvh; }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-a {
-    -webkit-tap-highlight-color: transparent;
-}
+a { -webkit-tap-highlight-color: transparent; }
 
 body { position: relative; min-height: -webkit-fill-available; min-height: 100vh; background: #000000; 
     font-family: 'Nata Sans', system-ui, sans-serif;
