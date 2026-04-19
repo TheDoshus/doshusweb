@@ -340,6 +340,9 @@
     object-fit: contain;
     filter: brightness(0.9);
     transition: filter 0.3s ease;
+    background: #ffffffe3;
+    border-radius: 2px;
+    padding: 5px;
 }
 
 .bank-card:hover img {
