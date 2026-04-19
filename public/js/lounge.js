@@ -48,7 +48,7 @@ async function loadRandomMemes() {
 
                     video.onerror = function() {
                         console.error('Failed to load video:', this.src);
-                        memeContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637" alt="Error">';
+                        memeContainer.innerHTML = '<img src="assets/images/Image_not_available.webp" alt="Error">';
                     };
 
                     memeContainer.appendChild(video);
@@ -64,7 +64,7 @@ async function loadRandomMemes() {
 
                     img.onerror = function() {
                         console.error('Failed to load image:', this.src);
-                        this.src = 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png?20210219185637';
+                        this.src = 'assets/images/Image_not_available.webp';
                     };
 
                     memeContainer.appendChild(img);
