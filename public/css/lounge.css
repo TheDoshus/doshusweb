@@ -12,14 +12,14 @@
     font-size: clamp(2rem, 5vw, 3rem);
     text-align: center;
     margin-bottom: 1rem;
-    background: linear-gradient(45deg, #a78bfa, #60a5fa, #34d399);
+    background: linear-gradient(45deg, oklch(var(--accent-crypto)), #60a5fa, #34d399);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 .section-subtitle {
     text-align: center;
-    color: #a0a0a0;
+    color: oklch(var(--text-muted));;
     font-size: clamp(1rem, 3vw, 1.2rem);
     margin-bottom: 2rem;
 }
@@ -41,7 +41,7 @@
     padding: 2rem;
     text-align: center;
     text-decoration: none;
-    color: #e0e0e0;
+    color: var(--text-main);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -50,7 +50,7 @@
 }
 .favorite-card:hover {
     transform: translateY(-5px);
-    border-color: #a78bfa;
+    border-color: oklch(var(--accent-crypto));
     box-shadow: 0 10px 30px rgba(167, 139, 250, 0.4);
     background: rgba(167, 139, 250, 0.1);
 }
@@ -61,11 +61,11 @@
 .favorite-card h3 {
     font-size: 1.3rem;
     margin: 0;
-    color: #e0e0e0;
+    color: var(--text-main);
 }
 .favorite-card p {
     font-size: 0.95rem;
-    color: #a0a0a0;
+    color: oklch(var(--text-muted));;
     margin: 0;
 }
 
@@ -86,7 +86,7 @@
     padding: 2rem 1.5rem;
     text-align: center;
     text-decoration: none;
-    color: #e0e0e0;
+    color: var(--text-main);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -106,7 +106,7 @@
 .game-card h3 {
     font-size: 1.1rem;
     margin: 0;
-    color: #e0e0e0;
+    color: var(--text-main);
 }
 
 /* ===================================
@@ -140,7 +140,7 @@
 
 .surprise-btn {
     padding: 1rem 2rem;
-    background: linear-gradient(45deg, #a78bfa, #60a5fa);
+    background: linear-gradient(45deg, oklch(var(--accent-crypto)), #60a5fa);
     border: none;
     border-radius: 50px;
     color: white;
@@ -171,17 +171,17 @@
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(167, 139, 250, 0.3);
     border-radius: 50px;
-    color: #e0e0e0;
+    color: var(--text-main);
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 .filter-btn:hover {
-    border-color: #a78bfa;
+    border-color: oklch(var(--accent-crypto));
     background: rgba(167, 139, 250, 0.1);
 }
 .filter-btn.active {
-    background: linear-gradient(45deg, #a78bfa, #60a5fa);
+    background: linear-gradient(45deg, oklch(var(--accent-crypto)), #60a5fa);
     border-color: transparent;
     color: white;
     font-weight: 600;
@@ -242,7 +242,7 @@
 .category-header {
     font-size: 1.5rem;
     margin-bottom: 1rem;
-    color: #a78bfa;
+    color: oklch(var(--accent-crypto));
     text-align: center;
 }
 .category-links {
@@ -280,12 +280,12 @@
     border: 1px solid rgba(167, 139, 250, 0.2);
     border-radius: 10px;
     text-decoration: none;
-    color: #e0e0e0;
+    color: var(--text-main);
     transition: all 0.3s ease;
 }
 .site-link:hover {
     transform: translateX(5px);
-    border-color: #a78bfa;
+    border-color: oklch(var(--accent-crypto));
     background: rgba(167, 139, 250, 0.1);
     box-shadow: 0 5px 15px rgba(167, 139, 250, 0.3);
 }
@@ -354,7 +354,7 @@
     right: 20px;
 }
 
-.footer-nav a.footer-active { color: #ec4899; font-weight: 600; }
+.footer-nav a.footer-active { color: oklch(var(--accent-lounge)); font-weight: 600; }
 
 /* ===================================
    RESPONSIVE DESIGN

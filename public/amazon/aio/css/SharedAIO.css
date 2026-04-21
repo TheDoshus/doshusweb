@@ -150,7 +150,7 @@ button:before {
 }
 
 button:hover {
-    background-color: #e0e0e0;
+    background-color: var(--text-main);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
 }
@@ -234,7 +234,7 @@ select {
 }
 
 select:hover {
-    background-color: #e0e0e0;
+    background-color: var(--text-main);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
 }

@@ -26,7 +26,7 @@
         .error-code {
             font-size: clamp(6rem, 20vw, 12rem);
             font-weight: 900;
-            background: linear-gradient(45deg, #a78bfa, #60a5fa, #ec4899);
+            background: linear-gradient(45deg, oklch(var(--accent-crypto)), #60a5fa, oklch(var(--accent-lounge)));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -48,14 +48,14 @@
 
         .error-title {
             font-size: clamp(2rem, 6vw, 3rem);
-            color: #e0e0e0;
+            color: var(--text-main);
             margin-bottom: 1rem;
             opacity: 0.9;
         }
 
         .error-message {
             font-size: clamp(1rem, 3vw, 1.3rem);
-            color: #a0a0a0;
+            color: oklch(var(--text-muted));;
             margin-bottom: 3rem;
             max-width: 600px;
             line-height: 1.6;
@@ -72,8 +72,8 @@
             padding: 1rem 2.5rem;
             font-size: clamp(1rem, 3vw, 1.1rem);
             background: rgba(167, 139, 250, 0.2);
-            border: 2px solid #a78bfa;
-            color: #e0e0e0;
+            border: 2px solid oklch(var(--accent-crypto));
+            color: var(--text-main);
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;

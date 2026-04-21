@@ -1,8 +1,8 @@
 /* ─── CARD TOOLTIP ─── */
-.card-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.85); border: 1px solid #22c55eed; border-radius: 8px; visibility: hidden; transition: all 0.3s ease; z-index: 100; pointer-events: none; line-height: 1.4; width: 200px; padding: 0.6rem 0.8rem; font-size: 0.75rem; color: #e0e0e0; }
+.card-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.85); border: 1px solid oklch(var(--accent-finance))ed; border-radius: 8px; visibility: hidden; transition: all 0.3s ease; z-index: 100; pointer-events: none; line-height: 1.4; width: 200px; padding: 0.6rem 0.8rem; font-size: 0.75rem; color: var(--text-main); }
 .card-tooltip ul { list-style: none; text-align: left; }
 .card-tooltip li { position: relative; font-size: 0.72rem; line-height: 1.4; padding-left: 0.8rem; margin-bottom: 0.2rem; }
-.card-tooltip li::before { position: absolute; left: 0; content: '•'; color: #22c55e; }
+.card-tooltip li::before { position: absolute; left: 0; content: '•'; color: oklch(var(--accent-finance)); }
 .card-tooltip li:last-child { margin-bottom: 0; }
 .card-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: rgba(34, 197, 94, 0.4); }
 
@@ -15,13 +15,13 @@
     border: 1px solid rgba(34, 197, 94, 0.15);
     border-radius: 12px;
     padding: 1rem 0.6rem;
-    color: #e0e0e0;
+    color: var(--text-main);
     gap: 0.4rem;
 }
 .ccCard img { width: 100%; object-fit: cover; border-radius: 8px; }
 .ccCard:hover .card-tooltip { visibility: visible; transform: translateX(-50%) translateY(-8px); }
 .ccCard:hover { transform: translateY(-5px);
-    border-color: #22c55e;
+    border-color: oklch(var(--accent-finance));
     box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
     background: rgba(34, 197, 94, 0.05);
 }
@@ -56,7 +56,7 @@
 }
 .infoTitle {
     font-size: 1.1rem;
-    color: #22c55e;
+    color: oklch(var(--accent-finance));
     margin-bottom: 1rem;
     font-weight: 600;
 }
@@ -90,7 +90,7 @@
     line-height: 1.5;
     opacity: 0.9;
 }
-.truth-label { display: inline-block; font-size: 0.8rem; font-weight: 700; color: #22c55e; margin-top: 0.5rem; margin-bottom: 0.3rem; }
+.truth-label { display: inline-block; font-size: 0.8rem; font-weight: 700; color: oklch(var(--accent-finance)); margin-top: 0.5rem; margin-bottom: 0.3rem; }
 
 /* ─── TIPS LIST ─── */
 .tips-list {
@@ -113,7 +113,7 @@
     content: '→';
     position: absolute;
     left: 0;
-    color: #22c55e;
+    color: oklch(var(--accent-finance));
     font-weight: bold;
 }
 
@@ -151,7 +151,7 @@
     border-radius: 50%;
     border: 1px solid rgba(167, 139, 250, 0.4);
     background: rgba(167, 139, 250, 0.1);
-    color: #a78bfa;
+    color: oklch(var(--accent-crypto));
     font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
@@ -164,7 +164,7 @@
 
 .srcBtn:hover {
     background: rgba(167, 139, 250, 0.25);
-    border-color: #a78bfa;
+    border-color: oklch(var(--accent-crypto));
     box-shadow: 0 0 12px rgba(167, 139, 250, 0.3);
     transform: scale(1.1);
 }
@@ -209,7 +209,7 @@
 }
 
 .sources-modal h4 {
-    color: #a78bfa;
+    color: oklch(var(--accent-crypto));
     font-size: 1.1rem;
     margin-bottom: 0.3rem;
 }
@@ -220,7 +220,7 @@
     right: 0.8rem;
     background: none;
     border: none;
-    color: #a0a0a0;
+    color: oklch(var(--text-muted));;
     font-size: 1.2rem;
     cursor: pointer;
     transition: color 0.3s ease;
@@ -269,7 +269,7 @@
     padding: 1rem 1.5rem;
     background: rgba(34, 197, 94, 0.05);
     border: none;
-    color: #22c55e;
+    color: oklch(var(--accent-finance));
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -319,7 +319,7 @@
     padding: 1.2rem 0.8rem;
     text-align: center;
     text-decoration: none;
-    color: #e0e0e0;
+    color: var(--text-main);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -329,7 +329,7 @@
 
 .bank-card:hover {
     transform: translateY(-5px);
-    border-color: #22c55e;
+    border-color: oklch(var(--accent-finance));
     box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
     background: rgba(34, 197, 94, 0.05);
 }
@@ -357,7 +357,7 @@
 
 .bank-bonus {
     font-size: 0.7rem;
-    color: #22c55e;
+    color: oklch(var(--accent-finance));
     font-weight: 600;
     opacity: 1;
 }
@@ -436,7 +436,7 @@
 }
 
 .tracker-widget:hover {
-    border-color: #22c55e;
+    border-color: oklch(var(--accent-finance));
     box-shadow: 0 10px 30px rgba(34, 197, 94, 0.2);
     transform: translateY(-5px);
 }
@@ -448,7 +448,7 @@
 
 .widget-label {
     font-size: 0.9rem;
-    color: #22c55e;
+    color: oklch(var(--accent-finance));
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -458,7 +458,7 @@
 .widget-value {
     font-size: clamp(2rem, 5vw, 2.8rem);
     font-weight: 700;
-    background: linear-gradient(45deg, #22c55e, #34d399);
+    background: linear-gradient(45deg, oklch(var(--accent-finance)), #34d399);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -467,7 +467,7 @@
 .widget-updated {
     font-size: 0.75rem;
     opacity: 0.5;
-    color: #a0a0a0;
+    color: oklch(var(--text-muted));;
 }
 
 /* ─── CREDIT SCORES ROW ─── */
@@ -496,7 +496,7 @@
 }
 
 .score-card:hover {
-    border-color: #22c55e;
+    border-color: oklch(var(--accent-finance));
     box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
     transform: translateY(-4px);
 }
@@ -516,7 +516,7 @@
 .score-value {
     font-size: clamp(2rem, 5vw, 2.5rem);
     font-weight: 700;
-    background: linear-gradient(45deg, #22c55e, #34d399);
+    background: linear-gradient(45deg, oklch(var(--accent-finance)), #34d399);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -524,7 +524,7 @@
 
 .score-label {
     font-size: 0.7rem;
-    color: #22c55e;
+    color: oklch(var(--accent-finance));
     font-weight: 600;
     opacity: 0.7;
     letter-spacing: 1px;
@@ -620,14 +620,14 @@
 /* ─── SECTION ACCENT OVERRIDES ─── */
 
 /* Crypto section — blue-purple accent */
-#crypto-section { border: 1px solid #a78bfa4f; }
-#crypto-section:hover { border: 1px solid #a78bfa; box-shadow: 0 10px 40px rgba(132, 34, 197, 0.15); }
-#crypto-section h2 { color: #a78bfa; }
-#crypto-section .finance-box { color: #a78bfa; }
+#crypto-section { border: 1px solid oklch(var(--accent-crypto))4f; }
+#crypto-section:hover { border: 1px solid oklch(var(--accent-crypto)); box-shadow: 0 10px 40px rgba(132, 34, 197, 0.15); }
+#crypto-section h2 { color: oklch(var(--accent-crypto)); }
+#crypto-section .finance-box { color: oklch(var(--accent-crypto)); }
 #crypto-section .quickLinks { background: rgba(167, 139, 250, 0.03); border: 1px solid rgba(138, 34, 197, 0.3);}
-#crypto-section .quickLinks .qlBtn { color: #a78bfa; background: rgba(123, 34, 197, 0.11); border: 1px solid rgba(138, 34, 197, 0.3);}
+#crypto-section .quickLinks .qlBtn { color: oklch(var(--accent-crypto)); background: rgba(123, 34, 197, 0.11); border: 1px solid rgba(138, 34, 197, 0.3);}
 #crypto-section .infoTitle {
-    color: #a78bfa;
+    color: oklch(var(--accent-crypto));
 }
 #crypto-section .infoBox {
     background: rgba(167, 139, 250, 0.03);
@@ -635,7 +635,7 @@
 }
 
 #crypto-section .qlBtn:hover {
-    border-color: #a78bfa;
+    border-color: oklch(var(--accent-crypto));
     box-shadow: 0 5px 15px rgba(167, 139, 250, 0.2);
 }
 
@@ -712,14 +712,14 @@
 }
 
 #networth-section .widget-value {
-    background: linear-gradient(45deg, #14b8a6, #22c55e);
+    background: linear-gradient(45deg, #14b8a6, oklch(var(--accent-finance)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 #networth-section .score-value {
-    background: linear-gradient(45deg, #14b8a6, #22c55e);
+    background: linear-gradient(45deg, #14b8a6, oklch(var(--accent-finance)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -736,13 +736,13 @@
 
 /* ─── QUICK LINK BUTTONS — BASE OVERRIDE ─── */
 #credit-section .qlBtn:hover {
-    border-color: #22c55e;
+    border-color: oklch(var(--accent-finance));
     box-shadow: 0 5px 15px rgba(34, 197, 94, 0.2);
 }
 
 /* ─── SECTION TITLE ACCENT BARS ─── */
 #crypto-section h3::after {
-    background: #a78bfa;
+    background: oklch(var(--accent-crypto));
 }
 
 #investing-section h3::after {
@@ -849,7 +849,7 @@
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.15);
     background: rgba(255, 255, 255, 0.05);
-    color: #e0e0e0;
+    color: var(--text-main);
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -861,7 +861,7 @@
 
 .nav-arrow:hover {
     background: rgba(167, 139, 250, 0.2);
-    border-color: #a78bfa;
+    border-color: oklch(var(--accent-crypto));
     transform: scale(1.1);
 }
 
@@ -896,7 +896,7 @@
 
 .nav-progress-fill {
     height: 100%;
-    background: #a78bfa;
+    background: oklch(var(--accent-crypto));
     border-radius: 2px;
     transition: width 0.5s ease, background 0.5s ease;
     width: 0%;
@@ -928,8 +928,8 @@
 }
 
 .nav-dot.active .dot-indicator {
-    background: var(--dot-color, #a78bfa);
-    border-color: var(--dot-color, #a78bfa);
+    background: var(--dot-color, oklch(var(--accent-crypto)));
+    border-color: var(--dot-color, oklch(var(--accent-crypto)));
     box-shadow: 0 0 12px var(--dot-color, rgba(167, 139, 250, 0.5));
     transform: scale(1.2);
 }
@@ -941,17 +941,17 @@
 
 .dot-label {
     font-size: 0.7rem;
-    color: #a0a0a0;
+    color: oklch(var(--text-muted));;
     white-space: nowrap;
     transition: color 0.3s ease;
 }
 
 .nav-dot.active .dot-label {
-    color: #e0e0e0;
+    color: var(--text-main);
     font-weight: 600;
 }
 
-.footer-nav a.footer-active { color: #22c55e; font-weight: 600; }
+.footer-nav a.footer-active { color: oklch(var(--accent-finance)); font-weight: 600; }
 
 /* ─── MOBILE: Hide labels, smaller bar ─── */
 @media (max-width: 700px) {
