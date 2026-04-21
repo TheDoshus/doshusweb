@@ -1,4 +1,14 @@
 {
+  "name": "doshus-hq",
+  "version": "1.0.0",
+  "description": "The digital HQ for Doshus",
+  "author": "Armand Austin (Doshus) <doshusbizz@gmail.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "deploy": "firebase deploy --only hosting",
+    "deploy:full": "firebase deploy"
+  },
   "dependencies": {
     "firebase": "^12.9.0"
   }

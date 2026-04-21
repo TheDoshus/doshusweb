@@ -1,7 +1,13 @@
+# ==========================================
+# Doshus.NET - Crawler Directives
+# ==========================================
+
 User-agent: *
 Allow: /
 
-# Optional: Block specific pages if needed
-# Disallow: /private-page.html
+# Block dead ends and utility files from search results
+Disallow: /404.html
+Disallow: /404
 
+# Point crawlers to the master map
 Sitemap: https://doshus.net/sitemap.xml
