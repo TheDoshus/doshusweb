@@ -1,7 +1,8 @@
 :root {
     /* ─── TIER 1: THE RAW PRIMITIVES (L C H) ─── */
     /* Neutral Space (Grays/Blacks) */
-    --space-oled: 0% 0 0;         /* True oklch(var(--space-oled)) */
+    --space-oled: 0% 0 0;
+    --star-white: 100% 0 0;
     --neutral-900: 15% 0.01 285;  /* Deep dark background */
     --neutral-100: 89% 0 0;       /* e0e0e0 text */
     --neutral-400: 68% 0 0;       /* a0a0a0 muted text */
@@ -16,8 +17,8 @@
     --brand-amber:   75% 0.15 65;  /* Investing / Unclaimed */
     --brand-teal:    68% 0.10 180; /* Net Worth */
     --brand-pink:    65% 0.20 340; /* The Lounge / Entertainment */
-    --brand-amazon:  70% 0.18 50;  /* Amazonian Spot (oklch(var(--accent-amzn))) */
-    --brand-red:     60% 0.20 25;  /* Errors / Myths (#ef4444) */
+    --brand-amazon:  70% 0.18 50;  /* Amazonian Spot */
+    --brand-red:     60% 0.20 25;  /* Errors / Myths */
 
     /* ─── TIER 2: SEMANTIC TOKENS (What they DO) ─── */
     --bg-main: oklch(var(--neutral-900));
@@ -32,6 +33,43 @@
     --accent-networth: var(--brand-teal);
     --accent-lounge: var(--brand-pink);
     --accent-amzn: var(--brand-amazon);
+    --accent-myth: var(--brand-red);
+}
+/* SELF-HOSTED FONTS */
+@font-face {
+    font-family: 'Chango';
+    src: url('assets/fonts/Chango-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Mouse Memoirs';
+    src: url('assets/fonts/MouseMemoirs-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Nata Sans';
+    src: url('assets/fonts/NataSans-VariableFont_wght.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Rampart One';
+    src: url('assets/fonts/RampartOne-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Braah One';
+    src: url('assets/fonts/Braah.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
 }
 
 /* Defaults */
@@ -91,7 +129,7 @@ h3 {
 }
 
 /* ─── STAR BASE ─── */
-.star { position: absolute; background: white; border-radius: 50%;
+.star { position: absolute; background: oklch(var(--star-white)); border-radius: 50%;
     will-change: transform, opacity, left, top;
 }
 #stars { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; pointer-events: none;
@@ -111,7 +149,7 @@ h3 {
 .star-mid {
     opacity: 0.5;
     animation: twinkleMid 4s ease-in-out infinite;
-    box-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 2px oklch(var(--star-white) / 0.3);
 }
 @keyframes twinkleMid {
     0%, 100% { opacity: 0.4; }
@@ -121,7 +159,7 @@ h3 {
 .star-close {
     opacity: 0.8;
     animation: twinkleClose 3s ease-in-out infinite;
-    box-shadow: 0 0 4px rgba(200, 200, 255, 0.5), 0 0 8px rgba(167, 139, 250, 0.2);
+    box-shadow: 0 0 4px oklch(var(--nebula-blue)   / 0.5), 0 0 8px oklch(var(--accent-crypto) / 0.2);
 }
 @keyframes twinkleClose {
     0%, 100% { opacity: 0.6; }
@@ -139,8 +177,10 @@ h3 {
     /* Using your semantic tokens for a perfect, vibrant gradient */
     background: linear-gradient(135deg, 
         oklch(var(--accent-lounge) / 0.9) 0%, 
-        oklch(var(--accent-crypto) / 0.85) 50%, 
-        oklch(var(--accent-taxes) / 0.8) 100%
+        oklch(var(--accent-crypto) / 0.85) 30%,
+        oklch(var(--accent-taxes) / 0.85) 50%, 
+        oklch(var(--accent-finance) / 0.85) 70%,
+        oklch(var(--accent-lounge) / 0.8) 100%
     );
     font-size: clamp(2rem, 7vw, 4.5rem);
     margin-bottom: 1rem;
@@ -181,9 +221,9 @@ h3 {
 }
 
 .grid-item { display: flex; flex-direction: column; gap: 1rem; overflow: hidden; max-width: 100%; transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.02);
+    background: oklch(var(--space-oled) / 0.02);
     backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid oklch(var(--space-oled) / 0.05);
     border-radius: 15px;
     padding: clamp(1.5rem, 4vw, 2rem);
     margin-bottom: 5rem;
@@ -207,22 +247,22 @@ h3 {
 .random-meme img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
 .random-meme:hover {
     transform: scale(1.05);
-    box-shadow: 0 10px 30px rgba(167, 139, 250, 0.3);
+    box-shadow: 0 10px 30px oklch(var(--accent-crypto) / 0.3);
 }
 
 /* Finance Box */
-.finance-box { position: relative; border: 1px solid rgba(34, 197, 94, 0.2); }
+.finance-box { position: relative; border: 1px solid oklch(var(--accent-finance) / 0.2); }
 .finance-box:hover {
     border-color: oklch(var(--accent-finance));
-    box-shadow: 0 10px 40px rgba(34, 197, 94, 0.2);
+    box-shadow: 0 10px 40px oklch(var(--accent-finance) / 0.2);
 }
 .finance-box h2 {
     font-size: clamp(2rem, 3vw, 2.25rem);
     color: oklch(var(--accent-finance));
 }
 .quickLinks { display: flex; flex-direction: column;
-    background: rgba(34, 197, 94, 0.05);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    background: oklch(var(--accent-finance) / 0.05);
+    border: 1px solid oklch(var(--accent-finance) / 0.2);
     border-radius: 12px;
     padding: 1rem;
     gap: 0.8rem;
@@ -239,8 +279,8 @@ h3 {
 }
 .quickLinks .qlBtn { text-decoration: none; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     padding: 1.2rem 0.8rem;
-    background: rgba(34, 197, 94, 0.08);
-    border: 2px solid rgba(34, 197, 94, 0.25); border-radius: 12px;
+    background: oklch(var(--accent-finance) / 0.08);
+    border: 2px solid oklch(var(--accent-finance) / 0.25); border-radius: 12px;
     color: oklch(var(--accent-finance));
     font-size: 0.85rem; font-weight: 600;
     
@@ -249,22 +289,22 @@ h3 {
     gap: 0.6rem;
 }
 .quickLinks .qlBtn:hover {
-    background: rgba(34, 197, 94, 0.15);
+    background: oklch(var(--accent-finance) / 0.15);
     border-color: oklch(var(--accent-finance));
-    color: #4ade80; /* Slight color pop on hover */
+    color: oklch(var(--accent-finance) / 0.8); /* Slight color pop on hover */
     transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25);
+    box-shadow: 0 10px 25px oklch(var(--accent-finance) / 0.25);
 }
 .quickLinks .qlBtn:active {
     transform: translateY(0) scale(0.98);
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 2px 10px oklch(var(--space-oled) / 0.2);
 }
 
 /* ─── STICKY FOOTER ─── */
 .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(15px); z-index: 999; transition: transform 0.3s ease;
     padding: 0.6rem 1.5rem;
-    background: linear-gradient(135deg, oklch(var(--space-oled))8a 0% 0%, rgb(35 0 70 / 55%) 35%, rgba(0, 10, 55, 0.55) 65%, oklch(var(--space-oled))8a 100%);
-    border-top: 1px solid rgba(167, 139, 250, 0.2);
+    background: linear-gradient(135deg, oklch(var(--space-oled)) 0% 0%, oklch(var(--nebula-purple) / 0.55) 35%, oklch(var(--nebula-blue) / 0.55) 65%, oklch(var(--space-oled)) 100%);
+    border-top: 1px solid oklch(var(--accent-crypto) / 0.2);
 }
 .sticky-footer.footer-hidden { transform: translateY(100%); }
 .footer-copyright { font-size: 0.8rem; opacity: 0.6; color: var(--text-main); }
@@ -272,7 +312,7 @@ h3 {
     gap: 1.5rem;
 }
 .footer-nav a { text-decoration: none; transition: all 0.3s ease;
-    color: oklch(var(--text-muted));;
+    color: oklch(var(--text-muted));
     font-size: 0.85rem;
     font-weight: 500;
 }

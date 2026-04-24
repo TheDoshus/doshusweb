@@ -6,6 +6,7 @@
     <title>404 - Lost in Space | Doshus.NET</title>
     <link rel="icon" type="image/ico" href="https://doshus.net/doshusfavi.ico">
     <link rel="stylesheet" href="css/shared.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Braah+One&family=Carter+One&family=Chango&family=Mouse+Memoirs&family=Nata+Sans:wght@100..900&family=Rampart+One&display=swap" rel="stylesheet">
@@ -26,7 +27,7 @@
         .error-code {
             font-size: clamp(6rem, 20vw, 12rem);
             font-weight: 900;
-            background: linear-gradient(45deg, oklch(var(--accent-crypto)), #60a5fa, oklch(var(--accent-lounge)));
+            background: linear-gradient(45deg, oklch(var(--accent-crypto)), oklch(var(--accent-taxes)), oklch(var(--accent-lounge)));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -37,7 +38,7 @@
 
         @keyframes glowPulse {
             0%, 100% { 
-                filter: drop-shadow(0 0 30px rgba(167, 139, 250, 0.6));
+                filter: drop-shadow(0 0 30px oklch(var(--accent-crypto) / 0.6));
                 transform: scale(1);
             }
             50% { 
@@ -55,7 +56,7 @@
 
         .error-message {
             font-size: clamp(1rem, 3vw, 1.3rem);
-            color: oklch(var(--text-muted));;
+            color: oklch(var(--text-muted));
             margin-bottom: 3rem;
             max-width: 600px;
             line-height: 1.6;
@@ -71,7 +72,7 @@
         .error-button {
             padding: 1rem 2.5rem;
             font-size: clamp(1rem, 3vw, 1.1rem);
-            background: rgba(167, 139, 250, 0.2);
+            background: oklch(var(--accent-crypto) / 0.2);
             border: 2px solid oklch(var(--accent-crypto));
             color: var(--text-main);
             border-radius: 50px;
@@ -82,18 +83,18 @@
         }
 
         .error-button:hover {
-            background: rgba(167, 139, 250, 0.4);
-            box-shadow: 0 0 30px rgba(167, 139, 250, 0.6);
+            background: oklch(var(--accent-crypto) / 0.4);
+            box-shadow: 0 0 30px oklch(var(--accent-crypto) / 0.6);
             transform: translateY(-3px);
         }
 
         .error-button.secondary {
-            background: rgba(96, 165, 250, 0.2);
-            border-color: #60a5fa;
+            background: oklch(var(--accent-taxes) / 0.2);
+            border-color: oklch(var(--accent-taxes));
         }
 
         .error-button.secondary:hover {
-            background: rgba(96, 165, 250, 0.4);
+            background: oklch(var(--accent-taxes / 0.4));
             box-shadow: 0 0 30px rgba(96, 165, 250, 0.6);
         }
 
@@ -136,7 +137,6 @@
 <body>
     <!-- Cosmic Background -->
     <div class="cosmic-bg"></div> <div class="stars" id="stars"></div>
-    <!-- Floating Astronaut -->
     <div class="floating-astronaut">🚀</div>
 
     <!-- Error Container -->
@@ -155,9 +155,9 @@
     <footer class="sticky-footer" id="sticky-footer">
         <span class="footer-copyright">© 2026 Doshus.NET</span>
         <nav class="footer-nav">
-            <a href="/" class="footer-active">Home</a>
-            <a href="thelounge.html" class="footer-active">Lounge</a>
-            <a href="financehub.html" class="footer-active">Finance</a>
+            <a href="/">Home</a>
+            <a href="thelounge.html">Lounge</a>
+            <a href="financehub.html">Finance</a>
         </nav>
     </footer>
     <script src="js/main.js"></script>
