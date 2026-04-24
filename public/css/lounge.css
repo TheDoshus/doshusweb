@@ -76,7 +76,7 @@
 }
 
 /* EMBEDDED GAME SECTION */
-.embedded-game { background: oklch(var(--space-oled) / 0.05); backdrop-filter: blur(10px); overflow: hidden;
+.embedded-game { background: oklch(var(--space-oled) / 0.05); backdrop-filter: blur(10px); overflow: hidden; width: 100%;
     border: 2px solid oklch(var(--accent-crypto) / 0.3);
     border-radius: 15px;
     padding: 1rem;

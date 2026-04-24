@@ -318,6 +318,63 @@ h3 {
 }
 .footer-nav a:hover { color: oklch(var(--accent-crypto)); }
 
+/* Additional 404-specific styles */
+.error-container { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative;
+    padding: 2rem;
+    z-index: 10;
+}
+.error-code { background-clip: text; animation: glowPulse 3s ease-in-out infinite; line-height: 1;
+    font-size: clamp(6rem, 20vw, 12rem);
+    font-weight: 900;
+    background: linear-gradient(45deg, oklch(var(--accent-crypto)), oklch(var(--accent-taxes)), oklch(var(--accent-lounge)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+@keyframes glowPulse {
+    0%, 100% {  filter: drop-shadow(0 0 30px oklch(var(--accent-crypto) / 0.6));
+        transform: scale(1);
+    }
+    50% {  filter: drop-shadow(0 0 60px rgba(96, 165, 250, 0.9));
+        transform: scale(1.05);
+    }
+}
+.error-title { color: var(--text-main); margin-bottom: 1rem; opacity: 0.9;
+    font-size: clamp(2rem, 6vw, 3rem);
+}
+.error-message { color: oklch(var(--text-muted)); margin-bottom: 3rem; max-width: 600px; line-height: 1.6;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+}
+.error-actions { display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 1.5rem;
+}
+.error-button { display: inline-block; background: oklch(var(--accent-crypto) / 0.2); border: 2px solid oklch(var(--accent-crypto)); color: var(--text-main); cursor: pointer; transition: all 0.3s ease; text-decoration: none;
+    padding: 1rem 2.5rem;
+    font-size: clamp(1rem, 3vw, 1.1rem);
+    border-radius: 50px;
+}
+.error-button:hover {
+    background: oklch(var(--accent-crypto) / 0.4);
+    box-shadow: 0 0 30px oklch(var(--accent-crypto) / 0.6);
+    transform: translateY(-3px);
+}
+.error-button.secondary { background: oklch(var(--accent-taxes) / 0.2); border-color: oklch(var(--accent-taxes)); }
+.error-button.secondary:hover {
+    background: oklch(var(--accent-taxes / 0.4));
+    box-shadow: 0 0 30px rgba(96, 165, 250, 0.6);
+}
+
+.floating-astronaut { position: absolute; animation: floatAround 15s ease-in-out infinite; opacity: 0.3;
+    font-size: 4rem;
+    z-index: 5;
+}
+@keyframes floatAround {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(50px, -50px) rotate(90deg); }
+    50% { transform: translate(0, -100px) rotate(180deg); }
+    75% { transform: translate(-50px, -50px) rotate(270deg); }
+}
+
 /* Tab & Phone Optimizations */
 @media (max-width: 900px) {
     h2 { text-align: center; }
@@ -327,6 +384,8 @@ h3 {
     .quickLinks { flex-direction: column; }
     .qlBtns { flex-direction: column; }
     .quickLinks .qlBtn { width: 100%; }
+    .error-actions { flex-direction: column; width: 100%; max-width: 300px; }
+    .error-button { width: 100%; }
 }
 @media (max-width: 550px) {
     .qlBtns { grid-template-columns: repeat(2, minmax(100px, 1fr)); }
