@@ -164,7 +164,7 @@
 .col-divider { border: none; border-left: 1px solid oklch(var(--star-white) / 0.11); margin: 0; }
 
 /* ─── COLLAPSIBLE SECTIONS ─── */
-.collapse { background: oklch(var(--accent-finance / 0.03)); border: 1px solid oklch(var(--accent-finance) / 0.15); transition: all 0.3s ease; overflow: hidden;
+.collapse { background: oklch(var(--accent-finance) / 0.03); border: 1px solid oklch(var(--accent-finance) / 0.15); transition: all 0.3s ease; overflow: hidden;
     border-radius: 12px;
 }
 .collapseBody { max-height: 0; transition: max-height 0.4s ease, padding 0.3s ease;
@@ -176,7 +176,7 @@
     font-weight: 600;
     gap: 0.5rem;
 }
-.collapseBtn:hover { background: oklch(var(--accent-finance / 0.1)); }
+.collapseBtn:hover { background: oklch(var(--accent-finance) / 0.1); }
 .collapse.open { overflow: visible; }
 .collapse.open .toggle-arrow { transform: rotate(180deg); }
 .toggle-arrow { transition: transform 0.3s ease; font-size: 0.9rem; }

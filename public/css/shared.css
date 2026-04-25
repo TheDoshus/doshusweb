@@ -4,13 +4,13 @@
     --space-oled: 0% 0 0;
     --star-white: 100% 0 0;
     --neutral-900: 15% 0.01 285;  /* Deep dark background */
-    --neutral-100: 89% 0 0;       /* e0e0e0 text */
-    --neutral-400: 68% 0 0;       /* a0a0a0 muted text */
+    --neutral-100: 89% 0 0;
+    --neutral-400: 68% 0 0;
     /* ─── COSMIC NEBULA PRIMITIVES ─── */
     --nebula-purple: 18% 0.11 315;      /* Deep magenta/purple */
     --nebula-blue: 18% 0.08 265;        /* Deep cosmic navy */
     --nebula-pink: 22% 0.14 330;        /* Hotter nebula core */
-    /* The Doshus Brand Spectrum */
+    /* Web Brand Spectrum */
     --brand-green:   70% 0.16 145; /* Finance / Credit */
     --brand-purple:  75% 0.14 285; /* Crypto / General Links */
     --brand-blue:    70% 0.13 250; /* Taxes / Info links */
@@ -165,6 +165,7 @@ h3 {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
+
 
 /* Hero Section */
 .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
@@ -360,7 +361,7 @@ h3 {
 }
 .error-button.secondary { background: oklch(var(--accent-taxes) / 0.2); border-color: oklch(var(--accent-taxes)); }
 .error-button.secondary:hover {
-    background: oklch(var(--accent-taxes / 0.4));
+    background: oklch(var(--accent-taxes) / 0.4);
     box-shadow: 0 0 30px rgba(96, 165, 250, 0.6);
 }
 
