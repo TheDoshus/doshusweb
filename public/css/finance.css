@@ -366,7 +366,7 @@
 }
 
 /* ─── SECTION SPACING & DIVIDERS ─── */
-.finance-box { margin-bottom: 2.5rem; }
+.finance-box { margin-bottom: 3rem; }
 
 /* ─── SECTION ACCENT OVERRIDES ─── */
 /* Crypto section — blue-purple accent */
@@ -423,16 +423,13 @@
 #taxes-section .infoTitle {
     color: oklch(var(--accent-taxes));
 }
-
 #taxes-section .infoBox {
     background: oklch(var(--accent-taxes) / 0.03);
     border-color: oklch(var(--accent-taxes) / 0.15);
 }
-
 #taxes-section .tips-list li::before {
     color: oklch(var(--accent-taxes));
 }
-
 #taxes-section .qlBtn:hover {
     border-color: oklch(var(--accent-taxes));
     box-shadow: 0 5px 15px oklch(var(--accent-taxes) / 0.2);
@@ -449,30 +446,25 @@
     border-color: oklch(var(--accent-networth) / 0.25);
     background: oklch(var(--accent-networth) / 0.05);
 }
-
 #networth-section .tracker-widget:hover {
     border-color: oklch(var(--accent-networth));
     box-shadow: 0 10px 30px oklch(var(--accent-networth) / 0.2);
 }
-
 #networth-section .widget-value {
     background: linear-gradient(45deg, oklch(var(--accent-networth)), oklch(var(--accent-finance)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-
 #networth-section .score-value {
     background: linear-gradient(45deg, oklch(var(--accent-networth)), oklch(var(--accent-finance)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-
 #networth-section .infoTitle {
     color: oklch(var(--accent-networth));
 }
-
 #networth-section .infoBox {
     background: oklch(var(--accent-networth) / 0.03);
     border-color: oklch(var(--accent-networth) / 0.15);
@@ -488,15 +480,12 @@
 #crypto-section h3::after {
     background: oklch(var(--accent-crypto));
 }
-
 #investing-section h3::after {
     background: oklch(var(--accent-invest));
 }
-
 #taxes-section h3::after {
     background: oklch(var(--accent-taxes));
 }
-
 #networth-section h3::after {
     background: oklch(var(--accent-networth));
 }
@@ -534,7 +523,6 @@
     border-radius: 0 50px;
     margin: auto 3rem;
 }
-
 /* ─── ARROWS ─── */
 .nav-arrow { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     border: 1px solid oklch(var(--star-white) / 0.15);
