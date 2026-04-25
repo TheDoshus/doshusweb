@@ -53,7 +53,7 @@
 
 .glass-card {
     background: oklch(var(--space-oled) / 0.02);
-    backdrop-filter: blur(7px);
+    backdrop-filter: blur(6px);
     border: 1px solid oklch(var(--star-white) / 0.05);
     border-radius: 20px;
     padding: clamp(2rem, 5vw, 3rem);

@@ -11,8 +11,8 @@
     --nebula-blue: 18% 0.14 265;        /* Deep cosmic navy */
     --nebula-pink: 22% 0.34 330;        /* Hotter nebula core */
     /* Web Brand Spectrum */
-    --brand-green:   62% 0.19 145; /* Finance / Credit */
-    --brand-purple:  55% 0.38 290; /* Crypto / General Links */
+    --brand-green:   69% 0.28 145; /* Finance / Credit */
+    --brand-purple:  55% 0.28 290; /* Crypto / General Links */
     --brand-blue:    70% 0.28 235; /* Taxes / Info links */
     --brand-gold:    82% 0.21 86;  /* Investing / Unclaimed */
     --brand-teal:    78% 0.23 185; /* Net Worth */
@@ -303,8 +303,8 @@ h3 {
 
 /* ─── STICKY FOOTER ─── */
 .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(15px); z-index: 999; transition: transform 0.3s ease;
-    padding: 0.6rem 1.5rem;
-    background: linear-gradient(135deg, oklch(var(--space-oled)) 0% 0%, oklch(var(--nebula-purple) / 0.55) 35%, oklch(var(--nebula-blue) / 0.55) 65%, oklch(var(--space-oled)) 100%);
+    padding: 0.4rem 1.5rem;
+    background: linear-gradient(135deg, oklch(var(--space-oled) / 0.8) 0% 0%, oklch(var(--nebula-purple) / 0.55) 35%, oklch(var(--nebula-blue) / 0.55) 65%, oklch(var(--space-oled) / 0.8) 100%);
     border-top: 1px solid oklch(var(--accent-crypto) / 0.2);
 }
 .sticky-footer.footer-hidden { transform: translateY(100%); }
@@ -312,12 +312,12 @@ h3 {
 .footer-nav { display: flex;
     gap: 1.5rem;
 }
-.footer-nav a { text-decoration: none; transition: all 0.3s ease;
-    color: oklch(var(--text-muted));
-    font-size: 0.85rem;
-    font-weight: 500;
+.footer-nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none;
+    gap: 1px; color: oklch(var(--accent-taxes) / 0.75);
 }
-.footer-nav a:hover { color: oklch(var(--accent-crypto)); }
+.footer-nav a svg { transition: transform 0.2s ease, opacity 0.2s ease; }
+.footer-nav a:hover svg { transform: translateY(-2px); }
+.footer-nav a span { font-size: 0.85rem; font-weight: 500; }
 
 /* Additional 404-specific styles */
 .error-container { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative;
@@ -396,4 +396,5 @@ h3 {
     .sticky-footer { flex-direction: column; gap: 0.3rem; padding: 0.5rem 1rem; }
     .footer-nav { gap: 1rem; }
     .footer-nav a { font-size: 0.8rem; }
+    .footer-copyright { display: none }
 }

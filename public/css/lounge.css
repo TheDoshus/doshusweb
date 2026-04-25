@@ -1,12 +1,12 @@
 /* Content Sections */
 .content-section { max-width: 1400px;
     margin: 0 auto 4rem auto;
-    padding: 3rem 2rem;
+    padding: 4rem 2rem;
 }
 .section-title {
     font-size: clamp(2rem, 5vw, 3rem); text-align: center;
     margin-bottom: 1rem;
-    background: linear-gradient(45deg, oklch(var(--accent-crypto)), oklch(var(--accent-taxes)), oklch(var(--accent-finance)));
+    background: linear-gradient(45deg, oklch(var(--accent-amzn) / 0.85), oklch(var(--accent-crypto) / 0.75), oklch(var(--accent-myth) / 0.9));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -50,6 +50,7 @@
 }
 
 /* GAMING ZONE GRID */
+#game .section-title { background: linear-gradient(45deg, oklch(var(--accent-finance) / 0.85), oklch(var(--accent-crypto) / 0.75), oklch(var(--accent-lounge) / 0.9)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .gaming-grid { display: grid;
     grid-template-columns: repeat(3, minmax(200px, 1fr));
     gap: 1.5rem;
@@ -76,6 +77,7 @@
 }
 
 /* EMBEDDED GAME SECTION */
+#sandspiel .section-title { background: linear-gradient(45deg, oklch(var(--accent-invest) / 0.85), oklch(var(--accent-lounge) / 0.75), oklch(var(--accent-invest) / 0.9)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .embedded-game { background: oklch(var(--space-oled) / 0.05); backdrop-filter: blur(10px); overflow: hidden; width: 100%;
     border: 2px solid oklch(var(--accent-crypto) / 0.3);
     border-radius: 15px;
@@ -83,13 +85,13 @@
     margin-bottom: 3rem;
 }
 .embedded-game iframe { width: 100%; height: 500px; border: none; border-radius: 10px; }
-
 /* INTERESTING SITES SECTION */
+#interesting .section-title { background: linear-gradient(45deg, oklch(var(--accent-finance) / 0.85), oklch(var(--accent-networth) / 0.75), oklch(var(--accent-lounge) / 0.9)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .sites-controls { display: flex; flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
-.surprise-btn { background: linear-gradient(45deg, oklch(var(--accent-crypto)), oklch(var(--accent-taxes))); border: none; cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
+.surprise-btn { background: linear-gradient(45deg, oklch(var(--accent-crypto) / 0.85), oklch(var(--accent-taxes) / 0.45)); border: none; cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
     padding: 1rem 2rem;
     border-radius: 50px;
     color: oklch(var(--star-white));
