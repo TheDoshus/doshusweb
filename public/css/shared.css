@@ -7,18 +7,18 @@
     --neutral-100: 89% 0 0;
     --neutral-400: 68% 0 0;
     /* ─── COSMIC NEBULA PRIMITIVES ─── */
-    --nebula-purple: 18% 0.11 315;      /* Deep magenta/purple */
-    --nebula-blue: 18% 0.08 265;        /* Deep cosmic navy */
-    --nebula-pink: 22% 0.14 330;        /* Hotter nebula core */
+    --nebula-purple: 18% 0.17 315;      /* Deep magenta/purple */
+    --nebula-blue: 18% 0.14 265;        /* Deep cosmic navy */
+    --nebula-pink: 22% 0.34 330;        /* Hotter nebula core */
     /* Web Brand Spectrum */
-    --brand-green:   70% 0.16 145; /* Finance / Credit */
-    --brand-purple:  75% 0.14 285; /* Crypto / General Links */
-    --brand-blue:    70% 0.13 250; /* Taxes / Info links */
-    --brand-amber:   75% 0.15 65;  /* Investing / Unclaimed */
-    --brand-teal:    68% 0.10 180; /* Net Worth */
-    --brand-pink:    65% 0.20 340; /* The Lounge / Entertainment */
-    --brand-amazon:  70% 0.18 50;  /* Amazonian Spot */
-    --brand-red:     60% 0.20 25;  /* Errors / Myths */
+    --brand-green:   62% 0.19 145; /* Finance / Credit */
+    --brand-purple:  55% 0.38 290; /* Crypto / General Links */
+    --brand-blue:    70% 0.28 235; /* Taxes / Info links */
+    --brand-gold:    82% 0.21 86;  /* Investing / Unclaimed */
+    --brand-teal:    78% 0.23 185; /* Net Worth */
+    --brand-pink:    65% 0.27 340; /* The Lounge / Entertainment */
+    --brand-amazon:  66% 0.21 50;  /* Amazonian Spot */
+    --brand-red:     65% 0.33 30;  /* Errors / Myths */
 
     /* ─── TIER 2: SEMANTIC TOKENS (What they DO) ─── */
     --bg-main: oklch(var(--neutral-900));
@@ -29,7 +29,7 @@
     --accent-finance: var(--brand-green);
     --accent-crypto: var(--brand-purple);
     --accent-taxes: var(--brand-blue);
-    --accent-invest: var(--brand-amber);
+    --accent-invest: var(--brand-gold);
     --accent-networth: var(--brand-teal);
     --accent-lounge: var(--brand-pink);
     --accent-amzn: var(--brand-amazon);

@@ -391,7 +391,7 @@
     border-color: oklch(var(--accent-crypto) / 0.15);
     background: oklch(var(--accent-crypto) / 0.03);
 }
-.midbtn { margin-top: 1.5rem; text-align: center; }
+.midbtn { margin-top: 1.5rem; align-self: center; text-align: center; }
 
 /* Investing section — warm amber accent */
 #investing-section { border: 1px solid oklch(var(--accent-invest) / 0.3); }
@@ -569,7 +569,7 @@
 }
 
 /* ─── NAV DOTS ─── */
-.nav-dot { flex: 1;  display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; position: relative; transition: all 0.3s ease;
+.nav-dot { flex: 1;  display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; position: relative; transition: all 0.3s ease; color: inherit;
     gap: 0.3rem;
     z-index: 1;
     padding: 0.3rem 0;
