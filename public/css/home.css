@@ -411,7 +411,7 @@
 .card-scroll-container::-webkit-scrollbar-thumb:hover { background: oklch(var(--accent-finance) / 0.8); }
 
 .credit-card-carousel { width: 75%; max-width: 100%; overflow: hidden; align-self: center; margin: 3.5rem 0 2rem 0; }
-.credit-card-carousel h4 {
+.credit-card-carousel h2 {
     font-size: 0.9rem;
     color: oklch(var(--accent-finance));
     margin-bottom: 0.8rem;
