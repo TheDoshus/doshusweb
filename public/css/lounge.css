@@ -132,6 +132,7 @@
     padding: 1.5rem;
     transition: all 0.3s ease; backdrop-filter: blur(5px);
 }
+.category-box h3 { font-family: 'Braah One';}
 .category-box.hidden { display: none; }
 .category-header { color: oklch(var(--accent-crypto)); text-align: center;
     font-size: 1.5rem;

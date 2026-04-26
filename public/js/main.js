@@ -23,9 +23,12 @@ if (starsContainer) {
     // Far = tiny & slow, Mid = medium, Close = big & fast
     const starLayers = [
         { count: 170, minSize: 0.5, maxSize: 1.5, className: 'star star-far',   drift: 0.3 },
-        { count: 55, minSize: 1.5, maxSize: 2.8, className: 'star star-mid',   drift: 0.7 },
+        { count: 55,  minSize: 1.5, maxSize: 2.8, className: 'star star-mid',   drift: 0.7 },
         { count: 20,  minSize: 2.8, maxSize: 4.5, className: 'star star-close', drift: 1.2 },
     ];
+
+    // ─── RAM CACHE ───
+    const starsData = [];
 
     // ─── CREATE STARS ───
     starLayers.forEach(layer => {
@@ -33,30 +36,31 @@ if (starsContainer) {
             const star = document.createElement('div');
             star.className = layer.className;
 
-            // Random position across the viewport
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
+            // Anchor the physical DOM element to the top left. 
+            // We will move it purely with GPU transforms later.
+            star.style.left = '0px';
+            star.style.top = '0px';
 
-            // Random size within this layer's range
             const size = Math.random() * (layer.maxSize - layer.minSize) + layer.minSize;
             star.style.width = size + 'px';
             star.style.height = size + 'px';
 
-            // Random twinkle timing
             star.style.animationDelay = Math.random() * 5 + 's';
             star.style.animationDuration = (Math.random() * 4 + 3) + 's';
 
-            // Store drift speed for parallax calculations
-            star.dataset.drift = layer.drift;
-
             starsContainer.appendChild(star);
+
+            // Populate the memory array with its initial randomized coordinates
+            starsData.push({
+                el: star,
+                drift: layer.drift,
+                x: Math.random() * 100, // Viewport Width percentage
+                y: Math.random() * 100  // Viewport Height percentage
+            });
         }
     });
 
-    // ─── CACHE STAR ELEMENTS ───
-    const allStars = starsContainer.querySelectorAll('.star');
-
-    // ─── PARALLAX + DRIFT VARIABLES ───
+    // ─── PARALLAX VARIABLES ───
     let mouseX = 0;
     let mouseY = 0;
     let currentX = 0;
@@ -68,25 +72,31 @@ if (starsContainer) {
         mouseY = (e.clientY / window.innerHeight - 0.5);
     });
 
-    // ─── FPS PERFORMANCE MONITOR ───
-    let enableParallax = true;
+    // ─── FPS PERFORMANCE MONITOR (SUSTAINED RECOVERY) ───
+    let isPaused = false;
     let frameCount = 0;
     let lastFpsCheck = performance.now();
+    let consecutiveGoodSeconds = 0; // The recovery buffer
 
     function checkPerformance() {
         frameCount++;
         const now = performance.now();
+        const elapsed = now - lastFpsCheck;
 
-        if (now - lastFpsCheck >= 2000) {
-            const fps = frameCount / ((now - lastFpsCheck) / 1000);
+        // Evaluate the frame rate once every 1 second
+        if (elapsed >= 1000) { 
+            const fps = frameCount / (elapsed / 1000);
 
-            if (fps < 30) {
-                enableParallax = false;
-                allStars.forEach(star => {
-                    star.style.transform = '';
-                });
-            } else if (!enableParallax && fps > 45) {
-                enableParallax = true;
+            if (fps < 45) {
+                isPaused = true;
+                consecutiveGoodSeconds = 0; // Reset the recovery buffer if it chokes
+            } else if (isPaused && fps >= 50) {
+                consecutiveGoodSeconds++;
+                // Require 3 straight seconds of clean performance to unlock the engine
+                if (consecutiveGoodSeconds >= 3) { 
+                    isPaused = false;
+                    consecutiveGoodSeconds = 0;
+                }
             }
 
             frameCount = 0;
@@ -94,55 +104,49 @@ if (starsContainer) {
         }
     }
 
-    // ─── MAIN ANIMATION LOOP: PARALLAX + CONTINUOUS DRIFT ───
+    // ─── MAIN ANIMATION LOOP: TIME DILATION ENGINE ───
+    let currentSpeed = 1; // 1 = 100% speed, 0 = fully paused
+
     function animateStars() {
         checkPerformance();
 
-        if (enableParallax) {
-            // Lerp: smoothly interpolate toward target mouse/gyro position
-            currentX += (mouseX - currentX) * 0.12;
-            currentY += (mouseY - currentY) * 0.12;
+        // 1. Calculate Time Dilation (The Brake Pedal)
+        const targetSpeed = isPaused ? 0 : 1;
+        // Smoothly transition between moving and paused over several frames
+        currentSpeed += (targetSpeed - currentSpeed) * 0.05; 
 
-            // Update each star's position
-            allStars.forEach(star => {
-                const drift = parseFloat(star.dataset.drift) || 0.5;
+        // 2. Calculate Parallax Target
+        // We calculate this regardless of speed so the internal math never jumps
+        currentX += (mouseX - currentX) * 0.12;
+        currentY += (mouseY - currentY) * 0.12;
 
-                // Parallax offset from mouse
-                const parallaxX = currentX * drift * 80;
-                const parallaxY = currentY * drift * 80;
+        // 3. Iterate over the high-speed RAM array
+        for (let i = 0; i < starsData.length; i++) {
+            const star = starsData[i];
 
-                // Get current position (or initialize if first frame)
-                if (!star.dataset.x) {
-                    const initialX = parseFloat(star.style.left);
-                    const initialY = parseFloat(star.style.top);
-                    star.dataset.x = isNaN(initialX) ? Math.random() * 100 : initialX;
-                    star.dataset.y = isNaN(initialY) ? Math.random() * 100 : initialY;
-                }
+            // If the engine is fully paused (speed near 0), skip DOM writes entirely.
+            // This is crucial: it relieves the CPU/GPU, allowing the FPS to actually recover.
+            if (currentSpeed < 0.005 && isPaused) {
+                continue; 
+            }
 
-                // Continuous drift — stars slowly move diagonally
-                // Faster drift for close stars, slower for far stars
-                const driftSpeedX = drift * 0.04; // horizontal drift speed
-                const driftSpeedY = drift * 0.01; // vertical drift speed
+            // Apply Time Dilation to the drift
+            star.x += (star.drift * 0.04) * currentSpeed;
+            star.y += (star.drift * 0.01) * currentSpeed;
 
-                // Update stored position
-                let x = parseFloat(star.dataset.x) + driftSpeedX;
-                let y = parseFloat(star.dataset.y) + driftSpeedY;
+            // Wrap around screen edges seamlessly
+            // Subtraction is used instead of setting to 0 to prevent micro-stutters
+            if (star.x > 100) star.x -= 100; 
+            if (star.x < 0) star.x += 100;
+            if (star.y > 100) star.y -= 100;
+            if (star.y < 0) star.y += 100;
 
-                // Wrap around screen edges
-                if (x > 100) x = 0;
-                if (x < 0) x = 100;
-                if (y > 100) y = 0;
-                if (y < 0) y = 100;
+            // Apply Time Dilation to the parallax intensity
+            const finalParallaxX = currentX * star.drift * 80 * currentSpeed;
+            const finalParallaxY = currentY * star.drift * 80 * currentSpeed;
 
-                // Store updated position
-                star.dataset.x = x;
-                star.dataset.y = y;
-
-                // Apply position + parallax offset
-                star.style.left = x + '%';
-                star.style.top = y + '%';
-                star.style.transform = `translate(${parallaxX}px, ${parallaxY}px)`;
-            });
+            // Single GPU-Accelerated DOM Write
+            star.el.style.transform = `translate3d(calc(${star.x}vw + ${finalParallaxX}px), calc(${star.y}vh + ${finalParallaxY}px), 0)`;
         }
 
         requestAnimationFrame(animateStars);

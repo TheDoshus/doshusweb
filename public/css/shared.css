@@ -71,6 +71,48 @@
     font-style: normal;
     font-display: swap;
 }
+@font-face {
+    font-family: 'Carter One';
+    src: url('../assets/fonts/CarterOne-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Bungee Inline';
+    src: url('../assets/fonts/BungeeInline-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Jaro Regular-var';
+    src: url('../assets/fonts/Jaro-Regular-VariableFont_opsz.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Shrikhand';
+    src: url('../assets/fonts/Shrikhand-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Ceviche One';
+    src: url('../assets/fonts/CevicheOne-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Shojumaru';
+    src: url('../assets/fonts/Shojumaru-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
 
 /* Defaults */
 html { height: 100vh; height: 100dvh; }
@@ -84,16 +126,18 @@ body { position: relative; min-height: -webkit-fill-available; min-height: 100vh
     color: var(--text-main);
     overflow-x: clip;
 }
-
+button {
+    font-family: 'Braah One', system-ui, sans-serif;
+}
 h1 {
     font-family: 'Chango', cursive, system-ui, sans-serif;
 }
 h2 {
-    font-family: 'Braah One', system-ui, sans-serif;
+    font-family: 'Shojumaru', system-ui, sans-serif;
     font-size: 2rem;
 }
 h3 {
-    font-family: 'Braah One', system-ui, sans-serif;
+    font-family: 'Jaro Regular-var', system-ui, sans-serif;
 }
 
 /* ─── COSMIC BACKGROUND ─── */
@@ -201,6 +245,7 @@ h3 {
 
 .cta-button { 
     cursor: pointer; text-decoration: none; border-radius: 50px; padding: 1rem 2rem;
+    font-family: 'Carter One';
     font-size: clamp(1rem, 3vw, 1.1rem);
     background: oklch(var(--accent-crypto) / 0.2);
     border: 2px solid oklch(var(--accent-crypto));

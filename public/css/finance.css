@@ -355,7 +355,6 @@
 
 /* ─── SECTION HEADERS ─── */
 .finance-box h3 {
-    font-family: 'Carter One';
     font-size: clamp(1.45rem, 3vw, 1.525rem);
     margin-bottom: 0.3rem;
 }
