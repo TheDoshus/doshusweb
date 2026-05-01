@@ -113,6 +113,13 @@
     font-style: normal;
     font-display: swap;
 }
+@font-face {
+    font-family: 'Fugaz One';
+    src: url('../assets/fonts/FugazOne-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
 
 /* Defaults */
 html { height: 100vh; height: 100dvh; }
@@ -322,6 +329,7 @@ h3 {
 .qlBtns { display: grid;
     grid-template-columns: repeat(3, minmax(125px, 1fr));
     gap: 1rem;
+    font-family: 'Fugaz One';
 }
 .quickLinks .qlBtn { text-decoration: none; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     padding: 1.2rem 0.8rem;

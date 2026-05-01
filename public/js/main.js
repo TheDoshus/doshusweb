@@ -83,17 +83,17 @@ if (starsContainer) {
         const now = performance.now();
         const elapsed = now - lastFpsCheck;
 
-        // Evaluate the frame rate once every 1 second
-        if (elapsed >= 1000) { 
+        // Evaluate the frame rate once every 2.5 second
+        if (elapsed >= 2500) { 
             const fps = frameCount / (elapsed / 1000);
 
-            if (fps < 45) {
+            if (fps < 25) {
                 isPaused = true;
                 consecutiveGoodSeconds = 0; // Reset the recovery buffer if it chokes
-            } else if (isPaused && fps >= 50) {
+            } else if (isPaused && fps >= 30) {
                 consecutiveGoodSeconds++;
-                // Require 3 straight seconds of clean performance to unlock the engine
-                if (consecutiveGoodSeconds >= 3) { 
+                // Require 5 straight seconds of clean performance to unlock the engine
+                if (consecutiveGoodSeconds >= 5) { 
                     isPaused = false;
                     consecutiveGoodSeconds = 0;
                 }

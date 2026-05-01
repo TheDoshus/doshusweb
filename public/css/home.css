@@ -97,7 +97,7 @@
 }
 
 .promo-text {
-    font-family: 'Braah One', system-ui, sans-serif; text-align: center;
+    font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif; text-align: center;
     font-size: clamp(0.75rem, 6vw, 1.5rem);
     color: oklch(var(--accent-taxes));
     opacity: 0.9;
@@ -263,6 +263,7 @@
 .btn-icon { width: 20px; height: 20px; object-fit: contain; border-radius: 5px;}
 .pillBtn {
     padding: 0.8rem 1.5rem;
+    font-family: 'Braah One';
     font-size: clamp(0.9rem, 2.5vw, 1rem);
     background: oklch(var(--accent-taxes) / 0.2);
     border: 2px solid oklch(var(--accent-taxes) / 0.6);
@@ -429,6 +430,7 @@
 }
 .credit-card-item img { width: 100%; object-fit: cover; border-radius: 8px; }
 .card-title { display: flex; align-items: center; justify-content: center; text-align: center;
+    font-family: 'Carter One';
     font-size: 0.75rem;
     color: oklch(var(--accent-finance));
     font-weight: 600;
