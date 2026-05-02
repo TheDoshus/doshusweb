@@ -1,0 +1,326 @@
+/* ─── HERO ─── */
+.pulse-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: oklch(var(--brand-green));
+    box-shadow: 0 0 8px oklch(var(--brand-green) / 0.7);
+    animation: nx-pulse 1.6s ease-in-out infinite;
+    vertical-align: middle; margin-right: 0.35rem;
+}
+
+/* ─── NEXUS HERO STATS ─── */
+.nx-stats {
+    display: flex; gap: 1.5rem; justify-content: center;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.75rem; 
+    color: oklch(var(--text-muted)); 
+    margin-top: 1rem;
+}
+.nx-stats span { display: flex; align-items: center; gap: 0.4rem; }
+.nx-stats b { color: oklch(var(--accent-crypto)); font-weight: 600; }
+.pulse-dot { color: oklch(var(--brand-green)); font-size: 1.2rem; line-height: 0; }
+
+@keyframes nx-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50%      { opacity: 1;   transform: scale(1.15); }
+}
+
+/* ===========================================================
+   BENTO GRID — 12 columns, dense auto-flow
+   =========================================================== */
+.bento-wrap {
+    width: 100%; max-width: 1280px;
+    margin: 6rem auto; padding: 1rem clamp(1rem, 3vw, 2rem) 6rem;
+    position: relative; z-index: 10;
+}
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: minmax(140px, auto);
+    grid-auto-flow: dense;
+    gap: clamp(0.85rem, 1.6vw, 1.25rem);
+}
+
+/* Span helpers */
+.span-tall    { grid-column: span 5; grid-row: span 2; }    /* Terminal — tall */
+.span-wide    { grid-column: span 7; grid-row: span 1; }    /* The Rig — wide */
+.span-square  { grid-column: span 4; grid-row: span 1; }    /* Frequencies */
+.span-jumbo   { grid-column: span 8; grid-row: span 1; }    /* Blackbox — wide  */
+.span-mini    { grid-column: span 3; grid-row: span 1; }    /* Misc small      */
+
+/* Meme node spans — different sizes for asymmetry */
+.meme-tall    { grid-column: span 3; grid-row: span 2; }
+.meme-wide    { grid-column: span 4; grid-row: span 1; }
+.meme-square  { grid-column: span 3; grid-row: span 1; }
+
+/* ─── DATA NODE BASE ─── */
+.data-node {
+    --node-accent: var(--accent-crypto);
+    position: relative;
+    background: oklch(var(--space-oled) / 0.55);
+    backdrop-filter: blur(10px);
+    border: 1px solid oklch(var(--node-accent) / 0.28);
+    border-radius: 14px;
+    padding: 1.1rem 1.15rem 1.25rem;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    min-height: 0;
+}
+.data-node::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(120% 80% at 0% 0%,
+        oklch(var(--node-accent) / 0.10) 0%,
+        oklch(var(--node-accent) / 0.02) 40%,
+        transparent 70%);
+    pointer-events: none;
+}
+.data-node::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        oklch(var(--node-accent) / 0.7) 50%,
+        transparent 100%);
+}
+.data-node:hover {
+    border-color: oklch(var(--node-accent) / 0.85);
+    box-shadow: 0 12px 38px oklch(var(--node-accent) / 0.25),
+                0 0 0 1px oklch(var(--node-accent) / 0.4) inset;
+    transform: translateY(-4px);
+}
+
+/* Per-node accent */
+.data-node.node-terminal     { --node-accent: var(--accent-finance); }
+.data-node.node-rig          { --node-accent: var(--accent-taxes); }
+.data-node.node-frequencies  { --node-accent: var(--accent-lounge); }
+.data-node.node-blackbox     { --node-accent: var(--accent-invest); }
+.data-node.node-stack        { --node-accent: var(--accent-networth); }
+.data-node.node-signals      { --node-accent: var(--accent-crypto); }
+
+/* Node head */
+.node-head {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 0.4rem; position: relative;
+}
+.node-icon {
+    flex-shrink: 0; width: 40px; height: 40px;
+    display: grid; place-items: center; border-radius: 9px;
+    background: oklch(var(--node-accent) / 0.12);
+    border: 1px solid oklch(var(--node-accent) / 0.4);
+    color: oklch(var(--node-accent));
+}
+.node-icon svg { width: 22px; height: 22px; }
+.node-title {
+    font-family: 'Shojumaru', system-ui, sans-serif;
+    font-size: 1.4rem; line-height: 1; margin: 0;
+    color: oklch(var(--node-accent));
+}
+.node-sigil {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.68rem; letter-spacing: 0.15em;
+    color: oklch(var(--text-muted)); opacity: 0.8;
+}
+.node-desc {
+    font-size: 0.82rem; line-height: 1.55;
+    opacity: 0.8; margin-bottom: 0.85rem;
+    position: relative; z-index: 1;
+}
+
+/* ─── INNER STRUCTURE ─── */
+.node-body {
+    display: flex; flex-direction: column;
+    gap: 0.75rem;
+    position: relative; z-index: 1;
+    flex: 1;
+}
+
+/* Override quickLinks per accent variable */
+.data-node .quickLinks {
+    background: oklch(var(--node-accent) / 0.04);
+    border: 1px solid oklch(var(--node-accent) / 0.25);
+    padding: 0.85rem;
+    gap: 0.6rem;
+}
+.data-node .qlHeader {
+    color: oklch(var(--node-accent));
+    text-align: left;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.95;
+}
+.data-node .qlBtns {
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 0.5rem;
+}
+.data-node .qlBtn {
+    color: oklch(var(--node-accent));
+    background: oklch(var(--node-accent) / 0.08);
+    border: 1px solid oklch(var(--node-accent) / 0.3);
+    border-radius: 8px;
+    padding: 0.6rem 0.55rem;
+    font-size: 0.72rem;
+    line-height: 1.25;
+    gap: 0.3rem;
+    min-height: 44px;
+}
+.data-node .qlBtn:hover {
+    border-color: oklch(var(--node-accent));
+    box-shadow: 0 5px 15px oklch(var(--node-accent) / 0.25);
+    background: oklch(var(--node-accent) / 0.16);
+    color: oklch(var(--node-accent));
+}
+
+/* Description blurbs inside cards */
+.zone-blurb {
+    font-size: 0.78rem; line-height: 1.5;
+    color: oklch(var(--text-muted)); opacity: 0.85;
+    margin-bottom: 0.4rem;
+}
+
+/* Override .collapse (finance-hub pattern) per node accent */
+.data-node .collapse {
+    background: oklch(var(--node-accent) / 0.04);
+    border: 1px solid oklch(var(--node-accent) / 0.22);
+    border-radius: 10px;
+}
+.data-node .collapseBtn {
+    background: oklch(var(--node-accent) / 0.06);
+    color: oklch(var(--node-accent));
+    padding: 0.7rem 1rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    justify-content: space-between;
+}
+.data-node .collapseBtn:hover { background: oklch(var(--node-accent) / 0.12); }
+.data-node .collapse.open .collapseBody {
+    padding: 0.85rem 1rem 1rem;
+}
+.data-node .collapseBody { padding: 0 1rem; }
+
+/* Tip rows inside accordions */
+.tip-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 6px;
+    background: oklch(var(--space-oled) / 0.4);
+    border: 1px solid oklch(var(--node-accent) / 0.15);
+    margin-bottom: 0.5rem;
+}
+.tip-row:last-child { margin-bottom: 0; }
+.tip-row .tip-name {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.76rem;
+    color: oklch(var(--node-accent));
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.tip-row .tip-desc {
+    font-size: 0.74rem; line-height: 1.5;
+    color: oklch(var(--text-muted));
+}
+.tip-row .tip-cmd {
+    display: block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.72rem;
+    background: oklch(var(--space-oled) / 0.7);
+    border-left: 2px solid oklch(var(--node-accent));
+    padding: 0.4rem 0.55rem;
+    border-radius: 4px;
+    color: var(--text-main);
+    overflow-x: auto;
+    white-space: pre;
+}
+.tip-row .tip-cmd::before { content: '$ '; color: oklch(var(--node-accent)); opacity: 0.7; }
+.tip-row .tip-link {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.68rem;
+    color: oklch(var(--node-accent));
+    text-decoration: none;
+    border-bottom: 1px dashed oklch(var(--node-accent) / 0.4);
+    width: max-content;
+    padding-bottom: 1px;
+}
+.tip-row .tip-link::after { content: ' ↗'; }
+.tip-row .tip-link:hover { color: var(--text-main); border-color: var(--text-main); }
+
+/* Node footer */
+.node-foot {
+    margin-top: 0.85rem; padding-top: 0.6rem;
+    border-top: 1px dashed oklch(var(--star-white) / 0.08);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.65rem; letter-spacing: 0.08em;
+    color: oklch(var(--text-muted));
+}
+.node-foot b { color: oklch(var(--node-accent)); font-weight: 600; }
+
+/* ===========================================================
+   MEME NODES — empty divs the global JS fills.
+   Style only; no markup inside.
+   =========================================================== */
+.random-meme-fixed {
+    border-radius: 14px;
+    overflow: hidden;
+    background: oklch(var(--space-oled) / 0.6);
+    border: 1px solid oklch(var(--accent-lounge) / 0.25);
+    position: relative;
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    min-height: 140px;
+}
+.random-meme-fixed::before {
+    content: 'MEDIA / NODE';
+    position: absolute; top: 0.55rem; left: 0.65rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.6rem; letter-spacing: 0.14em;
+    color: oklch(var(--accent-lounge) / 0.7);
+    text-transform: uppercase;
+    z-index: 2; pointer-events: none;
+    background: oklch(var(--space-oled) / 0.55);
+    border: 1px solid oklch(var(--accent-lounge) / 0.35);
+    border-radius: 4px;
+    padding: 2px 6px;
+    backdrop-filter: blur(4px);
+}
+.random-meme-fixed:hover {
+    transform: scale(1.02) translateY(-3px);
+    border-color: oklch(var(--accent-lounge) / 0.85);
+    box-shadow: 0 12px 30px oklch(var(--accent-lounge) / 0.3);
+}
+.random-meme-fixed img,
+.random-meme-fixed video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Sticky footer Nexus link */
+.footer-nav a.nx-active { color: oklch(var(--accent-crypto)); font-weight: 600; }
+
+/* ===========================================================
+   RESPONSIVE — fold the bento at narrow widths
+   =========================================================== */
+@media (max-width: 980px) {
+    .bento-grid { grid-template-columns: repeat(6, 1fr); }
+    .span-tall   { grid-column: span 6; grid-row: span 1; }
+    .span-wide   { grid-column: span 6; }
+    .span-square { grid-column: span 3; }
+    .span-jumbo  { grid-column: span 6; }
+    .span-mini   { grid-column: span 3; }
+    .meme-tall   { grid-column: span 3; grid-row: span 1; min-height: 200px; }
+    .meme-wide   { grid-column: span 6; min-height: 180px; }
+    .meme-square { grid-column: span 3; min-height: 200px; }
+}
+@media (max-width: 600px) {
+    .bento-grid { grid-template-columns: 1fr; }
+    .span-tall, .span-wide, .span-square, .span-jumbo, .span-mini,
+    .meme-tall, .meme-wide, .meme-square {
+        grid-column: 1 / -1; grid-row: auto;
+    }
+    .meme-tall, .meme-wide, .meme-square { min-height: 240px; }
+    .data-node .qlBtns { grid-template-columns: repeat(2, 1fr); }
+}

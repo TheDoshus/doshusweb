@@ -231,6 +231,47 @@ async function loadUniversalMemes() {
 }
 window.addEventListener('DOMContentLoaded', loadUniversalMemes);
 
+// ─── UNIVERSAL COLLAPSIBLE SECTIONS & MODALS ───
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Handle all Collapsible Sections (Accordions)
+    document.querySelectorAll('.collapseBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.parentElement.classList.toggle('open');
+            
+            // If we are inside the Finance Hub slider, tell the slider to resize
+            if (typeof syncSliderHeight === 'function') {
+                syncSliderHeight();
+            }
+        });
+    });
+
+    // 2. Handle opening Modals via data-target
+    document.querySelectorAll('.srcBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const targetModal = document.getElementById(targetId);
+            if (targetModal) targetModal.classList.add('open');
+        });
+    });
+
+    // 3. Handle closing Modals (Clicking the X)
+    document.querySelectorAll('.srcClose').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.srcOverlay').classList.remove('open');
+        });
+    });
+
+    // 4. Handle closing Modals (Clicking the dark background)
+    document.querySelectorAll('.srcOverlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('open');
+            }
+        });
+    });
+});
+
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
 let lastScrollY = window.scrollY;
 const stickyFooter = document.getElementById('sticky-footer');

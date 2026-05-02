@@ -164,27 +164,6 @@
 .finance-link { color: oklch(var(--accent-finance)); font-weight: 600; text-decoration: none; transition: opacity 0.3s ease; }
 .col-divider { border: none; border-left: 1px solid oklch(var(--star-white) / 0.11); margin: 0; }
 
-/* ─── COLLAPSIBLE SECTIONS ─── */
-.collapse { background: oklch(var(--accent-finance) / 0.03); border: 1px solid oklch(var(--accent-finance) / 0.15); transition: all 0.3s ease; overflow: hidden;
-    border-radius: 12px;
-}
-.collapseBody { max-height: 0; transition: max-height 0.4s ease, padding 0.3s ease;
-    padding: 0 1.5rem;
-}
-.collapseBtn { width: 100%; background: oklch(var(--accent-finance) / 0.05); border: none; color: oklch(var(--accent-finance)); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease;
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    gap: 0.5rem;
-}
-.collapseBtn:hover { background: oklch(var(--accent-finance) / 0.1); }
-.collapse.open { overflow: visible; }
-.collapse.open .toggle-arrow { transform: rotate(180deg); }
-.toggle-arrow { transition: transform 0.3s ease; font-size: 0.9rem; }
-.collapse.open .collapseBody { max-height: fit-content;
-    padding: 1rem 1.5rem 1.5rem 1.5rem;
-}
-
 /* ─── BANKS GRID ─── */
 .banks-grid { display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
