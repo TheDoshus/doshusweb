@@ -1,0 +1,282 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap');
+
+/* ─── STRAWBERRY SHORTCAKE THEME ─── */
+/* * COLOR PALETTE REFERENCE:
+ * --berry-dark: #5C1A27 (Deep burgundy for high-contrast readable text)
+ * --strawberry-red: #E23D5A (Primary action color)
+ * --strawberry-jam: #C82A45 (Hover states)
+ * --soft-pink: #FFB6C1 (Secondary elements, borders)
+ * --mint-green: #A2E4B8 (Accents, focus rings)
+ * --vanilla-cream: rgba(255, 253, 248, 0.95);
+ * --peach-warm: #FFDAB9 (Tertiary elements)
+ */
+
+:root {
+    --berry-dark: #5C1A27;
+    --strawberry-red: #E23D5A;
+    --strawberry-jam: #C82A45;
+    --soft-pink: #FFB6C1;
+    --mint-green: #A2E4B8;
+    --vanilla-cream: rgba(255, 253, 248, 0.82);
+    --peach-warm: #FFDAB9E5;
+    --retro-shadow: 0 6px 0 var(--berry-dark);
+}
+
+/* Base Typographic Overrides */
+body {
+    font-family: 'Quicksand', -apple-system, sans-serif;
+    color: var(--berry-dark);
+}
+
+/* Primary Container & Scalloped Effect */
+.printbox {
+    background-color: var(--vanilla-cream);
+    border: 5px dashed var(--soft-pink);
+    border-radius: 24px;
+    box-shadow: 0 12px 24px rgba(92, 26, 39, 0.1), inset 0 0 20px rgba(255, 182, 193, 0.3);
+    backdrop-filter: blur(8px);
+    position: relative;
+    margin: -15px 35px 0 0;
+}
+
+/* Synthetic Decorative Element: Bouncing Strawberry */
+.printbox::before {
+    content: '🍓';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 45px;
+    filter: drop-shadow(0 4px 6px rgba(92, 26, 39, 0.2));
+    animation: berryBounce 2.5s infinite cubic-bezier(0.445, 0.05, 0.55, 0.95);
+    z-index: 10;
+}
+
+@keyframes berryBounce {
+    0%, 100% { transform: translateY(0) rotate(15deg); }
+    50% { transform: translateY(-10px) rotate(-5deg); }
+}
+
+h1 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--strawberry-red);
+    text-shadow: 2px 2px 0 var(--peach-warm), 4px 4px 0 rgba(162, 228, 184, 0.8);
+    letter-spacing: 1px;
+}
+
+.subtitle {
+    color: var(--mint-green);
+    font-family: 'Fredoka One', cursive;
+    text-shadow: 1px 1px 0 var(--berry-dark);
+    font-size: 1.5rem;
+    background: var(--berry-dark);
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    transform: rotate(-3deg);
+    box-shadow: 0 4px 0 rgba(92, 26, 39, 0.4);
+}
+
+/* Input Fields & Textareas */
+.input-group label, .options label {
+    color: var(--berry-dark);
+    font-weight: 700;
+}
+
+.input-group label span {
+    color: var(--strawberry-red);
+    font-size: 0.7em;
+}
+
+input[type="text"], input[type="number"], #textAreaID {
+    background-color: #FFFFFF;
+    border: 3px solid var(--soft-pink);
+    border-radius: 12px;
+    color: var(--berry-dark);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bouncy focus transition */
+}
+
+input[type="text"]:focus, input[type="number"]:focus, #textAreaID:focus {
+    outline: none;
+    border-color: var(--mint-green);
+    box-shadow: 0 0 0 5px rgba(162, 228, 184, 0.4);
+    transform: scale(1.02);
+}
+
+/* Primary Action Buttons */
+.print-button, .multiButton {
+    background: linear-gradient(135deg, var(--strawberry-red), #FF5E7E);
+    color: #FFFFFF;
+    font-family: 'Fredoka One', cursive;
+    border: 3px solid var(--peach-warm);
+    border-radius: 30px;
+    box-shadow: var(--retro-shadow);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin: -5px 0 0 0;
+}
+
+.print-button:hover, .multiButton:hover {
+    background: linear-gradient(135deg, var(--strawberry-jam), var(--strawberry-red));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 var(--berry-dark);
+    border-color: #FFFFFF;
+}
+
+.print-button:active, .multiButton:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 var(--berry-dark);
+}
+
+/* Secondary Quick Buttons (Gingham/Retro Vibe) */
+.buttonsLine1, .buttonsLine2, .buttonsLine3, .scroll-button {
+    background-color: var(--vanilla-cream);
+    color: var(--strawberry-red);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    border: 2px solid var(--soft-pink);
+    border-radius: 12px;
+    box-shadow: 0 4px 0 var(--soft-pink);
+    transition: all 0.1s ease-in-out;
+}
+.scroll-button:hover::after {
+  color: wheat;
+}
+
+.buttonsLine1:hover, .buttonsLine2:hover, .buttonsLine3:hover, .scroll-button:hover {
+    background-color: var(--peach-warm);
+    color: var(--berry-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--strawberry-red);
+    border-color: var(--strawberry-red);
+}
+
+.buttonsLine1:active, .buttonsLine2:active, .buttonsLine3:active, .scroll-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--strawberry-red);
+}
+
+/* Synthetic Polka Dot Background via Gradients */
+.MultiBarcode-printer {
+    background-color: var(--vanilla-cream);
+    border: 4px solid var(--mint-green);
+    border-radius: 24px;
+    box-shadow: 0 10px 20px rgba(92, 26, 39, 0.08);
+    position: relative;
+    z-index: 1;
+}
+
+.MultiBarcode-printer::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(var(--soft-pink) 20%, transparent 20%), 
+                      radial-gradient(var(--soft-pink) 20%, transparent 20%);
+    background-size: 30px 30px;
+    background-position: 0 0, 15px 15px;
+    opacity: 0.15;
+    z-index: -1;
+    border-radius: 18px;
+    pointer-events: none;
+}
+
+.MultiBarcode-printer h2 {
+    color: var(--berry-dark);
+    font-family: 'Fredoka One', cursive;
+    text-shadow: 2px 2px 0 var(--soft-pink);
+}
+
+/* ASIN Sticker Container */
+.asin-sticker-container {
+    background-color: var(--peach-warm);
+    border: 4px dashed var(--strawberry-red);
+    border-radius: 16px;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6);
+}
+
+.asin-sticker-header {
+    color: var(--berry-dark);
+    font-family: 'Fredoka One', cursive;
+    border-bottom: 3px dotted var(--strawberry-red);
+    padding-bottom: 8px;
+}
+
+.asin-sticker-content p {
+    color: var(--berry-dark);
+    font-weight: 700;
+}
+
+.asin-sticker-content button {
+    background-color: var(--mint-green);
+    color: var(--berry-dark);
+    border: 2px solid var(--berry-dark);
+    border-radius: 12px;
+    font-family: 'Fredoka One', cursive;
+    box-shadow: 0 4px 0 var(--berry-dark);
+    transition: all 0.1s ease-in-out;
+}
+
+.asin-sticker-content button:hover {
+    background-color: #8CE3A6;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--berry-dark);
+}
+
+.asin-sticker-content button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--berry-dark);
+}
+
+/* Scrollbar Customization - Mint & Strawberry */
+.scroll-container {
+    scrollbar-color: var(--strawberry-red) var(--mint-green);
+    scrollbar-width: thin;
+}
+
+.scroll-container::-webkit-scrollbar {
+    height: 12px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: var(--mint-green);
+    border-radius: 10px;
+    border: 2px solid var(--vanilla-cream);
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background-color: var(--strawberry-red);
+    border-radius: 10px;
+    border: 2px solid var(--vanilla-cream);
+}
+
+/* Dropdown Customization */
+#quickbuttons-dropdown .qb-dropdown-content {
+    background-color: var(--vanilla-cream);
+    border: 3px solid var(--soft-pink);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(92, 26, 39, 0.15);
+}
+
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: var(--berry-dark);
+    font-weight: 700;
+    border-bottom: 2px dashed var(--soft-pink);
+}
+
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background-color: var(--peach-warm);
+    color: var(--strawberry-red);
+    padding-left: 22px; /* Typographic indent on hover */
+    transition: all 0.2s ease;
+}
+
+/* Remove default transitions from Shared2Printmon that conflict with our tactical tactile feel */
+.buttonsLine1:before, .buttonsLine2:before, .buttonsLine3:before {
+    display: none;
+}
+
+.left {
+  margin: 45px 10px 10px 0px; 
+}

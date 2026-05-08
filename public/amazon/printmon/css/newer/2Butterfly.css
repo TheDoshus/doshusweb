@@ -1,0 +1,472 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   🦋 PURPLE BUTTERFLY THEME — "Spread your wings"
+   ═══════════════════════════════════════════════════════════════════════
+
+   COLOR PALETTE:
+   ─────────────────────────────────────────────────────────────────────
+   🦋 Royal Purple:      #7B2D8B  —  Primary, deep wing color
+   💜 Soft Lavender:     #C9A0DC  —  Secondary, highlights
+   🔮 Amethyst:          #9B59B6  —  Mid-tone accents
+   ✨ Lilac Shimmer:     #E8DAEF  —  Light text, gentle glow
+   🌸 Orchid Pink:       #DA70D6  —  Hover accents, warmth
+   🌑 Midnight Plum:     #1A0A2E  —  Deep background base
+   💫 Moonlit Violet:    #4A1766  —  Panel tints, mid-darks
+   🤍 Pearl White:       #F5F0FA  —  Primary text
+   🪻 Wisteria:          #BDA0D6  —  Subtle borders, details
+   💎 Crystal Violet:    #A855F7  —  Active states, pops
+
+   DESIGN PHILOSOPHY:
+   ─────────────────────────────────────────────────────────────────────
+   Ethereal and graceful. Deep plum darkness with luminous lavender
+   light — like moonlight catching butterfly wings at twilight.
+   Soft gradients mimic the iridescent shimmer of purple morpho wings.
+   Every hover state "lifts" — because butterflies don't stay still.
+
+   The aesthetic balances dark elegance with playful whimsy:
+   darkness of the night sky + delicate glow of bioluminescence.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── CSS VARIABLES ─── */
+:root {
+    --royal-purple: #7B2D8B;
+    --soft-lavender: #C9A0DC;
+    --amethyst: #9B59B6;
+    --lilac-shimmer: #E8DAEF;
+    --orchid-pink: #DA70D6;
+    --midnight-plum: #1A0A2E;
+    --moonlit-violet: #4A1766;
+    --pearl-white: #F5F0FA;
+    --wisteria: #BDA0D6;
+    --crystal-violet: #A855F7;
+}
+
+/* ─── KEYFRAME ANIMATIONS ─── */
+
+/* Gentle floating — like a butterfly drifting on a breeze */
+@keyframes butterflyFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-4px); }
+}
+
+/* Wing shimmer — iridescent light catching the wings */
+@keyframes wingShimmer {
+    0% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+    100% { background-position: 0% center; }
+}
+
+/* Soft pulse — bioluminescent glow */
+@keyframes violetPulse {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25),
+                    0 0 20px rgba(155, 89, 182, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(168, 85, 247, 0.4),
+                    0 0 35px rgba(201, 160, 220, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Butterfly emoji flutter for printbox */
+@keyframes flutter {
+    0%, 100% { transform: translateY(0) rotate(-3deg) scale(1); opacity: 0.8; }
+    25% { transform: translateY(-5px) rotate(3deg) scale(1.05); opacity: 1; }
+    50% { transform: translateY(-2px) rotate(-2deg) scale(1); opacity: 0.9; }
+    75% { transform: translateY(-6px) rotate(4deg) scale(1.03); opacity: 1; }
+}
+
+
+/* ─── MAIN PANEL: Midnight Garden Glass ─── */
+
+.printbox {
+    background: linear-gradient(160deg, rgba(74, 23, 102, 0.59), rgba(26, 10, 46, 0.67));
+    border: 2px solid rgba(201, 160, 220, 0.3);
+    border-top-color: rgba(232, 218, 239, 0.4);
+    box-shadow: 0 8px 32px rgba(26, 10, 46, 0.5),
+                0 0 40px rgba(123, 45, 139, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    position: relative;
+    overflow: visible;
+}
+
+/* 🦋 Floating butterfly decoration */
+.printbox::after {
+    content: '🦋';
+    position: absolute;
+    top: -15px;
+    right: 20px;
+    font-size: 28px;
+    animation: flutter 4s ease-in-out infinite;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 4px rgba(168, 85, 247, 0.5));
+}
+
+
+/* ─── TYPOGRAPHY ─── */
+
+h1 {
+    color: var(--lilac-shimmer);
+    text-shadow: 2px 2px 0px rgba(123, 45, 139, 0.6),
+                 0 0 20px rgba(168, 85, 247, 0.35),
+                 0 0 40px rgba(201, 160, 220, 0.15);
+    font-family: 'Showcard Gothic', sans-serif;
+}
+
+.subtitle {
+    color: rgba(218, 112, 214, 0.92);
+    font-family: 'Quicksand', 'Segoe UI', sans-serif;
+    font-size: 15pt;
+    font-weight: 600;
+    text-shadow: 0 1px 5px rgba(123, 45, 139, 0.4);
+    letter-spacing: 1px;
+}
+
+
+/* ─── FORM ELEMENTS ─── */
+
+.input-group label {
+    color: rgba(245, 240, 250, 0.95);
+    font-family: 'Quicksand', sans-serif;
+}
+
+.input-group label span {
+    color: rgba(201, 160, 220, 0.9);
+}
+
+.options label {
+    color: rgba(189, 160, 214, 0.85);
+}
+
+input[type="text"] {
+    background: rgba(74, 23, 102, 0.25);
+    border: 1.5px solid rgba(201, 160, 220, 0.3);
+    color: rgba(245, 240, 250, 0.95);
+    box-shadow: inset 0 2px 6px rgba(26, 10, 46, 0.3),
+                inset 0 0 0 1px rgba(201, 160, 220, 0.05);
+    font-family: 'Quicksand', sans-serif;
+}
+
+input[type="text"]:focus {
+    border-color: rgba(168, 85, 247, 0.65);
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12),
+                0 0 15px rgba(168, 85, 247, 0.15),
+                inset 0 2px 6px rgba(26, 10, 46, 0.2);
+}
+
+
+/* ─── PRINT BUTTON: Bioluminescent Wing ─── */
+
+.print-button {
+    background: linear-gradient(135deg,
+                rgba(123, 45, 139, 0.8),
+                rgba(168, 85, 247, 0.7));
+    border: 1.5px solid rgba(201, 160, 220, 0.35);
+    color: rgba(245, 240, 250, 0.95);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25),
+                0 0 20px rgba(155, 89, 182, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    animation: violetPulse 4s ease-in-out infinite;
+}
+
+.print-button:hover {
+    background: linear-gradient(135deg,
+                rgba(218, 112, 214, 0.7),
+                rgba(168, 85, 247, 0.8));
+    border-color: rgba(232, 218, 239, 0.55);
+    transform: scale(1.04) translateY(-2px);
+    box-shadow: 0 8px 30px rgba(168, 85, 247, 0.45),
+                0 0 40px rgba(218, 112, 214, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    animation: none;
+}
+
+
+/* ─── BUTTON LINES: Butterfly Wing Layers ─── */
+
+/* Upper wing — royal purple to orchid */
+.buttonsLine1 {
+    background: linear-gradient(145deg,
+                rgba(123, 45, 139, 0.65),
+                rgba(218, 112, 214, 0.4));
+    border: 1.5px solid rgba(201, 160, 220, 0.28);
+    color: rgba(245, 240, 250, 0.95);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(123, 45, 139, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.buttonsLine1:hover {
+    background: linear-gradient(145deg,
+                rgba(168, 85, 247, 0.6),
+                rgba(232, 218, 239, 0.3));
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35),
+                0 0 15px rgba(201, 160, 220, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: scale(1.05) translateY(-1px);
+}
+
+/* Lower wing — amethyst to midnight */
+.buttonsLine2 {
+    background: linear-gradient(195deg,
+                rgba(155, 89, 182, 0.6),
+                rgba(74, 23, 102, 0.5));
+    border: 1.5px solid rgba(201, 160, 220, 0.28);
+    color: rgba(245, 240, 250, 0.95);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.buttonsLine2:hover {
+    background: linear-gradient(195deg,
+                rgba(168, 85, 247, 0.6),
+                rgba(232, 218, 239, 0.3));
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35),
+                0 0 15px rgba(201, 160, 220, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: scale(1.05) translateY(-1px);
+}
+
+/* Wing tip — wisteria to deep plum */
+.buttonsLine3 {
+    background: linear-gradient(70deg,
+                rgba(189, 160, 214, 0.5),
+                rgba(74, 23, 102, 0.55));
+    border: 1.5px solid rgba(201, 160, 220, 0.28);
+    color: rgba(245, 240, 250, 0.95);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(189, 160, 214, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.buttonsLine3:hover {
+    background: linear-gradient(70deg,
+                rgba(168, 85, 247, 0.6),
+                rgba(232, 218, 239, 0.3));
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35),
+                0 0 15px rgba(201, 160, 220, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: scale(1.05) translateY(-1px);
+}
+
+
+/* ─── QUICK PRINT: Pollen Dust Buttons ─── */
+
+.quick-print-buttons button {
+    background: rgba(74, 23, 102, 0.72);
+    border: 1px solid rgba(201, 160, 220, 0.2);
+    color: rgba(245, 240, 250, 0.88);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 800;
+}
+
+.quick-print-buttons button:hover {
+    background: rgba(168, 85, 247, 0.25);
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 3px 12px rgba(168, 85, 247, 0.25);
+    color: rgba(232, 218, 239, 0.95);
+}
+
+.quick-print-buttons button:active {
+    background: rgba(218, 112, 214, 0.3);
+    border-color: rgba(218, 112, 214, 0.6);
+    box-shadow: 0 2px 8px rgba(218, 112, 214, 0.3);
+}
+
+
+/* ─── SCROLL BUTTONS: Garden Path ─── */
+
+.scroll-container {
+    scrollbar-color: rgba(168, 85, 247, 0.45) rgba(74, 23, 102, 0.3);
+}
+
+.scroll-button {
+    background: linear-gradient(135deg,
+                rgba(123, 45, 139, 0.6),
+                rgba(155, 89, 182, 0.5));
+    border: 1px solid rgba(201, 160, 220, 0.25);
+    color: rgba(245, 240, 250, 0.95);
+    box-shadow: 0 2px 8px rgba(123, 45, 139, 0.2);
+}
+
+.scroll-button:hover {
+    background: linear-gradient(135deg,
+                rgba(168, 85, 247, 0.65),
+                rgba(218, 112, 214, 0.5));
+    border-color: rgba(232, 218, 239, 0.4);
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+}
+
+
+/* ─── ASIN STICKER: Cocoon Card ─── */
+
+.asin-sticker-container {
+    background: rgba(74, 23, 102, 0.6);
+    border: 2px dashed rgba(201, 160, 220, 0.4);
+    box-shadow: 0 6px 20px rgba(26, 10, 46, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.asin-sticker-header {
+    color: rgba(232, 218, 239, 0.95);
+    border-bottom-color: rgba(201, 160, 220, 0.3);
+}
+
+.asin-sticker-content button {
+    background: linear-gradient(135deg,
+                rgba(155, 89, 182, 0.55),
+                rgba(123, 45, 139, 0.5));
+    border: 1px solid rgba(201, 160, 220, 0.3);
+    color: rgba(245, 240, 250, 0.95);
+    box-shadow: 0 2px 8px rgba(123, 45, 139, 0.2);
+}
+
+.asin-sticker-content button:hover {
+    background: linear-gradient(135deg,
+                rgba(218, 112, 214, 0.55),
+                rgba(168, 85, 247, 0.5));
+    border-color: rgba(218, 112, 214, 0.5);
+    box-shadow: 0 4px 15px rgba(218, 112, 214, 0.3);
+}
+
+
+/* ─── MULTI BARCODE PRINTER: Moonlit Chrysalis ─── */
+
+.MultiBarcode-printer {
+    background: linear-gradient(160deg, rgba(74, 23, 102, 0.59), rgba(26, 10, 46, 0.67));
+    border: 2px solid rgba(201, 160, 220, 0.25);
+    border-top-color: rgba(232, 218, 239, 0.35);
+    box-shadow: 0 8px 32px rgba(26, 10, 46, 0.45),
+                0 0 30px rgba(123, 45, 139, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+/* Subtle iridescent wing shimmer across the panel */
+.MultiBarcode-printer::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(
+        110deg,
+        transparent 35%,
+        rgba(201, 160, 220, 0.04) 42%,
+        rgba(168, 85, 247, 0.06) 50%,
+        rgba(201, 160, 220, 0.04) 58%,
+        transparent 65%
+    );
+    background-size: 200% 100%;
+    animation: wingShimmer 10s ease-in-out infinite;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.MultiBarcode-printer h2 {
+    color: rgba(232, 218, 239, 0.95);
+    text-shadow: 2px 2px 4px rgba(74, 23, 102, 0.5),
+                 0 0 15px rgba(168, 85, 247, 0.25);
+    font-family: 'Showcard Gothic', sans-serif;
+}
+
+#textAreaID {
+    background: rgba(74, 23, 102, 0.2);
+    border: 1.5px solid rgba(201, 160, 220, 0.25);
+    color: rgba(245, 240, 250, 0.95);
+    font-family: 'Quicksand', monospace;
+    box-shadow: inset 0 2px 6px rgba(26, 10, 46, 0.25);
+}
+
+#textAreaID:focus {
+    border-color: rgba(168, 85, 247, 0.55);
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1),
+                0 0 12px rgba(168, 85, 247, 0.12),
+                inset 0 2px 6px rgba(26, 10, 46, 0.15);
+}
+
+
+/* ─── MULTI BUTTON: Chrysalis Emerge ─── */
+
+.multiButton {
+    background: linear-gradient(135deg,
+                rgba(123, 45, 139, 0.75),
+                rgba(168, 85, 247, 0.65));
+    border: 1.5px solid rgba(201, 160, 220, 0.3);
+    color: rgba(245, 240, 250, 0.95);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(123, 45, 139, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.multiButton:hover {
+    background: linear-gradient(135deg,
+                rgba(218, 112, 214, 0.65),
+                rgba(168, 85, 247, 0.7));
+    border-color: rgba(232, 218, 239, 0.5);
+    transform: scale(1.04) translateY(-2px);
+    box-shadow: 0 8px 28px rgba(168, 85, 247, 0.4),
+                0 0 20px rgba(218, 112, 214, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+
+/* ─── DROPDOWN: Butterfly Garden Menu ─── */
+
+#quickbuttons-dropdown .qb-dropbtn {
+    background: linear-gradient(145deg,
+                rgba(123, 45, 139, 0.6),
+                rgba(218, 112, 214, 0.35));
+    border-color: rgba(201, 160, 220, 0.28);
+    color: rgba(245, 240, 250, 0.95);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(123, 45, 139, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+#quickbuttons-dropdown .qb-dropdown-content {
+    background: rgba(26, 10, 46, 0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(201, 160, 220, 0.2);
+    box-shadow: 0 12px 40px rgba(26, 10, 46, 0.6),
+                0 0 20px rgba(123, 45, 139, 0.15);
+}
+
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: rgba(232, 218, 239, 0.9);
+    border-bottom: 1px solid rgba(201, 160, 220, 0.08);
+    font-family: 'Quicksand', sans-serif;
+}
+
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background: rgba(168, 85, 247, 0.2);
+    color: rgba(245, 240, 250, 1);
+    padding-left: 20px;
+}
+
+#quickbuttons-dropdown:hover .qb-dropbtn {
+    background: linear-gradient(145deg,
+                rgba(168, 85, 247, 0.55),
+                rgba(218, 112, 214, 0.4));
+    border-color: rgba(232, 218, 239, 0.45);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35),
+                0 0 15px rgba(218, 112, 214, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+
+/* ─── STRUCTURED INPUT ─── */
+
+.structured-input span {
+    color: rgba(232, 218, 239, 0.95);
+}
