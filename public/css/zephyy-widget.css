@@ -55,8 +55,6 @@
   font-size: clamp(0.7rem, 1.8vw, 0.8rem);
   color: var(--text-main);
   transition: all 0.3s ease;
-  cursor: default;
-  user-select: none;
   cursor: pointer;
   user-select: none;
   text-decoration: none;

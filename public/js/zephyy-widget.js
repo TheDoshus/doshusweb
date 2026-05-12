@@ -43,44 +43,32 @@
     const isOnline = status === 'online';
     const compact = container.dataset.compact === 'true';
 
-    // Create clickable wrapper link
+    // Build DOM in correct order: link > badge > (glyph + dot + label)
     const link = document.createElement('a');
     link.href = 'zephyy.html';
     link.target = '_self';
     link.className = 'zephyy-badge-link';
     link.setAttribute('aria-label', `Zephyy: ${isOnline ? 'Online' : 'Offline'} — Click to visit profile`);
 
+    const badge = document.createElement('span');
+    badge.className = `zephyy-badge${compact ? ' compact' : ''}`;
+
     const glyphWrap = document.createElement('span');
     glyphWrap.className = 'zephyy-glyph';
-    glyphWrap.innerHTML = glyphSVG(compact ? 'small' : '');
+    glyphWrap.innerHTML = glyphSVG();
 
     const dot = document.createElement('span');
     dot.className = `zephyy-dot ${isOnline ? 'online' : 'offline'}`;
 
     const label = document.createElement('span');
     label.className = 'zephyy-label';
+    label.innerHTML = compact
+      ? `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? '●' : '○'}</span>`
+      : `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? 'Online' : 'Offline'}</span>`;
 
-    if (compact) {
-      label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? '●' : '○'}</span>`;
-    } else {
-      label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? 'Online' : 'Offline'}</span>`;
-    }
-
-    container.innerHTML = '';
-    container.className = `zephyy-badge${compact ? ' compact' : ''}`;
-    container.appendChild(glyphWrap);
-    container.appendChild(dot);
-    container.appendChild(label);
-    // Create badge element and append to link
-    const badge = document.createElement('span');
-    badge.className = `zephyy-badge${compact ? ' compact' : ''}`;
-    badge.appendChild(glyphWrap);
-    badge.appendChild(dot);
-    badge.appendChild(label);
-
+    badge.append(glyphWrap, dot, label);
     link.appendChild(badge);
 
-    // Replace container content with the link
     container.innerHTML = '';
     container.className = 'zephyy-badge-embed';
     container.appendChild(link);
