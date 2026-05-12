@@ -705,4 +705,53 @@ function setupSidebarTab() {
 document.addEventListener('DOMContentLoaded', () => {
   setupTerminal();
   setupSidebarTab();
+  setupScrollReveal();
+  setupParallaxGlyph();
 });
+
+// ─── Scroll Reveal ───
+function setupScrollReveal() {
+  if (!window.IntersectionObserver) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('zp-revealed');
+        // Stagger child cards
+        const cards = entry.target.querySelectorAll('.zp-card, .zp-project, .zp-vibe, .zp-value-item, .zp-skill-item, .zp-live-item');
+        cards.forEach((card, i) => {
+          setTimeout(() => card.classList.add('zp-card-revealed'), i * 80);
+        });
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+
+  document.querySelectorAll('.zp-section, .zp-card, .zp-project, .zp-vibe, .zp-value-item, .zp-carousel-item, .zp-footer, .zp-sticky-footer')
+    .forEach(el => el.classList.add('zp-reveal'));
+
+  document.querySelectorAll('.zp-reveal').forEach(el => observer.observe(el));
+}
+
+// ─── Parallax Glyph ───
+function setupParallaxGlyph() {
+  const glyph = document.querySelector('.zp-glyph-wrap');
+  if (!glyph) return;
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        const heroH = glyph.closest('.zp-hero')?.offsetHeight || window.innerHeight;
+        const progress = Math.min(scrollY / heroH, 1);
+        const translateY = progress * 60;
+        const scale = 1 - progress * 0.25;
+        const opacity = 1 - progress * 0.6;
+        glyph.style.transform = `translateY(${translateY}px) scale(${scale})`;
+        glyph.style.opacity = Math.max(opacity, 0.2);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
