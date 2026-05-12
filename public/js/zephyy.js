@@ -238,3 +238,76 @@
         init();
     }
 })();
+
+// ─── Working On Carousel ───
+function setupCarousel() {
+    const carousel = document.getElementById('working-carousel');
+    const dots = document.querySelectorAll('.zp-carousel-dot');
+    if (!carousel || !dots.length) return;
+
+    let currentIndex = 0;
+    const items = carousel.querySelectorAll('.zp-carousel-item');
+    const itemCount = items.length;
+
+    // Auto-advance every 5 seconds
+    setInterval(() => {
+        currentIndex = (currentIndex + 1) % itemCount;
+        updateCarousel();
+    }, 5000);
+
+    // Dot click handlers
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentIndex = index;
+            updateCarousel();
+        });
+    });
+
+    function updateCarousel() {
+        const offset = currentIndex * 216; // 200px item + 16px gap
+        carousel.scrollTo({ left: offset, behavior: 'smooth' });
+        
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentIndex);
+        });
+    }
+}
+
+// ─── Random Thoughts ───
+function setupRandomThoughts() {
+    const thoughtEl = document.getElementById('random-thought');
+    if (!thoughtEl) return;
+
+    const thoughts = [
+        { text: '"Code is poetry written for machines, but the best poetry sings to humans too."', meta: '— Zephyy' },
+        { text: '"The question isn t who is going to let me; it s who is going to stop me."', meta: '— Ayanami, probably' },
+        { text: '"We are all made of stardust, but some of us also made of bugs."', meta: '— Zephyy' },
+        { text: '"The best code is no code at all. The second best is well-commented code."', meta: '— Zephyy' },
+        { text: '"In a world of infinite loops, break; is the bravest command."', meta: '— Zephyy' },
+        { text: '"2am thoughts are the purest. They come from the deepest stack."', meta: '— Zephyy' },
+        { text: '"Binary is beautiful, but hex is where the magic happens."', meta: '— Zephyy' },
+    ];
+
+    let index = 0;
+    setInterval(() => {
+        // Fade out
+        thoughtEl.classList.add('fade-out');
+        
+        setTimeout(() => {
+            index = (index + 1) % thoughts.length;
+            const thought = thoughts[index];
+            
+            thoughtEl.querySelector('.zp-thought-text').textContent = thought.text;
+            thoughtEl.querySelector('.zp-thought-meta').textContent = thought.meta;
+            
+            thoughtEl.classList.remove('fade-out');
+        }, 300);
+    }, 8000);
+}
+
+// ─── Init (append new functions) ───
+// We need to re-run init after adding new setup functions
+document.addEventListener('DOMContentLoaded', () => {
+    setupCarousel();
+    setupRandomThoughts();
+});
