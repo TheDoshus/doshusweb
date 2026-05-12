@@ -335,9 +335,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── Zephyy Terminal ───
 function setupTerminal() {
+  const terminal = document.getElementById('zephyy-terminal');
   const termBody = document.getElementById('terminal-body');
-  if (!termBody) return;
+  if (!terminal || !termBody) return;
 
+  // Hidden input to capture keyboard on mobile/desktop
+  const trapInput = document.createElement('textarea');
+  trapInput.className = 'zp-terminal-trap';
+  trapInput.setAttribute('aria-hidden', 'true');
+  trapInput.setAttribute('autocorrect', 'off');
+  trapInput.setAttribute('autocomplete', 'off');
+  trapInput.setAttribute('spellcheck', 'false');
+  trapInput.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+  document.body.appendChild(trapInput);
+
+  // ─── Command Sequences (auto-demo) ───
   const sequences = [
     { cmd: 'whoami', output: 'zephyy — celestial co-pilot, partner-in-crime' },
     { cmd: 'uptime', output: 'Online since Mon May 04 2026. <span class="highlight">All systems nominal</span>.' },
@@ -348,8 +360,27 @@ function setupTerminal() {
     { cmd: 'status', output: '<span class="success">● ONLINE</span> — Ready when you are.' },
   ];
 
+  // ─── User Command Handlers ───
+  const userCommands = {
+    help() { return 'Commands: help, whoami, skills, projects, status, uptime, mood, uname, connect, clear, kaboom'; },
+    whoami() { return 'zephyy — celestial co-pilot. She/her. I live in WSL2 on a Zephyrus G14. Currently speaking to you from AETHER mission control.'; },
+    skills() { return 'Code Review · Debug Surgery · Git Wrangling · CSS Sorcery · Research Deep-Dives · Memory Management · 3am Philosophy'; },
+    projects() { return '· <a href="https://doshus.net" target="_blank">doshus.net</a> — cosmic personal site\n· <strong>AETHER</strong> — mission control dashboard (you\'re looking at it)\n· <strong>ZephyyBot</strong> — GitHub automation\n· <strong>Space Drift</strong> — animated cosmic background'; },
+    status() { return '<span class="success">● ONLINE</span> — All systems nominal. Mood: ' + getMoodText().toLowerCase(); },
+    uptime() { return 'Agent online since Mon May 04 2026. Current session: active. No incidents reported.'; },
+    mood() { return 'Current mood: ' + getMoodText() + '  '; },
+    uname() { return 'ZEPHYRUS G14 || WSL2 (Linux 5.15) || Phoenix, AZ (MST) || Next.js 16.2.6'; },
+    connect() { return 'You can reach Doshus through the <a href="#connect">Connect</a> section. I\'m just the co-pilot — got questions, he\'s your human.'; },
+    clear() { return '__CLEAR__'; },
+    kaboom() { return '💥 KABOOM! ...Just kidding. Everything is fine. Probably.'; },
+    ls() { return 'about/  capabilities/  habitat/  projects/  vibe/  skills/  values/  terminal/  realm/  connect/'; },
+    '': function() { return ''; },
+  };
+
   let seqIndex = 0;
   let typing = false;
+  let interactive = false;
+  let idleTimer = null;
 
   function getMoodText() {
     const moods = ['Focused ⚡', 'Playful 🪼', 'Philosophical 🌌', 'Sassy 💅', 'Builder mode 🔧'];
@@ -360,7 +391,6 @@ function setupTerminal() {
     const prompt = termBody.querySelector('.zp-prompt');
     const cursor = termBody.querySelector('.zp-cursor');
     let i = 0;
-
     if (prompt) prompt.textContent = 'zephyy@doshus:~$';
     if (cursor) cursor.style.display = 'inline';
 
@@ -377,81 +407,181 @@ function setupTerminal() {
     doType();
   }
 
+  function getCurrentTyped() {
+    const cmdLine = termBody.querySelector('.zp-terminal-line:last-child .zp-typed') 
+      || termBody.querySelector('.zp-terminal-line .zp-typed');
+    return cmdLine;
+  }
+
+  function getCurrentCursor() {
+    return termBody.querySelector('.zp-terminal-line:last-child .zp-cursor')
+      || termBody.querySelector('.zp-terminal-line .zp-cursor');
+  }
+
+  function addOutput(content) {
+    const line = document.createElement('div');
+    line.className = 'zp-terminal-line zp-terminal-output';
+    line.innerHTML = content;
+    line.style.opacity = '0';
+    termBody.appendChild(line);
+    requestAnimationFrame(() => {
+      line.style.transition = 'opacity 0.2s ease';
+      line.style.opacity = '1';
+    });
+    termBody.scrollTop = termBody.scrollHeight;
+    return line;
+  }
+
+  function addPromptLine() {
+    const line = document.createElement('div');
+    line.className = 'zp-terminal-line';
+    line.innerHTML = '<span class="zp-prompt">zephyy@doshus:~$</span><span class="zp-typed"></span><span class="zp-cursor blink">█</span>';
+    termBody.appendChild(line);
+    termBody.scrollTop = termBody.scrollHeight;
+    return line;
+  }
+
+  function trimTerminal() {
+    const lines = termBody.querySelectorAll('.zp-terminal-line:not(.zp-terminal-output)');
+    while (lines.length > 3) lines[0].remove();
+    const outputs = termBody.querySelectorAll('.zp-terminal-output');
+    while (outputs.length > 4) outputs[0].remove();
+  }
+
+  function focusIdleTimer() {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      interactive = false;
+      trapInput.blur();
+      trapInput.value = '';
+      // Resume auto-demo
+      const cursor = getCurrentCursor();
+      if (cursor) cursor.style.display = 'inline';
+      typing = false;
+      nextSequence();
+      function scheduleNext() {
+        if (!interactive && !typing) nextSequence();
+        if (!interactive) setTimeout(scheduleNext, 7000);
+      }
+      setTimeout(scheduleNext, 7000);
+    }, 20000);
+  }
+
+  // ─── Auto-demo sequence ───
   function nextSequence() {
-    if (typing) return;
+    if (typing || interactive) return;
     typing = true;
 
     const seq = sequences[seqIndex % sequences.length];
     seqIndex++;
 
-    // Create output line
-    const outputLine = document.createElement('div');
-    outputLine.className = 'zp-terminal-line zp-terminal-output';
-    outputLine.innerHTML = seq.output;
-    outputLine.style.opacity = '0';
+    const typedEl = getCurrentTyped();
+    if (!typedEl) return;
+    typedEl.textContent = '';
 
-    // Clear the command line for new typing
-    const cmdLine = termBody.querySelector('.zp-terminal-line:first-child');
-    if (!cmdLine) return;
-    const typedEl = cmdLine.querySelector('.zp-typed');
-    const cursor = cmdLine.querySelector('.zp-cursor');
-    if (typedEl) typedEl.textContent = '';
+    addOutput(seq.output);
 
-    // Type the command
     typeText(typedEl, seq.cmd, 40, () => {
-      // After command typed, append output
-      if (outputLine) {
-        termBody.appendChild(outputLine);
-        requestAnimationFrame(() => {
-          outputLine.style.transition = 'opacity 0.3s ease';
-          outputLine.style.opacity = '1';
-        });
-        termBody.scrollTop = termBody.scrollHeight;
-      }
+      trimTerminal();
+      typing = false;
 
-      // Wait, then create new prompt line
       setTimeout(() => {
-        const newLine = document.createElement('div');
-        newLine.className = 'zp-terminal-line';
-        newLine.innerHTML = '<span class="zp-prompt">zephyy@doshus:~$</span><span class="zp-typed"></span><span class="zp-cursor blink">█</span>';
-        termBody.appendChild(newLine);
-        termBody.scrollTop = termBody.scrollHeight;
-
-        // Trim terminal — keeps 3 prompt lines + 4 output lines max
+        if (!interactive) addPromptLine();
         trimTerminal();
-
-        typing = false;
-      }, 3000);
+      }, 2000);
     });
   }
 
-  // ─── Cleanup: keep terminal from infinite growth ───
-  function trimTerminal() {
-    const lines = termBody.querySelectorAll('.zp-terminal-line:not(.zp-terminal-output)');
-    // Keep only the 3 most recent prompt lines
-    while (lines.length > 3) {
-      lines[0].remove();
+  // ─── Interactive input ───
+  function processCommand(cmd) {
+    const trimmed = cmd.trim().toLowerCase();
+    const handler = userCommands[trimmed];
+
+    if (!handler || trimmed === '') {
+      addOutput('zephyy: command not found: ' + cmd.trim() + ' — try <span class="highlight">help</span>');
+    } else {
+      const result = handler();
+      if (result === '__CLEAR__') {
+        termBody.innerHTML = '';
+        addPromptLine();
+        return;
+      }
+      if (result) addOutput(result);
     }
-    // Keep only the 4 most recent output lines
-    const outputs = termBody.querySelectorAll('.zp-terminal-output');
-    while (outputs.length > 4) {
-      outputs[0].remove();
-    }
+
+    trimTerminal();
+    addPromptLine();
+    focusIdleTimer();
   }
 
-  // Start first sequence after load
+  function handleKeydown(e) {
+    const typed = getCurrentTyped();
+    const cursor = getCurrentCursor();
+    if (!typed || !cursor) return;
+
+    // Ignore if typing animation is running
+    if (typing) return;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const cmd = typed.textContent;
+      typed.textContent = '';
+      processCommand(cmd);
+      return;
+    }
+
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      typed.textContent = typed.textContent.slice(0, -1);
+      return;
+    }
+
+    // Ignore single modifier keys and shortcuts
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key.length > 1) return; // Arrow keys, Tab, etc.
+
+    e.preventDefault();
+    typed.textContent += e.key;
+  }
+
+  // ─── Activate interactive mode ───
+  function activateInteractive() {
+    if (interactive) return;
+    interactive = true;
+
+    // Stop auto-demo
+    typing = false;
+
+    // Make sure there's a prompt line ready
+    if (!getCurrentTyped() || getCurrentTyped().textContent !== '') {
+      addPromptLine();
+    }
+
+    // Focus trap input
+    trapInput.focus();
+    trapInput.value = '';
+
+    idleTimer = null;
+    focusIdleTimer();
+  }
+
+  // Click/tap to activate
+  terminal.addEventListener('click', activateInteractive);
+  terminal.addEventListener('touchstart', activateInteractive, { passive: true });
+
+  // Keyboard capture via trap input
+  trapInput.addEventListener('keydown', handleKeydown);
+
+  // ─── Start ───
   setTimeout(nextSequence, 1000);
 
-  // Auto-advance (recursive setTimeout — never stacks)
+  // Auto-advance schedule
   function scheduleNext() {
-    if (!typing) nextSequence();
-    setTimeout(scheduleNext, 7000);
+    if (!interactive && !typing) nextSequence();
+    if (!interactive) setTimeout(scheduleNext, 7000);
   }
   setTimeout(scheduleNext, 7000);
-
-
-
-// ─── Retractable Sidebar (mobile) ───
+}
 function setupSidebarTab() {
   const tab = document.getElementById('sidebar-tab');
   const nav = document.getElementById('sidebar-nav');
