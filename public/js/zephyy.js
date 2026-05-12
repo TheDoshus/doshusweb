@@ -442,3 +442,30 @@ const existingOnLoad = document.addEventListener('DOMContentLoaded', () => {});
 document.addEventListener('DOMContentLoaded', () => {
   setupTerminal();
 });
+
+// ─── Retractable Sidebar (mobile) ───
+function setupSidebarTab() {
+  const tab = document.getElementById('sidebar-tab');
+  const nav = document.getElementById('sidebar-nav');
+  if (!tab || !nav) return;
+
+  tab.addEventListener('click', () => {
+    const isOpen = nav.classList.toggle('open');
+    tab.classList.toggle('open', isOpen);
+  });
+
+  // Close on link click
+  nav.querySelectorAll('.zp-sidebar-link').forEach(link => {
+    link.addEventListener('click', () => {
+      if (nav.classList.contains('open')) {
+        nav.classList.remove('open');
+        tab.classList.remove('open');
+      }
+    });
+  });
+}
+
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', () => {
+  setupSidebarTab();
+});
