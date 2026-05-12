@@ -1264,3 +1264,30 @@
 .zp-terminal-output .error {
   color: #ff5f56;
 }
+
+/* ── Mobile performance: reduce backdrop-filter + disable heavy effects ── */
+@media (max-width: 900px) {
+  .zp-card {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .zp-card::before {
+    display: none;
+  }
+
+  .zp-hero-bg::before {
+    animation: none;
+    opacity: 0.4;
+  }
+
+  .zp-glyph-ring {
+    animation: none;
+  }
+
+  .zp-glyph-wrap {
+    /* Disable parallax on mobile — the scroll event is too heavy */
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
