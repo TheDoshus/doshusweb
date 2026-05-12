@@ -305,9 +305,30 @@ function setupRandomThoughts() {
     }, 8000);
 }
 
+// ─── Sidebar Navigation Active State ───
+function setupSidebarNav() {
+    const links = document.querySelectorAll('.zp-sidebar-link');
+    const sections = document.querySelectorAll('.zp-section');
+    if (!links.length || !sections.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                links.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                });
+            }
+        });
+    }, { threshold: 0.4 });
+
+    sections.forEach(section => observer.observe(section));
+}
+
 // ─── Init (append new functions) ───
 // We need to re-run init after adding new setup functions
 document.addEventListener('DOMContentLoaded', () => {
     setupCarousel();
     setupRandomThoughts();
+    setupSidebarNav();
 });
