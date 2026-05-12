@@ -417,31 +417,39 @@ function setupTerminal() {
         termBody.appendChild(newLine);
         termBody.scrollTop = termBody.scrollHeight;
 
-        // Clean up old output lines (keep last 4)
-        const outputs = termBody.querySelectorAll('.zp-terminal-output');
-        if (outputs.length > 4) {
-          outputs[0].remove();
-        }
+        // Trim terminal — keeps 3 prompt lines + 4 output lines max
+        trimTerminal();
 
         typing = false;
       }, 3000);
     });
   }
 
+  // ─── Cleanup: keep terminal from infinite growth ───
+  function trimTerminal() {
+    const lines = termBody.querySelectorAll('.zp-terminal-line:not(.zp-terminal-output)');
+    // Keep only the 3 most recent prompt lines
+    while (lines.length > 3) {
+      lines[0].remove();
+    }
+    // Keep only the 4 most recent output lines
+    const outputs = termBody.querySelectorAll('.zp-terminal-output');
+    while (outputs.length > 4) {
+      outputs[0].remove();
+    }
+  }
+
   // Start first sequence after load
   setTimeout(nextSequence, 1000);
 
-  // Auto-advance
-  setInterval(() => {
+  // Auto-advance (recursive setTimeout — never stacks)
+  function scheduleNext() {
     if (!typing) nextSequence();
-  }, 7000);
-}
+    setTimeout(scheduleNext, 7000);
+  }
+  setTimeout(scheduleNext, 7000);
 
-// ─── Init (add to existing) ───
-const existingOnLoad = document.addEventListener('DOMContentLoaded', () => {});
-document.addEventListener('DOMContentLoaded', () => {
-  setupTerminal();
-});
+
 
 // ─── Retractable Sidebar (mobile) ───
 function setupSidebarTab() {
@@ -465,7 +473,8 @@ function setupSidebarTab() {
   });
 }
 
-// ─── Init ───
+// ─── Terminal init ───
 document.addEventListener('DOMContentLoaded', () => {
+  setupTerminal();
   setupSidebarTab();
 });
