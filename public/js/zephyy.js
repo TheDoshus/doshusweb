@@ -141,12 +141,29 @@
         });
     }
 
+    // ─── Easter egg: click trigger to reveal secret ───
+    function setupEasterEgg() {
+        const trigger = document.getElementById('easter-trigger');
+        const secret = document.getElementById('secret-section');
+        
+        if (!trigger || !secret) return;
+        
+        let clickCount = 0;
+        trigger.addEventListener('click', () => {
+            clickCount++;
+            if (clickCount === 3) {
+                secret.classList.add('revealed');
+            }
+        });
+    }
+
     // ─── Init ───
     function init() {
         renderGlyph();
         addDynamicStyles();
         setupGlyphInteractivity();
         setupScrollReveal();
+        setupEasterEgg();
     }
 
     if (document.readyState === 'loading') {

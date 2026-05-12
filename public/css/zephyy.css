@@ -399,6 +399,54 @@
   pointer-events: none;
 }
 
+/* ── Easter egg: Hidden section trigger ── */
+.zp-easter-egg-trigger {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.zp-easter-egg-trigger:hover {
+  opacity: 0.3;
+}
+
+/* ── Secret section (revealed on easter egg) ── */
+.zp-secret {
+  display: none;
+  background: linear-gradient(135deg, oklch(var(--brand-teal) / 0.1), oklch(var(--brand-purple) / 0.1));
+  border: 1px solid oklch(var(--brand-teal) / 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.zp-secret.revealed {
+  display: block;
+  animation: secretUnveil 0.5s ease;
+}
+
+@keyframes secretUnveil {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.zp-secret h3 {
+  font-size: 0.9rem;
+  color: oklch(var(--brand-teal));
+  margin: 0 0 0.5rem;
+}
+
+.zp-secret p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
 .zp-orb-demo:hover .zp-orb-tooltip {
   opacity: 1;
   transform: translateX(0);
