@@ -66,6 +66,11 @@
       label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? 'Online' : 'Offline'}</span>`;
     }
 
+    container.innerHTML = '';
+    container.className = `zephyy-badge${compact ? ' compact' : ''}`;
+    container.appendChild(glyphWrap);
+    container.appendChild(dot);
+    container.appendChild(label);
     // Create badge element and append to link
     const badge = document.createElement('span');
     badge.className = `zephyy-badge${compact ? ' compact' : ''}`;
