@@ -457,20 +457,93 @@ function setupSidebarTab() {
   const nav = document.getElementById('sidebar-nav');
   if (!tab || !nav) return;
 
-  tab.addEventListener('click', () => {
-    const isOpen = nav.classList.toggle('open');
-    tab.classList.toggle('open', isOpen);
-  });
+  function openSidebar() {
+    nav.classList.add('open');
+    tab.classList.add('open');
+  }
+
+  function closeSidebar() {
+    nav.classList.remove('open');
+    tab.classList.remove('open');
+  }
+
+  function toggleSidebar() {
+    const isOpen = nav.classList.contains('open');
+    if (isOpen) closeSidebar();
+    else openSidebar();
+  }
+
+  // Click to toggle
+  tab.addEventListener('click', toggleSidebar);
 
   // Close on link click
   nav.querySelectorAll('.zp-sidebar-link').forEach(link => {
-    link.addEventListener('click', () => {
-      if (nav.classList.contains('open')) {
-        nav.classList.remove('open');
-        tab.classList.remove('open');
-      }
-    });
+    link.addEventListener('click', closeSidebar);
   });
+
+  // Touch swipe: drag from tab to reveal sidebar
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchSwiping = false;
+
+  tab.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchSwiping = false;
+  }, { passive: true });
+
+  tab.addEventListener('touchmove', (e) => {
+    const dx = e.touches[0].clientX - touchStartX;
+    const dy = e.touches[0].clientY - touchStartY;
+
+    if (!touchSwiping && Math.abs(dx) > 10) {
+      touchSwiping = Math.abs(dx) > Math.abs(dy);
+    }
+
+    if (touchSwiping && dx > 30 && !nav.classList.contains('open')) {
+      openSidebar();
+    }
+  }, { passive: true });
+
+  tab.addEventListener('touchend', (e) => {
+    if (touchSwiping) return; // Let swipe handle it
+    // Small tap — toggle
+    toggleSidebar();
+  }, { passive: true });
+
+  // Swipe from left edge of screen (anywhere)
+  let edgeTouchStart = 0;
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches[0].clientX < 30) {
+      edgeTouchStart = e.touches[0].clientX;
+    } else {
+      edgeTouchStart = 0;
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (edgeTouchStart > 0) {
+      const dx = e.touches[0].clientX - edgeTouchStart;
+      if (dx > 40 && !nav.classList.contains('open')) {
+        openSidebar();
+        edgeTouchStart = 0;
+      }
+    }
+  }, { passive: true });
+
+  // Swipe left on open sidebar to close
+  nav.addEventListener('touchstart', (e) => {
+    if (nav.classList.contains('open')) {
+      touchStartX = e.touches[0].clientX;
+    }
+  }, { passive: true });
+
+  nav.addEventListener('touchmove', (e) => {
+    if (nav.classList.contains('open')) {
+      const dx = touchStartX - e.touches[0].clientX;
+      if (dx > 30) closeSidebar();
+    }
+  }, { passive: true });
 }
 
 // ─── Terminal init ───

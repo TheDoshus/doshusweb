@@ -740,12 +740,14 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 24px;
-    height: 60px;
+    width: 40px;
+    height: 80px;
+    margin-left: -8px;
+    padding-left: 8px;
     background: oklch(var(--brand-teal) / 0.15);
     border: 1px solid oklch(var(--brand-teal) / 0.2);
     border-left: none;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 12px 12px 0;
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -753,7 +755,19 @@
     backdrop-filter: blur(8px);
     transition: all 0.3s ease;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-x;
+  }
+
+  .zp-sidebar-tab::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: -8px;
+    right: 0;
+    bottom: -8px;
+    z-index: -1;
   }
 
   .zp-sidebar-tab span {
@@ -766,8 +780,8 @@
   }
 
   .zp-sidebar-tab.open {
-    left: 64px;
-    border-radius: 0 8px 8px 0;
+    left: 60px;
+    border-radius: 0 12px 12px 0;
     border-right: none;
   }
 
