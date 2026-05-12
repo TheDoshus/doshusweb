@@ -665,3 +665,23 @@
   height: 20px;
   background: linear-gradient(to bottom, var(--text-muted), transparent);
 }
+
+/* ── Footer link hover ── */
+.zp-footer a {
+  transition: color 0.2s ease;
+}
+
+.zp-footer a:hover {
+  color: oklch(var(--brand-teal));
+}
+
+/* ── Pills as links (interactive) ── */
+.zp-pills a.zp-pill {
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.zp-pills a.zp-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 10px oklch(var(--brand-teal) / 0.2);
+}
