@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── Zephyy Terminal ───
 function setupTerminal() {
-  const terminal = document.getElementById('zephyy-terminal');
+  const terminal = document.querySelector('.zp-terminal');
   const termBody = document.getElementById('terminal-body');
   if (!terminal || !termBody) return;
 
@@ -597,82 +597,107 @@ function setupSidebarTab() {
     tab.classList.remove('open');
   }
 
-  function toggleSidebar() {
-    const isOpen = nav.classList.contains('open');
-    if (isOpen) closeSidebar();
-    else openSidebar();
+  function isOpen() {
+    return nav.classList.contains('open');
   }
 
-  // Click to toggle
-  tab.addEventListener('click', toggleSidebar);
+  // Click/tap tab toggles
+  tab.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isOpen()) closeSidebar();
+    else openSidebar();
+  });
 
   // Close on link click
   nav.querySelectorAll('.zp-sidebar-link').forEach(link => {
     link.addEventListener('click', closeSidebar);
   });
 
-  // Touch swipe: drag from tab to reveal sidebar
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let touchSwiping = false;
+  // ─── Close on outside tap (main content area) ───
+  document.addEventListener('click', (e) => {
+    if (!isOpen()) return;
+    if (!nav.contains(e.target) && e.target !== tab) {
+      closeSidebar();
+    }
+  });
+
+  document.addEventListener('touchend', (e) => {
+    if (!isOpen()) return;
+    const touch = e.changedTouches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!nav.contains(el) && el !== tab && !tab.contains(el)) {
+      closeSidebar();
+    }
+  }, { passive: true });
+
+  // ─── Swipe right on tab → open ───
+  let tabTouchStartX = 0;
+  let tabSwiping = false;
 
   tab.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchSwiping = false;
+    tabTouchStartX = e.touches[0].clientX;
+    tabSwiping = false;
   }, { passive: true });
 
   tab.addEventListener('touchmove', (e) => {
-    const dx = e.touches[0].clientX - touchStartX;
-    const dy = e.touches[0].clientY - touchStartY;
-
-    if (!touchSwiping && Math.abs(dx) > 10) {
-      touchSwiping = Math.abs(dx) > Math.abs(dy);
+    const dx = e.touches[0].clientX - tabTouchStartX;
+    if (!tabSwiping && Math.abs(dx) > 8) {
+      tabSwiping = true;
     }
-
-    if (touchSwiping && dx > 30 && !nav.classList.contains('open')) {
+    if (tabSwiping && dx > 20 && !isOpen()) {
       openSidebar();
     }
   }, { passive: true });
 
-  tab.addEventListener('touchend', (e) => {
-    if (touchSwiping) return; // Let swipe handle it
-    // Small tap — toggle
-    toggleSidebar();
+  // ─── Swipe left anywhere → close when sidebar open ───
+  let closeSwipeStartX = 0;
+  let closeSwipeActive = false;
+
+  document.addEventListener('touchstart', (e) => {
+    if (isOpen()) {
+      closeSwipeStartX = e.touches[0].clientX;
+      closeSwipeActive = true;
+    }
   }, { passive: true });
 
-  // Swipe from left edge of screen (anywhere)
+  document.addEventListener('touchmove', (e) => {
+    if (closeSwipeActive && isOpen()) {
+      const dx = closeSwipeStartX - e.touches[0].clientX;
+      if (dx > 20) {
+        closeSidebar();
+        closeSwipeActive = false;
+      }
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    closeSwipeActive = false;
+  }, { passive: true });
+
+  // ─── Edge swipe from left 25px of screen → open ───
   let edgeTouchStart = 0;
   document.addEventListener('touchstart', (e) => {
-    if (e.touches[0].clientX < 30) {
-      edgeTouchStart = e.touches[0].clientX;
+    const x = e.touches[0].clientX;
+    if (x < 25 && !isOpen()) {
+      edgeTouchStart = x;
     } else {
       edgeTouchStart = 0;
     }
   }, { passive: true });
 
   document.addEventListener('touchmove', (e) => {
-    if (edgeTouchStart > 0) {
+    if (edgeTouchStart > 0 && !isOpen()) {
       const dx = e.touches[0].clientX - edgeTouchStart;
-      if (dx > 40 && !nav.classList.contains('open')) {
+      if (dx > 30) {
         openSidebar();
         edgeTouchStart = 0;
       }
     }
   }, { passive: true });
 
-  // Swipe left on open sidebar to close
-  nav.addEventListener('touchstart', (e) => {
-    if (nav.classList.contains('open')) {
-      touchStartX = e.touches[0].clientX;
-    }
-  }, { passive: true });
-
-  nav.addEventListener('touchmove', (e) => {
-    if (nav.classList.contains('open')) {
-      const dx = touchStartX - e.touches[0].clientX;
-      if (dx > 30) closeSidebar();
-    }
+  document.addEventListener('touchend', () => {
+    edgeTouchStart = 0;
   }, { passive: true });
 }
 
