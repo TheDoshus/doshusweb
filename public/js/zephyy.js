@@ -587,118 +587,129 @@ function setupSidebarTab() {
   const nav = document.getElementById('sidebar-nav');
   if (!tab || !nav) return;
 
+  const NAV_CLOSED = -200;
+  const NAV_OPEN = 6;
+  const TAB_OPEN = 60;
+  const SNAP = 50; // px to trigger snap
+
+  let tracking = false;
+  let startX = 0;
+  let startOpen = false;
+
+  function isOpen() { return nav.classList.contains('open'); }
+
+  function prepareSnap() {
+    nav.style.transition = '';
+    tab.style.transition = '';
+  }
+
   function openSidebar() {
     nav.classList.add('open');
     tab.classList.add('open');
+    nav.style.left = '';
+    nav.style.transition = '';
+    tab.style.left = '';
+    tab.style.transition = '';
   }
 
   function closeSidebar() {
     nav.classList.remove('open');
     tab.classList.remove('open');
+    nav.style.left = '';
+    nav.style.transition = '';
+    tab.style.left = '';
+    tab.style.transition = '';
   }
 
-  function isOpen() {
-    return nav.classList.contains('open');
+  // ─── Finger-tracking swipe (tab + nav) ───
+  function startTracking(e) {
+    tracking = true;
+    startX = e.touches[0].clientX;
+    startOpen = isOpen();
   }
 
-  // Click/tap tab toggles
-  tab.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isOpen()) closeSidebar();
-    else openSidebar();
-  });
+  function moveTracking(e) {
+    if (!tracking) return;
+    const dx = e.touches[0].clientX - startX;
 
-  // Close on link click
-  nav.querySelectorAll('.zp-sidebar-link').forEach(link => {
-    link.addEventListener('click', closeSidebar);
-  });
-
-  // ─── Close on outside tap (main content area) ───
-  document.addEventListener('click', (e) => {
-    if (!isOpen()) return;
-    if (!nav.contains(e.target) && e.target !== tab) {
-      closeSidebar();
+    if (startOpen) {
+      // Swiping left to close — track nav + tab leftward
+      const nLeft = NAV_OPEN + Math.min(dx, 0);
+      nav.style.transition = 'none';
+      nav.style.left = Math.max(nLeft, NAV_CLOSED) + 'px';
+      tab.style.transition = 'none';
+      tab.style.left = Math.max(TAB_OPEN + Math.min(dx, 0), 0) + 'px';
+    } else if (dx > 3) {
+      // Swiping right to open — track nav + tab rightward
+      nav.style.transition = 'none';
+      nav.style.left = Math.min(NAV_CLOSED + dx, NAV_OPEN) + 'px';
+      tab.style.transition = 'none';
+      tab.style.left = Math.min(dx, TAB_OPEN) + 'px';
     }
-  });
+  }
 
-  document.addEventListener('touchend', (e) => {
-    if (!isOpen()) return;
-    const touch = e.changedTouches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (!nav.contains(el) && el !== tab && !tab.contains(el)) {
-      closeSidebar();
-    }
-  }, { passive: true });
+  function endTracking(e) {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.changedTouches[0].clientX - startX;
 
-  // ─── Swipe right on tab → open ───
-  let tabTouchStartX = 0;
-  let tabSwiping = false;
-
-  tab.addEventListener('touchstart', (e) => {
-    tabTouchStartX = e.touches[0].clientX;
-    tabSwiping = false;
-  }, { passive: true });
-
-  tab.addEventListener('touchmove', (e) => {
-    const dx = e.touches[0].clientX - tabTouchStartX;
-    if (!tabSwiping && Math.abs(dx) > 8) {
-      tabSwiping = true;
-    }
-    if (tabSwiping && dx > 20 && !isOpen()) {
-      openSidebar();
-    }
-  }, { passive: true });
-
-  // ─── Swipe left anywhere → close when sidebar open ───
-  let closeSwipeStartX = 0;
-  let closeSwipeActive = false;
-
-  document.addEventListener('touchstart', (e) => {
-    if (isOpen()) {
-      closeSwipeStartX = e.touches[0].clientX;
-      closeSwipeActive = true;
-    }
-  }, { passive: true });
-
-  document.addEventListener('touchmove', (e) => {
-    if (closeSwipeActive && isOpen()) {
-      const dx = closeSwipeStartX - e.touches[0].clientX;
-      if (dx > 20) {
-        closeSidebar();
-        closeSwipeActive = false;
-      }
-    }
-  }, { passive: true });
-
-  document.addEventListener('touchend', () => {
-    closeSwipeActive = false;
-  }, { passive: true });
-
-  // ─── Edge swipe from left 25px of screen → open ───
-  let edgeTouchStart = 0;
-  document.addEventListener('touchstart', (e) => {
-    const x = e.touches[0].clientX;
-    if (x < 25 && !isOpen()) {
-      edgeTouchStart = x;
+    if (startOpen) {
+      prepareSnap();
+      if (dx < -SNAP) closeSidebar(); else openSidebar();
     } else {
-      edgeTouchStart = 0;
+      prepareSnap();
+      if (dx > SNAP) openSidebar(); else closeSidebar();
+    }
+  }
+
+  // Tab handles all swipes
+  tab.addEventListener('touchstart', startTracking, { passive: true });
+  tab.addEventListener('touchmove', moveTracking, { passive: true });
+  tab.addEventListener('touchend', endTracking);
+
+  // Swipe from main content area to close
+  document.addEventListener('touchstart', (e) => {
+    if (isOpen() && !nav.contains(e.target) && e.target !== tab) {
+      startTracking(e);
     }
   }, { passive: true });
-
   document.addEventListener('touchmove', (e) => {
-    if (edgeTouchStart > 0 && !isOpen()) {
-      const dx = e.touches[0].clientX - edgeTouchStart;
-      if (dx > 30) {
-        openSidebar();
-        edgeTouchStart = 0;
-      }
+    if (tracking && startOpen) moveTracking(e);
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (tracking && startOpen) endTracking(e);
+  });
+
+  // ─── Edge swipe from left 25px of screen to open ───
+  let edgeWatch = false;
+  let edgeX = 0;
+  document.addEventListener('touchstart', (e) => {
+    if (!isOpen() && e.touches[0].clientX < 25 && !nav.contains(e.target) && e.target !== tab) {
+      edgeWatch = true;
+      edgeX = e.touches[0].clientX;
     }
   }, { passive: true });
-
-  document.addEventListener('touchend', () => {
-    edgeTouchStart = 0;
+  document.addEventListener('touchmove', (e) => {
+    if (edgeWatch && !isOpen() && e.touches[0].clientX - edgeX > 30) {
+      openSidebar();
+      edgeWatch = false;
+    }
   }, { passive: true });
+  document.addEventListener('touchend', () => { edgeWatch = false; }, { passive: true });
+
+  // ─── Tap toggle + click-outside-close ───
+  tab.addEventListener('click', (e) => {
+    if (!tracking) { if (isOpen()) closeSidebar(); else openSidebar(); }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (isOpen() && !nav.contains(e.target) && e.target !== tab) closeSidebar();
+  });
+
+  // ─── Link click closes ───
+  nav.querySelectorAll('.zp-sidebar-link').forEach(link => {
+    link.addEventListener('click', () => { setTimeout(closeSidebar, 150); });
+  });
 }
 
 // ─── Terminal init ───
@@ -713,23 +724,35 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupScrollReveal() {
   if (!window.IntersectionObserver) return;
 
+  const sections = document.querySelectorAll('.zp-section');
+  if (!sections.length) return;
+
+  // Start hidden only for sections — NOT cards (that's what made it invisible)
+  sections.forEach(s => s.classList.add('zp-reveal'));
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('zp-revealed');
-        // Stagger child cards
-        const cards = entry.target.querySelectorAll('.zp-card, .zp-project, .zp-vibe, .zp-value-item, .zp-skill-item, .zp-live-item');
-        cards.forEach((card, i) => {
-          setTimeout(() => card.classList.add('zp-card-revealed'), i * 80);
-        });
+        observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+  }, { threshold: 0.08, rootMargin: '0px 0px -10px 0px' });
 
-  document.querySelectorAll('.zp-section, .zp-card, .zp-project, .zp-vibe, .zp-value-item, .zp-carousel-item, .zp-footer, .zp-sticky-footer')
-    .forEach(el => el.classList.add('zp-reveal'));
+  sections.forEach(s => observer.observe(s));
 
-  document.querySelectorAll('.zp-reveal').forEach(el => observer.observe(el));
+  // Immediately reveal any sections already in viewport (avoids flash)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      sections.forEach(s => {
+        const rect = s.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          s.classList.add('zp-revealed');
+          observer.unobserve(s);
+        }
+      });
+    });
+  });
 }
 
 // ─── Parallax Glyph ───
@@ -744,11 +767,11 @@ function setupParallaxGlyph() {
         const scrollY = window.scrollY;
         const heroH = glyph.closest('.zp-hero')?.offsetHeight || window.innerHeight;
         const progress = Math.min(scrollY / heroH, 1);
-        const translateY = progress * 60;
-        const scale = 1 - progress * 0.25;
-        const opacity = 1 - progress * 0.6;
+        const translateY = progress * 40;
+        const scale = 1 - progress * 0.2;
+        const opacity = 1 - progress * 0.5;
         glyph.style.transform = `translateY(${translateY}px) scale(${scale})`;
-        glyph.style.opacity = Math.max(opacity, 0.2);
+        glyph.style.opacity = Math.max(opacity, 0.3);
         ticking = false;
       });
       ticking = true;
