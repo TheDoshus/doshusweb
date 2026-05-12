@@ -693,37 +693,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── Scroll Reveal ───
 function setupScrollReveal() {
-  if (!window.IntersectionObserver) return;
-
-  const sections = document.querySelectorAll('.zp-section');
-  if (!sections.length) return;
-
-  // Start hidden only for sections — NOT cards (that's what made it invisible)
-  sections.forEach(s => s.classList.add('zp-reveal'));
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('zp-revealed');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.08, rootMargin: '0px 0px -10px 0px' });
-
-  sections.forEach(s => observer.observe(s));
-
-  // Immediately reveal any sections already in viewport (avoids flash)
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      sections.forEach(s => {
-        const rect = s.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          s.classList.add('zp-revealed');
-          observer.unobserve(s);
-        }
-      });
-    });
-  });
+  // Disabled to prevent invisible content on load
+  // Sections are visible by default
+  return;
 }
 
 // ─── Parallax Glyph ───
