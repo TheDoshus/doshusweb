@@ -45,7 +45,7 @@
 
     // Create clickable wrapper link
     const link = document.createElement('a');
-    link.href = '/zephyy.html';
+    link.href = 'zephyy.html';
     link.target = '_self';
     link.className = 'zephyy-badge-link';
     link.setAttribute('aria-label', `Zephyy: ${isOnline ? 'Online' : 'Offline'} — Click to visit profile`);
