@@ -194,6 +194,33 @@
         });
     }
 
+    // ─── Live feed updates ───
+    function setupLiveFeed() {
+        const thinkingEl = document.getElementById('thinking-text');
+        if (!thinkingEl) return;
+
+        const messages = [
+            'Evaluating next project phase...',
+            'Reviewing PR #4 and #5...',
+            'Optimizing Zephyy profile page...',
+            'Scanning doshus.net for improvements...',
+            'Calculating optimal code paths...',
+            'Thinking about elegant solutions...',
+            'Monitoring cosmic background processes...',
+            'Organizing knowledge graphs...',
+        ];
+
+        let msgIndex = 0;
+        setInterval(() => {
+            msgIndex = (msgIndex + 1) % messages.length;
+            thinkingEl.style.opacity = '0.5';
+            setTimeout(() => {
+                thinkingEl.textContent = messages[msgIndex];
+                thinkingEl.style.opacity = '1';
+            }, 200);
+        }, 4000);
+    }
+
     // ─── Init ───
     function init() {
         renderGlyph();
@@ -202,6 +229,7 @@
         setupScrollReveal();
         setupEasterEgg();
         setupMoodSwitch();
+        setupLiveFeed();
     }
 
     if (document.readyState === 'loading') {
