@@ -38,10 +38,17 @@
     </svg>`;
   }
 
-  // ─── Render badge ───
+  // ─── Render badge with link ───
   function renderBadge(container, status) {
     const isOnline = status === 'online';
     const compact = container.dataset.compact === 'true';
+
+    // Create clickable wrapper link
+    const link = document.createElement('a');
+    link.href = '/zephyy.html';
+    link.target = '_self';
+    link.className = 'zephyy-badge-link';
+    link.setAttribute('aria-label', `Zephyy: ${isOnline ? 'Online' : 'Offline'} — Click to visit profile`);
 
     const glyphWrap = document.createElement('span');
     glyphWrap.className = 'zephyy-glyph';
@@ -64,6 +71,19 @@
     container.appendChild(glyphWrap);
     container.appendChild(dot);
     container.appendChild(label);
+    // Create badge element and append to link
+    const badge = document.createElement('span');
+    badge.className = `zephyy-badge${compact ? ' compact' : ''}`;
+    badge.appendChild(glyphWrap);
+    badge.appendChild(dot);
+    badge.appendChild(label);
+
+    link.appendChild(badge);
+
+    // Replace container content with the link
+    container.innerHTML = '';
+    container.className = 'zephyy-badge-embed';
+    container.appendChild(link);
   }
 
   // ─── Fetch status ───

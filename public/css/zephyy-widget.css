@@ -57,11 +57,25 @@
   transition: all 0.3s ease;
   cursor: default;
   user-select: none;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
 }
 
 .zephyy-badge:hover {
   border-color: oklch(var(--accent-crypto) / 0.5);
   box-shadow: 0 0 20px oklch(var(--accent-crypto) / 0.15);
+  transform: translateY(-1px);
+}
+
+/* ── Clickable link wrapper ── */
+.zephyy-badge-link {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+.zephyy-badge-link:hover .zephyy-badge {
+  transform: translateY(-1px);
 }
 
 /* ── Indicator dot ── */
