@@ -308,6 +308,80 @@
   text-decoration: underline;
 }
 
+/* ── Chat Orb (future concept) ── */
+.zp-orb-demo {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, oklch(var(--brand-teal)), oklch(var(--brand-purple)));
+  box-shadow: 0 4px 20px oklch(var(--brand-teal) / 0.4),
+              0 0 40px oklch(var(--brand-purple) / 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  animation: orb-float 3s ease-in-out infinite;
+}
+
+.zp-orb-demo:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px oklch(var(--brand-teal) / 0.6),
+              0 0 50px oklch(var(--brand-purple) / 0.3);
+}
+
+.zp-orb-demo::before {
+  content: "⚡";
+  font-size: 1.2rem;
+  color: oklch(var(--space-oled));
+}
+
+@keyframes orb-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.zp-orb-demo:hover {
+  animation-play-state: paused;
+}
+
+/* ── Orb tooltip ── */
+.zp-orb-tooltip {
+  position: absolute;
+  right: 70px;
+  bottom: 16px;
+  background: oklch(var(--space-oled) / 0.9);
+  border: 1px solid oklch(var(--brand-teal) / 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.zp-orb-demo:hover .zp-orb-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Easter egg text (subtitle) ── */
+.zp-hero .subtitle {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.zp-hero .subtitle:hover {
+  opacity: 0.8;
+}
+
 /* ── Scroll indicator ── */
 .zp-scroll-indicator {
   position: absolute;
