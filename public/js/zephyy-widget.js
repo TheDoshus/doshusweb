@@ -11,7 +11,7 @@
   'use strict';
 
   const CONFIG = {
-    endpoint: 'https://zephyy.doshus.net/status',
+    endpoint: '/',
     pollInterval: 60000,
   };
 
@@ -52,7 +52,7 @@
 
     const glyphWrap = document.createElement('span');
     glyphWrap.className = 'zephyy-glyph';
-    glyphWrap.innerHTML = glyphSVG();
+    glyphWrap.innerHTML = glyphSVG(compact ? 'small' : '');
 
     const dot = document.createElement('span');
     dot.className = `zephyy-dot ${isOnline ? 'online' : 'offline'}`;
@@ -86,17 +86,10 @@
     container.appendChild(link);
   }
 
-  // ─── Fetch status ───
+  // ─── Status is always online if this page loaded ───
   async function fetchStatus() {
-    try {
-      const res = await fetch(CONFIG.endpoint, {
-        method: 'HEAD',
-        signal: AbortSignal.timeout(5000),
-      });
-      return res.ok ? 'online' : 'offline';
-    } catch {
-      return 'offline';
-    }
+    // If you can see the badge, Zephyy is online
+    return 'online';
   }
 
   // ─── Init ───
