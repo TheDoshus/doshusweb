@@ -157,6 +157,43 @@
         });
     }
 
+    // ─── Mood switcher for glyph ───
+    function setupMoodSwitch() {
+        const buttons = document.querySelectorAll('.zp-mood-btn');
+        if (!buttons.length) return;
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Update glyph animation speed
+                const mood = btn.dataset.mood;
+                const glyphWrap = document.getElementById('zephyy-glyph');
+                if (!glyphWrap) return;
+                
+                const left = glyphWrap.querySelector('.glyph-left');
+                const right = glyphWrap.querySelector('.glyph-right');
+                const center = glyphWrap.querySelector('.glyph-center');
+                
+                if (mood === 'idle') {
+                    if (left) left.style.animationDuration = '12s';
+                    if (right) right.style.animationDuration = '12s';
+                    if (center) center.style.animationDuration = '2s';
+                } else if (mood === 'active') {
+                    if (left) left.style.animationDuration = '3s';
+                    if (right) right.style.animationDuration = '3s';
+                    if (center) center.style.animationDuration = '1s';
+                } else if (mood === 'thinking') {
+                    if (left) left.style.animationDuration = '0.8s';
+                    if (right) right.style.animationDuration = '0.8s';
+                    if (center) center.style.animationDuration = '0.5s';
+                }
+            });
+        });
+    }
+
     // ─── Init ───
     function init() {
         renderGlyph();
@@ -164,6 +201,7 @@
         setupGlyphInteractivity();
         setupScrollReveal();
         setupEasterEgg();
+        setupMoodSwitch();
     }
 
     if (document.readyState === 'loading') {

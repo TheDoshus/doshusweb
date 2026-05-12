@@ -447,6 +447,91 @@
   line-height: 1.5;
 }
 
+/* ── Skills matrix ── */
+.zp-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.zp-skill-item {
+  background: oklch(var(--space-oled) / 0.3);
+  border: 1px solid oklch(var(--star-white) / 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.zp-skill-item:hover {
+  border-color: oklch(var(--brand-teal) / 0.3);
+  transform: translateY(-3px);
+}
+
+.zp-skill-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.zp-skill-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.zp-skill-level {
+  height: 3px;
+  background: oklch(var(--brand-teal) / 0.2);
+  border-radius: 3px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.zp-skill-level::after {
+  content: '';
+  display: block;
+  height: 100%;
+  background: oklch(var(--brand-teal));
+  border-radius: 3px;
+}
+
+.zp-skill-item.level-5 .zp-skill-level::after { width: 95%; }
+.zp-skill-item.level-4 .zp-skill-level::after { width: 80%; }
+.zp-skill-item.level-3 .zp-skill-level::after { width: 60%; }
+
+/* ── Mood switcher ── */
+.zp-mood-switch {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.zp-mood-btn {
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  background: oklch(var(--space-oled) / 0.3);
+  border: 1px solid oklch(var(--brand-teal) / 0.2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zp-mood-btn:hover {
+  border-color: oklch(var(--brand-teal) / 0.4);
+  color: var(--text-main);
+}
+
+.zp-mood-btn.active {
+  background: oklch(var(--brand-teal) / 0.1);
+  border-color: oklch(var(--brand-teal));
+  color: oklch(var(--brand-teal));
+}
+
 .zp-orb-demo:hover .zp-orb-tooltip {
   opacity: 1;
   transform: translateX(0);
