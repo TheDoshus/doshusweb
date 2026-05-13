@@ -721,12 +721,10 @@
   gap: 0.5rem;
   z-index: 100;
   padding: 0.5rem;
-  background: oklch(var(--space-oled) / 0.7);
+  background: oklch(var(--space-oled) / 0.8);
   border: 1px solid oklch(var(--brand-teal) / 0.2);
   border-radius: 12px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transform: translateY(-50%) translateZ(0);
+  will-change: opacity;
 }
 
 .zp-sidebar-link {
@@ -857,14 +855,9 @@
     border-left: none;
     max-height: 70vh;
     overflow-y: auto;
-    background: oklch(var(--space-oled) / 0.85);
-    -webkit-backdrop-filter: blur(16px);
-    backdrop-filter: blur(16px);
-    transform: translateY(-50%) translateZ(0);
-    -webkit--webkit-backdrop-filter: blur(16px);
-    backdrop-filter: blur(16px);
-    transform: translateY(-50%) translateZ(0);
+    background: oklch(var(--space-oled) / 0.9);
     border: 1px solid oklch(var(--brand-teal) / 0.2);
+    will-change: transform;
   }
 
   .zp-sidebar-nav.open {
