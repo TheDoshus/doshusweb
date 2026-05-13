@@ -451,26 +451,68 @@ function setupTerminal() {
 
 
 
-// ─── Retractable Sidebar (mobile) ───
+// ─── Mobile Sidebar (Aether-style — simple swipe + transform + overlay) ───
 function setupSidebarTab() {
   const tab = document.getElementById('sidebar-tab');
   const nav = document.getElementById('sidebar-nav');
+  const overlay = document.getElementById('sidebar-overlay');
   if (!tab || !nav) return;
 
-  tab.addEventListener('click', () => {
-    const isOpen = nav.classList.toggle('open');
-    tab.classList.toggle('open', isOpen);
+  function openSidebar() {
+    nav.classList.add('open');
+    tab.classList.add('open');
+    if (overlay) overlay.classList.add('open');
+  }
+
+  function closeSidebar() {
+    nav.classList.remove('open');
+    tab.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+  }
+
+  function toggleSidebar() {
+    if (nav.classList.contains('open')) closeSidebar();
+    else openSidebar();
+  }
+
+  // Tab click
+  tab.addEventListener('click', toggleSidebar);
+
+  // Overlay click = close
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+
+  // Link click = close
+  nav.querySelectorAll('.zp-sidebar-link').forEach(link => {
+    link.addEventListener('click', closeSidebar);
   });
 
-  // Close on link click
-  nav.querySelectorAll('.zp-sidebar-link').forEach(link => {
-    link.addEventListener('click', () => {
-      if (nav.classList.contains('open')) {
-        nav.classList.remove('open');
-        tab.classList.remove('open');
-      }
-    });
-  });
+  // Window swipe (Aether-style threshold — no inline tracking)
+  let swX = 0, swY = 0;
+
+  window.addEventListener('touchstart', (e) => {
+    swX = e.touches[0].clientX;
+    swY = e.touches[0].clientY;
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const dx = endX - swX;
+    const dy = Math.abs(endY - swY);
+    const isOpen = nav.classList.contains('open');
+
+    // Sidebar closed + swipe right 50px+ (horizontal enough) = open
+    if (!isOpen && dx > 50 && dy < dx * 2.5) {
+      openSidebar();
+      return;
+    }
+
+    // Sidebar open + swipe left 50px+ = close
+    if (isOpen && dx < -50 && dy < Math.abs(dx) * 2.5) {
+      closeSidebar();
+      return;
+    }
+  }, { passive: true });
 }
 
 // ─── Terminal init ───
