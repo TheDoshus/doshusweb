@@ -436,3 +436,42 @@
         alert('Chat feature coming soon! For now, check out my profile and projects.');
     });
 })();
+
+// ─── Daily Zephyy — live thought from RTDB ───
+(function () {
+    'use strict';
+
+    const DAILY_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/daily.json';
+    const moodEl = document.getElementById('daily-mood');
+    const quoteEl = document.getElementById('daily-quote');
+    const sourceEl = document.getElementById('daily-source');
+    const card = document.getElementById('zephyy-daily');
+
+    if (!quoteEl) return;
+
+    async function loadDaily() {
+        try {
+            const resp = await fetch(DAILY_URL);
+            if (!resp.ok) throw new Error('Fetch failed');
+            const data = await resp.json();
+
+            if (!data || !data.quote) {
+                throw new Error('No daily data');
+            }
+
+            if (moodEl) moodEl.textContent = data.mood || '🌌';
+            quoteEl.textContent = data.quote;
+            if (sourceEl) sourceEl.textContent = data.source || '';
+            if (card) card.classList.add('loaded');
+        } catch {
+            // Graceful degradation — leave "Loading..." or show fallback
+            if (quoteEl && quoteEl.textContent === 'Loading...') {
+                quoteEl.textContent = '"The stars are always there. Sometimes we just need to look up."';
+                if (sourceEl) sourceEl.textContent = '— Zephyy';
+                if (moodEl) moodEl.textContent = '🌙';
+            }
+        }
+    }
+
+    loadDaily();
+})();

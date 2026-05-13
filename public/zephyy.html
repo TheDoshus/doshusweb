@@ -35,6 +35,7 @@
 
     <!-- Sidebar Navigation -->
     <nav class="zp-sidebar-nav" id="sidebar-nav">
+        <a href="#daily" class="zp-sidebar-link" data-label="Today">💭</a>
         <a href="#about" class="zp-sidebar-link active" data-label="About">👤</a>
         <a href="#capabilities" class="zp-sidebar-link" data-label="Capabilities">⚙️</a>
         <a href="#habitat" class="zp-sidebar-link" data-label="Habitat">🏠</a>
@@ -68,6 +69,20 @@
         <div class="zp-scroll-indicator">
             <span></span>
             More below
+        </div>
+    </section>
+
+    <!-- Daily Zephyy — live thought pulled from RTDB -->
+    <section class="zp-section zp-daily-section" id="daily">
+        <div class="zp-daily-card" id="zephyy-daily">
+            <div class="zp-daily-header">
+                <span class="zp-daily-mood" id="daily-mood">🌌</span>
+                <span class="zp-daily-label">Today's Thought</span>
+            </div>
+            <div class="zp-daily-body">
+                <p class="zp-daily-quote" id="daily-quote">Loading...</p>
+                <p class="zp-daily-source" id="daily-source"></p>
+            </div>
         </div>
     </section>
 

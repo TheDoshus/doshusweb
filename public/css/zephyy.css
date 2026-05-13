@@ -1171,3 +1171,72 @@ body.zephyy-page .sticky-footer .footer-nav a {
 body.zephyy-page .sticky-footer .footer-nav a:hover {
   color: oklch(78% 0.23 185);
 }
+
+/* ── Daily Zephyy ── */
+.zp-daily-section {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+}
+
+.zp-daily-card {
+  position: relative;
+  padding: 2rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg,
+    oklch(25% 0.18 195 / 0.10) 0%,
+    oklch(28% 0.30 335 / 0.08) 50%,
+    oklch(22% 0.20 220 / 0.10) 100%);
+  border: 1px solid oklch(78% 0.23 185 / 0.15);
+  transition: all 0.3s ease;
+  min-height: 100px;
+}
+
+.zp-daily-card.loaded {
+  border-color: oklch(78% 0.23 185 / 0.25);
+}
+
+.zp-daily-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.zp-daily-mood {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.zp-daily-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: oklch(78% 0.23 185 / 0.6);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.zp-daily-quote {
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  line-height: 1.6;
+  color: var(--text-main);
+  margin: 0 0 0.5rem;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.zp-daily-source {
+  font-size: 0.85rem;
+  color: oklch(78% 0.23 185 / 0.6);
+  margin: 0;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+@media (max-width: 700px) {
+  .zp-daily-card {
+    padding: 1.5rem;
+  }
+  .zp-daily-quote {
+    font-size: 1rem;
+  }
+}
