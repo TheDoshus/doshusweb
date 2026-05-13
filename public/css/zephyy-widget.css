@@ -1,22 +1,8 @@
 /* ─── ZEPHYY ONLINE STATUS BADGE ───
- * Cosmic-themed status widget for Doshus.NET
- * OKLCH colors only — matching the site design system
- */
 
 /* ── Dual-vortex glyph ── */
-.zephyy-glyph {
-  position: relative;
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-}
-
-.zephyy-glyph svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
+.zephyy-glyph { position: relative; flex-shrink: 0; width: 20px; height: 20px; }
+.zephyy-glyph svg { display: block; width: 100%; height: 100%; }
 @keyframes glyphSpin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -26,20 +12,15 @@
   transform-origin: 11px 16px;
   animation: glyphSpin 12s linear infinite;
 }
-
 .glyph-right {
   transform-origin: 21px 16px;
   animation: glyphSpin 12s linear infinite reverse;
 }
-
 @keyframes glyphPulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.6; }
 }
-
-.glyph-pulse {
-  animation: glyphPulse 2s ease-in-out infinite;
-}
+.glyph-pulse { animation: glyphPulse 2s ease-in-out infinite; }
 
 /* ── Badge container ── */
 .zephyy-badge {
@@ -59,7 +40,6 @@
   user-select: none;
   text-decoration: none;
 }
-
 .zephyy-badge:hover {
   border-color: oklch(var(--accent-crypto) / 0.5);
   box-shadow: 0 0 20px oklch(var(--accent-crypto) / 0.15);

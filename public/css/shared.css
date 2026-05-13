@@ -389,7 +389,7 @@ h3 {
 .footer-nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none;
     gap: 1px; color: oklch(var(--accent-taxes) / 0.75);
 }
-.footer-nav a svg { transition: transform 0.2s ease, opacity 0.2s ease; }
+.footer-nav a svg, img { transition: transform 0.2s ease, opacity 0.2s ease; }
 .footer-nav a:hover svg { transform: translateY(-2px); }
 .footer-nav a span { font-size: 0.85rem; font-weight: 500; }
 
