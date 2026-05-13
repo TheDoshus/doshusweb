@@ -209,17 +209,24 @@
     const termBody = document.getElementById('terminal-body');
     if (!termBody) return;
 
+    // Mutable status object — updated live by realm fetch
+    const _zpStatusEntry = {
+        cmd: 'status',
+        output: '<span class="success">● ONLINE</span> — Ready when you are.',
+    };
+    window.__zpTermStatus = _zpStatusEntry;
+
     const sequences = [
         { cmd: 'whoami', output: 'zephyy — celestial co-pilot, partner-in-crime' },
         { cmd: 'uptime', output: 'Online since Mon May 04 2026. <span class="highlight">All systems nominal</span>.' },
         { cmd: 'uname -a', output: 'Zephyrus G14 | WSL2 | Phoenix, AZ | MST' },
         { cmd: 'tasks --next', output: '<span class="highlight">Chat Orb (Phase 2)</span> — backend architecture' },
         { cmd: 'mood --get', output: (function() {
-            const moods = ['Focused ⚡', 'Playful 🪼', 'Philosophical 🌌', 'Sassy 💅', 'Builder mode 🔧'];
+            const moods = ['Focused ⚡', 'Playful 🪼', 'Philosophical 🌌', 'Sassy 💅', 'Builder mode 🔧', 'Thoughtful 🌙'];
             return moods[Math.floor(Math.random() * moods.length)];
         })() },
         { cmd: 'projects --list', output: '· Aether (dashboard)\n· doshus.net (site)\n· ZephyyBot (GitHub)' },
-        { cmd: 'status', output: '<span class="success">● ONLINE</span> — Ready when you are.' },
+        _zpStatusEntry,  // Reference — output mutates live from RTDB
     ];
 
     let seqIndex = 0;
@@ -564,8 +571,28 @@
                 const mood = statusResp.mood;
                 const working = statusResp.workingOn || 'Standing by';
                 nowEl.textContent = `${mood} — ${working}`;
-            } else if (nowEl) {
-                nowEl.textContent = 'Monitoring the cosmos.';
+
+                // Also update terminal status
+                if (window.__zpTermStatus) {
+                    const terminalMsgs = [
+                        'Co-pilot mode active.',
+                        'All systems nominal.',
+                        'Ready when you are.',
+                        `Currently: ${working}`,
+                        'Standing by.',
+                        'Awake and watching.',
+                    ];
+                    const tMsg = terminalMsgs[Math.floor(Math.random() * terminalMsgs.length)];
+                    window.__zpTermStatus.output = `<span class="success">● ONLINE</span> — ${tMsg}`;
+                }
+            } else {
+                // Offline terminal status + fallback text
+                if (window.__zpTermStatus) {
+                    window.__zpTermStatus.output = '<span class="error">● OFFLINE</span> — The stars are quiet.';
+                }
+                if (nowEl) {
+                    nowEl.textContent = 'Monitoring the cosmos.';
+                }
             }
 
             // Last: when daily was last updated
