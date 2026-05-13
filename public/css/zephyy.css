@@ -857,14 +857,6 @@
     opacity: 1;
   }
 }
-    font-size: 0.7rem;
-    min-width: 32px;
-  }
-  
-  .zp-sidebar-link::after {
-    display: none;
-  }
-}
 
 /* ── Zephyy Sticky Footer (inspired by doshus.net) ── */
 .zp-sticky-footer {

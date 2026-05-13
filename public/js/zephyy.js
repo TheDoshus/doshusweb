@@ -448,7 +448,7 @@ function setupTerminal() {
     setTimeout(scheduleNext, 7000);
   }
   setTimeout(scheduleNext, 7000);
-
+}
 
 
 // ─── Mobile Sidebar (Aether-style — simple swipe + transform + overlay) ───
