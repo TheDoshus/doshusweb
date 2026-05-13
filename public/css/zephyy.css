@@ -79,8 +79,7 @@
   padding: 0.5rem 1.2rem;
   border-radius: 999px;
   border: 1px solid oklch(var(--brand-teal) / 0.2);
-  background: oklch(var(--space-oled) / 0.3);
-  backdrop-filter: blur(8px);
+  background: oklch(var(--space-oled) / 0.4);
 }
 
 /* ── Section defaults ── */
@@ -164,8 +163,7 @@
 
 /* ── Glass card ── */
 .zp-card {
-  background: oklch(var(--space-oled) / 0.3);
-  backdrop-filter: blur(12px);
+  background: oklch(var(--space-oled) / 0.35);
   border: 1px solid oklch(var(--star-white) / 0.06);
   border-radius: 16px;
   padding: 2rem;
@@ -651,9 +649,15 @@
   animation: heroGlow 8s ease-in-out infinite;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes heroGlow {
+    0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+    50% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+  }
+}
 @keyframes heroGlow {
-  0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-  50% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
 }
 
 /* ── Status line bounce ── */
@@ -717,10 +721,12 @@
   gap: 0.5rem;
   z-index: 100;
   padding: 0.5rem;
-  background: oklch(var(--space-oled) / 0.6);
+  background: oklch(var(--space-oled) / 0.7);
   border: 1px solid oklch(var(--brand-teal) / 0.2);
   border-radius: 12px;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transform: translateY(-50%) translateZ(0);
 }
 
 .zp-sidebar-link {
@@ -803,7 +809,6 @@
     justify-content: center;
     cursor: pointer;
     z-index: 99;
-    backdrop-filter: blur(8px);
     transition: transform 0.3s ease;
     flex-direction: column;
     gap: 4px;
@@ -853,8 +858,12 @@
     max-height: 70vh;
     overflow-y: auto;
     background: oklch(var(--space-oled) / 0.85);
-    backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    transform: translateY(-50%) translateZ(0);
+    -webkit--webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    transform: translateY(-50%) translateZ(0);
     border: 1px solid oklch(var(--brand-teal) / 0.2);
   }
 
@@ -921,7 +930,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: blur(15px);
   padding: 0.3rem 1rem;
   background: linear-gradient(135deg,
     oklch(var(--space-oled) / 0.85) 0% 0%,
@@ -932,6 +940,7 @@
   z-index: 999;
   transition: transform 0.3s ease;
   min-height: 44px;
+  contain: paint;
 }
 
 .zp-sticky-footer.footer-hidden {
