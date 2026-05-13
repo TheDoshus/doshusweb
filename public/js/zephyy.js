@@ -272,7 +272,12 @@
         outputLine.innerHTML = seq.output;
         outputLine.style.opacity = '0';
 
-        const cmdLine = termBody.querySelector('.zp-terminal-line:first-child');
+        // ─── SURGICAL FIX START ───
+        // Grab all active prompt lines (excluding outputs) and target the latest one
+        const promptLines = termBody.querySelectorAll('.zp-terminal-line:not(.zp-terminal-output)');
+        const cmdLine = promptLines[promptLines.length - 1];
+        // ─── SURGICAL FIX END ───
+
         if (!cmdLine) { typing = false; return; }
         const typedEl = cmdLine.querySelector('.zp-typed');
         const cursor = cmdLine.querySelector('.zp-cursor');
@@ -304,9 +309,10 @@
 
                 // Trim to keep 3 prompts + 4 outputs max
                 const prompts = termBody.querySelectorAll('.zp-terminal-line:not(.zp-terminal-output)');
-                while (prompts.length > 3) { prompts[0].remove(); }
+                for (let j = 0; j < prompts.length - 3; j++) { prompts[j].remove(); }
+
                 const outputs = termBody.querySelectorAll('.zp-terminal-output');
-                while (outputs.length > 4) { outputs[0].remove(); }
+                for (let k = 0; k < outputs.length - 4; k++) { outputs[k].remove(); }
 
                 typing = false;
                 if (!done) setTimeout(nextSequence, 6000);
