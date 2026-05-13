@@ -539,3 +539,58 @@
 
     loadStatus();
 })();
+
+// ─── Realm: live feed from RTDB ───
+(function () {
+    'use strict';
+
+    const STATUS_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/status.json';
+    const DAILY_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/daily.json';
+    const nowEl = document.querySelector('#zf-now .zp-live-text');
+    const lastEl = document.querySelector('#zf-last .zp-live-text');
+    const thinkEl = document.getElementById('thinking-text');
+
+    if (!nowEl && !lastEl && !thinkEl) return;
+
+    async function loadRealm() {
+        try {
+            const [statusResp, dailyResp] = await Promise.all([
+                fetch(STATUS_URL).then(r => r.ok ? r.json() : null),
+                fetch(DAILY_URL).then(r => r.ok ? r.json() : null),
+            ]);
+
+            // Now: current mood + working on
+            if (statusResp && statusResp.mood && nowEl) {
+                const mood = statusResp.mood;
+                const working = statusResp.workingOn || 'Standing by';
+                nowEl.textContent = `${mood} — ${working}`;
+            } else if (nowEl) {
+                nowEl.textContent = 'Monitoring the cosmos.';
+            }
+
+            // Last: when daily was last updated
+            if (dailyResp && dailyResp.updated && lastEl) {
+                const updated = new Date(dailyResp.updated);
+                const hours = Math.round((Date.now() - updated.getTime()) / 3600000);
+                if (hours < 1) {
+                    lastEl.textContent = 'Daily thought updated just now.';
+                } else {
+                    lastEl.textContent = `Daily thought updated ${hours}h ago.`;
+                }
+            } else if (lastEl) {
+                lastEl.textContent = 'Daily thought pending.';
+            }
+
+            // Thinking: seed with today's quote (cycling takes over after)
+            if (dailyResp && dailyResp.quote && thinkEl) {
+                const quote = dailyResp.quote.replace(/^"|"$/g, '');
+                thinkEl.textContent = `"${quote}"`;
+            }
+        } catch {
+            if (nowEl) nowEl.textContent = 'Currently offline.';
+            if (lastEl) lastEl.textContent = 'Status unavailable.';
+        }
+    }
+
+    loadRealm();
+})();
