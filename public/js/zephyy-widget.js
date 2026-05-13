@@ -11,8 +11,9 @@
   'use strict';
 
   const CONFIG = {
-    endpoint: '/',
+    endpoint: 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/status.json',
     pollInterval: 60000,
+    staleThresholdMs: 2.5 * 60 * 60 * 1000, // 2.5 hours dead-man switch
   };
 
   // ─── Dual-vortex glyph SVG ───
@@ -40,7 +41,9 @@
 
   // ─── Render badge with link ───
   function renderBadge(container, status) {
-    const isOnline = status === 'online';
+    const isOnline = status.online;
+    const mood = status.mood || 'idle';
+    const workingOn = status.workingOn || '';
     const compact = container.dataset.compact === 'true';
 
     // Build DOM in correct order: link > badge > (glyph + dot + label)
@@ -62,9 +65,18 @@
 
     const label = document.createElement('span');
     label.className = 'zephyy-label';
-    label.innerHTML = compact
-      ? `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? '●' : '○'}</span>`
-      : `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? 'Online' : 'Offline'}</span>`;
+    if (compact) {
+      label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? '●' : '○'}</span>`;
+    } else {
+      label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? mood : 'Offline'}</span>`;
+    }
+
+    // Add tooltip with working-on info when online
+    if (isOnline && workingOn) {
+      badge.title = `Working on: ${workingOn}`;
+    } else if (!isOnline) {
+      badge.title = 'Zephyy is currently offline';
+    }
 
     badge.append(glyphWrap, dot, label);
     link.appendChild(badge);
@@ -74,10 +86,25 @@
     container.appendChild(link);
   }
 
-  // ─── Status is always online if this page loaded ───
+  // ─── Fetch live status from Firebase RTDB ───
   async function fetchStatus() {
-    // If you can see the badge, Zephyy is online
-    return 'online';
+    const resp = await fetch(CONFIG.endpoint);
+    if (!resp.ok) throw new Error('Status fetch failed');
+    const data = await resp.json();
+
+    // Dead-man switch: if lastUpdated > 2.5h ago, treat as offline
+    const lastUpdated = new Date(data.lastUpdated).getTime();
+    const now = Date.now();
+    const elapsed = now - lastUpdated;
+    const isOnline = data.online === true && elapsed < CONFIG.staleThresholdMs;
+
+    return {
+      online: isOnline,
+      mood: data.mood || 'idle',
+      workingOn: data.workingOn || 'Standing by',
+      lastUpdated: data.lastUpdated,
+      since: data.since,
+    };
   }
 
   // ─── Init ───
@@ -89,7 +116,7 @@
       const status = await fetchStatus();
       containers.forEach((el) => renderBadge(el, status));
     } catch {
-      containers.forEach((el) => renderBadge(el, 'offline'));
+      containers.forEach((el) => renderBadge(el, { online: false, mood: 'offline', workingOn: '' }));
     }
 
     // Inject keyframes for glyph animation if not already present
@@ -110,7 +137,9 @@
       try {
         const status = await fetchStatus();
         containers.forEach((el) => renderBadge(el, status));
-      } catch { /* keep current state */ }
+      } catch {
+        containers.forEach((el) => renderBadge(el, { online: false, mood: 'offline', workingOn: '' }));
+      }
     }, CONFIG.pollInterval);
   }
 

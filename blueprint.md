@@ -156,10 +156,12 @@ Cosmic-themed personal website by Doshus. Vanilla HTML/CSS/JS, Firebase Hosting,
 
 No build step. Firebase Hosting serves static files from `public/`.
 
-### GitHub Actions (`deploy.yml`)
-- Trigger: push to `main`
-- Action: Firebase deploy
-- File: `.github/workflows/deploy.yml`
+### Deploy (manual only)
+- **NO auto-deploy.** Push to `main` stays on GitHub.
+- Deploy via Firebase CLI: `firebase hosting:channel:deploy <name> --expires 3d` for previews
+- Production deploy: `firebase deploy --only hosting` (Doshus only)
+- Firebase project: `doshusweb`
+- `.firebaserc` points default to `doshusweb`
 
 ---
 
