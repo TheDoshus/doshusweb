@@ -1,0 +1,85 @@
+/* Stars container */
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Star base styles */
+.star {
+  position: absolute;
+  background: oklch(var(--star-white));
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: twinkle var(--twinkle-duration, 5s) ease-in-out infinite;
+  animation-delay: var(--twinkle-delay, 0s);
+}
+
+/* Far stars - smallest, dimmest */
+.star-far {
+  opacity: 0.3;
+  background: oklch(var(--star-white) / 0.3);
+  animation-duration: 8s;
+}
+
+/* Mid stars */
+.star-mid {
+  opacity: 0.5;
+  background: oklch(var(--star-white) / 0.5);
+  animation-duration: 6s;
+}
+
+/* Close stars - brightest */
+.star-close {
+  opacity: 0.7;
+  background: oklch(var(--star-white) / 0.7);
+  animation-duration: 4s;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+/* Cosmic background overlay */
+.cosmic-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: linear-gradient(135deg,
+    oklch(0.15 0.03 280) 0%,
+    oklch(0.12 0.05 260) 25%,
+    oklch(0.10 0.04 240) 50%,
+    oklch(0.12 0.03 200) 75%,
+    oklch(0.15 0.02 180) 100%
+  );
+}
+
+/* On mobile, disable twinkling but keep static gradient */
+@media (max-width: 768px) {
+  .star {
+    animation: none;
+    opacity: 0.4;
+  }
+}
+
+/* Fix body overflow and background */
+body {
+  overflow-x: hidden;
+  background: oklch(0.12 0.02 260);
+}
+
+/* Ensure main content is visible */
+.zp-hero,
+.zp-section {
+  position: relative;
+  z-index: 2;
+}

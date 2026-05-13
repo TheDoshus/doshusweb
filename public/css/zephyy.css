@@ -108,6 +108,46 @@
   flex-shrink: 0;
 }
 
+.zp-icon-teal {
+  background: oklch(var(--brand-teal) / 0.15);
+  color: oklch(var(--brand-teal));
+}
+
+.zp-icon-purple {
+  background: oklch(var(--brand-purple) / 0.15);
+  color: oklch(var(--brand-purple));
+}
+
+.zp-icon-green {
+  background: oklch(var(--brand-green) / 0.15);
+  color: oklch(var(--brand-green));
+}
+
+.zp-icon-pink {
+  background: oklch(var(--brand-pink) / 0.15);
+  color: oklch(var(--brand-pink));
+}
+
+.zp-text-margin {
+  margin-top: 1.2rem;
+}
+
+.zp-text-italic {
+  margin-top: 1rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.zp-logo-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.9;
+}
+
+.zp-mb-1 {
+  margin-bottom: 1rem;
+}
+
 .zp-section-header h2 {
   font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif;
   font-size: clamp(1.3rem, 3vw, 1.8rem);
