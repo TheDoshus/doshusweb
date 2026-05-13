@@ -357,14 +357,29 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
+}
+
+.zp-dot.online {
   background: oklch(var(--brand-green));
   box-shadow: 0 0 6px oklch(var(--brand-green) / 0.5);
   animation: zp-dot-pulse 2s ease-in-out infinite;
 }
 
+.zp-dot.offline {
+  background: oklch(35% 0.02 0);
+  box-shadow: 0 0 3px oklch(35% 0.02 0 / 0.3);
+  opacity: 0.5;
+  animation: zp-dot-fade 4s ease-in-out infinite;
+}
+
 @keyframes zp-dot-pulse {
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.3); }
+}
+
+@keyframes zp-dot-fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
 }
 
 /* ── Chat Orb (future concept) ── */

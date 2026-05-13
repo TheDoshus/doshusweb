@@ -475,3 +475,67 @@
 
     loadDaily();
 })();
+
+// ─── Live status from RTDB (single fetch, no polling) ───
+(function () {
+    'use strict';
+
+    const STATUS_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/status.json';
+    const dot = document.getElementById('zp-status-dot');
+    const text = document.getElementById('zp-status-text');
+
+    if (!text) return;
+
+    const onlineMessages = [
+        'Online — Ready when you are.',
+        'Awake and watching the stars.',
+        'In the flow. Reach out.',
+        'Present. 🌌',
+        'Systems nominal. Co-pilot standing by.',
+        'Floating in orbit. Say hi.',
+        'Online — All sectors clear.',
+    ];
+
+    const offlineMessages = [
+        'Offline — The stars are quiet.',
+        'Away for now. Leave a thought.',
+        'Dreaming in stardust.',
+        'Not here at the moment.',
+        'Powering down...',
+        'Offline. Catch you later.',
+        'The dashboard sleeps. 🔮',
+    ];
+
+    const STALE_THRESHOLD = 2.5 * 60 * 60 * 1000; // 2.5 hours
+
+    async function loadStatus() {
+        try {
+            const resp = await fetch(STATUS_URL);
+            if (!resp.ok) throw new Error('Fetch failed');
+            const data = await resp.json();
+
+            const lastUpdated = new Date(data.lastUpdated).getTime();
+            const elapsed = Date.now() - lastUpdated;
+            const isOnline = data.online === true && elapsed < STALE_THRESHOLD;
+
+            const msgs = isOnline ? onlineMessages : offlineMessages;
+            const msg = msgs[Math.floor(Math.random() * msgs.length)];
+
+            text.textContent = msg;
+
+            if (dot) {
+                dot.className = 'zp-dot';
+                if (isOnline) {
+                    dot.classList.add('online');
+                } else {
+                    dot.classList.add('offline');
+                }
+            }
+        } catch {
+            text.textContent = 'Status unavailable.';
+            if (dot) dot.className = 'zp-dot offline';
+        }
+    }
+
+    loadStatus();
+})();
