@@ -113,22 +113,9 @@
 
     // ─── Intersection Observer for section reveals ───
     function setupScrollReveal() {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                    observer.unobserve(entry.target); // one-shot
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.zp-section, .zp-card').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
-        });
+        // Disabled — caused content to render invisible until scroll,
+        // and the observer paint + transition storm against cosmic-bg
+        // animation triggered scroll freezes. Elements visible by default now.
     }
 
     // ─── Easter egg ───
@@ -382,16 +369,23 @@
     if (!links.length || !sections.length) return;
 
     let activeId = null;
+    let ticking = false;
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting && entry.intersectionRatio >= 0.3) {
+            if (entry.isIntersecting) {
                 activeId = entry.target.id;
             }
         });
-        links.forEach(link => {
-            link.classList.toggle('active', link.getAttribute('href') === '#' + activeId);
-        });
-    }, { threshold: [0.3, 0.6] });
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(() => {
+                links.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === '#' + activeId);
+                });
+                ticking = false;
+            });
+        }
+    }, { threshold: 0.4 });
 
     sections.forEach(s => observer.observe(s));
 })();

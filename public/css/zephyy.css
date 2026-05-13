@@ -1275,3 +1275,13 @@
 .zp-terminal-output .error {
   color: #ff5f56;
 }
+
+/* ── Performance: strip excessive will-change from stars ── */
+body .star {
+  will-change: opacity;
+}
+
+/* ── Performance: prevent horizontal overflow from fixed sidebar ── */
+.zp-sidebar-nav {
+  max-width: calc(100vw - 2rem);
+}
