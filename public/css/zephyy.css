@@ -856,6 +856,24 @@
   .zp-sidebar-overlay.open {
     opacity: 1;
   }
+
+  /* ── Mobile performance: kill heavy animations ── */
+  .cosmic-bg {
+    animation: none !important;
+    background: linear-gradient(180deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.4) 50%, oklch(var(--space-oled)) 100%) !important;
+  }
+
+  #stars {
+    display: none;
+  }
+
+  .zp-orb-demo {
+    animation: none !important;
+    width: 40px;
+    height: 40px;
+    bottom: 50px;
+    right: 14px;
+  }
 }
 
 /* ── Zephyy Sticky Footer (inspired by doshus.net) ── */
