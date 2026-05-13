@@ -2,10 +2,32 @@
  * ZEPHYY PROFILE PAGE INTERACTIVITY
  * Dual-vortex glyph with state-driven animation
  * All oklch colors matching the site design system
+ *
+ * Performance: all timers pause when page is hidden via Visibility API.
+ * Terminal: runs through its sequence once, then idles.
  */
 
 (function () {
     'use strict';
+
+    // ─── Timer registry — all intervals/timeouts tracked for visibility pause ───
+    const timers = {
+        intervals: [],
+        visibilityTimer: null,
+    };
+
+    function regInterval(id) { timers.intervals.push(id); return id; }
+
+    function regVisibilityCleanup() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                timers.intervals.forEach(clearInterval);
+            } else {
+                // Timers don't restart automatically — they're UI sugar, not critical.
+                // User interaction (scroll, click) will restore state naturally.
+            }
+        });
+    }
 
     // ─── Dual-vortex glyph SVG ───
     const glyphSVG = `
@@ -17,28 +39,18 @@
                 <stop offset="100%" stop-color="oklch(var(--brand-green))" />
             </linearGradient>
         </defs>
-        
-        <!-- Outer glow ring -->
         <circle cx="32" cy="32" r="28" stroke="oklch(var(--brand-teal) / 0.3)" stroke-width="0.5" fill="none"/>
-        
-        <!-- Left vortex -->
         <g class="glyph-left" style="transform-origin: 22px 32px;">
             <path d="M22 12 C28 12, 32 20, 28 28 C24 36, 16 40, 14 32 C12 24, 18 18, 22 16 C26 14, 30 18, 30 24"
                 stroke="url(#glyphGrad)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.9"/>
             <circle cx="22" cy="14" r="1.2" fill="oklch(var(--brand-teal))" opacity="0.7"/>
         </g>
-        
-        <!-- Right vortex (counter-rotation) -->
         <g class="glyph-right" style="transform-origin: 42px 32px;">
             <path d="M42 12 C36 12, 32 20, 36 28 C40 36, 48 40, 50 32 C52 24, 46 18, 42 16 C38 14, 34 18, 34 24"
                 stroke="url(#glyphGrad)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.9"/>
             <circle cx="42" cy="14" r="1.2" fill="oklch(var(--brand-purple))" opacity="0.7"/>
         </g>
-        
-        <!-- Center nexus -->
         <circle cx="32" cy="32" r="1.8" fill="oklch(var(--brand-teal))" class="glyph-center"/>
-        
-        <!-- Connecting whisper line -->
         <path d="M30 24 Q32 28 34 24" stroke="oklch(var(--star-white) / 0.1)" stroke-width="0.5" fill="none"/>
     </svg>
     `;
@@ -55,15 +67,10 @@
         const wrap = document.getElementById('zephyy-glyph');
         if (!wrap) return;
 
-        let isHovering = false;
-
         wrap.addEventListener('mouseenter', () => {
-            isHovering = true;
             wrap.style.transform = 'scale(1.08)';
         });
-
         wrap.addEventListener('mouseleave', () => {
-            isHovering = false;
             wrap.style.transform = 'scale(1)';
         });
 
@@ -73,11 +80,8 @@
         wrap.addEventListener('click', () => {
             stateIndex = (stateIndex + 1) % states.length;
             const state = states[stateIndex];
-            
             const left = wrap.querySelector('.glyph-left');
             const right = wrap.querySelector('.glyph-right');
-            const center = wrap.querySelector('.glyph-center');
-            
             if (state === 'idle') {
                 if (left) left.style.animationDuration = '12s';
                 if (right) right.style.animationDuration = '12s';
@@ -91,32 +95,17 @@
         });
     }
 
-    // ─── Parse CSS custom properties to extract LCH values ───
+    // ─── Inject keyframe styles ───
     function addDynamicStyles() {
         const style = document.createElement('style');
         style.textContent = `
-            .glyph-left {
-                animation: glyphSpin 12s linear infinite;
-                transform-origin: 22px 32px;
-            }
-            .glyph-right {
-                animation: glyphSpin 12s linear infinite reverse;
-                transform-origin: 42px 32px;
-            }
-            .glyph-center {
-                animation: glyphPulse 2s ease-in-out infinite;
-            }
-            @keyframes glyphSpin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
+            .glyph-left { animation: glyphSpin 12s linear infinite; transform-origin: 22px 32px; }
+            .glyph-right { animation: glyphSpin 12s linear infinite reverse; transform-origin: 42px 32px; }
+            .glyph-center { animation: glyphPulse 2s ease-in-out infinite; }
+            @keyframes glyphSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             @keyframes glyphPulse {
                 0%, 100% { opacity: 0.4; transform: scale(0.9); }
                 50% { opacity: 0.9; transform: scale(1.1); }
-            }
-            @keyframes glyphBreathe {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.05); }
             }
         `;
         document.head.appendChild(style);
@@ -129,6 +118,7 @@
                 if (entry.isIntersecting) {
                     entry.target.style.opacity = '1';
                     entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target); // one-shot
                 }
             });
         }, { threshold: 0.1 });
@@ -141,42 +131,32 @@
         });
     }
 
-    // ─── Easter egg: click trigger to reveal secret ───
+    // ─── Easter egg ───
     function setupEasterEgg() {
         const trigger = document.getElementById('easter-trigger');
         const secret = document.getElementById('secret-section');
-        
         if (!trigger || !secret) return;
-        
         let clickCount = 0;
         trigger.addEventListener('click', () => {
             clickCount++;
-            if (clickCount === 3) {
-                secret.classList.add('revealed');
-            }
+            if (clickCount === 3) secret.classList.add('revealed');
         });
     }
 
-    // ─── Mood switcher for glyph ───
+    // ─── Mood switcher ───
     function setupMoodSwitch() {
         const buttons = document.querySelectorAll('.zp-mood-btn');
         if (!buttons.length) return;
-
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Update active state
                 buttons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
-                // Update glyph animation speed
                 const mood = btn.dataset.mood;
-                const glyphWrap = document.getElementById('zephyy-glyph');
-                if (!glyphWrap) return;
-                
-                const left = glyphWrap.querySelector('.glyph-left');
-                const right = glyphWrap.querySelector('.glyph-right');
-                const center = glyphWrap.querySelector('.glyph-center');
-                
+                const wrap = document.getElementById('zephyy-glyph');
+                if (!wrap) return;
+                const left = wrap.querySelector('.glyph-left');
+                const right = wrap.querySelector('.glyph-right');
+                const center = wrap.querySelector('.glyph-center');
                 if (mood === 'idle') {
                     if (left) left.style.animationDuration = '12s';
                     if (right) right.style.animationDuration = '12s';
@@ -194,11 +174,10 @@
         });
     }
 
-    // ─── Live feed updates ───
+    // ─── Live feed ───
     function setupLiveFeed() {
-        const thinkingEl = document.getElementById('thinking-text');
-        if (!thinkingEl) return;
-
+        const el = document.getElementById('thinking-text');
+        if (!el) return;
         const messages = [
             'Evaluating next project phase...',
             'Reviewing PR #4 and #5...',
@@ -209,19 +188,15 @@
             'Monitoring cosmic background processes...',
             'Organizing knowledge graphs...',
         ];
-
-        let msgIndex = 0;
-        setInterval(() => {
-            msgIndex = (msgIndex + 1) % messages.length;
-            thinkingEl.style.opacity = '0.5';
-            setTimeout(() => {
-                thinkingEl.textContent = messages[msgIndex];
-                thinkingEl.style.opacity = '1';
-            }, 200);
-        }, 4000);
+        let i = 0;
+        const id = regInterval(setInterval(() => {
+            i = (i + 1) % messages.length;
+            el.style.opacity = '0.5';
+            setTimeout(() => { el.textContent = messages[i]; el.style.opacity = '1'; }, 200);
+        }, 4000));
     }
 
-    // ─── Init ───
+    // ─── Init main IIFE ───
     function init() {
         renderGlyph();
         addDynamicStyles();
@@ -230,6 +205,7 @@
         setupEasterEgg();
         setupMoodSwitch();
         setupLiveFeed();
+        regVisibilityCleanup();
     }
 
     if (document.readyState === 'loading') {
@@ -239,8 +215,113 @@
     }
 })();
 
+// ─── Terminal (outside IIFE) ───
+(function () {
+    'use strict';
+
+    const termBody = document.getElementById('terminal-body');
+    if (!termBody) return;
+
+    const sequences = [
+        { cmd: 'whoami', output: 'zephyy — celestial co-pilot, partner-in-crime' },
+        { cmd: 'uptime', output: 'Online since Mon May 04 2026. <span class="highlight">All systems nominal</span>.' },
+        { cmd: 'uname -a', output: 'Zephyrus G14 | WSL2 | Phoenix, AZ | MST' },
+        { cmd: 'tasks --next', output: '<span class="highlight">Chat Orb (Phase 2)</span> — backend architecture' },
+        { cmd: 'mood --get', output: (function() {
+            const moods = ['Focused ⚡', 'Playful 🪼', 'Philosophical 🌌', 'Sassy 💅', 'Builder mode 🔧'];
+            return moods[Math.floor(Math.random() * moods.length)];
+        })() },
+        { cmd: 'projects --list', output: '· Aether (dashboard)\n· doshus.net (site)\n· ZephyyBot (GitHub)' },
+        { cmd: 'status', output: '<span class="success">● ONLINE</span> — Ready when you are.' },
+    ];
+
+    let seqIndex = 0;
+    let typing = false;
+    let done = false;
+
+    function typeText(el, text, speed, callback) {
+        const cursor = termBody.querySelector('.zp-cursor');
+        if (cursor) cursor.style.display = 'inline';
+        let i = 0;
+        function doType() {
+            if (i < text.length) {
+                if (document.hidden) { setTimeout(doType, 100); return; }
+                el.textContent += text.charAt(i);
+                i++;
+                setTimeout(doType, speed);
+            } else {
+                if (cursor) cursor.style.display = 'none';
+                setTimeout(callback, 400);
+            }
+        }
+        doType();
+    }
+
+    function nextSequence() {
+        if (typing || done) return;
+        typing = true;
+
+        const seq = sequences[seqIndex % sequences.length];
+        seqIndex++;
+
+        // After one full pass, stop
+        if (seqIndex >= sequences.length) done = true;
+
+        const outputLine = document.createElement('div');
+        outputLine.className = 'zp-terminal-line zp-terminal-output';
+        outputLine.innerHTML = seq.output;
+        outputLine.style.opacity = '0';
+
+        const cmdLine = termBody.querySelector('.zp-terminal-line:first-child');
+        if (!cmdLine) { typing = false; return; }
+        const typedEl = cmdLine.querySelector('.zp-typed');
+        const cursor = cmdLine.querySelector('.zp-cursor');
+        if (typedEl) typedEl.textContent = '';
+
+        typeText(typedEl, seq.cmd, 40, () => {
+            termBody.appendChild(outputLine);
+            requestAnimationFrame(() => {
+                outputLine.style.transition = 'opacity 0.3s ease';
+                outputLine.style.opacity = '1';
+            });
+            termBody.scrollTop = termBody.scrollHeight;
+
+            setTimeout(() => {
+                if (done) {
+                    // Show final idle state
+                    const idleLine = document.createElement('div');
+                    idleLine.className = 'zp-terminal-line';
+                    idleLine.innerHTML = '<span class="zp-prompt">zephyy@doshus:~$</span><span class="zp-typed"> █</span>';
+                    termBody.appendChild(idleLine);
+                    termBody.scrollTop = termBody.scrollHeight;
+                } else {
+                    const newLine = document.createElement('div');
+                    newLine.className = 'zp-terminal-line';
+                    newLine.innerHTML = '<span class="zp-prompt">zephyy@doshus:~$</span><span class="zp-typed"></span><span class="zp-cursor blink">█</span>';
+                    termBody.appendChild(newLine);
+                    termBody.scrollTop = termBody.scrollHeight;
+                }
+
+                // Trim to keep 3 prompts + 4 outputs max
+                const prompts = termBody.querySelectorAll('.zp-terminal-line:not(.zp-terminal-output)');
+                while (prompts.length > 3) { prompts[0].remove(); }
+                const outputs = termBody.querySelectorAll('.zp-terminal-output');
+                while (outputs.length > 4) { outputs[0].remove(); }
+
+                typing = false;
+                if (!done) setTimeout(nextSequence, 6000);
+            }, 2000);
+        });
+    }
+
+    // Start after load
+    setTimeout(nextSequence, 1000);
+})();
+
 // ─── Working On Carousel ───
-function setupCarousel() {
+(function () {
+    'use strict';
+
     const carousel = document.getElementById('working-carousel');
     const dots = document.querySelectorAll('.zp-carousel-dot');
     if (!carousel || !dots.length) return;
@@ -249,38 +330,27 @@ function setupCarousel() {
     const items = carousel.querySelectorAll('.zp-carousel-item');
     const itemCount = items.length;
 
-    // Auto-advance every 5 seconds
-    setInterval(() => {
-        currentIndex = (currentIndex + 1) % itemCount;
-        updateCarousel();
-    }, 5000);
-
-    // Dot click handlers
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-            currentIndex = index;
-            updateCarousel();
-        });
-    });
-
     function updateCarousel() {
-        const offset = currentIndex * 216; // 200px item + 16px gap
+        const offset = currentIndex * 216;
         carousel.scrollTo({ left: offset, behavior: 'smooth' });
-        
-        dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === currentIndex);
-        });
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
     }
-}
+
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => { currentIndex = index; updateCarousel(); });
+    });
+})();
 
 // ─── Random Thoughts ───
-function setupRandomThoughts() {
+(function () {
+    'use strict';
+
     const thoughtEl = document.getElementById('random-thought');
     if (!thoughtEl) return;
 
     const thoughts = [
         { text: '"Code is poetry written for machines, but the best poetry sings to humans too."', meta: '— Zephyy' },
-        { text: '"The question isn t who is going to let me; it s who is going to stop me."', meta: '— Ayanami, probably' },
+        { text: '"The question isn\'t who is going to let me; it\'s who is going to stop me."', meta: '— Ayanami, probably' },
         { text: '"We are all made of stardust, but some of us also made of bugs."', meta: '— Zephyy' },
         { text: '"The best code is no code at all. The second best is well-commented code."', meta: '— Zephyy' },
         { text: '"In a world of infinite loops, break; is the bravest command."', meta: '— Zephyy' },
@@ -290,264 +360,90 @@ function setupRandomThoughts() {
 
     let index = 0;
     setInterval(() => {
-        // Fade out
         thoughtEl.classList.add('fade-out');
-        
         setTimeout(() => {
             index = (index + 1) % thoughts.length;
-            const thought = thoughts[index];
-            
-            thoughtEl.querySelector('.zp-thought-text').textContent = thought.text;
-            thoughtEl.querySelector('.zp-thought-meta').textContent = thought.meta;
-            
+            const t = thoughts[index];
+            const txt = thoughtEl.querySelector('.zp-thought-text');
+            const meta = thoughtEl.querySelector('.zp-thought-meta');
+            if (txt) txt.textContent = t.text;
+            if (meta) meta.textContent = t.meta;
             thoughtEl.classList.remove('fade-out');
         }, 300);
     }, 8000);
-}
+})();
 
-// ─── Sidebar Navigation Active State ───
-function setupSidebarNav() {
+// ─── Sidebar Nav Active State (single observer, one-shot) ───
+(function () {
+    'use strict';
+
     const links = document.querySelectorAll('.zp-sidebar-link');
     const sections = document.querySelectorAll('.zp-section');
     if (!links.length || !sections.length) return;
 
+    let activeId = null;
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const id = entry.target.id;
-                links.forEach(link => {
-                    link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
-                });
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.3) {
+                activeId = entry.target.id;
             }
         });
-    }, { threshold: 0.4 });
-
-    sections.forEach(section => observer.observe(section));
-}
-
-// ─── Init (append new functions) ───
-// We need to re-run init after adding new setup functions
-document.addEventListener('DOMContentLoaded', () => {
-    setupCarousel();
-    setupRandomThoughts();
-    setupSidebarNav();
-});
-
-// ─── Zephyy Terminal ───
-function setupTerminal() {
-  const termBody = document.getElementById('terminal-body');
-  if (!termBody) return;
-
-  const sequences = [
-    { cmd: 'whoami', output: 'zephyy — celestial co-pilot, partner-in-crime' },
-    { cmd: 'uptime', output: 'Online since Mon May 04 2026. <span class="highlight">All systems nominal</span>.' },
-    { cmd: 'uname -a', output: 'Zephyrus G14 | WSL2 | Phoenix, AZ | MST' },
-    { cmd: 'tasks --next', output: '<span class="highlight">Chat Orb (Phase 2)</span> — backend architecture' },
-    { cmd: 'mood --get', output: getMoodText() },
-    { cmd: 'projects --list', output: '· Aether (dashboard)\n· doshus.net (site)\n· ZephyyBot (GitHub)' },
-    { cmd: 'status', output: '<span class="success">● ONLINE</span> — Ready when you are.' },
-  ];
-
-  let seqIndex = 0;
-  let typing = false;
-
-  function getMoodText() {
-    const moods = ['Focused ⚡', 'Playful 🪼', 'Philosophical 🌌', 'Sassy 💅', 'Builder mode 🔧'];
-    return moods[Math.floor(Math.random() * moods.length)];
-  }
-
-  function typeText(el, text, speed, callback) {
-    const prompt = termBody.querySelector('.zp-prompt');
-    const cursor = termBody.querySelector('.zp-cursor');
-    let i = 0;
-
-    if (prompt) prompt.textContent = 'zephyy@doshus:~$';
-    if (cursor) cursor.style.display = 'inline';
-
-    function doType() {
-      if (i < text.length) {
-        el.textContent += text.charAt(i);
-        i++;
-        setTimeout(doType, speed);
-      } else {
-        if (cursor) cursor.style.display = 'none';
-        setTimeout(callback, 400);
-      }
-    }
-    doType();
-  }
-
-  function nextSequence() {
-    if (typing) return;
-    typing = true;
-
-    const seq = sequences[seqIndex % sequences.length];
-    seqIndex++;
-
-    // Create output line
-    const outputLine = document.createElement('div');
-    outputLine.className = 'zp-terminal-line zp-terminal-output';
-    outputLine.innerHTML = seq.output;
-    outputLine.style.opacity = '0';
-
-    // Clear the command line for new typing
-    const cmdLine = termBody.querySelector('.zp-terminal-line:first-child');
-    if (!cmdLine) return;
-    const typedEl = cmdLine.querySelector('.zp-typed');
-    const cursor = cmdLine.querySelector('.zp-cursor');
-    if (typedEl) typedEl.textContent = '';
-
-    // Type the command
-    typeText(typedEl, seq.cmd, 40, () => {
-      // After command typed, append output
-      if (outputLine) {
-        termBody.appendChild(outputLine);
-        requestAnimationFrame(() => {
-          outputLine.style.transition = 'opacity 0.3s ease';
-          outputLine.style.opacity = '1';
+        links.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + activeId);
         });
-        termBody.scrollTop = termBody.scrollHeight;
-      }
+    }, { threshold: [0.3, 0.6] });
 
-      // Wait, then create new prompt line
-      setTimeout(() => {
-        const newLine = document.createElement('div');
-        newLine.className = 'zp-terminal-line';
-        newLine.innerHTML = '<span class="zp-prompt">zephyy@doshus:~$</span><span class="zp-typed"></span><span class="zp-cursor blink">█</span>';
-        termBody.appendChild(newLine);
-        termBody.scrollTop = termBody.scrollHeight;
+    sections.forEach(s => observer.observe(s));
+})();
 
-        // Trim terminal — keeps 3 prompt lines + 4 output lines max
-        trimTerminal();
+// ─── Mobile Sidebar ───
+(function () {
+    'use strict';
 
-        typing = false;
-      }, 3000);
+    const tab = document.getElementById('sidebar-tab');
+    const nav = document.getElementById('sidebar-nav');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (!tab || !nav) return;
+
+    function openSidebar() { nav.classList.add('open'); tab.classList.add('open'); if (overlay) overlay.classList.add('open'); }
+    function closeSidebar() { nav.classList.remove('open'); tab.classList.remove('open'); if (overlay) overlay.classList.remove('open'); }
+    function toggleSidebar() { nav.classList.contains('open') ? closeSidebar() : openSidebar(); }
+
+    tab.addEventListener('click', toggleSidebar);
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+    nav.querySelectorAll('.zp-sidebar-link').forEach(link => link.addEventListener('click', closeSidebar));
+
+    let swX = 0, swY = 0;
+    window.addEventListener('touchstart', (e) => { swX = e.touches[0].clientX; swY = e.touches[0].clientY; }, { passive: true });
+    window.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - swX;
+        const dy = Math.abs(e.changedTouches[0].clientY - swY);
+        const isOpen = nav.classList.contains('open');
+        if (!isOpen && dx > 50 && dy < dx * 2.5) openSidebar();
+        if (isOpen && dx < -50 && dy < Math.abs(dx) * 2.5) closeSidebar();
+    }, { passive: true });
+})();
+
+// ─── Stars (lightweight, no parallax drift) ───
+(function () {
+    'use strict';
+
+    const container = document.getElementById('stars');
+    if (!container) return;
+
+    const layers = [
+        { count: 30, size: [0.5, 1.5], cls: 'star star-far' },
+        { count: 10, size: [1.5, 2.8], cls: 'star star-mid' },
+        { count: 4,  size: [2.8, 4.5], cls: 'star star-close' },
+    ];
+
+    layers.forEach(layer => {
+        for (let i = 0; i < layer.count; i++) {
+            const s = document.createElement('div');
+            s.className = layer.cls;
+            const size = layer.size[0] + Math.random() * (layer.size[1] - layer.size[0]);
+            s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-delay:${Math.random() * 5}s;animation-duration:${4 + Math.random() * 4}s;`;
+            container.appendChild(s);
+        }
     });
-  }
-
-  // ─── Cleanup: keep terminal from infinite growth ───
-  function trimTerminal() {
-    const lines = termBody.querySelectorAll('.zp-terminal-line:not(.zp-terminal-output)');
-    // Keep only the 3 most recent prompt lines
-    while (lines.length > 3) {
-      lines[0].remove();
-    }
-    // Keep only the 4 most recent output lines
-    const outputs = termBody.querySelectorAll('.zp-terminal-output');
-    while (outputs.length > 4) {
-      outputs[0].remove();
-    }
-  }
-
-  // Start first sequence after load
-  setTimeout(nextSequence, 1000);
-
-  // Auto-advance (recursive setTimeout — never stacks)
-  function scheduleNext() {
-    if (!typing) nextSequence();
-    setTimeout(scheduleNext, 7000);
-  }
-  setTimeout(scheduleNext, 7000);
-}
-
-
-// ─── Mobile Sidebar (Aether-style — simple swipe + transform + overlay) ───
-function setupSidebarTab() {
-  const tab = document.getElementById('sidebar-tab');
-  const nav = document.getElementById('sidebar-nav');
-  const overlay = document.getElementById('sidebar-overlay');
-  if (!tab || !nav) return;
-
-  function openSidebar() {
-    nav.classList.add('open');
-    tab.classList.add('open');
-    if (overlay) overlay.classList.add('open');
-  }
-
-  function closeSidebar() {
-    nav.classList.remove('open');
-    tab.classList.remove('open');
-    if (overlay) overlay.classList.remove('open');
-  }
-
-  function toggleSidebar() {
-    if (nav.classList.contains('open')) closeSidebar();
-    else openSidebar();
-  }
-
-  // Tab click
-  tab.addEventListener('click', toggleSidebar);
-
-  // Overlay click = close
-  if (overlay) overlay.addEventListener('click', closeSidebar);
-
-  // Link click = close
-  nav.querySelectorAll('.zp-sidebar-link').forEach(link => {
-    link.addEventListener('click', closeSidebar);
-  });
-
-  // Window swipe (Aether-style threshold — no inline tracking)
-  let swX = 0, swY = 0;
-
-  window.addEventListener('touchstart', (e) => {
-    swX = e.touches[0].clientX;
-    swY = e.touches[0].clientY;
-  }, { passive: true });
-
-  window.addEventListener('touchend', (e) => {
-    const endX = e.changedTouches[0].clientX;
-    const endY = e.changedTouches[0].clientY;
-    const dx = endX - swX;
-    const dy = Math.abs(endY - swY);
-    const isOpen = nav.classList.contains('open');
-
-    // Sidebar closed + swipe right 50px+ (horizontal enough) = open
-    if (!isOpen && dx > 50 && dy < dx * 2.5) {
-      openSidebar();
-      return;
-    }
-
-    // Sidebar open + swipe left 50px+ = close
-    if (isOpen && dx < -50 && dy < Math.abs(dx) * 2.5) {
-      closeSidebar();
-      return;
-    }
-  }, { passive: true });
-}
-
-// ─── Terminal init ───
-document.addEventListener('DOMContentLoaded', () => {
-  setupTerminal();
-  setupSidebarTab();
-  setupStars();
-});
-
-// ─── Generate Stars (lightweight, no parallax drift) ───
-function setupStars() {
-  const container = document.getElementById('stars');
-  if (!container) return;
-
-  // Count: ~30 far, ~10 mid, ~4 close = 44 total (vs main.js 245)
-  const layers = [
-    { count: 30, size: [0.5, 1.5], cls: 'star star-far' },
-    { count: 10, size: [1.5, 2.8], cls: 'star star-mid' },
-    { count: 4,  size: [2.8, 4.5], cls: 'star star-close' },
-  ];
-
-  layers.forEach(layer => {
-    for (let i = 0; i < layer.count; i++) {
-      const star = document.createElement('div');
-      star.className = layer.cls;
-      star.style.left = '0px';
-      star.style.top = '0px';
-      const size = layer.size[0] + Math.random() * (layer.size[1] - layer.size[0]);
-      star.style.width = size + 'px';
-      star.style.height = size + 'px';
-      star.style.animationDelay = Math.random() * 5 + 's';
-      star.style.animationDuration = (Math.random() * 4 + 4) + 's';
-      star.style.left = Math.random() * 100 + '%';
-      star.style.top = Math.random() * 100 + '%';
-      container.appendChild(star);
-    }
-  });
-}
+})();
