@@ -413,37 +413,26 @@
     if (overlay) overlay.addEventListener('click', closeSidebar);
     nav.querySelectorAll('.zp-sidebar-link').forEach(link => link.addEventListener('click', closeSidebar));
 
-    let swX = 0, swY = 0;
-    window.addEventListener('touchstart', (e) => { swX = e.touches[0].clientX; swY = e.touches[0].clientY; }, { passive: true });
+    let swX = 0, swY = 0, swTime = 0;
+    window.addEventListener('touchstart', (e) => { swX = e.touches[0].clientX; swY = e.touches[0].clientY; swTime = Date.now(); }, { passive: true });
     window.addEventListener('touchend', (e) => {
         const dx = e.changedTouches[0].clientX - swX;
         const dy = Math.abs(e.changedTouches[0].clientY - swY);
+        const dt = Date.now() - swTime;
         const isOpen = nav.classList.contains('open');
-        if (!isOpen && dx > 50 && dy < dx * 2.5) openSidebar();
-        if (isOpen && dx < -50 && dy < Math.abs(dx) * 2.5) closeSidebar();
+        // Require faster swipe (>300px/s velocity) and min 80px distance
+        const velocity = Math.abs(dx) / dt;
+        if (!isOpen && dx > 80 && velocity > 0.3 && dy < dx * 2.5) openSidebar();
+        if (isOpen && dx < -80 && velocity > 0.3 && dy < Math.abs(dx) * 2.5) closeSidebar();
     }, { passive: true });
 })();
 
-// ─── Stars (lightweight, no parallax drift) ───
+// ─── Chat Orb click handler (replaces inline onclick) ───
 (function () {
     'use strict';
-
-    const container = document.getElementById('stars');
-    if (!container) return;
-
-    const layers = [
-        { count: 30, size: [0.5, 1.5], cls: 'star star-far' },
-        { count: 10, size: [1.5, 2.8], cls: 'star star-mid' },
-        { count: 4,  size: [2.8, 4.5], cls: 'star star-close' },
-    ];
-
-    layers.forEach(layer => {
-        for (let i = 0; i < layer.count; i++) {
-            const s = document.createElement('div');
-            s.className = layer.cls;
-            const size = layer.size[0] + Math.random() * (layer.size[1] - layer.size[0]);
-            s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-delay:${Math.random() * 5}s;animation-duration:${4 + Math.random() * 4}s;`;
-            container.appendChild(s);
-        }
+    const orb = document.getElementById('zp-orb-demo');
+    if (!orb) return;
+    orb.addEventListener('click', () => {
+        alert('Chat feature coming soon! For now, check out my profile and projects.');
     });
 })();

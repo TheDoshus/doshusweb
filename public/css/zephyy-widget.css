@@ -120,6 +120,29 @@
   margin-bottom: 16px;
 }
 
+/* ── Center badge in its container ── */
+.zephyy-badge-embed {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* ── Zephyy link in CTA (replaces inline styles) ── */
+.zephyy-badge-embed + p {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.zephyy-badge-embed + p a {
+  color: oklch(var(--brand-teal));
+  text-decoration: none;
+}
+
+.zephyy-badge-embed + p a:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
 /* ── Compact variant for tight spaces ── */
 .zephyy-badge.compact {
   padding: 3px 10px 3px 5px;
