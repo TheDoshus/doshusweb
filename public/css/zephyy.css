@@ -857,14 +857,10 @@
     opacity: 1;
   }
 
-  /* ── Mobile performance: kill heavy animations ── */
+  /* ── Mobile performance: kill heavy animations, keep visual depth ── */
   .cosmic-bg {
     animation: none !important;
-    background: linear-gradient(180deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.4) 50%, oklch(var(--space-oled)) 100%) !important;
-  }
-
-  #stars {
-    display: none;
+    background: linear-gradient(153deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.35) 25%, oklch(var(--nebula-blue) / 0.25) 55%, oklch(var(--space-oled)) 100%) !important;
   }
 
   .zp-orb-demo {

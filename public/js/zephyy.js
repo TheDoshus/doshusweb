@@ -519,4 +519,35 @@ function setupSidebarTab() {
 document.addEventListener('DOMContentLoaded', () => {
   setupTerminal();
   setupSidebarTab();
+  setupStars();
 });
+
+// ─── Generate Stars (lightweight, no parallax drift) ───
+function setupStars() {
+  const container = document.getElementById('stars');
+  if (!container) return;
+
+  // Count: ~30 far, ~10 mid, ~4 close = 44 total (vs main.js 245)
+  const layers = [
+    { count: 30, size: [0.5, 1.5], cls: 'star star-far' },
+    { count: 10, size: [1.5, 2.8], cls: 'star star-mid' },
+    { count: 4,  size: [2.8, 4.5], cls: 'star star-close' },
+  ];
+
+  layers.forEach(layer => {
+    for (let i = 0; i < layer.count; i++) {
+      const star = document.createElement('div');
+      star.className = layer.cls;
+      star.style.left = '0px';
+      star.style.top = '0px';
+      const size = layer.size[0] + Math.random() * (layer.size[1] - layer.size[0]);
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.animationDelay = Math.random() * 5 + 's';
+      star.style.animationDuration = (Math.random() * 4 + 4) + 's';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      container.appendChild(star);
+    }
+  });
+}
