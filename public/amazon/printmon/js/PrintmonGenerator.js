@@ -193,13 +193,108 @@ class PrintmonGenerator {
       baseTheme: this.baseKey,
       wallpapers,
       css,
+      html: buildHTML(this.name, this.tagline, css, wallpapers, this.baseKey),
       createdAt: new Date().toISOString(),
     };
   }
 }
 
+// ─── HTML Page Generator ────────────────────────────────────
+
+function buildHTML(name, tagline, css, wallpapers, baseKey) {
+  const wallpaperArray = wallpapers.map(w => `'${w}'`).join(',\n\t\t\t');
+  
+  return `<!DOCTYPE HTML>
+<html lang="en">
+<head><script async src="https://www.googletagmanager.com/gtag/js?id=G-KQ1RGHNMZG"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-KQ1RGHNMZG");</script>
+\t<title>${name} - Generated Printmon</title>
+\t<meta charset="UTF-8">
+\t<link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+\t<link rel="stylesheet" href="css/swapbtn.css">
+\t<link rel="stylesheet" href="css/newer/Shared2Printmon.css">
+\t<style>
+${css}
+\t</style>
+</head>
+<body>
+\t<div class="dropdown2">
+        <button onclick="toggleDropdown()" class="dropbtn2">Swap Themes</button>
+        <div id="myDropdown" class="dropdown2-content">
+\t\t\t<h2>Printmon 2</h2>
+            <a href="gallery.html">🎨 Generated Gallery</a>
+            <a href="TheDoshusPrintmon2GTA.html">GTA 6</a>
+\t\t\t<a href="TheDoshusPrintmon2Glass.html">Glass</a>
+\t\t\t<a href="TheDoshusPrintmon2Halloween.html">Halloween</a>
+\t\t\t<a href="TheDoshusPrintmon2Forest.html">Forest</a>
+\t\t\t<a href="TheDoshusPrintmon2Witch.html">Witchery</a>
+\t\t\t<a href="TheDoshusPrintmon2Kuromi.html">Kuromi</a>
+\t\t\t<a href="TheDoshusPrintmon2Spongebob.html">Spongebob</a>
+\t\t\t<a href="TheDoshusPrintmon2Strawberry.html">Strawberry Shortcake</a>
+        </div>
+    </div>
+\t<div class="container">
+\t\t<div class="left">
+\t\t\t<div class="printbox">
+\t\t\t\t<h1>Printmon 2</h1>
+\t\t\t\t<p class="subtitle">${tagline}</p>
+\t\t\t\t<div class="options">
+\t\t\t\t\t<label><input id="printafter" type="checkbox" checked> Print after scanning</label>
+\t\t\t\t\t<label><input id="jumptoq" type="checkbox"> Jump to quantity</label>
+\t\t\t\t\t<label><input id="nowhitespace" type="checkbox" checked> Trim whitespace characters</label>
+\t\t\t\t</div>
+\t\t\t\t<div class="input-group">
+\t\t\t\t\t<label for="barcodedata">Enter Barcode Data <span>(43 Characters Max)</span></label>
+\t\t\t\t\t<input id="barcodedata" type="text" maxlength="43">
+\t\t\t\t</div>
+\t\t\t\t<div class="input-group">
+\t\t\t\t\t<label for="displaytext">Enter Display Text</label>
+\t\t\t\t\t<input id="displaytext" type="text" maxlength="43">
+\t\t\t\t</div>
+\t\t\t\t<div class="input-group">
+\t\t\t\t\t<label for="quantity">Enter Quantity <span>(500 Max)</span></label>
+\t\t\t\t\t<input id="quantity" type="number" min="1" max="500" value="1">
+\t\t\t\t</div>
+\t\t\t\t<button type="button" class="print-button" onclick="printlabel();">Print</button>
+\t\t\t</div>
+\t\t\t<div class="MultiBarcode-printer">
+\t\t\t\t<h2>Multiple Barcode Printer</h2>
+\t\t\t\t<div class="MultiPrinter-content">
+\t\t\t\t\t<textarea id="textAreaID" placeholder="Enter barcodes here..."></textarea>
+\t\t\t\t\t<button type="button" class="multiButton" onclick="printBulk();">Print Multiple Labels</button>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t\t<div class="right">
+\t\t\t<div class="quick-print-buttons">
+\t\t\t\t<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">ATAC</button>
+\t\t\t\t<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">DAMAGE</button>
+\t\t\t\t<button class="buttonsLine3" onclick="printSticker(this.innerHTML);">RECALL</button>
+\t\t\t\t<button class="buttonsLine1" onclick="printSticker(this.innerHTML);">NON-CON</button>
+\t\t\t\t<button class="buttonsLine2" onclick="printSticker(this.innerHTML);">1</button>
+\t\t\t\t<button class="buttonsLine3" onclick="printSticker(this.innerHTML);">C</button>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+\t<script src="js/swap-img.js"></script>
+\t<script src="js/PrintmonPrinter.js" async></script>
+\t<script>
+\t\tconst wallpapers = [
+\t\t\t${wallpaperArray}
+\t\t];
+\t\t(function(){const i=Math.floor(Math.random()*wallpapers.length),u=wallpapers[i];if(u.endsWith('.mp4')||u.endsWith('.webm')){const v=document.createElement('video');v.src=u;v.autoplay=true;v.loop=true;v.muted=true;v.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;object-fit:fill;z-index:-1';document.body.appendChild(v)}else{document.body.style.backgroundImage="url('"+u+"')";document.body.style.backgroundSize='cover';document.body.style.backgroundAttachment='fixed';document.body.style.backgroundPosition='center'}})();
+\t</script>
+</body>
+</html>`;
+}
+
+// ─── Safe Name ────────────────────────────────────────────
+
+function safeName(name) {
+  return name.replace(/[^a-zA-Z0-9\s_-]/g, '').trim().replace(/\s+/g, '-').toLowerCase() || 'untitled';
+}
+
 module.exports = {
   PrintmonGenerator, BASE_THEMES,
-  extractColors, remapColors, buildRemapPrompt,
+  extractColors, remapColors, buildRemapPrompt, buildHTML,
   wallpaperCache,
 };
