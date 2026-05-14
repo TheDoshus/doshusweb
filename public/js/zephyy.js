@@ -709,7 +709,7 @@
 
     function addMessage(role, content, timestamp) {
         // Dedup: skip if last message with same role has same content
-        var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-child[data-content]');
+        var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-of-type[data-content]');
         if (prev && prev.dataset.content === content) return;
         var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-' + role;
@@ -847,11 +847,15 @@
             quickReplied = true;
             addMessage('user', userMsg, Date.now());
             addThinkingBubble();
+            var timeoutId = setTimeout(function() {
+                var tb = document.getElementById('zp-chat-thinking');
+                if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
+            }, 15000);
             fetch(MSGS_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role: 'user', content: userMsg, timestamp: Date.now() })
-            }).catch(function() {});
+            }).then(function() { clearTimeout(timeoutId); }).catch(function() {});
         } else {
             sendText("I don't have a name");
         }
@@ -965,6 +969,7 @@
                         removeWelcome();
                         removeQuickReplies();
                         /* Show friendly acknowledgment */
+                        var old = document.getElementById('zp-name-ack'); if (old) old.remove();
                         var d = document.createElement('div');
                         d.className = 'zp-chat-msg zp-chat-msg-bot';
                         d.textContent = 'Nice to meet you, ' + n + '! ⚡';
