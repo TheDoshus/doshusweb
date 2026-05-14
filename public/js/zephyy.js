@@ -748,11 +748,12 @@
         if (el) el.remove();
     }
 
-    /* Remove quick-reply buttons */
+    /* Remove quick-reply buttons from DOM only */
     function removeQuickReplies() {
         var r = document.getElementById('zp-quick-reply-row');
+        var nr = document.getElementById('zp-name-input-row');
         if (r) r.remove();
-        quickReplied = true;
+        if (nr) nr.remove();
     }
 
     /* ================================================
@@ -781,7 +782,7 @@
         /* "Just Zephyy" button */
         var skipBtn = document.createElement('button');
         skipBtn.className = 'zp-qr-btn';
-        skipBtn.textContent = 'Just Zephyy';
+        skipBtn.textContent = 'Nah, just chat';
         skipBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             removeQuickReplies();
@@ -832,15 +833,29 @@
     function submitName(name) {
         var nr = document.getElementById('zp-name-input-row');
         if (nr) nr.remove();
+        removeWelcome();
+        removeQuickReplies();
         if (name && name.length > 0) {
-            sendText('My name is ' + name);
+            var caps = name[0].toUpperCase() + name.slice(1).toLowerCase();
+            var greetings = ["Yeah it's ", "You can call me ", "I go by "];
+            var greet = greetings[Math.floor(Math.random() * greetings.length)];
+            var userMsg = greet + caps + '!';
+            quickReplied = true;
+            addMessage('user', userMsg, Date.now());
+            addThinkingBubble();
+            fetch(MSGS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: 'user', content: userMsg, timestamp: Date.now() })
+            }).catch(function() {});
         } else {
             sendText("I don't have a name");
         }
     }
 
     function sendText(text) {
-        if (!text || quickReplied) return;
+        if (!text) return;
+        quickReplied = true; // prevent re-showing buttons
         inputEl.value = text;
         sendBtn.click();
     }
