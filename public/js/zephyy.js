@@ -830,7 +830,7 @@
     });
     observer.observe(panel, { attributes: true, attributeFilter: ['class'] });
 
-    // Poll for new messages every 3 seconds when open
+    // Poll for new messages every 2 seconds when open
     setInterval(() => {
         if (panel.classList.contains('open')) {
             pollMessages();
