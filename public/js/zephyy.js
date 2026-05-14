@@ -831,8 +831,6 @@
                     }
                 }
             });
-            if (foundResponse) removeThinkingBubble();
-            lastCheck = now;
         } catch {
             // Silent
         }
@@ -849,20 +847,65 @@
             sendMessage();
         }
     });
+    // ── Visitor Name Detection ──
+    // Restore saved name on page load
+    var savedName = localStorage.getItem("zp-visitor-name");
+    if (savedName) {
+        var w = document.getElementById("zp-welcome-msg");
+        if (w) w.remove();
+        var nMsg = document.createElement("div");
+        nMsg.className = "zp-chat-msg zp-chat-msg-bot";
+        nMsg.textContent = "Welcome back, " + savedName + "! ⚡";
+        messagesEl.appendChild(nMsg);
+    }
 
-    // Load messages on open
-    const observer = new MutationObserver(() => {
-        if (panel.classList.contains('open')) {
-            loadMessages();
-            observer.disconnect();
+    // Watch for name patterns in new messages
+    function detectName(data) {
+        if (savedName) return false;
+        var names = [];
+        Object.values(data).forEach(function(msg) {
+            if (msg.role === "assistant") return;
+            var m = msg.content.match(/my name is (\w+)/i) || msg.content.match(/i'm (\w+)/i) || msg.content.match(/call me (\w+)/i);
+            if (m && m[1] && m[1].length > 1) {
+                var n = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
+                names.push(n);
+            }
+        });
+        if (names.length) {
+            savedName = names[names.length - 1];
+            localStorage.setItem("zp-visitor-name", savedName);
+            // Remove welcome if still there
+            var w = document.getElementById("zp-welcome-msg");
+            if (w) w.remove();
+            // Show name acknowledgment
+            var d = document.createElement("div");
+            d.className = "zp-chat-msg zp-chat-msg-bot";
+            d.textContent = "Nice to meet you, " + savedName + "! ⚡";
+            messagesEl.appendChild(d);
+            setTimeout(function() { if (d.parentNode) d.remove(); }, 4000);
+            return true;
         }
-    });
-    observer.observe(panel, { attributes: true, attributeFilter: ['class'] });
+        return false;
+    }
 
     // Poll for new messages every 2 seconds when open
-    setInterval(() => {
+    setInterval(function() {
         if (panel.classList.contains('open')) {
             pollMessages();
         }
-    }, 3000);
+    }, 2000);
+
+    // Patch pollMessages to detect names
+    var origPoll = pollMessages;
+    pollMessages = async function() {
+        await origPoll();
+        // The detection runs as a second pass
+        try {
+            var r = await fetch(MSGS_URL + '?orderBy="timestamp"&limitToLast=10');
+            if (r.ok) {
+                var d = await r.json();
+                if (d) detectName(d);
+            }
+        } catch(e) {}
+    };
 })();
