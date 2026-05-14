@@ -773,14 +773,30 @@
             });
 
             if (!resp.ok) {
-                addMessage('bot', 'Message saved! Waiting for me to respond…', Date.now());
+                addThinkingBubble();
             }
         } catch {
-            addMessage('bot', 'Message saved! Waiting for me to respond…', Date.now());
+            addThinkingBubble();
         } finally {
             sendBtn.disabled = false;
             inputEl.focus();
         }
+    }
+
+    function addThinkingBubble() {
+        // Remove any existing thinking bubble
+        removeThinkingBubble();
+        const div = document.createElement('div');
+        div.className = 'zp-chat-msg zp-chat-msg-bot zp-chat-thinking';
+        div.id = 'zp-chat-thinking';
+        div.innerHTML = '<span class="zp-thinking-dots"><span>⚡</span><span class="zp-thinking-text">thinking</span><span class="zp-dot">.</span><span class="zp-dot">.</span><span class="zp-dot">.</span></span>';
+        messagesEl.appendChild(div);
+        scrollToBottom();
+    }
+
+    function removeThinkingBubble() {
+        const el = document.getElementById('zp-chat-thinking');
+        if (el) el.remove();
     }
 
     // Poll for new messages (Phase 1: just our own; Phase 2: bot responses)
@@ -793,6 +809,7 @@
             if (!data) return;
 
             const now = Date.now();
+            let foundResponse = false;
             Object.values(data).forEach(msg => {
                 // Only show messages from after our last check
                 if (msg.timestamp > lastCheck && msg.timestamp < now - 1000) {
@@ -800,9 +817,11 @@
                     const existing = messagesEl.querySelector('[data-msg-id]');
                     if (!existing) {
                         addMessage(msg.role, msg.content, msg.timestamp);
+                        if (msg.role === 'assistant') foundResponse = true;
                     }
                 }
             });
+            if (foundResponse) removeThinkingBubble();
             lastCheck = now;
         } catch {
             // Silent
