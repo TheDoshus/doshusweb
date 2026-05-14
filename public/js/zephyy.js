@@ -840,7 +840,7 @@
     }
 
     function sendText(text) {
-        if (!text) return;
+        if (!text || quickReplied) return;
         inputEl.value = text;
         sendBtn.click();
     }
@@ -871,6 +871,7 @@
     }
 
     async function sendMessage() {
+        if (sendBtn.disabled) return;
         var text = inputEl.value.trim();
         if (!text) return;
 
@@ -922,10 +923,12 @@
             Object.keys(data).forEach(function(key) {
                 var msg = data[key];
                 if (!msg || !msg.content) return;
-                if (msg.timestamp > lastCheck && msg.timestamp < now - 1000) {
-                    /* Only render new messages */
-                    addMessage(msg.role, msg.content, msg.timestamp);
-                    if (msg.role === 'assistant') foundResponse = true;
+                if (msg.timestamp > lastCheck) {
+                    /* Only render assistant replies — user msgs rendered locally */
+                    if (msg.role === 'assistant') {
+                        addMessage(msg.role, msg.content, msg.timestamp);
+                        foundResponse = true;
+                    }
                 }
             });
 
@@ -977,7 +980,9 @@
 
     /* Events */
     orb.addEventListener('click', togglePanel);
+    const refreshBtn = document.getElementById("zp-chat-refresh");
     if (closeBtn) closeBtn.addEventListener('click', togglePanel);
+    if (refreshBtn) refreshBtn.addEventListener("click", function() { location.reload(); });
     sendBtn.addEventListener('click', sendMessage);
     inputEl.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
