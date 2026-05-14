@@ -22,7 +22,7 @@
   width: 96px;
   height: 96px;
   margin-bottom: 1.5rem;
-  cursor: default;
+  cursor: pointer;
   transition: transform 0.3s ease;
 }
 
@@ -47,6 +47,7 @@
   border-radius: 50%;
   border: 1px solid oklch(var(--brand-teal) / 0.15);
   animation: zp-ring-breathe 4s ease-in-out infinite;
+  pointer-events: none;
 }
 
 @keyframes zp-ring-breathe {
@@ -409,9 +410,8 @@
 }
 
 .zp-orb-demo::before {
-  content: "⚡";
+  content: "💬";
   font-size: 1.2rem;
-  color: oklch(var(--space-oled));
 }
 
 @keyframes orb-float {
@@ -419,9 +419,7 @@
   50% { transform: translateY(-6px); }
 }
 
-.zp-orb-demo:hover {
-  animation-play-state: paused;
-}
+
 
 /* ── Orb tooltip ── */
 .zp-orb-tooltip {

@@ -77,20 +77,26 @@
         // Click to cycle animation state
         let stateIndex = 0;
         const states = ['idle', 'active', 'thinking'];
-        wrap.addEventListener('click', () => {
+        wrap.addEventListener('click', (e) => {
+            // Ignore clicks on the ring or wrapper edges
+            if (e.target !== wrap && !wrap.contains(e.target)) return;
             stateIndex = (stateIndex + 1) % states.length;
             const state = states[stateIndex];
             const left = wrap.querySelector('.glyph-left');
             const right = wrap.querySelector('.glyph-right');
+            const center = wrap.querySelector('.glyph-center');
             if (state === 'idle') {
                 if (left) left.style.animationDuration = '12s';
                 if (right) right.style.animationDuration = '12s';
+                if (center) center.style.animationDuration = '2s';
             } else if (state === 'active') {
                 if (left) left.style.animationDuration = '4s';
                 if (right) right.style.animationDuration = '4s';
+                if (center) center.style.animationDuration = '0.8s';
             } else if (state === 'thinking') {
                 if (left) left.style.animationDuration = '1.5s';
                 if (right) right.style.animationDuration = '1.5s';
+                if (center) center.style.animationDuration = '3s';
             }
         });
     }
@@ -330,15 +336,48 @@
     const items = carousel.querySelectorAll('.zp-carousel-item');
     const itemCount = items.length;
 
-    function updateCarousel() {
-        const offset = currentIndex * 216;
+    function updateCarousel(index) {
+        currentIndex = Math.max(0, Math.min(index, itemCount - 1));
+        const offset = items[currentIndex].offsetLeft - carousel.offsetLeft;
         carousel.scrollTo({ left: offset, behavior: 'smooth' });
         dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
     }
 
+    // Dot clicks
     dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => { currentIndex = index; updateCarousel(); });
+        dot.addEventListener('click', () => updateCarousel(index));
     });
+
+    // Touch swipe
+    let swX = 0, swY = 0;
+    carousel.addEventListener('touchstart', (e) => {
+        swX = e.touches[0].clientX;
+        swY = e.touches[0].clientY;
+    }, { passive: true });
+    carousel.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - swX;
+        const dy = Math.abs(e.changedTouches[0].clientY - swY);
+        if (Math.abs(dx) > 50 && dy < Math.abs(dx) * 1.5) {
+            if (dx < 0) updateCarousel(currentIndex + 1);
+            else updateCarousel(currentIndex - 1);
+        }
+    }, { passive: true });
+
+    // Sync dots on manual scroll
+    carousel.addEventListener('scroll', () => {
+        const center = carousel.scrollLeft + carousel.clientWidth / 2;
+        let closest = 0;
+        let closestDist = Infinity;
+        items.forEach((item, i) => {
+            const itemCenter = item.offsetLeft - carousel.offsetLeft + item.offsetWidth / 2;
+            const dist = Math.abs(itemCenter - center);
+            if (dist < closestDist) { closestDist = dist; closest = i; }
+        });
+        if (closest !== currentIndex) {
+            currentIndex = closest;
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
+        }
+    }, { passive: true });
 })();
 
 // ─── Random Thoughts ───
