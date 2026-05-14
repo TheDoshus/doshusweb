@@ -447,7 +447,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: calc(100vh - 80px);
+  height: 100vh;
   z-index: 199;
   backdrop-filter: blur(6px) brightness(0.6);
   -webkit-backdrop-filter: blur(6px) brightness(0.6);
