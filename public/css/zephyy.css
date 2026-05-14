@@ -446,7 +446,7 @@
   right: 20px;
   width: 340px;
   max-width: calc(100vw - 40px);
-  max-height: 500px;
+  max-height: 600px;
   background: oklch(12% 0.02 260 / 0.95);
   border: 1px solid oklch(var(--brand-teal) / 0.2);
   border-radius: 16px;
@@ -508,7 +508,7 @@
   flex-direction: column;
   gap: 8px;
   min-height: 200px;
-  max-height: 360px;
+  max-height: 420px;
   scroll-behavior: smooth;
 }
 
