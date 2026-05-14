@@ -362,6 +362,8 @@ async function main() {
       console.log('  ✅', record.name, `(${record.wallpapers.length} wallpapers)`);
     }
     console.log('\n✨ Done. Gallery:', path.relative(ROOT, path.join(GEN_DIR, '..', 'gallery.html')));
+    // Regenerate preview page from final manifest (RTDB + local modes)
+    generatePreviewPage(loadManifest());
     console.log(JSON.stringify({ generated: results.length }, null, 2));
     return;
   }
