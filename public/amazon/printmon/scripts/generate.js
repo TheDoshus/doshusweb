@@ -241,30 +241,61 @@ function generatePreviewPage(manifest) {
     // Load theme CSS based on URL query param
     const params = new URLSearchParams(window.location.search);
     const themeName = params.get('theme');
+    const isRTDB = params.get('rtdb') === 'true';
+
     if (themeName) {
-      const cssLink = document.getElementById('themeCSS');
-      cssLink.href = '../css/generated/' + themeName + '.css';
-
-      // Load manifest to set tagline
-      fetch('manifest.json')
-        .then(r => r.json())
-        .then(manifest => {
-          const theme = manifest.find(t => t.safeName === themeName);
-          if (theme) {
-            document.getElementById('subtitleTag').textContent = theme.tagline;
-            document.title = theme.name + ' — Printmon Preview';
-
-            // Set wallpaper from theme's wallpaper array
-            if (theme.wallpapers && theme.wallpapers.length > 0) {
-              const wall = theme.wallpapers[Math.floor(Math.random() * theme.wallpapers.length)];
-              document.body.style.backgroundImage = "url('" + wall + "')";
-              document.body.style.backgroundSize = 'cover';
-              document.body.style.backgroundAttachment = 'fixed';
-              document.body.style.backgroundPosition = 'center';
+      if (isRTDB) {
+        // ── RTDB mode: fetch CSS + metadata from Firebase ──
+        const R = 'https://doshusweb-default-rtdb.firebaseio.com';
+        Promise.all([
+          fetch(R + '/printmon/css/' + themeName + '.json'),
+          fetch(R + '/printmon/themes/' + themeName + '.json'),
+        ])
+          .then(([cssRes, themeRes]) => Promise.all([cssRes.json(), themeRes.json()]))
+          .then(([css, theme]) => {
+            if (css && typeof css === 'string') {
+              const style = document.createElement('style');
+              style.textContent = css;
+              document.head.appendChild(style);
             }
-          }
-        })
-        .catch(() => {});
+            if (theme) {
+              document.getElementById('subtitleTag').textContent = theme.tagline || '';
+              document.title = (theme.name || themeName) + ' — Printmon Preview';
+              if (theme.wallpapers && theme.wallpapers.length) {
+                const wall = theme.wallpapers[Math.floor(Math.random() * theme.wallpapers.length)];
+                document.body.style.backgroundImage = "url('" + wall + "')";
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+                document.body.style.backgroundPosition = 'center';
+              }
+            }
+          })
+          .catch(() => {
+            document.getElementById('subtitleTag').textContent = '(theme loading...)';
+          });
+      } else {
+        // ── Local mode: CSS file + manifest.json ──
+        const cssLink = document.getElementById('themeCSS');
+        cssLink.href = '../css/generated/' + themeName + '.css';
+
+        fetch('manifest.json')
+          .then(r => r.json())
+          .then(manifest => {
+            const theme = manifest.find(t => t.safeName === themeName);
+            if (theme) {
+              document.getElementById('subtitleTag').textContent = theme.tagline;
+              document.title = theme.name + ' — Printmon Preview';
+              if (theme.wallpapers && theme.wallpapers.length > 0) {
+                const wall = theme.wallpapers[Math.floor(Math.random() * theme.wallpapers.length)];
+                document.body.style.backgroundImage = "url('" + wall + "')";
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+                document.body.style.backgroundPosition = 'center';
+              }
+            }
+          })
+          .catch(() => {});
+      }
     }
   </script>
 </body>

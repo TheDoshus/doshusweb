@@ -1,0 +1,107 @@
+[
+  {
+    "name": "Ice Queen",
+    "safeName": "ice-queen",
+    "tagline": "frozen in time",
+    "primary": "#06b6d4",
+    "accent": "#67e8f9",
+    "glowColor": "#67e8f9",
+    "bgDark": "#0a1628",
+    "fontTitle": "Showcard Gothic",
+    "fontSubtitle": "Georgia",
+    "feature": "frost-shimmer",
+    "wallpapers": [
+      "https://images.pexels.com/photos/7354263/pexels-photo-7354263.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/8406516/pexels-photo-8406516.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/7100170/pexels-photo-7100170.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/7099643/pexels-photo-7099643.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/12955931/pexels-photo-12955931.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/ice-queen.css",
+    "createdAt": "2026-05-14T15:31:47.041Z"
+  },
+  {
+    "name": "Forest Warden",
+    "safeName": "forest-warden",
+    "tagline": "roots run deep",
+    "primary": "#22c55e",
+    "accent": "#86efac",
+    "glowColor": "#86efac",
+    "bgDark": "#0a1a0a",
+    "fontTitle": "Showcard Gothic",
+    "fontSubtitle": "Amazon Ember",
+    "feature": "leaf-fall",
+    "wallpapers": [
+      "https://images.pexels.com/photos/14398748/pexels-photo-14398748.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/35275016/pexels-photo-35275016.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/14661420/pexels-photo-14661420.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/32478366/pexels-photo-32478366.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/1102912/pexels-photo-1102912.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/forest-warden.css",
+    "createdAt": "2026-05-14T15:31:47.021Z"
+  },
+  {
+    "name": "Solar Blaze",
+    "safeName": "solar-blaze",
+    "tagline": "born from the flame",
+    "primary": "#f97316",
+    "accent": "#fbbf24",
+    "glowColor": "#fbbf24",
+    "bgDark": "#1a0a00",
+    "fontTitle": "Impact",
+    "fontSubtitle": "Amazon Ember",
+    "feature": "ember-particles",
+    "wallpapers": [
+      "https://images.pexels.com/photos/9709946/pexels-photo-9709946.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/11455626/pexels-photo-11455626.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/266526/pexels-photo-266526.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/1695050/pexels-photo-1695050.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/37449650/pexels-photo-37449650.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/solar-blaze.css",
+    "createdAt": "2026-05-14T15:31:47.001Z"
+  },
+  {
+    "name": "Void Walker",
+    "safeName": "void-walker",
+    "tagline": "embrace the abyss",
+    "primary": "#6366f1",
+    "accent": "#a855f7",
+    "glowColor": "#a855f7",
+    "bgDark": "#0a0a1a",
+    "fontTitle": "Showcard Gothic",
+    "fontSubtitle": "Amazon Ember",
+    "feature": "starfield-bg",
+    "wallpapers": [
+      "https://images.pexels.com/photos/37171981/pexels-photo-37171981.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/32756394/pexels-photo-32756394.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/13179963/pexels-photo-13179963.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/34634037/pexels-photo-34634037.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/9541779/pexels-photo-9541779.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/void-walker.css",
+    "createdAt": "2026-05-14T15:31:46.984Z"
+  },
+  {
+    "name": "Neon Drift",
+    "safeName": "neon-drift",
+    "tagline": "ride the waveform",
+    "primary": "#ff00ff",
+    "accent": "#00ffff",
+    "glowColor": "#00ffff",
+    "bgDark": "#260026",
+    "fontTitle": "Showcard Gothic",
+    "fontSubtitle": "Amazon Ember",
+    "feature": "cursor-trail",
+    "wallpapers": [
+      "https://images.pexels.com/photos/25637489/pexels-photo-25637489.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/34940757/pexels-photo-34940757.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/35415242/pexels-photo-35415242.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/37199657/pexels-photo-37199657.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/37199655/pexels-photo-37199655.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/neon-drift.css",
+    "createdAt": "2026-05-14T15:31:46.967Z"
+  }
+]

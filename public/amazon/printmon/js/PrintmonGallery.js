@@ -9,9 +9,12 @@
 (function () {
   'use strict';
 
-  const manifestUrl = 'generated/manifest.json';
+  const RTDB_BASE = 'https://doshusweb-default-rtdb.firebaseio.com';
+  const themesUrl = RTDB_BASE + '/printmon/themes.json';
+  const manifestUrl = 'generated/manifest.json'; // fallback
   let themes = [];
   let filtered = [];
+  let usingRTDB = false;
 
   // ─── DOM Refs ─────────────────────────────────────────
   const grid = document.getElementById('themeGrid');
@@ -27,13 +30,29 @@
   // ─── Fetch Manifest ───────────────────────────────────
   async function loadThemes() {
     try {
+      // Try Firebase RTDB first (live themes)
+      const rtdbRes = await fetch(themesUrl);
+      if (rtdbRes.ok) {
+        const rtdbData = await rtdbRes.json();
+        if (rtdbData && typeof rtdbData === 'object') {
+          themes = Object.values(rtdbData).sort((a, b) =>
+            new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          usingRTDB = true;
+          filtered = [...themes];
+          render();
+          return;
+        }
+      }
+
+      // Fallback: local manifest.json (demo themes)
       const res = await fetch(manifestUrl);
       if (!res.ok) throw new Error(`Manifest fetch failed: ${res.status}`);
       themes = await res.json();
       filtered = [...themes];
       render();
     } catch (err) {
-      console.error('Failed to load manifest:', err);
+      console.error('Failed to load themes:', err);
       if (loadingEl) {
         loadingEl.innerHTML = '<p style="color:var(--color-text-muted);text-align:center;padding:3rem;">No generated themes yet. Check back soon!</p>';
       }
@@ -96,8 +115,8 @@
     if (previewName) previewName.textContent = theme.name;
     if (previewTagline) previewTagline.textContent = theme.tagline;
 
-    // Build a preview URL that loads the theme CSS
-    const previewUrl = `generated/preview.html?theme=${encodeURIComponent(safeName)}`;
+    // RTDB themes use local preview page; CSS is fetched dynamically
+    const previewUrl = `generated/preview.html?theme=${encodeURIComponent(safeName)}&rtdb=${usingRTDB}`;
     previewFrame.src = previewUrl;
 
     modal.style.display = 'block';

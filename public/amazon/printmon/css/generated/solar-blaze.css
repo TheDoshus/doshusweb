@@ -1,0 +1,137 @@
+/* Generated Theme: Solar Blaze */
+/* Tagline: born from the flame */
+
+.printbox {
+    background-color: rgba(26,10,0,0.5);
+    border: 5px double rgba(251,191,36,0.7)
+}
+h1 {
+    color: rgba(251,191,36,0.76);
+    text-shadow: 2px 2px rgba(249,115,22,0.7);
+}
+.subtitle {
+    color: rgba(251,191,36,0.95);
+    font-family: 'Amazon Ember';
+    font-size: 20pt;
+}
+.input-group label {
+    color: #ffffff;
+}
+.input-group label span {
+    color: rgba(251,191,36,0.93);
+}
+input[type="text"] {
+    border: 1.5px solid rgba(251,191,36,0.95);
+}
+.print-button {
+    background: linear-gradient(90deg, rgba(249,115,22,0.82), rgba(26,10,0,0.89));
+    color: rgba(255,255,255,0.73);
+    box-shadow: 0 0 15px rgba(251,191,36,0.5), 0 0 30px rgba(249,115,22,0.6);
+}
+
+.print-button:hover {
+    background: linear-gradient(145deg, rgba(199,92,18,0.94), rgba(251,191,36,0.92));
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(251,191,36,0.7), 0 0 40px rgba(199,92,18,0.5);
+}
+
+.buttonsLine1 {
+    background: linear-gradient(145deg, rgba(249,115,22,0.85), rgba(213,162,31,0.77));
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(249,115,22,0.51);
+}
+.buttonsLine1:hover {
+    background: linear-gradient(165deg, #000, rgba(251,191,36,0.7));
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(251,191,36,0.64);
+}
+
+.buttonsLine2 {
+    background: linear-gradient(195deg, rgba(249,115,22,0.85), rgba(213,162,31,0.77));
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(249,115,22,0.51);
+}
+.buttonsLine2:hover {
+    background: linear-gradient(165deg, #000, rgba(251,191,36,0.7));
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(251,191,36,0.64);
+}
+
+.buttonsLine3 {
+    background: linear-gradient(70deg, rgba(249,115,22,0.85), rgba(213,162,31,0.77));
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(249,115,22,0.51);
+}
+.buttonsLine3:hover {
+    background: linear-gradient(165deg, #000, rgba(251,191,36,0.7));
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(251,191,36,0.64);
+}
+
+.quick-print-buttons button:hover {
+    background-color: rgba(249,115,22,0.68);
+    border-color: #000;
+}
+.quick-print-buttons button:active {
+    background-color: #000;
+    border-color: #fcd266;
+}
+.scroll-container {
+    scrollbar-color: rgba(26,10,0,0.89) rgba(251,191,36,0.43);
+}
+.scroll-button {
+    background-color: rgba(251,191,36,0.75);
+}
+.scroll-button:hover {
+    background-color: #c9991d;
+}
+.asin-sticker-container {
+    background-color: rgba(249,115,22,0.26);
+    border: 2px dashed rgba(251,191,36,0.81);
+}
+.asin-sticker-header {
+    color: #ffffff;
+}
+.asin-sticker-content button {
+    background-color: rgba(249,115,22,0.63);
+}
+.asin-sticker-content button:hover {
+    background-color: rgba(251,191,36,0.58);
+}
+.MultiBarcode-printer {
+    background-color: rgba(26,10,0,0.59);
+    border: 5px double rgba(251,191,36,0.7);
+}
+.MultiBarcode-printer h2 {
+    color: #ffffff;
+    text-shadow: 2px 2px rgba(249,115,22,0.7);
+}
+#textAreaID {
+    border: 1.5px solid rgba(251,191,36,0.95);
+}
+.multiButton {
+    background: linear-gradient(90deg, rgba(249,115,22,0.82), rgba(26,10,0,0.89));
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(251,191,36,0.5), 0 0 30px rgba(249,115,22,0.6);
+}
+
+.multiButton:hover {
+    background: linear-gradient(145deg, rgba(199,92,18,0.94), rgba(251,191,36,0.92));
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(251,191,36,0.7), 0 0 40px rgba(199,92,18,0.5);
+}
+
+#quickbuttons-dropdown .qb-dropbtn {
+    background: linear-gradient(145deg, rgba(249,115,22,0.85), rgba(213,162,31,0.77));
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(249,115,22,0.51);
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+    background-color: rgba(249,115,22,0.83);
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: #ffffff;
+}
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background-color: rgba(255,255,255,0.63);
+}
+#quickbuttons-dropdown:hover .qb-dropbtn {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(251,191,36,0.64);
+}
