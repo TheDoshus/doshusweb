@@ -77,9 +77,7 @@
         // Click to cycle animation state
         let stateIndex = 0;
         const states = ['idle', 'active', 'thinking'];
-        wrap.addEventListener('click', (e) => {
-            // Ignore clicks on the ring or wrapper edges
-            if (e.target !== wrap && !wrap.contains(e.target)) return;
+        function cycleGlyphState() {
             stateIndex = (stateIndex + 1) % states.length;
             const state = states[stateIndex];
             const left = wrap.querySelector('.glyph-left');
@@ -98,6 +96,11 @@
                 if (right) right.style.animationDuration = '1.5s';
                 if (center) center.style.animationDuration = '3s';
             }
+        }
+        wrap.addEventListener('click', cycleGlyphState);
+        wrap.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            cycleGlyphState();
         });
     }
 
