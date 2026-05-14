@@ -701,6 +701,8 @@
     function togglePanel() {
         isOpen = !isOpen;
         panel.classList.toggle('open', isOpen);
+        var bd = document.getElementById('zp-chat-backdrop');
+        if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
             inputEl && inputEl.focus();
             scrollToBottom();
@@ -840,6 +842,15 @@
         removeWelcome();
         removeQuickReplies();
         if (name && name.length > 0) {
+            var raw = name.toLowerCase();
+            if (raw === 'doshus') {
+                addMessage('bot', 'Nice try \uD83D\uDE0F I know Doshus — and you\'re not him. What should I actually call you?', Date.now());
+                quickReplied = false;
+                var row = document.getElementById('zp-name-input-row');
+                if (row) row.remove();
+                setTimeout(showNamePrompt, 500);
+                return;
+            }
             var caps = name[0].toUpperCase() + name.slice(1).toLowerCase();
             var greetings = ["Yeah it's ", "You can call me ", "I go by "];
             var greet = greetings[Math.floor(Math.random() * greetings.length)];

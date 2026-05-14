@@ -440,6 +440,26 @@
 }
 
 /* ── Chat Panel ── */
+/* ── Chat backdrop blur ── */
+.zp-chat-backdrop {
+  display: none;
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: 199;
+  backdrop-filter: blur(6px) brightness(0.6);
+  -webkit-backdrop-filter: blur(6px) brightness(0.6);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+.zp-chat-backdrop.open {
+  display: block;
+  opacity: 1;
+}
+
 .zp-chat-panel {
   position: fixed;
   bottom: 100px;
@@ -467,6 +487,17 @@
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: all;
+}
+
+@media (max-width: 480px) {
+  .zp-chat-panel {
+    right: 10px;
+    width: 340px;
+  }
+  .zp-chat-panel.open {
+    display: flex;
+    max-width: calc(100vw - 20px);
+  }
 }
 
 .zp-chat-header {
