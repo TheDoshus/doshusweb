@@ -660,3 +660,189 @@
 
     loadRealm();
 })();
+
+// ─── Chat Orb ───
+(function () {
+    'use strict';
+
+    const orb = document.getElementById('zp-orb-demo');
+    const panel = document.getElementById('zp-chat-panel');
+    const closeBtn = document.getElementById('zp-chat-close');
+    const messagesEl = document.getElementById('zp-chat-messages');
+    const inputEl = document.getElementById('zp-chat-input');
+    const sendBtn = document.getElementById('zp-chat-send');
+
+    if (!orb || !panel) return;
+
+    // Session ID — persist in localStorage
+    const SESSION_KEY = 'zephyy-chat-session';
+    let sessionId = localStorage.getItem(SESSION_KEY);
+    if (!sessionId) {
+        sessionId = crypto.randomUUID ? crypto.randomUUID() :
+            'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        localStorage.setItem(SESSION_KEY, sessionId);
+    }
+
+    const CHAT_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/chat/sessions/' + sessionId + '.json';
+    const MSGS_URL = CHAT_URL + '/messages';
+
+    let isOpen = false;
+
+    function togglePanel() {
+        isOpen = !isOpen;
+        panel.classList.toggle('open', isOpen);
+        if (isOpen) {
+            inputEl.focus();
+            scrollToBottom();
+        }
+    }
+
+    function openPanel() {
+        if (!isOpen) togglePanel();
+    }
+
+    function closePanel() {
+        if (isOpen) togglePanel();
+    }
+
+    function scrollToBottom() {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function addMessage(role, content, timestamp) {
+        const div = document.createElement('div');
+        div.className = 'zp-chat-msg zp-chat-msg-' + role;
+        div.textContent = content;
+        if (timestamp) {
+            const time = document.createElement('div');
+            time.className = 'zp-chat-msg-time';
+            time.textContent = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            div.appendChild(time);
+        }
+        messagesEl.appendChild(div);
+        scrollToBottom();
+    }
+
+    // Load existing messages from RTDB
+    async function loadMessages() {
+        try {
+            const resp = await fetch(MSGS_URL + '?orderBy="timestamp"&limitToLast=50');
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (!data) return;
+
+            // Clear welcome message if we have real messages
+            const welcome = messagesEl.querySelector('.zp-chat-msg-bot');
+            if (welcome && Object.keys(data).length > 0) {
+                welcome.remove();
+            }
+
+            Object.values(data).forEach(msg => {
+                // Don't duplicate messages already shown
+                const existing = messagesEl.querySelector('[data-msg-id]');
+                if (existing) return;
+                addMessage(msg.role, msg.content, msg.timestamp);
+            });
+        } catch {
+            // Silent fail — messages just won't load
+        }
+    }
+
+    // Send message to RTDB
+    async function sendMessage() {
+        const text = inputEl.value.trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+        inputEl.value = '';
+
+        // Remove welcome message on first send
+        const welcome = messagesEl.querySelector('.zp-chat-msg-bot');
+        if (welcome) welcome.remove();
+
+        // Add user message locally immediately
+        addMessage('user', text, Date.now());
+
+        try {
+            // Write to RTDB — uses Firebase REST API
+            // Note: RTDB rules must allow writes to this path
+            const msg = {
+                role: 'user',
+                content: text,
+                timestamp: Date.now()
+            };
+            const resp = await fetch(MSGS_URL + '.json', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(msg)
+            });
+
+            if (!resp.ok) {
+                // If write fails, show a note
+                addMessage('bot', 'Message received! (Chat backend coming soon — your message is saved locally for now.)', Date.now());
+            }
+        } catch {
+            addMessage('bot', 'Message received! (Chat backend coming soon.)', Date.now());
+        } finally {
+            sendBtn.disabled = false;
+            inputEl.focus();
+        }
+    }
+
+    // Poll for new messages (Phase 1: just our own; Phase 2: bot responses)
+    let lastCheck = Date.now();
+    async function pollMessages() {
+        try {
+            const resp = await fetch(MSGS_URL + '.json?orderBy="timestamp"&startAt=' + lastCheck);
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (!data) return;
+
+            const now = Date.now();
+            Object.values(data).forEach(msg => {
+                // Only show messages from after our last check
+                if (msg.timestamp > lastCheck && msg.timestamp < now - 1000) {
+                    // Check if already displayed
+                    const existing = messagesEl.querySelector('[data-msg-id]');
+                    if (!existing) {
+                        addMessage(msg.role, msg.content, msg.timestamp);
+                    }
+                }
+            });
+            lastCheck = now;
+        } catch {
+            // Silent
+        }
+    }
+
+    // Events
+    orb.addEventListener('click', openPanel);
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+
+    sendBtn.addEventListener('click', sendMessage);
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Load messages on open
+    const observer = new MutationObserver(() => {
+        if (panel.classList.contains('open')) {
+            loadMessages();
+            observer.disconnect();
+        }
+    });
+    observer.observe(panel, { attributes: true, attributeFilter: ['class'] });
+
+    // Poll for new messages every 3 seconds when open
+    setInterval(() => {
+        if (panel.classList.contains('open')) {
+            pollMessages();
+        }
+    }, 3000);
+})();
