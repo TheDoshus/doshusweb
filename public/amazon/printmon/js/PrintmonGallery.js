@@ -116,8 +116,11 @@
     if (previewTagline) previewTagline.textContent = theme.tagline;
 
     // RTDB themes use local preview page; CSS is fetched dynamically
-    const previewUrl = `generated/preview.html?theme=${encodeURIComponent(safeName)}&rtdb=${usingRTDB}`;
-    previewFrame.src = previewUrl;
+    // RTDB mode: pass theme data URL (single merged entry, 1 fetch)
+    const src = usingRTDB
+      ? `generated/preview.html?theme=${encodeURIComponent(safeName)}&rtdb=true`
+      : `generated/preview.html?theme=${encodeURIComponent(safeName)}`;
+    previewFrame.src = src;
 
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
