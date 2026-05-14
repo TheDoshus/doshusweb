@@ -449,7 +449,23 @@
         <!-- Chat Panel -->
         <div class="zp-chat-panel" id="zp-chat-panel">
             <div class="zp-chat-header">
-                <span class="zp-chat-title">💬 Zephyy</span>
+                <span class="zp-chat-title">
+                    <span class="zp-chat-icon-emoji">💬</span>
+                    <span class="zp-chat-icon-glyph" style="display:none">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="zp-chat-glyph-icon">
+                            <defs>
+                                <linearGradient id="chatGlyph" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stop-color="oklch(var(--brand-teal))" />
+                                    <stop offset="100%" stop-color="oklch(var(--brand-purple))" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M8 4 C11 4, 12 8, 10 11 C8 14, 5 15, 5 12 C5 9, 7 7, 8 6 C9 5, 10 7, 10 9" stroke="url(#chatGlyph)" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+                            <path d="M16 4 C13 4, 12 8, 14 11 C16 14, 19 15, 19 12 C19 9, 17 7, 16 6 C15 5, 14 7, 14 9" stroke="url(#chatGlyph)" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="0.8" fill="oklch(var(--brand-teal))"/>
+                        </svg>
+                    </span>
+                    <span class="zp-chat-name">Zephyy</span>
+                </span>
                 <button class="zp-chat-close" id="zp-chat-refresh" aria-label="Refresh chat">↻</button>
                 <button class="zp-chat-close" id="zp-chat-close" aria-label="Close chat">✕</button>
             </div>

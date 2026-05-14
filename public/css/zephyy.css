@@ -625,6 +625,13 @@
   opacity: 0.6;
 }
 
+.zp-chat-input-area.zp-input-disabled input,
+.zp-chat-input-area.zp-input-disabled .zp-chat-send {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .zp-chat-send {
   padding: 10px 18px;
   border: none;
@@ -648,8 +655,9 @@
 }
 
 .zp-chat-send:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
+  pointer-events: none;
   transform: none;
 }
 

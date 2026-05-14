@@ -665,8 +665,16 @@
     const messagesEl = document.getElementById('zp-chat-messages');
     const inputEl = document.getElementById('zp-chat-input');
     const sendBtn = document.getElementById('zp-chat-send');
+    const backdrop = document.getElementById('zp-chat-backdrop');
+    const tooltip = orb ? orb.querySelector('.zp-orb-tooltip') : null;
 
     if (!orb || !panel) return;
+
+    /* Detect touch device — hide tooltip, open panel on tap directly */
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isTouchDevice && tooltip) {
+        tooltip.style.display = 'none';
+    }
 
     /* Session — persist UUID in localStorage */
     const SESSION_KEY = 'zephyy-chat-session';
@@ -682,10 +690,12 @@
 
     const FIREBASE_BASE = 'https://doshusweb-default-rtdb.firebaseio.com';
     const MSGS_URL = FIREBASE_BASE + '/zephyy/chat/sessions/' + sessionId + '/messages.json';
+    const CONTROL_URL = FIREBASE_BASE + '/zephyy/chat/sessions/' + sessionId + '/control.json';
 
     let isOpen = false;
     let lastCheck = Date.now();
     let quickReplied = false; // prevent button re-adding after first send
+    let sessionEnded = false; // dead session flag — input locked
 
     /* Visitor name — from localStorage or detected */
     const savedName = localStorage.getItem('zp-visitor-name');
@@ -905,12 +915,13 @@
     }
 
     async function sendMessage() {
-        if (sendBtn.disabled) return;
+        if (sendBtn.disabled || sessionEnded) return;
         var text = inputEl.value.trim();
         if (!text) return;
 
         sendBtn.disabled = true;
         inputEl.value = '';
+        touchActivity();
 
         removeWelcome();
         removeQuickReplies();
@@ -1013,10 +1024,42 @@
     });
     panelObserver.observe(panel, { attributes: true, attributeFilter: ['class'] });
 
-    /* Events */
+    /* ── Session ended helper ── */
+    function setSessionEnded() {
+        sessionEnded = true;
+        var inputArea = document.querySelector('.zp-chat-input-area');
+        if (inputArea) inputArea.classList.add('zp-input-disabled');
+        if (inputEl) { inputEl.disabled = true; inputEl.placeholder = 'Session ended'; }
+        if (sendBtn) sendBtn.disabled = true;
+        if (!document.getElementById('zp-chat-ended-banner')) {
+            var banner = document.createElement('div');
+            banner.className = 'zp-chat-ended';
+            banner.id = 'zp-chat-ended-banner';
+            banner.textContent = '💤 This conversation has ended. Start a new one anytime.';
+            panel.appendChild(banner);
+        }
+    }
+
+    /* ── Check control endpoint for state=ended ── */
+    async function checkControl() {
+        if (sessionEnded) return;
+        try {
+            var resp = await fetch(CONTROL_URL);
+            if (!resp.ok) return;
+            var data = await resp.json();
+            if (data && data.state === 'ended') setSessionEnded();
+        } catch(e) { /* silent */ }
+    }
+
+    /* ── Idle timeout (30 min) ── */
+    var lastActivity = Date.now();
+    function touchActivity() { lastActivity = Date.now(); }
+
+    /* ── Events ── */
     orb.addEventListener('click', togglePanel);
-    const refreshBtn = document.getElementById("zp-chat-refresh");
     if (closeBtn) closeBtn.addEventListener('click', togglePanel);
+    if (backdrop) backdrop.addEventListener('click', togglePanel);
+    var refreshBtn = document.getElementById("zp-chat-refresh");
     if (refreshBtn) refreshBtn.addEventListener("click", function() { localStorage.removeItem(SESSION_KEY); location.reload(); });
     sendBtn.addEventListener('click', sendMessage);
     inputEl.addEventListener('keydown', function(e) {
@@ -1025,7 +1068,21 @@
             sendMessage();
         }
     });
+    inputEl.addEventListener('input', touchActivity);
 
-    /* Poll every 2s for new messages */
-    setInterval(pollAndDetect, 2000);
+    /* ── Poll interval (messages + control + idle) ── */
+    setInterval(function() {
+        if (!panel.classList.contains('open')) return;
+        pollAndDetect();
+        checkControl();
+        /* Idle timeout check: 30 min */
+        if (!sessionEnded && Date.now() - lastActivity > 30 * 60 * 1000) {
+            setSessionEnded();
+            fetch(CONTROL_URL, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ state: 'ended', reason: 'idle_timeout', timestamp: Date.now() })
+            }).catch(function(){});
+        }
+    }, 2000);
 })();
