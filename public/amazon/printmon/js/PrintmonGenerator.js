@@ -1,104 +1,129 @@
 /**
- * PrintmonGenerator.js v2 — Copy + Recolor Architecture
+ * PrintmonGenerator.js v3 — Color Remap Architecture
  * 
- * Copies an existing handcrafted theme's CSS as base, 
- * has AI recolor every element explicitly, then assembles.
- * Result: same quality as handcrafted themes, just different colors.
+ * Parses ANY handcrafted theme CSS as a base, extracts all unique color values,
+ * has AI remap them to a new palette, then string-replaces.
  * 
- * Usage:
- *   const gen = new PrintmonGenerator({ baseTheme: '2GTA', palette: {...} });
- *   const css = gen.recolor(palette);
- *   const wallpapers = await gen.fetchWallpapers();
+ * Result: identical structure + enhancements, just different colors.
+ * Works for GTA, Glass, Halloween — any base theme without template-slots.
  */
 
-const PEXELS_API_KEY = process.env.PEXELS_API_KEY || 'placeholder';
-
-// ─── In-memory Caches (bandwidth + rate-limit aware) ─────
-const wallpaperCache = new Map(); // keyword → { urls, ts }
-
-function cacheGet(key) {
-  const entry = wallpaperCache.get(key);
-  if (entry && Date.now() - entry.ts < 6 * 60 * 60 * 1000) return entry.urls; // 6hr TTL
-  return null;
-}
-
-function cacheSet(key, urls) {
-  wallpaperCache.set(key, { urls, ts: Date.now() });
-}
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY || '';
+const wallpaperCache = new Map();
 
 // ─── Base Theme Registry ───────────────────────────────────
 
 const BASE_THEMES = {
-  '2GTA': {
+  GTA: {
     name: 'GTA 6',
-    css: `@font-face {\n  font-family: 'Pricedown';\n  src: url("https://drive.corp.amazon.com/view/aaustinp@/Printmon%20Archive/Printmon%20Page%20Resources/Page%20Pieces/Fonts/Pricedown%20Bl.otf") format('opentype');\n  font-weight: normal;\n  font-style: normal;\n}\n\n.printbox { background-color: {printboxBg}; border: {printboxBorder} }\nh1 { color: {h1Color}; text-shadow: {h1TextShadow}; }\n.subtitle { color: {subtitleColor}; font-family: 'Harlow Solid Italic', 'Pricedown Black'; }\n.input-group label { color: {inputLabelColor}; }\n.input-group label span { color: {inputLabelSpanColor}; }\ninput[type="text"] { border: {inputBorder}; }\n.print-button { background: {printBtnBg}; color: {printBtnColor}; box-shadow: {printBtnShadow}; }\n.print-button:hover { background: {printBtnHoverBg}; box-shadow: {printBtnHoverShadow}; }\n.buttonsLine1 { background: {btn1Bg}; color: {btnColor}; box-shadow: {btn1Shadow}; }\n.buttonsLine1:hover { background: {btn1HoverBg}; box-shadow: {btn1HoverShadow}; }\n.buttonsLine2 { background: {btn2Bg}; color: {btnColor}; box-shadow: {btn2Shadow}; }\n.buttonsLine2:hover { background: {btn2HoverBg}; box-shadow: {btn2HoverShadow}; }\n.buttonsLine3 { background: {btn3Bg}; color: {btnColor}; box-shadow: {btn3Shadow}; }\n.buttonsLine3:hover { background: {btn3HoverBg}; box-shadow: {btn3HoverShadow}; }\n.quick-print-buttons button:hover { background-color: {quickBtnHoverBg}; border-color: {quickBtnHoverBorder}; }\n.quick-print-buttons button:active { background-color: {quickBtnActiveBg}; border-color: {quickBtnActiveBorder}; }\n.scroll-container { scrollbar-color: {scrollbarColor}; }\n.scroll-button { background-color: {scrollBtnBg}; }\n.scroll-button:hover { background-color: {scrollBtnHoverBg}; }\n.asin-sticker-container { background-color: {asinBg}; border: {asinBorder}; }\n.asin-sticker-header { color: {asinHeaderColor}; }\n.asin-sticker-content button { background-color: {asinBtnBg}; }\n.asin-sticker-content button:hover { background-color: {asinBtnHoverBg}; }\n.MultiBarcode-printer { background-color: {multiBg}; border: {multiBorder}; }\n.MultiBarcode-printer h2 { color: {multiH2Color}; text-shadow: {multiH2Shadow}; }\n#textAreaID { border: {textareaBorder}; }\n.multiButton { background: {multiBtnBg}; color: {multiBtnColor}; box-shadow: {multiBtnShadow}; }\n.multiButton:hover { background: {multiBtnHoverBg}; box-shadow: {multiBtnHoverShadow}; }\n#quickbuttons-dropdown .qb-dropbtn { background: {qbBtnBg}; color: {qbBtnColor}; box-shadow: {qbBtnShadow}; }\n#quickbuttons-dropdown .qb-dropdown-content { background-color: {qbDropdownBg}; }\n#quickbuttons-dropdown .qb-dropdown-content a { color: {qbLinkColor}; }\n#quickbuttons-dropdown .qb-dropdown-content a:hover { background-color: {qbLinkHoverBg}; }\n#quickbuttons-dropdown:hover .qb-dropbtn { box-shadow: {qbBtnHoverShadow}; }`,
-    defaults: {
-      printboxBg: '#06010180', printboxBorder: '5px double #c4ab49f2',
-      h1Color: '#9F31C7C2', h1TextShadow: '2px 2px #c4ab49d6',
-      subtitleColor: '#34b8b2c4',
-      inputLabelColor: '#8cffff', inputLabelSpanColor: '#00C1FF',
-      inputBorder: '1.5px solid #9F31C7CF',
-      printBtnBg: 'linear-gradient(120deg, #8cffffbf, #ac6fdebd)', printBtnColor: '#ffffff',
-      printBtnShadow: '0 0 15px rgba(255, 107, 107, 0.5), 0 0 30px rgba(78, 205, 196, 0.3)',
-      printBtnHoverBg: 'linear-gradient(145deg, #a912fdcf, #cdb34e)',
-      printBtnHoverShadow: '0 0 20px rgba(255, 107, 107, 0.7), 0 0 40px rgba(78, 205, 196, 0.5)',
-      btn1Bg: 'linear-gradient(145deg, #a912fdcf, #cdb34e)', btnColor: '#ffffff',
-      btn1Shadow: '0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5)',
-      btn1HoverBg: 'linear-gradient(145deg, #8cffffbf, #ac6fdebd)',
-      btn1HoverShadow: '0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7)',
-      btn2Bg: 'linear-gradient(195deg, #a912fdcf, #cdb34e)', btn2Shadow: '0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5)',
-      btn2HoverBg: 'linear-gradient(145deg, #8cffffbf, #ac6fdebd)', btn2HoverShadow: '0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7)',
-      btn3Bg: 'linear-gradient(70deg, #a912fdcf, #cdb34e)', btn3Shadow: '0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5)',
-      btn3HoverBg: 'linear-gradient(145deg, #8cffffbf, #ac6fdebd)', btn3HoverShadow: '0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7)',
-      quickBtnHoverBg: '#a300ff85', quickBtnHoverBorder: '#a300ff',
-      quickBtnActiveBg: '#0213ff7e', quickBtnActiveBorder: '#0600c7',
-      scrollbarColor: '#a912fdcf #660a97ae', scrollBtnBg: '#cdb34ed6', scrollBtnHoverBg: '#cb8316',
-      asinBg: '#360748A3', asinBorder: '2px dashed #fffc', asinHeaderColor: 'white',
-      asinBtnBg: '#9f370fe8', asinBtnHoverBg: '#8cffffbf',
-      multiBg: '#06010196', multiBorder: '5px double #c4ab49f2',
-      multiH2Color: '#ffffff', multiH2Shadow: '2px 2px #d68cffbf',
-      textareaBorder: '1.5px solid #9F31C7CF',
-      multiBtnBg: 'linear-gradient(90deg, #8cffffbf, #ac6fdebd)', multiBtnColor: '#ffffff',
-      multiBtnShadow: '0 0 15px rgba(255, 107, 107, 0.5), 0 0 30px rgba(78, 205, 196, 0.3)',
-      multiBtnHoverBg: 'linear-gradient(145deg, #a912fdcf, #cdb34e)',
-      multiBtnHoverShadow: '0 0 20px rgba(255, 107, 107, 0.7), 0 0 40px rgba(78, 205, 196, 0.5)',
-      qbBtnBg: 'linear-gradient(145deg, #a912fdcf, #cdb34e)', qbBtnColor: '#ffffff',
-      qbBtnShadow: '0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5)',
-      qbDropdownBg: '#e6b7ffcf', qbLinkColor: '#000000', qbLinkHoverBg: '#e3e3e3a0',
-      qbBtnHoverShadow: '0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7)',
-    },
+    cssFile: 'css/newer/2GTA.css',
+    htmlFile: 'TheDoshusPrintmon2GTA.html',
+    description: 'Dark, vibrant gradients, Pricedown font — Doshus favorite',
   },
-  '2Glass': {
+  Glass: {
     name: 'Glass',
-    css: null, // TODO: extract from 2Glass.css
-    defaults: {},
+    cssFile: 'css/newer/2Glass.css',
+    htmlFile: 'TheDoshusPrintmon2Glass.html',
+    description: 'Transparent, backdrop-blur, sleek modern glassmorphism',
   },
-  '2Hallo': {
+  Halloween: {
     name: 'Halloween',
-    css: null,
-    defaults: {},
+    cssFile: 'css/newer/2Hallo.css',
+    htmlFile: 'TheDoshusPrintmon2Halloween.html',
+    description: 'Warm oranges, dark backgrounds, spooky vibes',
+  },
+  Forest: {
+    name: 'Forest',
+    cssFile: 'css/newer/2Forest.css',
+    htmlFile: 'TheDoshusPrintmon2Forest.html',
+    description: 'Green, natural, earthy tones',
+  },
+  Witch: {
+    name: 'Witchery',
+    cssFile: 'css/newer/2Witch.css',
+    htmlFile: 'TheDoshusPrintmon2Witch.html',
+    description: 'Dark purples, mystical, magical feel',
   },
 };
 
-// ─── Color Manipulation ─────────────────────────────────────
-function hexToRgb(hex) {
-  const clean = hex.replace('#', '');
-  const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
-  return {
-    r: parseInt(full.substring(0, 2), 16),
-    g: parseInt(full.substring(2, 4), 16),
-    b: parseInt(full.substring(4, 6), 16),
-  };
+// ─── Color Extraction ───────────────────────────────────────
+
+function extractColors(css) {
+  const hexColors = new Set();
+  const rgbaColors = new Set();
+  
+  // Hex colors: #RGB, #RRGGBB, #RRGGBBAA
+  const hexRe = /#[0-9a-fA-F]{3,8}\b/g;
+  let m;
+  while ((m = hexRe.exec(css)) !== null) {
+    hexColors.add(m[0]);
+  }
+  
+  // rgba/rgb
+  const rgbaRe = /rgba?\s*\([^)]+\)/g;
+  while ((m = rgbaRe.exec(css)) !== null) {
+    rgbaColors.add(m[0]);
+  }
+  
+  // Named colors used in the CSS
+  const namedColors = new Set();
+  const namedRe = /\b(white|black|transparent|inherit|currentColor)\b/g;
+  while ((m = namedRe.exec(css)) !== null) {
+    namedColors.add(m[0]);
+  }
+  
+  return { hex: [...hexColors], rgba: [...rgbaColors], named: [...namedColors] };
 }
 
-function rgbToHex(r, g, b) {
-  const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));
-  return '#' + [clamp(r), clamp(g), clamp(b)].map(c => clamp(c).toString(16).padStart(2, '0')).join('');
+// ─── Color Remap ────────────────────────────────────────────
+
+function remapColors(css, colorMap) {
+  let result = css;
+  for (const [original, replacement] of Object.entries(colorMap)) {
+    // Escape regex special chars
+    const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    result = result.replace(new RegExp(escaped, 'g'), replacement);
+  }
+  return result;
 }
 
-function hexWithAlpha(hex, a) {
-  const { r, g, b } = hexToRgb(hex);
-  return `rgba(${r},${g},${b},${a.toFixed(2)})`;
+// ─── AI Prompt Builder ──────────────────────────────────────
+
+function buildRemapPrompt(userRequest, baseKey, colors) {
+  const hexList = colors.hex.join('\n  ');
+  const rgbaList = colors.rgba.slice(0, 20).join('\n  ');
+
+  return `You are a visual theme designer. Recolor a Printmon theme based on this request: "${userRequest}"
+
+The current theme uses these colors:
+HEX:
+  ${hexList}
+
+RGBA (first 20):
+  ${rgbaList}
+
+Return a JSON color remap. Replace EVERY hex color with a new value that matches the requested vibe.
+Keep the same format: #RRGGBB with optional AA suffix stays the same length.
+rgba values: change the RGB values, keep the alpha (last number) the same.
+Named colors (white, black, transparent): do NOT change these.
+
+Format:
+{
+  "name": "Short theme name (max 3 words)",
+  "tagline": "Witty tagline under 8 words",
+  "remap": {
+    "#original1": "#new1",
+    "#original2": "#new2",
+    ...
+  }
+}
+
+Rules:
+- Pick 3-4 core colors for the theme, derive hex variants from those
+- Every hex in the list MUST have a replacement
+- Alpha suffixes (like C2, F2, 80, BF) stay semantically similar (semi-transparent stays semi-transparent)
+- Make it visually cohesive — this is a real UI, not abstract art
+- Return ONLY valid JSON, no other text`;
 }
 
 // ─── PrintmonGenerator ──────────────────────────────────────
@@ -108,37 +133,29 @@ class PrintmonGenerator {
    * @param {Object} opts
    * @param {string} opts.name
    * @param {string} opts.tagline
-   * @param {string} [opts.baseTheme] — '2GTA' (default), '2Glass', etc.
-   * @param {Object} [opts.palette] — explicit color map from AI
+   * @param {string} [opts.baseTheme] — 'GTA', 'Glass', 'Halloween', 'Forest', 'Witch'
+   * @param {Object} [opts.remap] — AI-generated color remap
+   * @param {string} baseCSS — pre-loaded base theme CSS content
    */
-  constructor(opts = {}) {
-    this.name = opts.name || 'Untitled';
-    this.tagline = opts.tagline || '';
-    this.baseThemeKey = opts.baseTheme || '2GTA';
-    this.base = BASE_THEMES[this.baseThemeKey] || BASE_THEMES['2GTA'];
-    this.palette = opts.palette || {}; // explicit AI-generated color map
+  constructor({ name, tagline, baseTheme, remap }, baseCSS) {
+    this.name = name || 'Untitled';
+    this.tagline = tagline || '';
+    this.baseKey = baseTheme || 'GTA';
+    this.baseCSS = baseCSS || '';
+    this.remap = remap || {};
   }
 
-  /**
-   * Recolor the base theme CSS with AI-provided palette.
-   * Unspecified slots keep base defaults.
-   */
   recolor() {
-    let css = this.base.css;
-    const colors = { ...this.base.defaults, ...this.palette };
-    for (const [key, val] of Object.entries(colors)) {
-      css = css.replace(new RegExp(`\\{${key}\\}`, 'g'), val);
-    }
-    return css;
+    if (!this.remap || Object.keys(this.remap).length === 0) return this.baseCSS;
+    return remapColors(this.baseCSS, this.remap);
   }
 
-  /**
-   * Fetch wallpapers with keyword-based cache.
-   */
   async fetchWallpapers(count = 5) {
     const query = `${this.name} background aesthetic`;
-    const cached = cacheGet(query);
-    if (cached) return cached.slice(0, count);
+    const cached = wallpaperCache.get(query);
+    if (cached && Date.now() - cached.ts < 6 * 60 * 60 * 1000) {
+      return cached.urls.slice(0, count);
+    }
 
     try {
       const res = await fetch(
@@ -151,7 +168,7 @@ class PrintmonGenerator {
       if (!res.ok) return [];
       const data = await res.json();
       const urls = (data.photos || []).map(p => p.src?.large2x || p.src?.large || p.src?.original);
-      cacheSet(query, urls);
+      wallpaperCache.set(query, { urls, ts: Date.now() });
       return urls;
     } catch (err) {
       console.error('Pexels error:', err.message);
@@ -159,11 +176,13 @@ class PrintmonGenerator {
     }
   }
 
-  /**
-   * Full generation → returns a single RTDB-ready record with embedded CSS.
-   */
+  safeName() {
+    return this.name.replace(/[^a-zA-Z0-9\s_-]/g, '').trim()
+      .replace(/\s+/g, '-').toLowerCase() || 'untitled';
+  }
+
   async generate() {
-    const sn = this.name.replace(/[^a-zA-Z0-9\s_-]/g, '').trim().replace(/\s+/g, '-').toLowerCase() || 'untitled';
+    const sn = this.safeName();
     const css = this.recolor();
     const wallpapers = await this.fetchWallpapers(5);
 
@@ -171,45 +190,16 @@ class PrintmonGenerator {
       name: this.name,
       safeName: sn,
       tagline: this.tagline,
-      baseTheme: this.baseThemeKey,
+      baseTheme: this.baseKey,
       wallpapers,
-      css,                                  // ← merged into single entry
+      css,
       createdAt: new Date().toISOString(),
     };
   }
 }
 
-// ─── AI Palette Prompt ──────────────────────────────────────
-
-/**
- * Build the prompt that asks the AI to generate an explicit color palette
- * for each slot in the base theme.
- */
-function buildPalettePrompt(userRequest, baseThemeKey) {
-  const base = BASE_THEMES[baseThemeKey] || BASE_THEMES['2GTA'];
-  const slotNames = Object.keys(base.defaults).join(', ');
-
-  return `You are a theme designer. Generate a color palette for a Printmon theme based on this request: "${userRequest}"
-
-Return ONLY valid JSON (no other text) with color values for each slot. 
-Use the base GTA theme's structure — same gradient angles, same shadow offsets, same border styles — just recolor everything.
-
-Format:
-{
-  "name": "Short theme name (max 3 words)",
-  "tagline": "Witty tagline under 8 words",
-  ${Object.keys(base.defaults).slice(0, 10).map(k => `"${k}": "${base.defaults[k]}"`).join(',\n  ')},
-  ... (all slots listed above)
-}
-
-RULES:
-- Name and tagline must match the requested theme vibe
-- Pick 2–3 core colors for the theme, derive all slots from those (use hex with alpha, gradients use 2 colors)
-- Gradients keep their existing angles and syntax — only change the colors inside
-- Box shadows keep their existing blur/spread — only change the rgba colors
-- Border styles (solid, double, dashed) stay the same — only change colors
-- Make it look GOOD — intentional color choices, not random
-- The base defaults are shown above as reference for the FORMAT`;
-}
-
-module.exports = { PrintmonGenerator, BASE_THEMES, buildPalettePrompt, wallpaperCache };
+module.exports = {
+  PrintmonGenerator, BASE_THEMES,
+  extractColors, remapColors, buildRemapPrompt,
+  wallpaperCache,
+};
