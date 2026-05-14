@@ -94,7 +94,7 @@
 .zp-section {
   max-width: 800px;
   margin: 0 auto;
-  padding: 4rem 1.5rem;
+  padding: 7rem 1.5rem;
 }
 
 .zp-section-header {
@@ -720,7 +720,7 @@
 .zp-sidebar-nav {
   position: fixed;
   left: 1rem;
-  top: 40%;
+  top: 45%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
