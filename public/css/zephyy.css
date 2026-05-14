@@ -607,6 +607,32 @@
   transform: none;
 }
 
+
+/* ── Quick-reply buttons ── */
+.zp-qr-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid oklch(var(--brand-teal) / 0.3);
+  background: oklch(18% 0.04 260 / 0.6);
+  color: var(--text-main);
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.zp-qr-btn:hover {
+  background: oklch(var(--brand-teal) / 0.2);
+  border-color: oklch(var(--brand-teal) / 0.5);
+  transform: scale(1.03);
+}
+.zp-qr-btn:active {
+  transform: scale(0.97);
+}
 /* ── Chat thinking indicator ── */
 .zp-chat-thinking {
   min-width: 100px;

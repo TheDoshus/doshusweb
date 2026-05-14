@@ -655,6 +655,10 @@
 (function () {
     'use strict';
 
+    /* ================================================
+     * 1. CONSTANTS, STATE, & DOM REFS
+     * ================================================ */
+
     const orb = document.getElementById('zp-orb-demo');
     const panel = document.getElementById('zp-chat-panel');
     const closeBtn = document.getElementById('zp-chat-close');
@@ -664,52 +668,51 @@
 
     if (!orb || !panel) return;
 
-    // Session ID — persist in localStorage
+    /* Session — persist UUID in localStorage */
     const SESSION_KEY = 'zephyy-chat-session';
     let sessionId = localStorage.getItem(SESSION_KEY);
     if (!sessionId) {
         sessionId = crypto.randomUUID ? crypto.randomUUID() :
-            'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-                const r = Math.random() * 16 | 0;
+            'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0;
                 return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
             });
         localStorage.setItem(SESSION_KEY, sessionId);
     }
 
     const FIREBASE_BASE = 'https://doshusweb-default-rtdb.firebaseio.com';
-    const SESSION_PATH = '/zephyy/chat/sessions/' + sessionId;
-    const CHAT_URL = FIREBASE_BASE + SESSION_PATH + '.json';
-    const MSGS_URL = FIREBASE_BASE + SESSION_PATH + '/messages.json';
+    const MSGS_URL = FIREBASE_BASE + '/zephyy/chat/sessions/' + sessionId + '/messages.json';
 
     let isOpen = false;
+    let lastCheck = Date.now();
+    let quickReplied = false; // prevent button re-adding after first send
 
-    function togglePanel() {
-        isOpen = !isOpen;
-        panel.classList.toggle('open', isOpen);
-        if (isOpen) {
-            inputEl.focus();
-            scrollToBottom();
-        }
-    }
+    /* Visitor name — from localStorage or detected */
+    const savedName = localStorage.getItem('zp-visitor-name');
 
-    function openPanel() {
-        if (!isOpen) togglePanel();
-    }
-
-    function closePanel() {
-        if (isOpen) togglePanel();
-    }
+    /* ================================================
+     * 2. DOM HELPERS
+     * ================================================ */
 
     function scrollToBottom() {
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    function togglePanel() {
+        isOpen = !isOpen;
+        panel.classList.toggle('open', isOpen);
+        if (isOpen) {
+            inputEl && inputEl.focus();
+            scrollToBottom();
+        }
+    }
+
     function addMessage(role, content, timestamp) {
-        const div = document.createElement('div');
+        var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-' + role;
         div.textContent = content;
         if (timestamp) {
-            const time = document.createElement('div');
+            var time = document.createElement('div');
             time.className = 'zp-chat-msg-time';
             time.textContent = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             div.appendChild(time);
@@ -718,85 +721,21 @@
         scrollToBottom();
     }
 
-    // Load existing messages from RTDB
-    async function loadMessages() {
-        try {
-            const resp = await fetch(MSGS_URL + '?orderBy="timestamp"&limitToLast=50');
-            if (!resp.ok) return;
-            const data = await resp.json();
-            if (!data) return;
-
-            // Clear welcome message if we have real messages
-            const welcome = messagesEl.querySelector('.zp-chat-msg-bot');
-            if (welcome && Object.keys(data).length > 0) {
-                welcome.remove();
-            }
-
-            Object.values(data).forEach(msg => {
-                // Don't duplicate messages already shown
-                const existing = messagesEl.querySelector('[data-msg-id]');
-                if (existing) return;
-                addMessage(msg.role, msg.content, msg.timestamp);
-            });
-        } catch {
-            // Silent fail — messages just won't load
-        }
+    function removeWelcome() {
+        var w = document.getElementById('zp-welcome-msg');
+        if (w) w.remove();
     }
 
-    // Send message to RTDB
-    async function sendMessage() {
-        const text = inputEl.value.trim();
-        if (!text) return;
-
-        sendBtn.disabled = true;
-        inputEl.value = '';
-
-        // Remove welcome message on first send
-        const welcome = messagesEl.querySelector('.zp-chat-msg-bot');
-        if (welcome) welcome.remove();
-
-        // Add user message locally immediately
-        addMessage('user', text, Date.now());
-        // Show thinking indicator while waiting for response
-        addThinkingBubble();
-
-        try {
-            // Write to RTDB — uses Firebase REST API
-            // Note: RTDB rules must allow writes to this path
-            const msg = {
-                role: 'user',
-                content: text,
-                timestamp: Date.now()
-            };
-            const resp = await fetch(MSGS_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(msg)
-            });
-
-            if (!resp.ok) {
-                // Write failed — thinking bubble already showing, the poll
-                // will eventually time out, but don't leave it forever
-                setTimeout(() => {
-                    const tb = document.getElementById('zp-chat-thinking');
-                    if (tb) {
-                        tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
-                    }
-                }, 15000);
-            }
-        } catch {
-            // Catch error — thinking bubble already showing
-            console.warn('Chat: failed to write to Firebase');
-        } finally {
-            sendBtn.disabled = false;
-            inputEl.focus();
-        }
+    function setWelcomeText(text) {
+        var w = document.getElementById('zp-welcome-msg');
+        if (w) w.textContent = text;
     }
 
+    /* Thinking indicator */
     function addThinkingBubble() {
-        // Remove any existing thinking bubble
-        removeThinkingBubble();
-        const div = document.createElement('div');
+        var el = document.getElementById('zp-chat-thinking');
+        if (el) el.remove();
+        var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-bot zp-chat-thinking';
         div.id = 'zp-chat-thinking';
         div.innerHTML = '<span class="zp-thinking-dots"><span>⚡</span><span class="zp-thinking-text">thinking</span><span class="zp-dot">.</span><span class="zp-dot">.</span><span class="zp-dot">.</span></span>';
@@ -805,107 +744,248 @@
     }
 
     function removeThinkingBubble() {
-        const el = document.getElementById('zp-chat-thinking');
+        var el = document.getElementById('zp-chat-thinking');
         if (el) el.remove();
     }
 
-    // Poll for new messages (Phase 1: just our own; Phase 2: bot responses)
-    let lastCheck = Date.now();
-    async function pollMessages() {
-        try {
-            const resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + lastCheck);
-            if (!resp.ok) return;
-            const data = await resp.json();
-            if (!data) return;
+    /* Remove quick-reply buttons */
+    function removeQuickReplies() {
+        var r = document.getElementById('zp-quick-reply-row');
+        if (r) r.remove();
+        quickReplied = true;
+    }
 
-            const now = Date.now();
-            let foundResponse = false;
-            Object.values(data).forEach(msg => {
-                // Only show messages from after our last check
-                if (msg.timestamp > lastCheck && msg.timestamp < now - 1000) {
-                    // Check if already displayed
-                    const existing = messagesEl.querySelector('[data-msg-id]');
-                    if (!existing) {
-                        addMessage(msg.role, msg.content, msg.timestamp);
-                        if (msg.role === 'assistant') foundResponse = true;
-                    }
-                }
-            });
-        } catch {
-            // Silent
+    /* ================================================
+     * 3. QUICK-REPLY NAME PROMPT
+     * ================================================ */
+
+    function showNamePrompt() {
+        if (quickReplied || savedName) return;
+        var row = document.getElementById('zp-quick-reply-row');
+        if (row) return; // already shown
+
+        row = document.createElement('div');
+        row.id = 'zp-quick-reply-row';
+        row.className = 'zp-chat-msg zp-chat-msg-bot';
+        row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;background:none;border:none;';
+
+        /* "I have a name!" button */
+        var nameBtn = document.createElement('button');
+        nameBtn.className = 'zp-qr-btn';
+        nameBtn.textContent = 'I have a name!';
+        nameBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            showNameInput();
+        });
+
+        /* "Just Zephyy" button */
+        var skipBtn = document.createElement('button');
+        skipBtn.className = 'zp-qr-btn';
+        skipBtn.textContent = 'Just Zephyy';
+        skipBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            removeQuickReplies();
+            sendText("I'm good without a name");
+        });
+
+        row.appendChild(nameBtn);
+        row.appendChild(skipBtn);
+        messagesEl.appendChild(row);
+        scrollToBottom();
+    }
+
+    function showNameInput() {
+        removeQuickReplies();
+        var row = document.createElement('div');
+        row.id = 'zp-name-input-row';
+        row.className = 'zp-chat-msg zp-chat-msg-bot';
+        row.style.cssText = 'display:flex;gap:6px;padding:6px 10px;background:none;border:none;align-items:center;';
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Your name...';
+        input.maxLength = 30;
+        input.style.cssText = 'flex:1;padding:8px 12px;border-radius:8px;border:1px solid oklch(var(--brand-teal) / 0.3);background:oklch(15% 0.03 260 / 0.8);color:var(--text-main);font-size:0.85rem;outline:none;';
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitName(input.value.trim());
+            }
+        });
+
+        var okBtn = document.createElement('button');
+        okBtn.textContent = 'OK';
+        okBtn.className = 'zp-qr-btn';
+        okBtn.style.cssText = 'padding:8px 16px;border-radius:8px;border:1px solid oklch(var(--brand-teal) / 0.4);background:oklch(var(--brand-teal) / 0.15);cursor:pointer;font-size:0.85rem;transition:all 0.15s;';
+        okBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            submitName(input.value.trim());
+        });
+
+        row.appendChild(input);
+        row.appendChild(okBtn);
+        messagesEl.appendChild(row);
+        scrollToBottom();
+        input.focus();
+    }
+
+    function submitName(name) {
+        var nr = document.getElementById('zp-name-input-row');
+        if (nr) nr.remove();
+        if (name && name.length > 0) {
+            sendText('My name is ' + name);
+        } else {
+            sendText("I don't have a name");
         }
     }
 
-    // Events
-    orb.addEventListener('click', openPanel);
-    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+    function sendText(text) {
+        if (!text) return;
+        inputEl.value = text;
+        sendBtn.click();
+    }
 
+    /* ================================================
+     * 4. FIREBASE OPERATIONS
+     * ================================================ */
+
+    async function loadMessages() {
+        try {
+            var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&limitToLast=50');
+            if (!resp.ok) return;
+            var data = await resp.json();
+            if (!data) { showNamePrompt(); return; }
+
+            var keys = Object.keys(data);
+            if (keys.length === 0) { showNamePrompt(); return; }
+
+            /* Clear the hardcoded welcome message */
+            removeWelcome();
+            removeQuickReplies();
+
+            Object.values(data).forEach(function(msg) {
+                addMessage(msg.role, msg.content, msg.timestamp);
+            });
+            lastCheck = Date.now();
+        } catch(e) { /* silent */ }
+    }
+
+    async function sendMessage() {
+        var text = inputEl.value.trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+        inputEl.value = '';
+
+        removeWelcome();
+        removeQuickReplies();
+
+        addMessage('user', text, Date.now());
+        addThinkingBubble();
+
+        try {
+            var resp = await fetch(MSGS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: 'user', content: text, timestamp: Date.now() })
+            });
+            if (!resp.ok) {
+                setTimeout(function() {
+                    var tb = document.getElementById('zp-chat-thinking');
+                    if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
+                }, 15000);
+            }
+        } catch(e) {
+            /* thinking bubble already showing */
+        } finally {
+            sendBtn.disabled = false;
+            inputEl.focus();
+        }
+    }
+
+    /* ================================================
+     * 5. POLL + NAME DETECTION (single fetch)
+     * ================================================ */
+
+    async function pollAndDetect() {
+        if (!panel.classList.contains('open')) return;
+
+        try {
+            var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + lastCheck);
+            if (!resp.ok) return;
+            var data = await resp.json();
+            if (!data) return;
+
+            var now = Date.now();
+            var foundResponse = false;
+
+            Object.keys(data).forEach(function(key) {
+                var msg = data[key];
+                if (!msg || !msg.content) return;
+                if (msg.timestamp > lastCheck && msg.timestamp < now - 1000) {
+                    /* Only render new messages */
+                    addMessage(msg.role, msg.content, msg.timestamp);
+                    if (msg.role === 'assistant') foundResponse = true;
+                }
+            });
+
+            if (foundResponse) removeThinkingBubble();
+
+            /* Name detection from user messages (no second fetch!) */
+            if (!savedName) {
+                Object.keys(data).forEach(function(key) {
+                    var msg = data[key];
+                    if (msg.role === 'assistant' || !msg.content) return;
+                    var m = msg.content.match(/my name is (\w+)/i) || msg.content.match(/i'm (\w+)/i) || msg.content.match(/call me (\w+)/i);
+                    if (m && m[1] && m[1].length > 1) {
+                        var n = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
+                        localStorage.setItem('zp-visitor-name', n);
+                        removeWelcome();
+                        removeQuickReplies();
+                        /* Show friendly acknowledgment */
+                        var d = document.createElement('div');
+                        d.className = 'zp-chat-msg zp-chat-msg-bot';
+                        d.textContent = 'Nice to meet you, ' + n + '! ⚡';
+                        d.id = 'zp-name-ack';
+                        messagesEl.appendChild(d);
+                        setTimeout(function() { var ack = document.getElementById('zp-name-ack'); if (ack) ack.remove(); }, 4000);
+                    }
+                });
+            }
+
+            lastCheck = now;
+        } catch(e) { /* silent */ }
+    }
+
+    /* ================================================
+     * 6. INIT
+     * ================================================ */
+
+    /* Restore saved name on load */
+    if (savedName) {
+        setWelcomeText('Welcome back, ' + savedName + '! ⚡');
+    }
+
+    /* Open panel → load messages once */
+    var panelObserver = new MutationObserver(function() {
+        if (panel.classList.contains('open')) {
+            loadMessages();
+            panelObserver.disconnect();
+        }
+    });
+    panelObserver.observe(panel, { attributes: true, attributeFilter: ['class'] });
+
+    /* Events */
+    orb.addEventListener('click', togglePanel);
+    if (closeBtn) closeBtn.addEventListener('click', togglePanel);
     sendBtn.addEventListener('click', sendMessage);
-    inputEl.addEventListener('keydown', (e) => {
+    inputEl.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
-    // ── Visitor Name Detection ──
-    // Restore saved name on page load
-    var savedName = localStorage.getItem("zp-visitor-name");
-    if (savedName) {
-        var w = document.getElementById("zp-welcome-msg");
-        if (w) w.remove();
-        var nMsg = document.createElement("div");
-        nMsg.className = "zp-chat-msg zp-chat-msg-bot";
-        nMsg.textContent = "Welcome back, " + savedName + "! ⚡";
-        messagesEl.appendChild(nMsg);
-    }
 
-    // Watch for name patterns in new messages
-    function detectName(data) {
-        if (savedName) return false;
-        var names = [];
-        Object.values(data).forEach(function(msg) {
-            if (msg.role === "assistant") return;
-            var m = msg.content.match(/my name is (\w+)/i) || msg.content.match(/i'm (\w+)/i) || msg.content.match(/call me (\w+)/i);
-            if (m && m[1] && m[1].length > 1) {
-                var n = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
-                names.push(n);
-            }
-        });
-        if (names.length) {
-            savedName = names[names.length - 1];
-            localStorage.setItem("zp-visitor-name", savedName);
-            // Remove welcome if still there
-            var w = document.getElementById("zp-welcome-msg");
-            if (w) w.remove();
-            // Show name acknowledgment
-            var d = document.createElement("div");
-            d.className = "zp-chat-msg zp-chat-msg-bot";
-            d.textContent = "Nice to meet you, " + savedName + "! ⚡";
-            messagesEl.appendChild(d);
-            setTimeout(function() { if (d.parentNode) d.remove(); }, 4000);
-            return true;
-        }
-        return false;
-    }
-
-    // Poll for new messages every 2 seconds when open
-    setInterval(function() {
-        if (panel.classList.contains('open')) {
-            pollMessages();
-        }
-    }, 2000);
-
-    // Patch pollMessages to detect names
-    var origPoll = pollMessages;
-    pollMessages = async function() {
-        await origPoll();
-        // The detection runs as a second pass
-        try {
-            var r = await fetch(MSGS_URL + '?orderBy="timestamp"&limitToLast=10');
-            if (r.ok) {
-                var d = await r.json();
-                if (d) detectName(d);
-            }
-        } catch(e) {}
-    };
+    /* Poll every 2s for new messages */
+    setInterval(pollAndDetect, 2000);
 })();
