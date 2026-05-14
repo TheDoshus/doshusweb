@@ -147,8 +147,8 @@
 }
 
 .zp-logo-icon {
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   opacity: 0.9;
 }
 
@@ -521,7 +521,7 @@
   letter-spacing: 0.02em;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(calc(-50% - 10px));
   white-space: nowrap;
 }
 

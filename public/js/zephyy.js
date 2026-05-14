@@ -97,11 +97,7 @@
                 if (center) center.style.animationDuration = '3s';
             }
         }
-        wrap.addEventListener('click', cycleGlyphState);
-        wrap.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            cycleGlyphState();
-        });
+        wrap.addEventListener('pointerdown', cycleGlyphState);
     }
 
     // ─── Inject keyframe styles ───
