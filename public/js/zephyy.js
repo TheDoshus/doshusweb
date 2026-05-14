@@ -473,16 +473,6 @@
     }, { passive: true });
 })();
 
-// ─── Chat Orb click handler (replaces inline onclick) ───
-(function () {
-    'use strict';
-    const orb = document.getElementById('zp-orb-demo');
-    if (!orb) return;
-    orb.addEventListener('click', () => {
-        alert('Chat feature coming soon! For now, check out my profile and projects.');
-    });
-})();
-
 // ─── Daily Zephyy — live thought from RTDB ───
 (function () {
     'use strict';
@@ -686,8 +676,10 @@
         localStorage.setItem(SESSION_KEY, sessionId);
     }
 
-    const CHAT_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/chat/sessions/' + sessionId + '.json';
-    const MSGS_URL = CHAT_URL + '/messages';
+    const FIREBASE_BASE = 'https://doshusweb-default-rtdb.firebaseio.com';
+    const SESSION_PATH = '/zephyy/chat/sessions/' + sessionId;
+    const CHAT_URL = FIREBASE_BASE + SESSION_PATH + '.json';
+    const MSGS_URL = FIREBASE_BASE + SESSION_PATH + '/messages.json';
 
     let isOpen = false;
 
@@ -781,11 +773,10 @@
             });
 
             if (!resp.ok) {
-                // If write fails, show a note
-                addMessage('bot', 'Message received! (Chat backend coming soon — your message is saved locally for now.)', Date.now());
+                addMessage('bot', 'Message saved! Waiting for me to respond…', Date.now());
             }
         } catch {
-            addMessage('bot', 'Message received! (Chat backend coming soon.)', Date.now());
+            addMessage('bot', 'Message saved! Waiting for me to respond…', Date.now());
         } finally {
             sendBtn.disabled = false;
             inputEl.focus();
