@@ -757,6 +757,8 @@
 
         // Add user message locally immediately
         addMessage('user', text, Date.now());
+        // Show thinking indicator while waiting for response
+        addThinkingBubble();
 
         try {
             // Write to RTDB — uses Firebase REST API
@@ -766,17 +768,25 @@
                 content: text,
                 timestamp: Date.now()
             };
-            const resp = await fetch(MSGS_URL + '.json', {
+            const resp = await fetch(MSGS_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(msg)
             });
 
             if (!resp.ok) {
-                addThinkingBubble();
+                // Write failed — thinking bubble already showing, the poll
+                // will eventually time out, but don't leave it forever
+                setTimeout(() => {
+                    const tb = document.getElementById('zp-chat-thinking');
+                    if (tb) {
+                        tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
+                    }
+                }, 15000);
             }
         } catch {
-            addThinkingBubble();
+            // Catch error — thinking bubble already showing
+            console.warn('Chat: failed to write to Firebase');
         } finally {
             sendBtn.disabled = false;
             inputEl.focus();
@@ -803,7 +813,7 @@
     let lastCheck = Date.now();
     async function pollMessages() {
         try {
-            const resp = await fetch(MSGS_URL + '.json?orderBy="timestamp"&startAt=' + lastCheck);
+            const resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + lastCheck);
             if (!resp.ok) return;
             const data = await resp.json();
             if (!data) return;
