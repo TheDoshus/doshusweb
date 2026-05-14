@@ -708,8 +708,12 @@
     }
 
     function addMessage(role, content, timestamp) {
+        // Dedup: skip if last message with same role has same content
+        var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-child[data-content]');
+        if (prev && prev.dataset.content === content) return;
         var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-' + role;
+        div.dataset.content = content;
         div.textContent = content;
         if (timestamp) {
             var time = document.createElement('div');
