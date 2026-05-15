@@ -1020,7 +1020,7 @@
             }
 
             /* Name detection from user messages — skip anonymous phrases */
-            if (!savedName) {
+            if (!localStorage.getItem('zp-visitor-name')) {
                 Object.keys(data).forEach(function(key) {
                     var msg = data[key];
                     if (msg.role === 'assistant' || !msg.content) return;
