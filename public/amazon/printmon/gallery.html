@@ -261,14 +261,14 @@
 
     .modal-open-page {
       display: inline-block;
-      margin: 8px 0;
-      padding: 8px 16px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 8px;
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
       color: var(--color-accent);
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      margin-left: 8px;
       transition: all 0.2s;
     }
     .modal-open-page:hover {
@@ -345,6 +345,7 @@
         </div>
         <button class="modal-close" id="modalClose">&times;</button>
         <button class="modal-open-page" id="previewLink" style="display:none;">🔗 Open Full Page ↗</button>
+      </div>
       <div class="modal-frame-wrap">
         <iframe id="previewFrame" src="" sandbox="allow-scripts allow-same-origin"></iframe>
       </div>
