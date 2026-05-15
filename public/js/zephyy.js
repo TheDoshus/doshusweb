@@ -860,6 +860,8 @@
                 setTimeout(showNamePrompt, 500);
                 return;
             }
+            /* Clear anonymous flags — user provided a real name */
+            localStorage.removeItem('zp-no-name');
             var caps = name[0].toUpperCase() + name.slice(1).toLowerCase();
             var greetings = ["Yeah it's ", "You can call me ", "I go by "];
             var greet = greetings[Math.floor(Math.random() * greetings.length)];
@@ -884,6 +886,12 @@
     function sendText(text) {
         if (!text) return;
         quickReplied = true; // prevent re-showing buttons
+        /* Clear stale name if user chooses to stay anonymous */
+        if (text.includes("without a name") || text.includes("don't have a name")) {
+            localStorage.removeItem('zp-visitor-name');
+            localStorage.setItem('zp-no-name', '1');
+            removeWelcome();
+        }
         inputEl.value = text;
         sendBtn.click();
     }
@@ -1009,9 +1017,14 @@
      * 6. INIT
      * ================================================ */
 
-    /* Restore saved name on load — just show the name, not "welcome back" every time */
-    if (savedName) {
+    /* Restore saved name on load — only if the panel hasn't been opened yet.
+       If user already said "no name", skip the welcome text entirely */
+    if (savedName && !localStorage.getItem('zp-no-name')) {
         setWelcomeText('Hey ' + savedName + '! ⚡');
+    } else if (savedName) {
+        /* User previously said no name — clear stale name */
+        localStorage.removeItem('zp-visitor-name');
+        removeWelcome();
     }
 
     /* Open panel → load messages once */
