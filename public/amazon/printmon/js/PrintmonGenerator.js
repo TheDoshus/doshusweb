@@ -136,12 +136,14 @@ class PrintmonGenerator {
    * @param {string} [opts.baseTheme] — 'GTA', 'Glass', 'Halloween', 'Forest', 'Witch'
    * @param {Object} [opts.remap] — AI-generated color remap
    * @param {string} baseCSS — pre-loaded base theme CSS content
+   * @param {string} [baseHTML] — pre-loaded base theme HTML template
    */
-  constructor({ name, tagline, baseTheme, remap }, baseCSS) {
+  constructor({ name, tagline, baseTheme, remap }, baseCSS, baseHTML) {
     this.name = name || 'Untitled';
     this.tagline = tagline || '';
     this.baseKey = baseTheme || 'GTA';
     this.baseCSS = baseCSS || '';
+    this.baseHTML = baseHTML || '';
     this.remap = remap || {};
   }
 
@@ -186,6 +188,11 @@ class PrintmonGenerator {
     const css = this.recolor();
     const wallpapers = await this.fetchWallpapers(5);
 
+    // Use base HTML template with targeted replacements
+    const html = this.baseHTML
+      ? buildHTMLfromTemplate(this.name, this.tagline, css, wallpapers, this.baseHTML)
+      : buildHTML(this.name, this.tagline, css, wallpapers, this.baseKey);
+
     return {
       name: this.name,
       safeName: sn,
@@ -193,10 +200,44 @@ class PrintmonGenerator {
       baseTheme: this.baseKey,
       wallpapers,
       css,
-      html: buildHTML(this.name, this.tagline, css, wallpapers, this.baseKey),
+      html,
       createdAt: new Date().toISOString(),
     };
   }
+}
+
+// ─── Build HTML from base template ─────────────────────────
+
+function buildHTMLfromTemplate(name, tagline, css, wallpapers, baseHTML) {
+  const wallpaperArray = wallpapers.map(w => `'${w}'`).join(',\n\t\t\t');
+  const BASE = 'https://doshus.net/amazon/printmon';
+
+  let html = baseHTML;
+
+  // 1. Title
+  html = html.replace(/<title>[^<]*<\/title>/, `<title>${name} - Printmon Theme</title>`);
+
+  // 2. Tagline
+  html = html.replace(/(<p class="subtitle">)([^<]*)(<\/p>)/, `$1${tagline}$2`);
+
+  // 3. Replace theme CSS link with inline remapped CSS
+  html = html.replace(
+    /<link rel="stylesheet" href="css\/newer\/[^"]+\.css">/,
+    `<style>\n${css}\n</style>`
+  );
+
+  // 4. Base tag for clean URLs
+  if (!html.includes('<base href=')) {
+    html = html.replace('<head>', `<head>\n\t<base href="${BASE}/">`);
+  }
+
+  // 5. Wallpaper array
+  html = html.replace(
+    /(const wallpapers = \[)[\s\S]*?(\];)/,
+    `$1\n\t\t\t${wallpaperArray}\n\t\t$2`
+  );
+
+  return html;
 }
 
 // ─── HTML Page Generator ────────────────────────────────────

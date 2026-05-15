@@ -216,11 +216,6 @@ pre{background:#0d0d0d;padding:12px;border-radius:6px;overflow-x:auto;white-spac
       previewLink.onclick = function() { window.openThemePage(safeName); };
       previewLink.style.display = 'inline-block';
     }
-    var vsb = document.getElementById('viewSourceBtn');
-    if (vsb) {
-      vsb.onclick = function() { window.viewThemeSource(safeName); };
-      vsb.style.display = 'inline-block';
-    }
 
     // Use srcdoc to render the theme HTML directly in the iframe
     const fullPage = theme.html || buildStandalonePage(theme);
