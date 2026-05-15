@@ -5,16 +5,8 @@
  */
 
 /* ── Hero ── */
-.zp-hero {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  padding: 6rem 1.5rem 3rem;
-  text-align: center;
-  overflow: hidden;
+.zp-hero { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
+  padding: 6rem 1.5rem 3rem; text-align: center;
 }
 
 .zp-glyph-wrap {
@@ -485,6 +477,7 @@
   left: 50%;
   transform: translateX(-50%) translateY(20px) scale(0.95);
   width: 800px;
+  min-height: 330px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 200px);
   background: oklch(12% 0.02 260 / 0.95);
@@ -800,7 +793,6 @@
 
 .zp-thinking-dots {
   display: flex;
-  align-items: center;
   gap: 3px;
   font-size: 0.85rem;
   color: oklch(var(--brand-teal) / 0.7);

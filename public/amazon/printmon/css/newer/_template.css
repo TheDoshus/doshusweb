@@ -1,86 +1,86 @@
 
 .printbox {
-    background-color: #06010180;
-    border: 5px double #c4ab49f2
+    background-color: {{placeholder}};
+    border: 5px double {{placeholder}};
 }
 h1 {
     color: #9F31C7C2;
-    text-shadow: 2px 2px #c4ab49d6;
+    text-shadow: 2px 2px {{placeholder}};
 }
 .subtitle {
     color: #34b8b2c4;
-    font-family: 'system-ui', 'system-ui';
+    font-family: 'Amazon Ember', 'system-ui';
 }
 .input-group label {
-    color: #8cffff;
+    color: {{placeholder}};
 }
 .input-group label span {
-    color: #00C1FF;
+    color: {{placeholder}};
 }
 input[type="text"] {
-    border: 1.5px solid #9F31C7CF;
+    border: 1.5px solid {{placeholder}};
 }
 .print-button {
-    background: linear-gradient(120deg, #8cffffbf, #ac6fdebd);
+    background: linear-gradient(120deg, {{placeholder}});
     color: #ffffff;
-    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5), 0 0 30px rgba(78, 205, 196, 0.3);
+    box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
 }
 
 .print-button:hover {
-    background: linear-gradient(145deg, #a912fdcf, #cdb34e);
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.7), 0 0 40px rgba(78, 205, 196, 0.5);
+    background: linear-gradient(145deg, {{placeholder}});
+    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
 }
 
 .buttonsLine1 {
-  background: linear-gradient(145deg, #a912fdcf, #cdb34e);
+  background: linear-gradient(145deg, {{placeholder}});
   color: #ffffff;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5);
+  box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
 }
 .buttonsLine1:hover {
     background: linear-gradient(145deg, #8cffffbf, #ac6fdebd);
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7);
+    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
 }
 
 .buttonsLine2 {
-  background: linear-gradient(195deg, #a912fdcf, #cdb34e);
+  background: linear-gradient(195deg, {{placeholder}}, {{placeholder}});
   color: #ffffff;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5);
+  box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
 }
 .buttonsLine2:hover {
     background: linear-gradient(145deg, #8cffffbf, #ac6fdebd);
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7);
+    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
 }
 
 .buttonsLine3 {
-  background: linear-gradient(70deg, #a912fdcf, #cdb34e);
+  background: linear-gradient(70deg, {{placeholder}});
   color: #ffffff;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5);
+  box-shadow: 0 0 15px {{placeholder}}, 0 0 30px rg{{placeholder}};
 }
 .buttonsLine3:hover {
-    background: linear-gradient(145deg, #8cffffbf, #ac6fdebd);
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7);
+    background: linear-gradient(145deg, {{placeholder}};
+    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
 }
 
 .quick-print-buttons button:hover {
-    background-color: #a300ff85;
-    border-color: #a300ff;
+    background-color: {{placeholder}};
+    border-color: {{placeholder}};
 }
 .quick-print-buttons button:active {
-    background-color: #0213ff7e;
-    border-color: #0600c7;
+    background-color: {{placeholder}};
+    border-color: {{placeholder}};
 }
 .scroll-container {
-    scrollbar-color: #a912fdcf #660a97ae;
+    scrollbar-color: {{placeholder}};
 }
 .scroll-button {
-    background-color: #cdb34ed6;
+    background-color: {{placeholder}}
 }
 .scroll-button:hover {
-    background-color: #cb8316;
+    background-color: #{{placeholder}};
 }
 .asin-sticker-container {
-    background-color: #360748A3;
-    border: 2px dashed #fffc;
+    background-color: {{placeholder}};
+    border: 2px dashed {{placeholder}};
 }
 .asin-sticker-header {
     color: white;
@@ -89,44 +89,44 @@ input[type="text"] {
     background-color: #9f370fe8;
 }
 .asin-sticker-content button:hover {
-    background-color: #8cffffbf;
+    background-color: {{placeholder}};
 }
 .MultiBarcode-printer {
-    background-color: #06010196;
-    border: 5px double #c4ab49f2;
+    background-color: {{placeholder}};
+    border: 5px double {{placeholder}};
 }
 .MultiBarcode-printer h2 {
     color: #ffffff;
-    text-shadow: 2px 2px #d68cffbf;
+    text-shadow: 2px 2px {{placeholder}};
 }
 #textAreaID {
-    border: 1.5px solid #9F31C7CF;
+    border: 1.5px solid {{placeholder}};
 }
 .multiButton {
-    background: linear-gradient(90deg, #8cffffbf, #ac6fdebd);
+    background: linear-gradient(90deg, {{placeholder}});
     color: #ffffff;
-    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5), 0 0 30px rgba(78, 205, 196, 0.3);
+    box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
 }
 
 .multiButton:hover {
-    background: linear-gradient(145deg, #a912fdcf, #cdb34e);
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.7), 0 0 40px rgba(78, 205, 196, 0.5);
+    background: linear-gradient(145deg, {{placeholder}});
+    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
 }
 
 #quickbuttons-dropdown .qb-dropbtn {
-  background: linear-gradient(145deg, #a912fdcf, #cdb34e);
+  background: linear-gradient(145deg, {{placeholder}});
   color: #ffffff;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.7), 0 0 30px rgba(78, 205, 196, 0.5);
+  box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
 }
 #quickbuttons-dropdown .qb-dropdown-content {
-  background-color: #e6b7ffcf;
+  background-color: {{placeholder}};
 }
 #quickbuttons-dropdown .qb-dropdown-content a {
-  color: #000000;
+  color: {{placeholder}};
 }
 #quickbuttons-dropdown .qb-dropdown-content a:hover {
-  background-color: #e3e3e3a0;
+  background-color: {{placeholder}};
 }
 #quickbuttons-dropdown:hover .qb-dropbtn {
-  box-shadow: 0 0 20px rgba(255, 107, 107, 0.9), 0 0 40px rgba(78, 205, 196, 0.7);
+  box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
 }
