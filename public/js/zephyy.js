@@ -1009,9 +1009,9 @@
      * 6. INIT
      * ================================================ */
 
-    /* Restore saved name on load */
+    /* Restore saved name on load — just show the name, not "welcome back" every time */
     if (savedName) {
-        setWelcomeText('Welcome back, ' + savedName + '! ⚡');
+        setWelcomeText('Hey ' + savedName + '! ⚡');
     }
 
     /* Open panel → load messages once */
