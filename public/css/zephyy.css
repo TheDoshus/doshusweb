@@ -574,6 +574,25 @@
   background-clip: text;
 }
 
+.zp-model-badge {
+  font-size: 0.6rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: oklch(var(--brand-teal) / 0.12);
+  border: 1px solid oklch(var(--brand-teal) / 0.2);
+  color: oklch(var(--brand-teal));
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.zp-model-badge.fallback {
+  background: oklch(50% 0.05 80 / 0.15);
+  border-color: oklch(50% 0.05 80 / 0.3);
+  color: oklch(70% 0.08 80);
+}
+
 .zp-chat-close {
   background: none;
   border: none;

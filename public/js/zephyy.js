@@ -566,6 +566,17 @@
                     dot.classList.add('offline');
                 }
             }
+
+            /* Model badge */
+            var badge = document.getElementById('zp-model-badge');
+            if (badge && data.chatModel) {
+                badge.textContent = data.chatModel;
+                badge.className = 'zp-model-badge';
+                // Add fallback class if not on primary (MiMo)
+                if (!data.chatModel.toLowerCase().includes('mimo')) {
+                    badge.classList.add('fallback');
+                }
+            }
         } catch {
             text.textContent = 'Status unavailable.';
             if (dot) dot.className = 'zp-dot offline';
