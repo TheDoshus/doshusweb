@@ -216,7 +216,7 @@ function buildHTMLfromTemplate(name, tagline, css, wallpapers, baseHTML) {
   if (!baseHTML) return buildHTML(name, tagline, css, wallpapers, 'GTA');
 
   // Inject remapped CSS inline after Shared2Printmon link
-  baseHTML = baseHTML.replace(
+  let html = baseHTML.replace(
     '<link rel="stylesheet" href="css/newer/Shared2Printmon.css">',
     '<link rel="stylesheet" href="css/newer/Shared2Printmon.css">\n\t<style>\n' + css + '\n\t</style>'
   );
@@ -224,23 +224,22 @@ function buildHTMLfromTemplate(name, tagline, css, wallpapers, baseHTML) {
   // Extract dominant color for crypto widget bg
   const hexMatch = css.match(/#[0-9a-fA-F]{6}/);
   const cryptoBg = hexMatch ? hexMatch[0] : '#1a1a2e';
+
+  // Generate favicon
   const favicon = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎨</text></svg>');
 
-  let html = baseHTML;
-  // Sequential placeholder replacement — order based on template layout:
-  // 1. Page title: {{PLACEHOLDER}} - External generated Printmon
-  html = html.replace('{{PLACEHOLDER}}', name);
-  // 2. Favicon icon URL
-  html = html.replace('{{PLACEHOLDERS}}', favicon);
-  // 3. Subtitle/tagline
-  html = html.replace('{{PLACEHOLDERS}}', tagline || '');
-  // 4. Crypto widget background color
-  html = html.replace('{{PLACEHOLDERS}}', cryptoBg);
-  // 5-9: Wallpaper URLs
+  // Distinct targeted replacements — no sequential dependency
+  html = html.replace('{{TITLE}}', name);
+  html = html.replace('{{ICON}}', favicon);
+  html = html.replace('{{TAGLINE}}', tagline || '');
+  html = html.replace('{{CRYPTO_BG}}', cryptoBg);
+
+  // Wallpapers — replace each slot
   for (let i = 0; i < 5; i++) {
     const wp = wallpapers[i] || (wallpapers[0] || '');
-    html = html.replace("'{{PLACEHOLDERS}}'", wp ? `'${wp}'` : "''");
+    html = html.replace("'{{WALLPAPER}}'", wp ? `'${wp}'` : "''");
   }
+
   return html;
 }
 

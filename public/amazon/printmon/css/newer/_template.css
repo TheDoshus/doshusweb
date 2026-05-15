@@ -1,6 +1,6 @@
 @font-face {
-  font-family: '{{PLACEHOLDERS}}';
-  src: url("{{PLACEHOLDERS}}") format('opentype');
+  font-family: 'system-ui';
+  src: url("") format('opentype');
   font-weight: normal;
   font-style: normal;
 }
@@ -15,7 +15,7 @@ h1 {
 }
 .subtitle {
     color: #34b8b2c4;
-    font-family: '{{PLACEHOLDERS}}', '{{PLACEHOLDERS}}';
+    font-family: 'system-ui', 'system-ui';
 }
 .input-group label {
     color: #8cffff;
