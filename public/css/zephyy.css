@@ -414,6 +414,25 @@
   font-size: 1.2rem;
 }
 
+/* Unread notification dot */
+.zp-orb-demo.unread::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: oklch(var(--brand-teal));
+  box-shadow: 0 0 8px oklch(var(--brand-teal) / 0.8);
+  animation: dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
 @keyframes orb-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
@@ -555,6 +574,25 @@
   background-clip: text;
 }
 
+.zp-model-badge {
+  font-size: 0.6rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: oklch(var(--brand-teal) / 0.12);
+  border: 1px solid oklch(var(--brand-teal) / 0.2);
+  color: oklch(var(--brand-teal));
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.zp-model-badge.fallback {
+  background: oklch(50% 0.05 80 / 0.15);
+  border-color: oklch(50% 0.05 80 / 0.3);
+  color: oklch(70% 0.08 80);
+}
+
 .zp-chat-close {
   background: none;
   border: none;
@@ -629,6 +667,22 @@
   color: var(--text-muted);
   margin-top: 4px;
   opacity: 0.7;
+}
+
+/* Clickable links in chat messages */
+.zp-chat-msg a {
+  color: oklch(var(--brand-teal));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.zp-chat-msg a:hover {
+  color: var(--text-main);
+}
+.zp-chat-msg-user a {
+  color: oklch(var(--text-main));
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* Session ended banner */

@@ -566,6 +566,17 @@
                     dot.classList.add('offline');
                 }
             }
+
+            /* Model badge */
+            var badge = document.getElementById('zp-model-badge');
+            if (badge && data.chatModel) {
+                badge.textContent = data.chatModel;
+                badge.className = 'zp-model-badge';
+                // Add fallback class if not on primary (MiMo)
+                if (!data.chatModel.toLowerCase().includes('mimo')) {
+                    badge.classList.add('fallback');
+                }
+            }
         } catch {
             text.textContent = 'Status unavailable.';
             if (dot) dot.className = 'zp-dot offline';
@@ -713,9 +724,24 @@
         var bd = document.getElementById('zp-chat-backdrop');
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
+            orb.classList.remove('unread');
             inputEl && inputEl.focus();
             scrollToBottom();
         }
+    }
+
+    function renderContent(text) {
+        // Escape HTML first (XSS prevention)
+        var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        // Markdown links: [text](url)
+        escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        // Bare URLs (not already inside an <a> tag)
+        escaped = escaped.replace(/(?<!href="|>)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+        // Bold: **text**
+        escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // Newlines to <br>
+        escaped = escaped.replace(/\n/g, '<br>');
+        return escaped;
     }
 
     function addMessage(role, content, timestamp) {
@@ -725,7 +751,7 @@
         var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-' + role;
         div.dataset.content = content;
-        div.textContent = content;
+        div.innerHTML = renderContent(content);
         if (timestamp) {
             var time = document.createElement('div');
             time.className = 'zp-chat-msg-time';
@@ -961,7 +987,7 @@
      * ================================================ */
 
     async function pollAndDetect() {
-        if (!panel.classList.contains('open')) return;
+        var panelOpen = panel.classList.contains('open');
 
         try {
             var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + lastCheck);
@@ -978,19 +1004,28 @@
                 if (msg.timestamp > lastCheck) {
                     /* Only render assistant replies — user msgs rendered locally */
                     if (msg.role === 'assistant') {
-                        addMessage(msg.role, msg.content, msg.timestamp);
-                        foundResponse = true;
+                        if (panelOpen) {
+                            if (!foundResponse) { removeThinkingBubble(); foundResponse = true; }
+                            addMessage(msg.role, msg.content, msg.timestamp);
+                        } else {
+                            foundResponse = true; /* Show unread dot */
+                        }
                     }
                 }
             });
 
-            if (foundResponse) removeThinkingBubble();
+            /* Show/hide unread notification dot on orb */
+            if (foundResponse && !panelOpen) {
+                orb.classList.add('unread');
+            }
 
-            /* Name detection from user messages (no second fetch!) */
-            if (!savedName) {
+            /* Name detection from user messages — skip anonymous phrases */
+            if (!localStorage.getItem('zp-visitor-name')) {
                 Object.keys(data).forEach(function(key) {
                     var msg = data[key];
                     if (msg.role === 'assistant' || !msg.content) return;
+                    /* Don't detect names from anonymity phrases */
+                    if (/without a name|don't have a name|no name|nah/i.test(msg.content)) return;
                     var m = msg.content.match(/my name is (\w+)/i) || msg.content.match(/i'm (\w+)/i) || msg.content.match(/call me (\w+)/i);
                     if (m && m[1] && m[1].length > 1) {
                         var n = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
