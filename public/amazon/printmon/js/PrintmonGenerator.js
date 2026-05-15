@@ -79,8 +79,9 @@ function extractColors(css) {
 
 function remapColors(css, colorMap) {
   let result = css;
-  for (const [original, replacement] of Object.entries(colorMap)) {
-    // Escape regex special chars
+  // Sort longest first to prevent partial matches (#222 matching inside #222222)
+  const entries = Object.entries(colorMap).sort((a,b) => b[0].length - a[0].length);
+  for (const [original, replacement] of entries) {
     const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     result = result.replace(new RegExp(escaped, 'g'), replacement);
   }
@@ -150,8 +151,9 @@ class PrintmonGenerator {
     return remapColors(this.baseCSS, this.remap);
   }
 
-  async fetchWallpapers(count = 5) {
-    const query = `${this.name} background aesthetic`;
+  async fetchWallpapers(count = 5, altQuery) {
+    const query = altQuery || `${this.name} background`;
+    const clean = query.replace(/\b(theme|printmon|skin|make|create|generate|design|build|me|a|an)\b/gi, '').replace(/\s+/g, ' ').trim() || this.name;
     const cached = wallpaperCache.get(query);
     if (cached && Date.now() - cached.ts < 6 * 60 * 60 * 1000) {
       return cached.urls.slice(0, count);
@@ -181,10 +183,10 @@ class PrintmonGenerator {
       .replace(/\s+/g, '-').toLowerCase() || 'untitled';
   }
 
-  async generate() {
+  async generate(altQuery) {
     const sn = this.safeName();
     const css = this.recolor();
-    const wallpapers = await this.fetchWallpapers(5);
+    const wallpapers = await this.fetchWallpapers(5, altQuery);
 
     return {
       name: this.name,
