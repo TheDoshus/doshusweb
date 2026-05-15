@@ -631,6 +631,22 @@
   opacity: 0.7;
 }
 
+/* Clickable links in chat messages */
+.zp-chat-msg a {
+  color: oklch(var(--brand-teal));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.zp-chat-msg a:hover {
+  color: var(--text-main);
+}
+.zp-chat-msg-user a {
+  color: oklch(var(--text-main));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* Session ended banner */
 .zp-chat-ended {
   padding: 12px 16px;

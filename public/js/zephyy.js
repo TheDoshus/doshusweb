@@ -718,6 +718,20 @@
         }
     }
 
+    function renderContent(text) {
+        // Escape HTML first (XSS prevention)
+        var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        // Markdown links: [text](url)
+        escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        // Bare URLs (not already inside an <a> tag)
+        escaped = escaped.replace(/(?<!href="|>)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+        // Bold: **text**
+        escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // Newlines to <br>
+        escaped = escaped.replace(/\n/g, '<br>');
+        return escaped;
+    }
+
     function addMessage(role, content, timestamp) {
         // Dedup: skip if last message with same role has same content
         var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-of-type[data-content]');
@@ -725,7 +739,7 @@
         var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-' + role;
         div.dataset.content = content;
-        div.textContent = content;
+        div.innerHTML = renderContent(content);
         if (timestamp) {
             var time = document.createElement('div');
             time.className = 'zp-chat-msg-time';
