@@ -713,6 +713,7 @@
         var bd = document.getElementById('zp-chat-backdrop');
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
+            orb.classList.remove('unread');
             inputEl && inputEl.focus();
             scrollToBottom();
         }
@@ -975,7 +976,7 @@
      * ================================================ */
 
     async function pollAndDetect() {
-        if (!panel.classList.contains('open')) return;
+        var panelOpen = panel.classList.contains('open');
 
         try {
             var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + lastCheck);
@@ -992,11 +993,20 @@
                 if (msg.timestamp > lastCheck) {
                     /* Only render assistant replies — user msgs rendered locally */
                     if (msg.role === 'assistant') {
-                        if (!foundResponse) { removeThinkingBubble(); foundResponse = true; }
-                        addMessage(msg.role, msg.content, msg.timestamp);
+                        if (panelOpen) {
+                            if (!foundResponse) { removeThinkingBubble(); foundResponse = true; }
+                            addMessage(msg.role, msg.content, msg.timestamp);
+                        } else {
+                            foundResponse = true; /* Show unread dot */
+                        }
                     }
                 }
             });
+
+            /* Show/hide unread notification dot on orb */
+            if (foundResponse && !panelOpen) {
+                orb.classList.add('unread');
+            }
 
             /* Name detection from user messages — skip anonymous phrases */
             if (!savedName) {
