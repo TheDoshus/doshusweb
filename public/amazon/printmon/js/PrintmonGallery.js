@@ -129,10 +129,27 @@
   window.openThemePage = function (safeName) {
     const theme = themes.find((t) => t.safeName === safeName);
     if (!theme) return;
-
-    // Build a full standalone HTML page from the generated CSS + HTML
     const fullPage = theme.html || buildStandalonePage(theme);
     const blob = new Blob([fullPage], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
+
+  window.viewThemeSource = function (safeName) {
+    const theme = themes.find((t) => t.safeName === safeName);
+    if (!theme) return;
+    // Open raw CSS + HTML in a new window for inspection
+    const source = `<!DOCTYPE HTML>
+<html><head><title>Source: ${theme.name}</title>
+<style>body{background:#1a1a1a;color:#e0e0e0;font:13px/1.6 monospace;padding:2rem;max-width:900px;margin:0 auto}
+h2{color:#88ff88;border-bottom:1px solid #333;padding-bottom:4px}
+pre{background:#0d0d0d;padding:12px;border-radius:6px;overflow-x:auto;white-space:pre-wrap;max-height:60vh}
+.hex{color:#88ccff}.rgba{color:#ffcc88}</style></head><body>
+<h1>${theme.name}</h1><p>Tagline: ${theme.tagline||''} | Base: ${theme.baseTheme||'GTA'} | Wallpapers: ${(theme.wallpapers||[]).length}</p>
+<h2>CSS (${(theme.css||'').length}B)</h2><pre>${(theme.css||'').replace(/</g,'&lt;')}</pre>
+<h2>HTML (${(theme.html||'').length}B)</h2><pre>${(theme.html||'').replace(/</g,'&lt;')}</pre>
+</body></html>`;
+    const blob = new Blob([source], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
   };
@@ -194,10 +211,15 @@
     if (previewName) previewName.textContent = theme.name;
     if (previewTagline) previewTagline.textContent = theme.tagline || '';
 
-    // Show open-link button
+    // Show action buttons
     if (previewLink) {
       previewLink.onclick = function() { window.openThemePage(safeName); };
       previewLink.style.display = 'inline-block';
+    }
+    var vsb = document.getElementById('viewSourceBtn');
+    if (vsb) {
+      vsb.onclick = function() { window.viewThemeSource(safeName); };
+      vsb.style.display = 'inline-block';
     }
 
     // Use srcdoc to render the theme HTML directly in the iframe
