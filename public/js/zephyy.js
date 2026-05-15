@@ -846,6 +846,9 @@
         if (quickReplied || savedName) return;
         var row = document.getElementById('zp-quick-reply-row');
         if (row) return; // already shown
+        /* Don't show buttons if conversation already has user messages */
+        var existingMsgs = messagesEl.querySelectorAll('.zp-chat-msg-user');
+        if (existingMsgs.length > 0) return;
 
         row = document.createElement('div');
         row.id = 'zp-quick-reply-row';
