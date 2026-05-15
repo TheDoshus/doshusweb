@@ -100,7 +100,7 @@
             <p class="card-tagline">${t.tagline || ''}</p>
             <div class="card-meta">
               ${wallpaperCount > 0 ? `<span class="chip">🖼 ${wallpaperCount} wallpapers</span>` : ''}
-              <span class="chip">${t.baseTheme || 'Custom'}</span>
+              <span class="chip">✨ Generated</span>
             </div>
           </div>
         </div>
