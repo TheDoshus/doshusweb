@@ -152,8 +152,12 @@ class PrintmonGenerator {
     return remapColors(this.baseCSS, this.remap);
   }
 
-  async fetchWallpapers(count = 5) {
-    const query = `${this.name} background aesthetic`;
+  async fetchWallpapers(count = 5, keywords) {
+    // Use user's original message keywords for relevant results
+    const searchTerms = keywords
+      ? keywords.replace(/\b(make|create|generate|design|build|me|a|an|theme|printmon|skin)\b/gi, '').replace(/\s+/g, ' ').trim()
+      : this.name.replace(/\b(theme|printmon|skin)\b/gi, '').trim();
+    const query = searchTerms || this.name;
     const cached = wallpaperCache.get(query);
     if (cached && Date.now() - cached.ts < 6 * 60 * 60 * 1000) {
       return cached.urls.slice(0, count);
@@ -183,10 +187,10 @@ class PrintmonGenerator {
       .replace(/\s+/g, '-').toLowerCase() || 'untitled';
   }
 
-  async generate() {
+  async generate(keywords) {
     const sn = this.safeName();
     const css = this.recolor();
-    const wallpapers = await this.fetchWallpapers(5);
+    const wallpapers = await this.fetchWallpapers(5, keywords);
 
     // Use base HTML template with targeted replacements
     const html = this.baseHTML
