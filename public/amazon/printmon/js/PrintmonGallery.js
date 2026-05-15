@@ -1,9 +1,9 @@
 /**
- * PrintmonGallery.js
+ * PrintmonGallery.js v2
  * 
  * Gallery page logic for generated Printmon themes.
- * Reads from manifest.json (populated by the generator),
- * renders theme cards with previews, handles filtering.
+ * Reads from Firebase RTDB — single merged theme entries with embedded CSS/HTML.
+ * Renders cards with extracted colors, srcdoc preview, and standalone page links.
  */
 
 (function () {
@@ -11,10 +11,8 @@
 
   const RTDB_BASE = 'https://doshusweb-default-rtdb.firebaseio.com';
   const themesUrl = RTDB_BASE + '/printmon/themes.json';
-  const manifestUrl = 'generated/manifest.json'; // fallback
   let themes = [];
   let filtered = [];
-  let usingRTDB = false;
 
   // ─── DOM Refs ─────────────────────────────────────────
   const grid = document.getElementById('themeGrid');
@@ -26,35 +24,54 @@
   const previewName = document.getElementById('previewName');
   const previewTagline = document.getElementById('previewTagline');
   const loadingEl = document.getElementById('loading');
+  const previewLink = document.getElementById('previewLink');
 
-  // ─── Fetch Manifest ───────────────────────────────────
+  // ─── Extract dominant color from CSS ──────────────────
+  function extractColor(css, fallback) {
+    // Try to find a prominent background or gradient color
+    const hexRe = /#[0-9a-fA-F]{3,8}/g;
+    const matches = css.match(hexRe) || [];
+    if (matches.length > 2) return matches[Math.floor(matches.length / 2)];
+    // Try rgba
+    const rgbaRe = /rgba?\((\d+),\s*(\d+),\s*(\d+)/;
+    const rgbaM = css.match(rgbaRe);
+    if (rgbaM) {
+      const r = parseInt(rgbaM[1]).toString(16).padStart(2,'0');
+      const g = parseInt(rgbaM[2]).toString(16).padStart(2,'0');
+      const b = parseInt(rgbaM[3]).toString(16).padStart(2,'0');
+      return '#' + r + g + b;
+    }
+    return fallback || '#444444';
+  }
+
+  // ─── Fetch Themes from RTDB ──────────────────────────
   async function loadThemes() {
     try {
-      // Try Firebase RTDB first (live themes)
       const rtdbRes = await fetch(themesUrl);
-      if (rtdbRes.ok) {
-        const rtdbData = await rtdbRes.json();
-        if (rtdbData && typeof rtdbData === 'object') {
-          themes = Object.values(rtdbData).sort((a, b) =>
-            new Date(b.createdAt) - new Date(a.createdAt)
-          );
-          usingRTDB = true;
-          filtered = [...themes];
-          render();
-          return;
-        }
+      if (!rtdbRes.ok) throw new Error('RTDB unavailable');
+      const rtdbData = await rtdbRes.json();
+      if (!rtdbData || typeof rtdbData !== 'object' || Object.keys(rtdbData).length === 0) {
+        if (loadingEl) loadingEl.innerHTML = '<p style="color:var(--color-text-muted);text-align:center;padding:3rem;">No generated themes yet. Check back soon!</p>';
+        return;
       }
 
-      // Fallback: local manifest.json (demo themes)
-      const res = await fetch(manifestUrl);
-      if (!res.ok) throw new Error(`Manifest fetch failed: ${res.status}`);
-      themes = await res.json();
+      themes = Object.values(rtdbData)
+        .filter(t => t && t.name && t.css)
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+      if (loadingEl) loadingEl.style.display = 'none';
+
+      if (themes.length === 0) {
+        grid.innerHTML = '<p class="empty-state" style="grid-column:1/-1;text-align:center;color:var(--color-text-muted);padding:3rem;">No generated themes yet. Be the first — ask Zephyy to make one!</p>';
+        return;
+      }
+
       filtered = [...themes];
       render();
     } catch (err) {
       console.error('Failed to load themes:', err);
       if (loadingEl) {
-        loadingEl.innerHTML = '<p style="color:var(--color-text-muted);text-align:center;padding:3rem;">No generated themes yet. Check back soon!</p>';
+        loadingEl.innerHTML = '<p style="color:var(--color-text-muted);text-align:center;padding:3rem;">Couldn\'t load themes. Try refreshing.</p>';
       }
     }
   }
@@ -63,30 +80,32 @@
   function render() {
     if (!grid) return;
     if (countEl) countEl.textContent = filtered.length;
-
     if (filtered.length === 0) {
       grid.innerHTML = '<p class="empty-state" style="grid-column:1/-1;text-align:center;color:var(--color-text-muted);padding:3rem;">No themes match. Try a different search.</p>';
       return;
     }
 
     grid.innerHTML = filtered
-      .map(
-        (t, i) => `
+      .map((t, i) => {
+        const primary = extractColor(t.css, '#2d8f2d');
+        const accent = extractColor(t.css.replace(primary, ''), '#88ff88');
+        const wallpaperCount = (t.wallpapers && t.wallpapers.length) || 0;
+        return `
         <div class="theme-card" onclick="window.openTheme('${t.safeName}')" style="animation-delay:${i * 0.05}s">
-          <div class="card-preview" style="background:linear-gradient(135deg,${t.primary},${t.accent})">
-            <span class="card-glow" style="border-color:${t.glowColor || t.accent}"></span>
+          <div class="card-preview" style="background:linear-gradient(135deg, ${primary}cc, ${accent}88)">
+            <span class="card-glow" style="border-color:${accent}"></span>
             <span class="card-name">${t.name}</span>
           </div>
           <div class="card-body">
-            <p class="card-tagline">${t.tagline}</p>
-            <div class="card-chips">
-              <span class="chip primary-chip" style="background:${t.primary}">Primary</span>
-              <span class="chip accent-chip" style="background:${t.accent}">Accent</span>
+            <p class="card-tagline">${t.tagline || ''}</p>
+            <div class="card-meta">
+              ${wallpaperCount > 0 ? `<span class="chip">🖼 ${wallpaperCount} wallpapers</span>` : ''}
+              <span class="chip">${t.baseTheme || 'Custom'}</span>
             </div>
           </div>
         </div>
-      `
-      )
+      `;
+      })
       .join('');
   }
 
@@ -98,12 +117,72 @@
     } else {
       filtered = themes.filter(
         (t) =>
-          t.name.toLowerCase().includes(q) ||
-          t.tagline.toLowerCase().includes(q) ||
-          t.feature.toLowerCase().includes(q)
+          (t.name && t.name.toLowerCase().includes(q)) ||
+          (t.tagline && t.tagline.toLowerCase().includes(q)) ||
+          (t.baseTheme && t.baseTheme.toLowerCase().includes(q))
       );
     }
     render();
+  }
+
+  // ─── Open standalone page ─────────────────────────────
+  window.openThemePage = function (safeName) {
+    const theme = themes.find((t) => t.safeName === safeName);
+    if (!theme) return;
+
+    // Build a full standalone HTML page from the generated CSS + HTML
+    const fullPage = theme.html || buildStandalonePage(theme);
+    const blob = new Blob([fullPage], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
+
+  function buildStandalonePage(theme) {
+    const css = theme.css || '';
+    const wallpapers = (theme.wallpapers || []).map(w => {
+      if (typeof w === 'string') return w;
+      return w.url || w.large2x || w.large || '';
+    }).filter(Boolean);
+    const bgStyle = wallpapers.length > 0
+      ? `document.body.style.backgroundImage="url('${wallpapers[0]}')";document.body.style.backgroundSize='cover';document.body.style.backgroundAttachment='fixed';`
+      : '';
+
+    return `<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${theme.name} — Printmon Theme</title>
+  <link rel="stylesheet" href="css/newer/Shared2Printmon.css">
+  <link rel="stylesheet" href="css/swapbtn.css">
+  <style>${css}</style>
+</head>
+<body onload="${bgStyle}">
+  <div class="printmon-container">
+    <h1>${theme.name}</h1>
+    <p class="subtitle">${theme.tagline || ''}</p>
+  </div>
+  <script>
+    // Wallpaper rotation
+    const wallpapers = ${JSON.stringify(wallpapers)};
+    if (wallpapers.length > 0) {
+      const i = Math.floor(Math.random() * wallpapers.length);
+      const u = wallpapers[i];
+      if (typeof u === 'string' && (u.endsWith('.mp4') || u.endsWith('.webm'))) {
+        const v = document.createElement('video');
+        v.src = u; v.autoplay = true; v.loop = true; v.muted = true;
+        v.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:fill;z-index:-1';
+        document.body.appendChild(v);
+      } else if (u) {
+        document.body.style.backgroundImage = "url('" + u + "')";
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundAttachment = 'fixed';
+        document.body.style.backgroundPosition = 'center';
+      }
+    }
+  </script>
+</body>
+</html>`;
   }
 
   // ─── Preview Modal ────────────────────────────────────
@@ -113,14 +192,17 @@
     if (!theme) return;
 
     if (previewName) previewName.textContent = theme.name;
-    if (previewTagline) previewTagline.textContent = theme.tagline;
+    if (previewTagline) previewTagline.textContent = theme.tagline || '';
 
-    // RTDB themes use local preview page; CSS is fetched dynamically
-    // RTDB mode: pass theme data URL (single merged entry, 1 fetch)
-    const src = usingRTDB
-      ? `generated/preview.html?theme=${encodeURIComponent(safeName)}&rtdb=true`
-      : `generated/preview.html?theme=${encodeURIComponent(safeName)}`;
-    previewFrame.src = src;
+    // Show open-link button
+    if (previewLink) {
+      previewLink.onclick = function() { window.openThemePage(safeName); };
+      previewLink.style.display = 'inline-block';
+    }
+
+    // Use srcdoc to render the theme HTML directly in the iframe
+    const fullPage = theme.html || buildStandalonePage(theme);
+    previewFrame.srcdoc = fullPage;
 
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -130,7 +212,7 @@
     if (!modal) return;
     modal.style.display = 'none';
     document.body.style.overflow = '';
-    if (previewFrame) previewFrame.src = '';
+    if (previewFrame) previewFrame.srcdoc = '';
   }
 
   // ─── Events ───────────────────────────────────────────
