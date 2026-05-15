@@ -16,33 +16,33 @@ const wallpaperCache = new Map();
 const BASE_THEMES = {
   GTA: {
     name: 'GTA 6',
-    cssFile: 'css/newer/2GTA.css',
-    htmlFile: 'TheDoshusPrintmon2GTA.html',
-    description: 'Dark, vibrant gradients, Pricedown font — Doshus favorite',
+    cssFile: 'css/newer/_template.css',
+    htmlFile: 'template.html',
+    description: 'Custom generated theme — GTA base',
   },
   Glass: {
     name: 'Glass',
-    cssFile: 'css/newer/2Glass.css',
-    htmlFile: 'TheDoshusPrintmon2Glass.html',
-    description: 'Transparent, backdrop-blur, sleek modern glassmorphism',
+    cssFile: 'css/newer/_template.css',
+    htmlFile: 'template.html',
+    description: 'Custom generated theme — Glass base',
   },
   Halloween: {
     name: 'Halloween',
-    cssFile: 'css/newer/2Hallo.css',
-    htmlFile: 'TheDoshusPrintmon2Halloween.html',
-    description: 'Warm oranges, dark backgrounds, spooky vibes',
+    cssFile: 'css/newer/_template.css',
+    htmlFile: 'template.html',
+    description: 'Custom generated theme — Halloween base',
   },
   Forest: {
     name: 'Forest',
-    cssFile: 'css/newer/2Forest.css',
-    htmlFile: 'TheDoshusPrintmon2Forest.html',
-    description: 'Green, natural, earthy tones',
+    cssFile: 'css/newer/_template.css',
+    htmlFile: 'template.html',
+    description: 'Custom generated theme — Forest base',
   },
   Witch: {
     name: 'Witchery',
-    cssFile: 'css/newer/2Witch.css',
-    htmlFile: 'TheDoshusPrintmon2Witch.html',
-    description: 'Dark purples, mystical, magical feel',
+    cssFile: 'css/newer/_template.css',
+    htmlFile: 'template.html',
+    description: 'Custom generated theme — Witch base',
   },
 };
 
@@ -209,34 +209,28 @@ class PrintmonGenerator {
 // ─── Build HTML from base template ─────────────────────────
 
 function buildHTMLfromTemplate(name, tagline, css, wallpapers, baseHTML) {
-  const wallpaperArray = wallpapers.map(w => `'${w}'`).join(',\n\t\t\t');
-  const BASE = 'https://doshus.net/amazon/printmon';
+  if (!baseHTML) return buildHTML(name, tagline, css, wallpapers, 'GTA');
+
+  // Extract dominant color for crypto widget bg
+  const hexMatch = css.match(/#[0-9a-fA-F]{6}/);
+  const cryptoBg = hexMatch ? hexMatch[0] : '#1a1a2e';
+  const favicon = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎨</text></svg>');
 
   let html = baseHTML;
-
-  // 1. Title
-  html = html.replace(/<title>[^<]*<\/title>/, `<title>${name} - Printmon Theme</title>`);
-
-  // 2. Tagline
-  html = html.replace(/(<p class="subtitle">)([^<]*)(<\/p>)/, `$1${tagline}$3`);
-
-  // 3. Replace theme CSS link with inline remapped CSS
-  html = html.replace(
-    /<link rel="stylesheet" href="css\/newer\/[^"]+\.css">/,
-    `<style>\n${css}\n</style>`
-  );
-
-  // 4. Base tag for clean URLs
-  if (!html.includes('<base href=')) {
-    html = html.replace('<head>', `<head>\n\t<base href="${BASE}/">`);
+  // Sequential placeholder replacement — order based on template layout:
+  // 1. Page title: {{PLACEHOLDER}} - External generated Printmon
+  html = html.replace('{{PLACEHOLDER}}', name);
+  // 2. Favicon icon URL
+  html = html.replace('{{PLACEHOLDERS}}', favicon);
+  // 3. Subtitle/tagline
+  html = html.replace('{{PLACEHOLDERS}}', tagline || '');
+  // 4. Crypto widget background color
+  html = html.replace('{{PLACEHOLDERS}}', cryptoBg);
+  // 5-9: Wallpaper URLs
+  for (let i = 0; i < 5; i++) {
+    const wp = wallpapers[i] || (wallpapers[0] || '');
+    html = html.replace("'{{PLACEHOLDERS}}'", wp ? `'${wp}'` : "''");
   }
-
-  // 5. Wallpaper array
-  html = html.replace(
-    /(const wallpapers = \[)[\s\S]*?(\];)/,
-    `$1\n\t\t\t${wallpaperArray}\n\t\t$2`
-  );
-
   return html;
 }
 
