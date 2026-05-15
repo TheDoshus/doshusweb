@@ -203,15 +203,17 @@ class PrintmonGenerator {
 
 function buildHTML(name, tagline, css, wallpapers, baseKey) {
   const wallpaperArray = wallpapers.map(w => `'${w}'`).join(',\n\t\t\t');
+  // Absolute base URL so blob/srcdoc can resolve CSS/JS
+  const BASE = 'https://doshus.net/amazon/printmon';
   
   return `<!DOCTYPE HTML>
 <html lang="en">
 <head><script async src="https://www.googletagmanager.com/gtag/js?id=G-KQ1RGHNMZG"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-KQ1RGHNMZG");</script>
-\t<title>${name} - Generated Printmon</title>
+\t<title>${name} - Printmon Theme</title>
 \t<meta charset="UTF-8">
-\t<link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
-\t<link rel="stylesheet" href="css/swapbtn.css">
-\t<link rel="stylesheet" href="css/newer/Shared2Printmon.css">
+\t<meta name="viewport" content="width=device-width, initial-scale=1.0">
+\t<link rel="stylesheet" href="${BASE}/css/swapbtn.css">
+\t<link rel="stylesheet" href="${BASE}/css/newer/Shared2Printmon.css">
 \t<style>
 ${css}
 \t</style>
@@ -221,13 +223,13 @@ ${css}
         <button onclick="toggleDropdown()" class="dropbtn2">Swap Themes</button>
         <div id="myDropdown" class="dropdown2-content">
 \t\t\t<h2>Printmon 2</h2>
-            <a href="gallery.html">🎨 Generated Gallery</a>
-            <a href="TheDoshusPrintmon2GTA.html">GTA 6</a>
-\t\t\t<a href="TheDoshusPrintmon2Glass.html">Glass</a>
-\t\t\t<a href="TheDoshusPrintmon2Halloween.html">Halloween</a>
-\t\t\t<a href="TheDoshusPrintmon2Forest.html">Forest</a>
-\t\t\t<a href="TheDoshusPrintmon2Witch.html">Witchery</a>
-\t\t\t<a href="TheDoshusPrintmon2Kuromi.html">Kuromi</a>
+            <a href="${BASE}/gallery.html">🎨 Theme Gallery</a>
+            <a href="${BASE}/TheDoshusPrintmon2GTA.html">GTA 6</a>
+\t\t\t<a href="${BASE}/TheDoshusPrintmon2Glass.html">Glass</a>
+\t\t\t<a href="${BASE}/TheDoshusPrintmon2Halloween.html">Halloween</a>
+\t\t\t<a href="${BASE}/TheDoshusPrintmon2Forest.html">Forest</a>
+\t\t\t<a href="${BASE}/TheDoshusPrintmon2Witch.html">Witchery</a>
+\t\t\t<a href="${BASE}/TheDoshusPrintmon2Kuromi.html">Kuromi</a>
 \t\t\t<a href="TheDoshusPrintmon2Spongebob.html">Spongebob</a>
 \t\t\t<a href="TheDoshusPrintmon2Strawberry.html">Strawberry Shortcake</a>
         </div>
@@ -275,8 +277,8 @@ ${css}
 \t\t\t</div>
 \t\t</div>
 \t</div>
-\t<script src="js/swap-img.js"></script>
-\t<script src="js/PrintmonPrinter.js" async></script>
+\t<script src="${BASE}/js/swap-img.js"></script>
+\t<script src="${BASE}/js/PrintmonPrinter.js" async></script>
 \t<script>
 \t\tconst wallpapers = [
 \t\t\t${wallpaperArray}

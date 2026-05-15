@@ -153,8 +153,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${theme.name} — Printmon Theme</title>
-  <link rel="stylesheet" href="css/newer/Shared2Printmon.css">
-  <link rel="stylesheet" href="css/swapbtn.css">
+  <link rel="stylesheet" href="https://doshus.net/amazon/printmon/css/newer/Shared2Printmon.css">
+  <link rel="stylesheet" href="https://doshus.net/amazon/printmon/css/swapbtn.css">
   <style>${css}</style>
 </head>
 <body onload="${bgStyle}">
