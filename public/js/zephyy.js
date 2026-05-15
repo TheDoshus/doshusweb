@@ -944,6 +944,9 @@
                 addMessage(msg.role, msg.content, msg.timestamp);
             });
             lastCheck = Date.now();
+
+            /* Always try name prompt — showNamePrompt has its own guard for savedName */
+            showNamePrompt();
         } catch(e) { /* silent */ }
     }
 
