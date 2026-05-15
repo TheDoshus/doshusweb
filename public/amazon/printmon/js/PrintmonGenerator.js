@@ -211,6 +211,12 @@ class PrintmonGenerator {
 function buildHTMLfromTemplate(name, tagline, css, wallpapers, baseHTML) {
   if (!baseHTML) return buildHTML(name, tagline, css, wallpapers, 'GTA');
 
+  // Inject remapped CSS inline after Shared2Printmon link
+  baseHTML = baseHTML.replace(
+    '<link rel="stylesheet" href="css/newer/Shared2Printmon.css">',
+    '<link rel="stylesheet" href="css/newer/Shared2Printmon.css">\n\t<style>\n' + css + '\n\t</style>'
+  );
+
   // Extract dominant color for crypto widget bg
   const hexMatch = css.match(/#[0-9a-fA-F]{6}/);
   const cryptoBg = hexMatch ? hexMatch[0] : '#1a1a2e';
