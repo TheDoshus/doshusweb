@@ -727,6 +727,8 @@
             orb.classList.remove('unread');
             inputEl && inputEl.focus();
             scrollToBottom();
+            /* Ensure name prompt shows even if loadMessages hasn't fired yet */
+            setTimeout(function() { showNamePrompt(); }, 600);
         }
     }
 
