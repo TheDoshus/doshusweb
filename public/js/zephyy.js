@@ -1110,7 +1110,12 @@
     if (closeBtn) closeBtn.addEventListener('click', togglePanel);
     if (backdrop) backdrop.addEventListener('click', togglePanel);
     var refreshBtn = document.getElementById("zp-chat-refresh");
-    if (refreshBtn) refreshBtn.addEventListener("click", function() { localStorage.removeItem(SESSION_KEY); location.reload(); });
+    if (refreshBtn) refreshBtn.addEventListener("click", function() {
+        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem('zp-visitor-name');
+        localStorage.removeItem('zp-no-name');
+        location.reload();
+    });
     sendBtn.addEventListener('click', sendMessage);
     inputEl.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
