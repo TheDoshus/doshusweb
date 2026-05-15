@@ -978,19 +978,19 @@
                 if (msg.timestamp > lastCheck) {
                     /* Only render assistant replies — user msgs rendered locally */
                     if (msg.role === 'assistant') {
+                        if (!foundResponse) { removeThinkingBubble(); foundResponse = true; }
                         addMessage(msg.role, msg.content, msg.timestamp);
-                        foundResponse = true;
                     }
                 }
             });
 
-            if (foundResponse) removeThinkingBubble();
-
-            /* Name detection from user messages (no second fetch!) */
+            /* Name detection from user messages — skip anonymous phrases */
             if (!savedName) {
                 Object.keys(data).forEach(function(key) {
                     var msg = data[key];
                     if (msg.role === 'assistant' || !msg.content) return;
+                    /* Don't detect names from anonymity phrases */
+                    if (/without a name|don't have a name|no name|nah/i.test(msg.content)) return;
                     var m = msg.content.match(/my name is (\w+)/i) || msg.content.match(/i'm (\w+)/i) || msg.content.match(/call me (\w+)/i);
                     if (m && m[1] && m[1].length > 1) {
                         var n = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
