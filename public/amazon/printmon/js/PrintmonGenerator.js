@@ -218,7 +218,7 @@ function buildHTMLfromTemplate(name, tagline, css, wallpapers, baseHTML) {
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${name} - Printmon Theme</title>`);
 
   // 2. Tagline
-  html = html.replace(/(<p class="subtitle">)([^<]*)(<\/p>)/, `$1${tagline}$2`);
+  html = html.replace(/(<p class="subtitle">)([^<]*)(<\/p>)/, `$1${tagline}$3`);
 
   // 3. Replace theme CSS link with inline remapped CSS
   html = html.replace(
