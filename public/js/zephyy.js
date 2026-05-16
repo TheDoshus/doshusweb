@@ -706,6 +706,7 @@
     let lastCheck = Date.now();
     let quickReplied = false; // prevent button re-adding after first send
     let sessionEnded = false; // dead session flag — input locked
+let deadPolls = 0; // consecutive polls with no data (session archived?)
 
     /* Visitor name — from localStorage or detected */
     const savedName = localStorage.getItem('zp-visitor-name');
@@ -1054,9 +1055,19 @@
 
         try {
             var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + lastCheck);
-            if (!resp.ok) return;
+            if (!resp.ok) { deadPolls++; return; }
             var data = await resp.json();
-            if (!data) return;
+            if (!data) {
+                deadPolls++;
+                /* Archive killed the session — restart */
+                if (deadPolls > 5 && !sessionEnded) {
+                    console.log('[zephyy] Session archived, creating new session');
+                    localStorage.removeItem('zephyy-chat-session');
+                    location.reload();
+                }
+                return;
+            }
+            deadPolls = 0; // session alive
 
             var now = Date.now();
             var foundResponse = false;
