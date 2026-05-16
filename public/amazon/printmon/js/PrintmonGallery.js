@@ -170,8 +170,8 @@ pre{background:#0d0d0d;padding:12px;border-radius:6px;overflow-x:auto;white-spac
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${theme.name} — Printmon Theme</title>
-  <link rel="stylesheet" href="css/newer/Shared2Printmon.css">
-  <link rel="stylesheet" href="css/swapbtn.css">
+  <link rel="stylesheet" href="https://doshus.net/amazon/printmon/css/newer/Shared2Printmon.css">
+  <link rel="stylesheet" href="https://doshus.net/amazon/printmon/css/swapbtn.css">
   <style>${css}</style>
 </head>
 <body onload="${bgStyle}">
@@ -215,6 +215,11 @@ pre{background:#0d0d0d;padding:12px;border-radius:6px;overflow-x:auto;white-spac
     if (previewLink) {
       previewLink.onclick = function() { window.openThemePage(safeName); };
       previewLink.style.display = 'inline-block';
+    }
+    var vsb = document.getElementById('viewSourceBtn');
+    if (vsb) {
+      vsb.onclick = function() { window.viewThemeSource(safeName); };
+      vsb.style.display = 'inline-block';
     }
 
     // Use srcdoc to render the theme HTML directly in the iframe

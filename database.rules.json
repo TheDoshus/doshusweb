@@ -1,0 +1,40 @@
+{
+  "rules": {
+    "zephyy": {
+      "status": {
+        ".read": true,
+        ".write": "auth !== null"
+      },
+      "daily": {
+        ".read": true,
+        ".write": "auth !== null"
+      },
+      "chat": {
+        "sessions": {
+          ".read": true,
+          "$sessionId": {
+            "messages": {
+              ".read": true,
+              ".write": true,
+              ".indexOn": ["timestamp"]
+            },
+            "control": {
+              ".read": true,
+              ".write": "auth !== null"
+            }
+          }
+        }
+      },
+      "feedback": {
+        ".read": "auth !== null",
+        ".write": "auth !== null"
+      }
+    },
+    "printmon": {
+      "themes": {
+        ".read": true,
+        ".write": "auth !== null"
+      }
+    }
+  }
+}

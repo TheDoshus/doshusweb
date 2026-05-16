@@ -710,6 +710,46 @@
     /* Visitor name — from localStorage or detected */
     const savedName = localStorage.getItem('zp-visitor-name');
 
+    const STATUS_URL = FIREBASE_BASE + '/zephyy/status.json';
+
+    async function checkOnlineStatus() {
+        var offlineBanner = document.getElementById('zp-offline-banner');
+        try {
+            var resp = await fetch(STATUS_URL);
+            if (!resp.ok) throw new Error('fetch failed');
+            var data = await resp.json();
+            var lastUpdated = new Date(data.lastUpdated).getTime();
+            var staleThreshold = 2.5 * 60 * 60 * 1000;
+            var online = data.online === true && (Date.now() - lastUpdated) < staleThreshold;
+            if (!online) {
+                if (!offlineBanner) {
+                    offlineBanner = document.createElement('div');
+                    offlineBanner.className = 'zp-chat-msg zp-chat-msg-bot';
+                    offlineBanner.id = 'zp-offline-banner';
+                    offlineBanner.textContent = '💤 Zephyy is offline right now — likely the laptop is asleep or restarting. Check back soon!';
+                    messagesEl.insertBefore(offlineBanner, messagesEl.firstChild);
+                }
+                if (inputEl) { inputEl.disabled = true; inputEl.placeholder = 'Zephyy is offline...'; }
+                if (sendBtn) sendBtn.disabled = true;
+            } else {
+                if (offlineBanner) offlineBanner.remove();
+                if (inputEl) { inputEl.disabled = false; inputEl.placeholder = 'Type a message...'; }
+                if (sendBtn) sendBtn.disabled = false;
+                inputEl && inputEl.focus();
+            }
+        } catch(e) {
+            /* If status check fails, allow chat but note it */
+            if (!offlineBanner) {
+                offlineBanner = document.createElement('div');
+                offlineBanner.className = 'zp-chat-msg zp-chat-msg-bot';
+                offlineBanner.id = 'zp-offline-banner';
+                offlineBanner.textContent = '⚠️ Couldn\'t verify Zephyy\'s status — she might be offline. Responses may be delayed.';
+                messagesEl.insertBefore(offlineBanner, messagesEl.firstChild);
+            }
+        }
+        scrollToBottom();
+    }
+
     /* ================================================
      * 2. DOM HELPERS
      * ================================================ */
@@ -725,8 +765,9 @@
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
             orb.classList.remove('unread');
-            inputEl && inputEl.focus();
-            scrollToBottom();
+            checkOnlineStatus();
+            /* Ensure name prompt shows even if loadMessages hasn't fired yet */
+            setTimeout(function() { showNamePrompt(); }, 600);
         }
     }
 
@@ -805,6 +846,9 @@
         if (quickReplied || savedName) return;
         var row = document.getElementById('zp-quick-reply-row');
         if (row) return; // already shown
+        /* Don't show buttons if conversation already has user messages */
+        var existingMsgs = messagesEl.querySelectorAll('.zp-chat-msg-user');
+        if (existingMsgs.length > 0) return;
 
         row = document.createElement('div');
         row.id = 'zp-quick-reply-row';
@@ -944,6 +988,9 @@
                 addMessage(msg.role, msg.content, msg.timestamp);
             });
             lastCheck = Date.now();
+
+            /* Always try name prompt — showNamePrompt has its own guard for savedName */
+            showNamePrompt();
         } catch(e) { /* silent */ }
     }
 
@@ -969,13 +1016,29 @@
                 body: JSON.stringify({ role: 'user', content: text, timestamp: Date.now() })
             });
             if (!resp.ok) {
-                setTimeout(function() {
+                removeThinkingBubble();
+                addMessage('assistant', '⚠️ Message didn\'t send (error ' + resp.status + '). Try refreshing the page or check back later.', Date.now());
+            } else {
+                /* Start a 15s timeout for slow responses */
+                var slowTimeout = setTimeout(function() {
                     var tb = document.getElementById('zp-chat-thinking');
-                    if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
-                }, 15000);
+                    if (tb) {
+                        tb.querySelector('.zp-thinking-text').textContent = 'still thinking...';
+                        /* Add a status check message */
+                        var statusNote = document.createElement('div');
+                        statusNote.className = 'zp-chat-msg zp-chat-msg-bot zp-chat-status-note';
+                        statusNote.textContent = '💭 Taking a bit — Zephyy runs on free models from a personal laptop. If this persists, she might be offline.';
+                        statusNote.id = 'zp-slow-note';
+                        messagesEl.appendChild(statusNote);
+                        scrollToBottom();
+                    }
+                }, 10000);
+                /* Store the timeout so pollAndDetect can clear it */
+                window.__zpSlowTimeout = slowTimeout;
             }
         } catch(e) {
-            /* thinking bubble already showing */
+            removeThinkingBubble();
+            addMessage('assistant', '⚠️ Couldn\'t reach the server. Check your connection and try again.', Date.now());
         } finally {
             sendBtn.disabled = false;
             inputEl.focus();
@@ -1005,7 +1068,13 @@
                     /* Only render assistant replies — user msgs rendered locally */
                     if (msg.role === 'assistant') {
                         if (panelOpen) {
-                            if (!foundResponse) { removeThinkingBubble(); foundResponse = true; }
+                            if (!foundResponse) {
+                                removeThinkingBubble();
+                                /* Clear slow timeout + note */
+                                if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
+                                var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
+                                foundResponse = true;
+                            }
                             addMessage(msg.role, msg.content, msg.timestamp);
                         } else {
                             foundResponse = true; /* Show unread dot */
@@ -1107,7 +1176,12 @@
     if (closeBtn) closeBtn.addEventListener('click', togglePanel);
     if (backdrop) backdrop.addEventListener('click', togglePanel);
     var refreshBtn = document.getElementById("zp-chat-refresh");
-    if (refreshBtn) refreshBtn.addEventListener("click", function() { localStorage.removeItem(SESSION_KEY); location.reload(); });
+    if (refreshBtn) refreshBtn.addEventListener("click", function() {
+        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem('zp-visitor-name');
+        localStorage.removeItem('zp-no-name');
+        location.reload();
+    });
     sendBtn.addEventListener('click', sendMessage);
     inputEl.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {

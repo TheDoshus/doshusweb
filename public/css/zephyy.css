@@ -634,7 +634,7 @@
   border-radius: 12px;
   font-size: 0.85rem;
   line-height: 1.5;
-  max-width: 85%;
+  max-width: 90%;
   word-wrap: break-word;
   animation: zp-chat-fadein 0.2s ease;
 }
