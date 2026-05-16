@@ -1,132 +1,265 @@
+/* ═══════════════════════════════════════════════════════════
+   PRINTMON DESIGN SYSTEM — MASTER TOKEN MAP
+   
+   Layer 1 (HUE):  3 color families define the theme identity
+   Layer 2 (ALPHA): transparency variants derived from each hue
+   Layer 3 (GLOW):  warm + cool box-shadow colors (RGB tuples)
+   Layer 4 (SURFACE): dark/light backgrounds
+   
+   AI remaps Layer 1 hex values. Everything else flows from them.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─── HUE 1: PRIMARY (main identity color) ─── */
+  --pm-hue1:        #9F31C7;    /* base — headings, gradient stops, borders */
+  --pm-hue1-rgb:    159, 49, 199;
+  --pm-hue1-deep:   #660a97;    /* deeper — scrollbar tracks, dark accents */
+  --pm-hue1-deep-rgb: 102, 10, 151;
+  --pm-hue1-bright: #a912fd;    /* bright — hover states, glow elements */
+  --pm-hue1-bright-rgb: 169, 18, 253;
+
+  /* ─── HUE 2: WARM (secondary / gold accent) ─── */
+  --pm-hue2:        #c4ab49;    /* base — borders, text-shadows */
+  --pm-hue2-rgb:    196, 171, 73;
+  --pm-hue2-bright: #cdb34e;    /* bright — hover gradient stops, scroll buttons */
+  --pm-hue2-bright-rgb: 205, 179, 78;
+  --pm-hue2-deep:   #cb8316;    /* deep — scroll button hover */
+  --pm-hue2-deep-rgb: 203, 131, 22;
+
+  /* ─── HUE 3: COOL (cyan accent / highlights) ─── */
+  --pm-hue3:        #00C1FF;    /* base — label spans, small highlights */
+  --pm-hue3-rgb:    0, 193, 255;
+  --pm-hue3-light:  #8cffff;    /* light — input labels, gradient from-stops */
+  --pm-hue3-light-rgb: 140, 255, 255;
+
+  /* ─── SURFACE: dark panels ─── */
+  --pm-surface:     #060101;    /* near-black — panel backgrounds */
+  --pm-surface-rgb: 6, 1, 1;
+  --pm-surface-alt: #360748;    /* dark purple alt — asin sticker, alternate panels */
+  --pm-surface-alt-rgb: 54, 7, 72;
+
+  /* ─── LIGHT SURFACES: dropdowns, overlays ─── */
+  --pm-light:       #e6b7ff;    /* light purple — dropdown backgrounds */
+  --pm-light-rgb:   230, 183, 255;
+  --pm-neutral:     #e3e3e3;    /* near-white — dropdown hover */
+  --pm-neutral-rgb: 227, 227, 227;
+
+  /* ─── GLOW: box-shadow colors (RGB tuples for rgba composition) ─── */
+  --pm-glow-warm: 255, 107, 107;
+  --pm-glow-cool: 78, 205, 196;
+
+  /* ─── TEXT ─── */
+  --pm-text:        #ffffff;
+  --pm-text-dark:   #000000;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ELEMENT RULES
+   All colors reference the token map above.
+   Alpha variants use rgba(var(--pm-xxx-rgb), alpha).
+   ═══════════════════════════════════════════════════════════ */
 
 .printbox {
-    background-color: {{placeholder}};
-    border: 5px double {{placeholder}};
+    background-color: rgba(var(--pm-surface-rgb), 0.50);
+    border: 5px double rgba(var(--pm-hue2-rgb), 0.95);
 }
+
 h1 {
-    color: #9F31C7C2;
-    text-shadow: 2px 2px {{placeholder}};
+    color: rgba(var(--pm-hue1-rgb), 0.76);
+    text-shadow: 2px 2px rgba(var(--pm-hue2-rgb), 0.84);
 }
+
 .subtitle {
-    color: #34b8b2c4;
-    font-family: 'Amazon Ember', 'system-ui';
+    color: rgba(var(--pm-hue3-light-rgb), 0.77);
+    font-family: 'system-ui';
 }
+
 .input-group label {
-    color: {{placeholder}};
+    color: var(--pm-hue3-light);
 }
+
 .input-group label span {
-    color: {{placeholder}};
+    color: var(--pm-hue3);
 }
+
 input[type="text"] {
-    border: 1.5px solid {{placeholder}};
+    border: 1.5px solid rgba(var(--pm-hue1-rgb), 0.81);
 }
+
+/* ─── PRIMARY BUTTON ─── */
+
 .print-button {
-    background: linear-gradient(120deg, {{placeholder}});
-    color: #ffffff;
-    box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
+    background: linear-gradient(120deg,
+        rgba(var(--pm-hue3-light-rgb), 0.75),
+        rgba(var(--pm-hue1-rgb), 0.74));
+    color: var(--pm-text);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.5),
+        0 0 30px rgba(var(--pm-glow-cool), 0.3);
 }
 
 .print-button:hover {
-    background: linear-gradient(145deg, {{placeholder}});
-    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.81),
+        var(--pm-hue2-bright));
+    box-shadow:
+        0 0 20px rgba(var(--pm-glow-warm), 0.7),
+        0 0 40px rgba(var(--pm-glow-cool), 0.5);
 }
 
+/* ─── QUICK-PRINT BUTTONS ─── */
+
 .buttonsLine1 {
-  background: linear-gradient(145deg, {{placeholder}});
-  color: #ffffff;
-  box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.81),
+        var(--pm-hue2-bright));
+    color: var(--pm-text);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.7),
+        0 0 30px rgba(var(--pm-glow-cool), 0.5);
 }
 .buttonsLine1:hover {
-    background: linear-gradient(145deg, #8cffffbf, #ac6fdebd);
-    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue3-light-rgb), 0.75),
+        rgba(var(--pm-hue1-rgb), 0.74));
+    box-shadow:
+        0 0 20px rgba(var(--pm-glow-warm), 0.9),
+        0 0 40px rgba(var(--pm-glow-cool), 0.7);
 }
 
 .buttonsLine2 {
-  background: linear-gradient(195deg, {{placeholder}}, {{placeholder}});
-  color: #ffffff;
-  box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
+    background: linear-gradient(195deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.81),
+        var(--pm-hue2-bright));
+    color: var(--pm-text);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.7),
+        0 0 30px rgba(var(--pm-glow-cool), 0.5);
 }
 .buttonsLine2:hover {
-    background: linear-gradient(145deg, #8cffffbf, #ac6fdebd);
-    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue3-light-rgb), 0.75),
+        rgba(var(--pm-hue1-rgb), 0.74));
+    box-shadow:
+        0 0 20px rgba(var(--pm-glow-warm), 0.9),
+        0 0 40px rgba(var(--pm-glow-cool), 0.7);
 }
 
 .buttonsLine3 {
-  background: linear-gradient(70deg, {{placeholder}});
-  color: #ffffff;
-  box-shadow: 0 0 15px {{placeholder}}, 0 0 30px rg{{placeholder}};
+    background: linear-gradient(70deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.81),
+        var(--pm-hue2-bright));
+    color: var(--pm-text);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.7),
+        0 0 30px rgba(var(--pm-glow-cool), 0.5);
 }
 .buttonsLine3:hover {
-    background: linear-gradient(145deg, {{placeholder}};
-    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue3-light-rgb), 0.75),
+        rgba(var(--pm-hue1-rgb), 0.74));
+    box-shadow:
+        0 0 20px rgba(var(--pm-glow-warm), 0.9),
+        0 0 40px rgba(var(--pm-glow-cool), 0.7);
 }
+
+/* ─── BUTTON STATE OVERRIDES ─── */
 
 .quick-print-buttons button:hover {
-    background-color: {{placeholder}};
-    border-color: {{placeholder}};
+    background-color: rgba(var(--pm-hue1-bright-rgb), 0.52);
+    border-color: var(--pm-hue1-bright);
 }
 .quick-print-buttons button:active {
-    background-color: {{placeholder}};
-    border-color: {{placeholder}};
+    background-color: rgba(var(--pm-hue3-rgb), 0.49);
+    border-color: var(--pm-hue3);
 }
+
+/* ─── SCROLLBAR ─── */
+
 .scroll-container {
-    scrollbar-color: {{placeholder}};
+    scrollbar-color:
+        rgba(var(--pm-hue1-bright-rgb), 0.81)
+        rgba(var(--pm-hue1-deep-rgb), 0.68);
 }
+
 .scroll-button {
-    background-color: {{placeholder}}
+    background-color: rgba(var(--pm-hue2-bright-rgb), 0.84);
 }
 .scroll-button:hover {
-    background-color: #{{placeholder}};
+    background-color: var(--pm-hue2-deep);
 }
+
+/* ─── ASIN STICKER ─── */
+
 .asin-sticker-container {
-    background-color: {{placeholder}};
-    border: 2px dashed {{placeholder}};
+    background-color: rgba(var(--pm-surface-alt-rgb), 0.64);
+    border: 2px dashed rgba(var(--pm-text-rgb, 255, 255, 255), 0.80);
 }
 .asin-sticker-header {
-    color: white;
+    color: var(--pm-text);
 }
 .asin-sticker-content button {
-    background-color: #9f370fe8;
+    background-color: rgba(var(--pm-hue2-deep-rgb), 0.91);
 }
 .asin-sticker-content button:hover {
-    background-color: {{placeholder}};
+    background-color: rgba(var(--pm-hue3-light-rgb), 0.75);
 }
+
+/* ─── MULTI-BARCODE PRINTER ─── */
+
 .MultiBarcode-printer {
-    background-color: {{placeholder}};
-    border: 5px double {{placeholder}};
+    background-color: rgba(var(--pm-surface-rgb), 0.59);
+    border: 5px double rgba(var(--pm-hue2-rgb), 0.95);
 }
 .MultiBarcode-printer h2 {
-    color: #ffffff;
-    text-shadow: 2px 2px {{placeholder}};
+    color: var(--pm-text);
+    text-shadow: 2px 2px rgba(var(--pm-hue1-rgb), 0.75);
 }
 #textAreaID {
-    border: 1.5px solid {{placeholder}};
-}
-.multiButton {
-    background: linear-gradient(90deg, {{placeholder}});
-    color: #ffffff;
-    box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
+    border: 1.5px solid rgba(var(--pm-hue1-rgb), 0.81);
 }
 
-.multiButton:hover {
-    background: linear-gradient(145deg, {{placeholder}});
-    box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
+.multiButton {
+    background: linear-gradient(90deg,
+        rgba(var(--pm-hue3-light-rgb), 0.75),
+        rgba(var(--pm-hue1-rgb), 0.74));
+    color: var(--pm-text);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.5),
+        0 0 30px rgba(var(--pm-glow-cool), 0.3);
 }
+.multiButton:hover {
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.81),
+        var(--pm-hue2-bright));
+    box-shadow:
+        0 0 20px rgba(var(--pm-glow-warm), 0.7),
+        0 0 40px rgba(var(--pm-glow-cool), 0.5);
+}
+
+/* ─── QUICK BUTTONS DROPDOWN ─── */
 
 #quickbuttons-dropdown .qb-dropbtn {
-  background: linear-gradient(145deg, {{placeholder}});
-  color: #ffffff;
-  box-shadow: 0 0 15px {{placeholder}}, 0 0 30px {{placeholder}};
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.81),
+        var(--pm-hue2-bright));
+    color: var(--pm-text);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.7),
+        0 0 30px rgba(var(--pm-glow-cool), 0.5);
 }
 #quickbuttons-dropdown .qb-dropdown-content {
-  background-color: {{placeholder}};
+    background-color: rgba(var(--pm-light-rgb), 0.81);
 }
 #quickbuttons-dropdown .qb-dropdown-content a {
-  color: {{placeholder}};
+    color: var(--pm-text-dark);
 }
 #quickbuttons-dropdown .qb-dropdown-content a:hover {
-  background-color: {{placeholder}};
+    background-color: rgba(var(--pm-neutral-rgb), 0.63);
 }
 #quickbuttons-dropdown:hover .qb-dropbtn {
-  box-shadow: 0 0 20px {{placeholder}}, 0 0 40px {{placeholder}};
+    box-shadow:
+        0 0 20px rgba(var(--pm-glow-warm), 0.9),
+        0 0 40px rgba(var(--pm-glow-cool), 0.7);
 }
+
