@@ -772,17 +772,34 @@
     }
 
     function renderContent(text) {
-        // Escape HTML first (XSS prevention)
-        var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        // Markdown links: [text](url)
-        escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-        // Bare URLs (not already inside an <a> tag)
-        escaped = escaped.replace(/(?<!href="|>)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-        // Bold: **text**
-        escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        // Newlines to <br>
-        escaped = escaped.replace(/\n/g, '<br>');
-        return escaped;
+        // Linkify BEFORE escaping — otherwise & in URLs gets corrupted to &amp;
+        var placeholders = [];
+        var i = 0;
+        // 1. Markdown links: [text](url) → placeholder
+        text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, function(m, label, url) {
+            var ph = '\x00LINK' + (i++) + '\x00';
+            placeholders.push({ ph: ph, label: label, url: url });
+            return ph;
+        });
+        // 2. Bare URLs → placeholder
+        text = text.replace(/(https?:\/\/[^\s<>]+)/g, function(m, url) {
+            // Don't double-link URLs that were already inside markdown links
+            if (url.charAt(url.length - 1) !== m.charAt(m.length - 1)) return m;
+            var ph = '\x00LINK' + (i++) + '\x00';
+            placeholders.push({ ph: ph, label: url, url: url });
+            return ph;
+        });
+        // 3. HTML-escape remaining text
+        text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        // 4. Restore links from placeholders (no re-escaping, URLs are raw)
+        placeholders.forEach(function(p) {
+            text = text.replace(p.ph, '<a href="' + p.url + '" target="_blank" rel="noopener">' + p.label + '</a>');
+        });
+        // 5. Bold: **text**
+        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // 6. Newlines to <br>
+        text = text.replace(/\n/g, '<br>');
+        return text;
     }
 
     function addMessage(role, content, timestamp) {
