@@ -28,7 +28,7 @@ try {
   console.error('Warning: .env not loaded');
 }
 
-const { PrintmonGenerator } = require('../js/PrintmonGenerator.js');
+const { PrintmonGenerator, BASE_THEMES, derivePalette } = require('../js/PrintmonGenerator.js');
 
 const ROOT = __dirname;
 const CSS_DIR = path.join(ROOT, '..', 'css', 'generated');
@@ -66,19 +66,24 @@ function saveManifest(manifest) {
 
 // ─── Deduplication ──────────────────────────────────────────
 function hexDistance(a, b) {
-  const ar = parseInt(a.replace('#',''), 16);
-  const br = parseInt(b.replace('#',''), 16);
+  const ar = parseInt((a || '#000000').replace('#',''), 16);
+  const br = parseInt((b || '#000000').replace('#',''), 16);
   const dr = ((ar >> 16) & 0xff) - ((br >> 16) & 0xff);
   const dg = ((ar >> 8) & 0xff) - ((br >> 8) & 0xff);
   const db = (ar & 0xff) - (br & 0xff);
   return Math.sqrt(dr * dr + dg * dg + db * db) / 441.67; // normalized 0–1
 }
 
-function findSimilarTheme(gen, manifest) {
+function paletteSimilarity(a, b) {
+  const d1 = hexDistance(a['--pm-hue1'], b['--pm-hue1']);
+  const d2 = hexDistance(a['--pm-hue3'], b['--pm-hue3']);
+  return Math.max(d1, d2);
+}
+
+function findSimilarTheme(palette, manifest) {
   for (const t of manifest) {
-    const d1 = hexDistance(gen.primary, t.primary);
-    const d2 = hexDistance(gen.accent, t.accent);
-    if (d1 < DEDUP_THRESHOLD && d2 < DEDUP_THRESHOLD) return t;
+    if (!t.palette) continue;
+    if (paletteSimilarity(palette, t.palette) < DEDUP_THRESHOLD) return t;
   }
   return null;
 }
@@ -97,24 +102,58 @@ function trimManifest(manifest) {
   return kept;
 }
 
+// ─── Pre-load base CSS/HTML ──────────────────────────────
+const BASE_CSS = {};
+const BASE_HTML = {};
+for (const [key, theme] of Object.entries(BASE_THEMES)) {
+  try {
+    const cssPath = path.join(ROOT, '..', theme.cssFile);
+    BASE_CSS[key] = fs.readFileSync(cssPath, 'utf-8');
+  } catch { /* skip */ }
+  try {
+    const htmlPath = path.join(ROOT, '..', theme.htmlFile);
+    BASE_HTML[key] = fs.readFileSync(htmlPath, 'utf-8');
+  } catch { /* skip */ }
+}
+
 // ─── Generate Theme ─────────────────────────────────────────
 async function generate(themeInput) {
-  const gen = new PrintmonGenerator(themeInput);
+  // Support both old format ({primary, accent, ...}) and new format ({palette, glow})
+  let palette, glow;
+  if (themeInput.palette) {
+    palette = themeInput.palette;
+    glow = themeInput.glow || {};
+  } else {
+    // Old format: derive full palette from primary + accent
+    const derived = derivePalette(themeInput.primary, themeInput.accent, themeInput.bgDark);
+    palette = derived.palette;
+    glow = derived.glow;
+  }
+
+  const baseKey = themeInput.baseTheme || 'GTA';
+  const gen = new PrintmonGenerator({
+    name: themeInput.name || 'Untitled',
+    tagline: themeInput.tagline || '',
+    baseTheme: baseKey,
+    palette,
+    glow,
+  }, BASE_CSS[baseKey] || '', BASE_HTML[baseKey] || '');
+
   const sn = safeName(gen.name);
 
   // Load manifest early for dedup + cap checks
   const manifest = loadManifest();
 
-  // Deduplication: check if palette already exists
-  const similar = findSimilarTheme(gen, manifest);
+  // Deduplication: compare palette tokens
+  const similar = findSimilarTheme(palette, manifest);
   if (similar) {
-    const msg = `  ⚠️  Palette too similar to existing theme "${similar.name}" (primary: ${similar.primary}, accent: ${similar.accent}). Skipping generation.`;
+    const msg = `  ⚠️  Palette too similar to existing theme "${similar.name}". Skipping generation.`;
     console.log(msg);
     return { ...similar, deduplicated: true, warning: 'Palette too similar to existing theme' };
   }
 
-  // Generate CSS
-  const css = gen.generateCSS(sn);
+  // Generate CSS from remapped tokens
+  const css = gen.recolor();
   const cssPath = path.join(CSS_DIR, `${sn}.css`);
   fs.writeFileSync(cssPath, css);
 
@@ -126,24 +165,24 @@ async function generate(themeInput) {
     console.error('Wallpaper fetch failed:', e.message);
   }
 
+  // Extract dominant color for crypto widget
+  const hexMatch = css.match(/#[0-9a-fA-F]{6}/);
+  const dominantColor = hexMatch ? hexMatch[0] : '#1a1a2e';
+
   // Build theme record
   const record = {
     name: gen.name,
     safeName: sn,
     tagline: gen.tagline,
-    primary: gen.primary,
-    accent: gen.accent,
-    glowColor: gen.glowColor,
-    bgDark: gen.bgDark,
-    fontTitle: gen.fontTitle,
-    fontSubtitle: gen.fontSubtitle,
-    feature: gen.feature,
+    palette,
+    glow,
+    baseTheme: gen.baseKey,
     wallpapers,
     cssFile: `css/generated/${sn}.css`,
     createdAt: new Date().toISOString(),
   };
 
-  // Update manifest (already loaded above for dedup)
+  // Update manifest
   const idx = manifest.findIndex((t) => t.safeName === sn);
   if (idx >= 0) manifest[idx] = record;
   else manifest.unshift(record);
@@ -152,7 +191,7 @@ async function generate(themeInput) {
   const trimmed = trimManifest(manifest);
   saveManifest(trimmed);
 
-  // Generate/update preview page (use trimmed manifest)
+  // Generate/update preview page
   generatePreviewPage(trimmed);
 
   return record;
