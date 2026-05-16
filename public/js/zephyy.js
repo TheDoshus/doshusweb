@@ -707,6 +707,7 @@
     let quickReplied = false; // prevent button re-adding after first send
     let sessionEnded = false; // dead session flag — input locked
 let deadPolls = 0; // consecutive polls with no data (session archived?)
+    const seenKeys = new Set(); // tracks Firebase push keys already rendered
 
     /* Visitor name — from localStorage or detected */
     const savedName = localStorage.getItem('zp-visitor-name');
@@ -985,10 +986,13 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
             removeWelcome();
             removeQuickReplies();
 
-            Object.values(data).forEach(function(msg) {
+            Object.keys(data).forEach(function(key) {
+                seenKeys.add(key);
+                var msg = data[key];
                 addMessage(msg.role, msg.content, msg.timestamp);
             });
             lastCheck = Date.now();
+            console.log('[zephyy-debug] loadMessages: loaded ' + keys.length + ' messages, lastCheck=' + lastCheck + ', seenKeys=' + seenKeys.size);
 
             /* Always try name prompt — showNamePrompt has its own guard for savedName */
             showNamePrompt();
@@ -1011,15 +1015,18 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
         addThinkingBubble();
 
         try {
+            var userTs = Date.now();
+            console.log('[zephyy-debug] sendMessage: POSTing at ' + userTs + ', lastCheck=' + lastCheck);
             var resp = await fetch(MSGS_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: 'user', content: text, timestamp: Date.now() })
+                body: JSON.stringify({ role: 'user', content: text, timestamp: userTs })
             });
             if (!resp.ok) {
                 removeThinkingBubble();
                 addMessage('assistant', '⚠️ Message didn\'t send (error ' + resp.status + '). Try refreshing the page or check back later.', Date.now());
             } else {
+                console.log('[zephyy-debug] sendMessage: POST ok, waiting for poll to detect response');
                 /* Start a 15s timeout for slow responses */
                 var slowTimeout = setTimeout(function() {
                     var tb = document.getElementById('zp-chat-thinking');
@@ -1054,14 +1061,19 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
         var panelOpen = panel.classList.contains('open');
 
         try {
-            var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + lastCheck);
-            if (!resp.ok) { deadPolls++; return; }
+            /* Use 15s buffer on startAt to survive client/server clock skew.
+               Dedup is handled by seenKeys (Firebase push keys), not timestamps. */
+            var startAt = lastCheck - 15000;
+            console.log('[zephyy-debug] pollAndDetect: fetching startAt=' + startAt + ', lastCheck=' + lastCheck + ', seenKeys=' + seenKeys.size);
+            var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + startAt);
+            if (!resp.ok) { deadPolls++; console.log('[zephyy-debug] pollAndDetect: fetch !ok status=' + resp.status); return; }
             var data = await resp.json();
             if (!data) {
                 deadPolls++;
+                console.log('[zephyy-debug] pollAndDetect: null data, deadPolls=' + deadPolls);
                 /* Archive killed the session — restart */
                 if (deadPolls > 5 && !sessionEnded) {
-                    console.log('[zephyy] Session archived, creating new session');
+                    console.log('[zephyy-debug] Session archived, creating new session');
                     localStorage.removeItem('zephyy-chat-session');
                     location.reload();
                 }
@@ -1075,21 +1087,28 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
             Object.keys(data).forEach(function(key) {
                 var msg = data[key];
                 if (!msg || !msg.content) return;
-                if (msg.timestamp > lastCheck) {
-                    /* Only render assistant replies — user msgs rendered locally */
-                    if (msg.role === 'assistant') {
-                        if (panelOpen) {
-                            if (!foundResponse) {
-                                removeThinkingBubble();
-                                /* Clear slow timeout + note */
-                                if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
-                                var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
-                                foundResponse = true;
-                            }
-                            addMessage(msg.role, msg.content, msg.timestamp);
-                        } else {
-                            foundResponse = true; /* Show unread dot */
+
+                /* Skip already-rendered messages by push key (not timestamp).
+                   This is the dedup that's clock-skew-proof. */
+                if (seenKeys.has(key)) return;
+                seenKeys.add(key);
+
+                console.log('[zephyy-debug] pollAndDetect: NEW key=' + key + ', role=' + msg.role + ', ts=' + msg.timestamp + ', lastCheck=' + lastCheck);
+
+                /* Only render assistant/bot replies — user msgs rendered locally */
+                if (msg.role === 'assistant' || msg.role === 'bot') {
+                    if (panelOpen) {
+                        if (!foundResponse) {
+                            console.log('[zephyy-debug] pollAndDetect: removing thinking bubble');
+                            removeThinkingBubble();
+                            /* Clear slow timeout + note */
+                            if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
+                            var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
+                            foundResponse = true;
                         }
+                        addMessage(msg.role, msg.content, msg.timestamp);
+                    } else {
+                        foundResponse = true; /* Show unread dot */
                     }
                 }
             });
