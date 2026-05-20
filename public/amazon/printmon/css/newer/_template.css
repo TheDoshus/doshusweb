@@ -9,7 +9,7 @@ h1 {
 }
 .subtitle {
     color: #34b8b2c4;
-    font-family: 'Amazon Ember', 'system-ui';
+    font-family: 'Blackadder ITC', 'system-ui';
 }
 .input-group label {
     color: {{placeholder}};
