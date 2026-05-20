@@ -1204,9 +1204,7 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
     /* ── Session ended helper ── */
     function setSessionEnded() {
         sessionEnded = true;
-        var inputArea = document.querySelector('.zp-chat-input-area');
-        if (inputArea) inputArea.classList.add('zp-input-disabled');
-        if (inputEl) { inputEl.disabled = false; inputEl.placeholder = 'Session ended — type anything to start fresh'; }
+        if (inputEl) { inputEl.placeholder = 'Session ended — press Enter to start fresh'; }
         if (sendBtn) sendBtn.disabled = true;
         /* Fade old messages so user knows this is a past session */
         messagesEl.querySelectorAll('.zp-chat-msg').forEach(function(m) { m.style.opacity = '0.5'; });
