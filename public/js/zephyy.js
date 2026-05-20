@@ -1113,7 +1113,7 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
                 console.log('[zephyy-debug] pollAndDetect: NEW key=' + key + ', role=' + msg.role + ', ts=' + msg.timestamp + ', lastCheck=' + lastCheck);
 
                 /* Only render assistant/bot replies — user msgs rendered locally */
-                if (msg.role === 'assistant' || msg.role === 'bot') {
+                if (msg.role === 'assistant' || msg.role === 'bot' || msg.role === 'doshus') {
                     if (!foundResponse) {
                         removeThinkingBubble();
                         /* Clear slow timeout + note */
