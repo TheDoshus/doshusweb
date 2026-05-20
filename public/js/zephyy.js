@@ -1175,11 +1175,15 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
         removeWelcome();
     }
 
-    /* Open panel → load messages once */
+    /* Open panel → reload messages */
     var panelObserver = new MutationObserver(function() {
         if (panel.classList.contains('open')) {
+            /* Clear seen keys so messages detected while closed re-render */
+            seenKeys.clear();
             loadMessages();
-            panelObserver.disconnect();
+        } else {
+            /* Panel closed — clear unread dot */
+            orb.classList.remove('unread');
         }
     });
     panelObserver.observe(panel, { attributes: true, attributeFilter: ['class'] });
@@ -1289,5 +1293,5 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
                     }).catch(function(){});
                 }
             }).catch(function(){});
-    }, 60000);
+    }, 300000);
 })();
