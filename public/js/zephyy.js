@@ -1267,4 +1267,27 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
             }
         }
     }, 2000);
+
+    /* ── Keepalive: bump session timestamp every 60s while page is open ── */
+    setInterval(function() {
+        if (sessionEnded) return;
+        if (!sessionId) return;
+        /* Bump the last assistant message timestamp to prevent watcher archive */
+        fetch(MSGS_URL + '?orderBy="timestamp"&limitToLast=1', { signal: AbortSignal.timeout(3000) })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data) return;
+                var keys = Object.keys(data);
+                if (!keys.length) return;
+                var lastKey = keys[0];
+                var lastMsg = data[lastKey];
+                if (lastMsg && lastMsg.role === 'assistant') {
+                    fetch(FIREBASE_BASE + '/zephyy/chat/sessions/' + sessionId + '/messages/' + lastKey + '/timestamp.json', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(Date.now())
+                    }).catch(function(){});
+                }
+            }).catch(function(){});
+    }, 60000);
 })();
