@@ -1141,7 +1141,11 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
                     if (/without a name|don't have a name|no name|nah/i.test(msg.content)) return;
                     var m = msg.content.match(/my name is (\w+)/i) || msg.content.match(/i'm (\w+)/i) || msg.content.match(/call me (\w+)/i);
                     if (m && m[1] && m[1].length > 1) {
-                        var n = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
+                        var raw = m[1].toLowerCase();
+                        /* Skip common words that aren't names */
+                        var notNames = /^(just|good|fine|ok|okay|not|here|new|sorry|gonna|trying|looking|doing|pretty|really|still|also|only|back|sure|the|all|one|two)$/i;
+                        if (notNames.test(raw)) return;
+                        var n = raw[0].toUpperCase() + raw.slice(1);
                         localStorage.setItem('zp-visitor-name', n);
                         removeWelcome();
                         removeQuickReplies();
