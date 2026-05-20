@@ -706,9 +706,51 @@
     let lastCheck = Date.now();
     let quickReplied = false; // prevent button re-adding after first send
     let sessionEnded = false; // dead session flag — input locked
+let deadPolls = 0; // consecutive polls with no data (session archived?)
+    const seenKeys = new Set(); // tracks Firebase push keys already rendered
 
     /* Visitor name — from localStorage or detected */
     const savedName = localStorage.getItem('zp-visitor-name');
+
+    const STATUS_URL = FIREBASE_BASE + '/zephyy/status.json';
+
+    async function checkOnlineStatus() {
+        var offlineBanner = document.getElementById('zp-offline-banner');
+        try {
+            var resp = await fetch(STATUS_URL);
+            if (!resp.ok) throw new Error('fetch failed');
+            var data = await resp.json();
+            var lastUpdated = new Date(data.lastUpdated).getTime();
+            var staleThreshold = 2.5 * 60 * 60 * 1000;
+            var online = data.online === true && (Date.now() - lastUpdated) < staleThreshold;
+            if (!online) {
+                if (!offlineBanner) {
+                    offlineBanner = document.createElement('div');
+                    offlineBanner.className = 'zp-chat-msg zp-chat-msg-bot';
+                    offlineBanner.id = 'zp-offline-banner';
+                    offlineBanner.textContent = '💤 Zephyy is offline right now — likely the laptop is asleep or restarting. Check back soon!';
+                    messagesEl.insertBefore(offlineBanner, messagesEl.firstChild);
+                }
+                if (inputEl) { inputEl.disabled = true; inputEl.placeholder = 'Zephyy is offline...'; }
+                if (sendBtn) sendBtn.disabled = true;
+            } else {
+                if (offlineBanner) offlineBanner.remove();
+                if (inputEl) { inputEl.disabled = false; inputEl.placeholder = 'Type a message...'; }
+                if (sendBtn) sendBtn.disabled = false;
+                inputEl && inputEl.focus();
+            }
+        } catch(e) {
+            /* If status check fails, allow chat but note it */
+            if (!offlineBanner) {
+                offlineBanner = document.createElement('div');
+                offlineBanner.className = 'zp-chat-msg zp-chat-msg-bot';
+                offlineBanner.id = 'zp-offline-banner';
+                offlineBanner.textContent = '⚠️ Couldn\'t verify Zephyy\'s status — she might be offline. Responses may be delayed.';
+                messagesEl.insertBefore(offlineBanner, messagesEl.firstChild);
+            }
+        }
+        scrollToBottom();
+    }
 
     /* ================================================
      * 2. DOM HELPERS
@@ -725,23 +767,41 @@
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
             orb.classList.remove('unread');
-            inputEl && inputEl.focus();
-            scrollToBottom();
+            checkOnlineStatus();
+            /* Ensure name prompt shows even if loadMessages hasn't fired yet */
+            setTimeout(function() { showNamePrompt(); }, 600);
         }
     }
 
     function renderContent(text) {
-        // Escape HTML first (XSS prevention)
-        var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        // Markdown links: [text](url)
-        escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-        // Bare URLs (not already inside an <a> tag)
-        escaped = escaped.replace(/(?<!href="|>)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-        // Bold: **text**
-        escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        // Newlines to <br>
-        escaped = escaped.replace(/\n/g, '<br>');
-        return escaped;
+        // Linkify BEFORE escaping — otherwise & in URLs gets corrupted to &amp;
+        var placeholders = [];
+        var i = 0;
+        // 1. Markdown links: [text](url) → placeholder
+        text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, function(m, label, url) {
+            var ph = '\x00LINK' + (i++) + '\x00';
+            placeholders.push({ ph: ph, label: label, url: url });
+            return ph;
+        });
+        // 2. Bare URLs → placeholder
+        text = text.replace(/(https?:\/\/[^\s<>]+)/g, function(m, url) {
+            // Don't double-link URLs that were already inside markdown links
+            if (url.charAt(url.length - 1) !== m.charAt(m.length - 1)) return m;
+            var ph = '\x00LINK' + (i++) + '\x00';
+            placeholders.push({ ph: ph, label: url, url: url });
+            return ph;
+        });
+        // 3. HTML-escape remaining text
+        text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        // 4. Restore links from placeholders (no re-escaping, URLs are raw)
+        placeholders.forEach(function(p) {
+            text = text.replace(p.ph, '<a href="' + p.url + '" target="_blank" rel="noopener">' + p.label + '</a>');
+        });
+        // 5. Bold: **text**
+        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // 6. Newlines to <br>
+        text = text.replace(/\n/g, '<br>');
+        return text;
     }
 
     function addMessage(role, content, timestamp) {
@@ -805,6 +865,9 @@
         if (quickReplied || savedName) return;
         var row = document.getElementById('zp-quick-reply-row');
         if (row) return; // already shown
+        /* Don't show buttons if conversation already has user messages */
+        var existingMsgs = messagesEl.querySelectorAll('.zp-chat-msg-user');
+        if (existingMsgs.length > 0) return;
 
         row = document.createElement('div');
         row.id = 'zp-quick-reply-row';
@@ -940,10 +1003,16 @@
             removeWelcome();
             removeQuickReplies();
 
-            Object.values(data).forEach(function(msg) {
+            Object.keys(data).forEach(function(key) {
+                seenKeys.add(key);
+                var msg = data[key];
                 addMessage(msg.role, msg.content, msg.timestamp);
             });
             lastCheck = Date.now();
+            console.log('[zephyy-debug] loadMessages: loaded ' + keys.length + ' messages, lastCheck=' + lastCheck + ', seenKeys=' + seenKeys.size);
+
+            /* Always try name prompt — showNamePrompt has its own guard for savedName */
+            showNamePrompt();
         } catch(e) { /* silent */ }
     }
 
@@ -963,19 +1032,38 @@
         addThinkingBubble();
 
         try {
+            var userTs = Date.now();
+            console.log('[zephyy-debug] sendMessage: POSTing at ' + userTs + ', lastCheck=' + lastCheck);
             var resp = await fetch(MSGS_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: 'user', content: text, timestamp: Date.now() })
+                body: JSON.stringify({ role: 'user', content: text, timestamp: userTs })
             });
             if (!resp.ok) {
-                setTimeout(function() {
+                removeThinkingBubble();
+                addMessage('assistant', '⚠️ Message didn\'t send (error ' + resp.status + '). Try refreshing the page or check back later.', Date.now());
+            } else {
+                console.log('[zephyy-debug] sendMessage: POST ok, waiting for poll to detect response');
+                /* Start a 15s timeout for slow responses */
+                var slowTimeout = setTimeout(function() {
                     var tb = document.getElementById('zp-chat-thinking');
-                    if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
-                }, 15000);
+                    if (tb) {
+                        tb.querySelector('.zp-thinking-text').textContent = 'still thinking...';
+                        /* Add a status check message */
+                        var statusNote = document.createElement('div');
+                        statusNote.className = 'zp-chat-msg zp-chat-msg-bot zp-chat-status-note';
+                        statusNote.textContent = '💭 Taking a bit — Zephyy runs on free models from a personal laptop. If this persists, she might be offline.';
+                        statusNote.id = 'zp-slow-note';
+                        messagesEl.appendChild(statusNote);
+                        scrollToBottom();
+                    }
+                }, 10000);
+                /* Store the timeout so pollAndDetect can clear it */
+                window.__zpSlowTimeout = slowTimeout;
             }
         } catch(e) {
-            /* thinking bubble already showing */
+            removeThinkingBubble();
+            addMessage('assistant', '⚠️ Couldn\'t reach the server. Check your connection and try again.', Date.now());
         } finally {
             sendBtn.disabled = false;
             inputEl.focus();
@@ -990,10 +1078,25 @@
         var panelOpen = panel.classList.contains('open');
 
         try {
-            var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + lastCheck);
-            if (!resp.ok) return;
+            /* Use 15s buffer on startAt to survive client/server clock skew.
+               Dedup is handled by seenKeys (Firebase push keys), not timestamps. */
+            var startAt = lastCheck - 15000;
+            console.log('[zephyy-debug] pollAndDetect: fetching startAt=' + startAt + ', lastCheck=' + lastCheck + ', seenKeys=' + seenKeys.size);
+            var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + startAt);
+            if (!resp.ok) { deadPolls++; console.log('[zephyy-debug] pollAndDetect: fetch !ok status=' + resp.status); return; }
             var data = await resp.json();
-            if (!data) return;
+            if (!data) {
+                deadPolls++;
+                console.log('[zephyy-debug] pollAndDetect: null data, deadPolls=' + deadPolls);
+                /* Archive killed the session — restart */
+                if (deadPolls > 5 && !sessionEnded) {
+                    console.log('[zephyy-debug] Session archived, creating new session');
+                    localStorage.removeItem('zephyy-chat-session');
+                    location.reload();
+                }
+                return;
+            }
+            deadPolls = 0; // session alive
 
             var now = Date.now();
             var foundResponse = false;
@@ -1001,15 +1104,28 @@
             Object.keys(data).forEach(function(key) {
                 var msg = data[key];
                 if (!msg || !msg.content) return;
-                if (msg.timestamp > lastCheck) {
-                    /* Only render assistant replies — user msgs rendered locally */
-                    if (msg.role === 'assistant') {
-                        if (panelOpen) {
-                            if (!foundResponse) { removeThinkingBubble(); foundResponse = true; }
-                            addMessage(msg.role, msg.content, msg.timestamp);
-                        } else {
-                            foundResponse = true; /* Show unread dot */
+
+                /* Skip already-rendered messages by push key (not timestamp).
+                   This is the dedup that's clock-skew-proof. */
+                if (seenKeys.has(key)) return;
+                seenKeys.add(key);
+
+                console.log('[zephyy-debug] pollAndDetect: NEW key=' + key + ', role=' + msg.role + ', ts=' + msg.timestamp + ', lastCheck=' + lastCheck);
+
+                /* Only render assistant/bot replies — user msgs rendered locally */
+                if (msg.role === 'assistant' || msg.role === 'bot') {
+                    if (panelOpen) {
+                        if (!foundResponse) {
+                            console.log('[zephyy-debug] pollAndDetect: removing thinking bubble');
+                            removeThinkingBubble();
+                            /* Clear slow timeout + note */
+                            if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
+                            var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
+                            foundResponse = true;
                         }
+                        addMessage(msg.role, msg.content, msg.timestamp);
+                    } else {
+                        foundResponse = true; /* Show unread dot */
                     }
                 }
             });
@@ -1107,7 +1223,12 @@
     if (closeBtn) closeBtn.addEventListener('click', togglePanel);
     if (backdrop) backdrop.addEventListener('click', togglePanel);
     var refreshBtn = document.getElementById("zp-chat-refresh");
-    if (refreshBtn) refreshBtn.addEventListener("click", function() { localStorage.removeItem(SESSION_KEY); location.reload(); });
+    if (refreshBtn) refreshBtn.addEventListener("click", function() {
+        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem('zp-visitor-name');
+        localStorage.removeItem('zp-no-name');
+        location.reload();
+    });
     sendBtn.addEventListener('click', sendMessage);
     inputEl.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
