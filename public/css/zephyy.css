@@ -645,8 +645,8 @@
 
 .zp-chat-msg-bot {
   align-self: flex-start;
-  background: oklch(var(--brand-purple) / 0.1);
-  border: 1px solid oklch(var(--brand-purple) / 0.15);
+  background: oklch(20% 0.04 260 / 0.6);
+  border: 1px solid oklch(var(--brand-teal) / 0.1);
   color: var(--text-main);
   border-bottom-left-radius: 4px;
 }
