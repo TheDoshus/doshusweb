@@ -999,9 +999,10 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
             var keys = Object.keys(data);
             if (keys.length === 0) { showNamePrompt(); return; }
 
-            /* Clear the hardcoded welcome message */
-            removeWelcome();
-            removeQuickReplies();
+            /* Clear existing messages and re-render fresh */
+            while (messagesEl.firstChild) {
+                messagesEl.removeChild(messagesEl.firstChild);
+            }
 
             Object.keys(data).forEach(function(key) {
                 seenKeys.add(key);
@@ -1010,6 +1011,14 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
             });
             lastCheck = Date.now();
             console.log('[zephyy-debug] loadMessages: loaded ' + keys.length + ' messages, lastCheck=' + lastCheck + ', seenKeys=' + seenKeys.size);
+
+            /* Re-show session ended banner if needed */
+            if (sessionEnded) {
+                setSessionEnded();
+            } else {
+                removeWelcome();
+                removeQuickReplies();
+            }
 
             /* Always try name prompt — showNamePrompt has its own guard for savedName */
             showNamePrompt();
