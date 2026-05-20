@@ -480,7 +480,7 @@
   min-height: 330px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 200px);
-  background: oklch(12% 0.02 260 / 0.95);
+  background: oklch(17% 0.02 260 / 0.95);
   border: 1px solid oklch(var(--brand-teal) / 0.2);
   border-radius: 16px;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6),
