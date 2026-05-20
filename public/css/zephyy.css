@@ -654,10 +654,10 @@
 .zp-chat-msg-doshus {
   align-self: flex-start;
   background: oklch(20% 0.04 260 / 0.6);
-  border: 2px solid oklch(var(--solar-500) / 0.8);
+  border: 2px solid oklch(var(--brand-gold) / 0.8);
   color: var(--text-main);
   border-bottom-left-radius: 4px;
-  box-shadow: 0 0 12px oklch(var(--solar-500) / 0.3);
+  box-shadow: 0 0 12px oklch(var(--brand-gold) / 0.3);
 }
 
 .zp-chat-msg-user {
