@@ -1,4 +1,4 @@
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('srcOverlay')?.classList.remove('open'); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.querySelectorAll('.srcOverlay').forEach(el => el.classList.remove('open')); });
 
 // ═══════════════════════════════════════
 // FINANCE CARD SLIDER: SWIPE + NAV + LOCALSTORAGE + DYNAMIC HEIGHT

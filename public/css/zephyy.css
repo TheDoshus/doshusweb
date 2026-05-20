@@ -365,6 +365,21 @@
   animation: zp-dot-fade 4s ease-in-out infinite;
 }
 
+.zp-dot.thinking {
+  background: oklch(var(--brand-purple));
+  box-shadow: 0 0 8px oklch(var(--brand-purple) / 0.6);
+  animation: zp-dot-think 1s ease-in-out infinite;
+}
+
+@keyframes zp-dot-think {
+  0%, 100% { opacity: 0.5; transform: scale(1); box-shadow: 0 0 4px oklch(var(--brand-purple) / 0.3); }
+  50% { opacity: 1; transform: scale(1.4); box-shadow: 0 0 12px oklch(var(--brand-purple) / 0.7); }
+}
+
+.zp-status-thinking {
+  color: oklch(var(--brand-purple) / 0.8);
+}
+
 @keyframes zp-dot-pulse {
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.3); }

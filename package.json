@@ -6,10 +6,16 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
+    "lint:html": "html-validate public/**/*.html",
+    "lint": "npm run lint:html",
+    "predeploy": "npm run lint",
     "deploy": "firebase deploy --only hosting",
-    "deploy:full": "firebase deploy"
+    "deploy:full": "npm run lint && firebase deploy"
   },
   "dependencies": {
     "firebase": "^12.9.0"
+  },
+  "devDependencies": {
+    "html-validate": "^8.22.0"
   }
 }

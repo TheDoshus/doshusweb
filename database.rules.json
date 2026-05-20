@@ -15,7 +15,7 @@
           "$sessionId": {
             "messages": {
               ".read": true,
-              ".write": true,
+              ".write": "auth !== null",
               ".indexOn": ["timestamp"]
             },
             "control": {

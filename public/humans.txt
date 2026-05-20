@@ -1,0 +1,16 @@
+/* TEAM */
+Doshus — creator, developer, designer
+Zephyy — AI agent, code partner
+Aether — dashboard, monitoring
+
+/* SITE */
+Built with vanilla HTML/CSS/JS
+Hosted on Firebase
+Last updated: May 2026
+
+/* THANKS */
+Cursor Dance Party — inspiration
+Printmon — side project within
+
+/* CONTACT */
+doshus.net

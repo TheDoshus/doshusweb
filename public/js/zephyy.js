@@ -116,12 +116,9 @@
         document.head.appendChild(style);
     }
 
-    // ─── Intersection Observer for section reveals ───
-    function setupScrollReveal() {
-        // Disabled — caused content to render invisible until scroll,
-        // and the observer paint + transition storm against cosmic-bg
-        // animation triggered scroll freezes. Elements visible by default now.
-    }
+    // setupScrollReveal removed — caused content to render invisible until scroll,
+    // and the observer paint + transition storm against cosmic-bg
+    // animation triggered scroll freezes. Elements visible by default now.
 
     // ─── Easter egg ───
     function setupEasterEgg() {
@@ -135,36 +132,8 @@
         });
     }
 
-    // ─── Mood switcher ───
-    function setupMoodSwitch() {
-        const buttons = document.querySelectorAll('.zp-mood-btn');
-        if (!buttons.length) return;
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                buttons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const mood = btn.dataset.mood;
-                const wrap = document.getElementById('zephyy-glyph');
-                if (!wrap) return;
-                const left = wrap.querySelector('.glyph-left');
-                const right = wrap.querySelector('.glyph-right');
-                const center = wrap.querySelector('.glyph-center');
-                if (mood === 'idle') {
-                    if (left) left.style.animationDuration = '12s';
-                    if (right) right.style.animationDuration = '12s';
-                    if (center) center.style.animationDuration = '2s';
-                } else if (mood === 'active') {
-                    if (left) left.style.animationDuration = '3s';
-                    if (right) right.style.animationDuration = '3s';
-                    if (center) center.style.animationDuration = '1s';
-                } else if (mood === 'thinking') {
-                    if (left) left.style.animationDuration = '0.8s';
-                    if (right) right.style.animationDuration = '0.8s';
-                    if (center) center.style.animationDuration = '0.5s';
-                }
-            });
-        });
-    }
+    // Mood switcher removed — .zp-mood-btn elements don't exist in zephyy.html.
+    // Function was dead code on every page load.
 
     // ─── Live feed ───
     function setupLiveFeed() {
@@ -193,9 +162,7 @@
         renderGlyph();
         addDynamicStyles();
         setupGlyphInteractivity();
-        setupScrollReveal();
         setupEasterEgg();
-        setupMoodSwitch();
         setupLiveFeed();
         regVisibilityCleanup();
     }
@@ -542,6 +509,7 @@
     ];
 
     const STALE_THRESHOLD = 2.5 * 60 * 60 * 1000; // 2.5 hours
+    const THINKING_THRESHOLD = 5 * 60 * 1000; // 5 minutes — active/thinking
 
     async function loadStatus() {
         try {
@@ -552,15 +520,28 @@
             const lastUpdated = new Date(data.lastUpdated).getTime();
             const elapsed = Date.now() - lastUpdated;
             const isOnline = data.online === true && elapsed < STALE_THRESHOLD;
+            const isThinking = isOnline && elapsed < THINKING_THRESHOLD;
 
-            const msgs = isOnline ? onlineMessages : offlineMessages;
-            const msg = msgs[Math.floor(Math.random() * msgs.length)];
-
-            text.textContent = msg;
+            if (isThinking) {
+                const thinkingMsgs = [
+                    'Thinking... ⚡',
+                    'Processing... 🔮',
+                    'In the flow... 💫',
+                    'Active right now...',
+                    'Working on it... ⚡',
+                ];
+                text.textContent = thinkingMsgs[Math.floor(Math.random() * thinkingMsgs.length)];
+            } else {
+                const msgs = isOnline ? onlineMessages : offlineMessages;
+                const msg = msgs[Math.floor(Math.random() * msgs.length)];
+                text.textContent = msg;
+            }
 
             if (dot) {
                 dot.className = 'zp-dot';
-                if (isOnline) {
+                if (isThinking) {
+                    dot.classList.add('thinking');
+                } else if (isOnline) {
                     dot.classList.add('online');
                 } else {
                     dot.classList.add('offline');
@@ -572,8 +553,8 @@
             if (badge && data.chatModel) {
                 badge.textContent = data.chatModel;
                 badge.className = 'zp-model-badge';
-                // Add fallback class if not on primary (MiMo)
-                if (!data.chatModel.toLowerCase().includes('mimo')) {
+                // Add fallback class if not on primary (DeepSeek)
+                if (!data.chatModel.toLowerCase().includes('deepseek')) {
                     badge.classList.add('fallback');
                 }
             }
