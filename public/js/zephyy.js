@@ -1089,7 +1089,7 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
                 deadPolls++;
                 console.log('[zephyy-debug] pollAndDetect: null data, deadPolls=' + deadPolls);
                 /* Archive killed the session — restart */
-                if (deadPolls > 5 && !sessionEnded) {
+                if (deadPolls > 30 && !sessionEnded) {
                     console.log('[zephyy-debug] Session archived, ending session');
                     setSessionEnded();
                     return;
@@ -1189,16 +1189,30 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
         sessionEnded = true;
         var inputArea = document.querySelector('.zp-chat-input-area');
         if (inputArea) inputArea.classList.add('zp-input-disabled');
-        if (inputEl) { inputEl.disabled = true; inputEl.placeholder = 'Session ended'; }
+        if (inputEl) { inputEl.disabled = false; inputEl.placeholder = 'Session ended — type anything to start fresh'; }
         if (sendBtn) sendBtn.disabled = true;
+        /* Fade old messages so user knows this is a past session */
+        messagesEl.querySelectorAll('.zp-chat-msg').forEach(function(m) { m.style.opacity = '0.5'; });
         if (!document.getElementById('zp-chat-ended-banner')) {
             var banner = document.createElement('div');
             banner.className = 'zp-chat-ended';
             banner.id = 'zp-chat-ended-banner';
-            banner.textContent = '💤 This conversation has ended. Start a new one anytime.';
-            panel.appendChild(banner);
+            banner.innerHTML = '<span>💤 Session ended</span><span style="font-size:11px;opacity:0.7">Messages above are from a previous conversation. Type to start fresh.</span>';
+            messagesEl.appendChild(banner);
+            scrollToBottom();
         }
     }
+
+    /* Allow restarting by typing after session ended */
+    inputEl.addEventListener('keydown', function(e) {
+        if (sessionEnded && e.key === 'Enter') {
+            e.preventDefault();
+            localStorage.removeItem(SESSION_KEY);
+            localStorage.removeItem('zp-visitor-name');
+            localStorage.removeItem('zp-no-name');
+            location.reload();
+        }
+    });
 
     /* ── Check control endpoint for state=ended ── */
     async function checkControl() {
