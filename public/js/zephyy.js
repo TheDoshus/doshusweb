@@ -1057,7 +1057,7 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
                         messagesEl.appendChild(statusNote);
                         scrollToBottom();
                     }
-                }, 10000);
+                }, 20000);
                 /* Store the timeout so pollAndDetect can clear it */
                 window.__zpSlowTimeout = slowTimeout;
             }
@@ -1090,9 +1090,9 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
                 console.log('[zephyy-debug] pollAndDetect: null data, deadPolls=' + deadPolls);
                 /* Archive killed the session — restart */
                 if (deadPolls > 5 && !sessionEnded) {
-                    console.log('[zephyy-debug] Session archived, creating new session');
-                    localStorage.removeItem('zephyy-chat-session');
-                    location.reload();
+                    console.log('[zephyy-debug] Session archived, ending session');
+                    setSessionEnded();
+                    return;
                 }
                 return;
             }
@@ -1114,18 +1114,15 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
 
                 /* Only render assistant/bot replies — user msgs rendered locally */
                 if (msg.role === 'assistant' || msg.role === 'bot') {
+                    if (!foundResponse) {
+                        removeThinkingBubble();
+                        /* Clear slow timeout + note */
+                        if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
+                        var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
+                        foundResponse = true;
+                    }
                     if (panelOpen) {
-                        if (!foundResponse) {
-                            console.log('[zephyy-debug] pollAndDetect: removing thinking bubble');
-                            removeThinkingBubble();
-                            /* Clear slow timeout + note */
-                            if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
-                            var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
-                            foundResponse = true;
-                        }
                         addMessage(msg.role, msg.content, msg.timestamp);
-                    } else {
-                        foundResponse = true; /* Show unread dot */
                     }
                 }
             });
@@ -1237,20 +1234,23 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
         }
     });
     inputEl.addEventListener('input', touchActivity);
+    messagesEl.addEventListener('scroll', touchActivity);
+    messagesEl.addEventListener('touchmove', touchActivity);
 
-    /* ── Poll interval (messages + control + idle) ── */
+    /* ── Poll interval (messages + control + idle, always runs for notifications) ── */
     setInterval(function() {
-        if (!panel.classList.contains('open')) return;
         pollAndDetect();
-        checkControl();
-        /* Idle timeout check: 30 min */
-        if (!sessionEnded && Date.now() - lastActivity > 30 * 60 * 1000) {
-            setSessionEnded();
-            fetch(CONTROL_URL, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ state: 'ended', reason: 'idle_timeout', timestamp: Date.now() })
-            }).catch(function(){});
+        if (panel.classList.contains('open')) {
+            checkControl();
+            /* Idle timeout check: 30 min (only when panel open) */
+            if (!sessionEnded && Date.now() - lastActivity > 30 * 60 * 1000) {
+                setSessionEnded();
+                fetch(CONTROL_URL, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ state: 'ended', reason: 'idle_timeout', timestamp: Date.now() })
+                }).catch(function(){});
+            }
         }
     }, 2000);
 })();
