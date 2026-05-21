@@ -1112,7 +1112,11 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
 
             Object.keys(data).forEach(function(key) {
                 var msg = data[key];
-                if (!msg || !msg.content) return;
+                if (msg.role === 'system' && msg.content === '_SESSION_ENDED_') {
+                    setSessionEnded();
+                    return;
+                }
+                if (!msg.content) return;
 
                 /* Skip already-rendered messages by push key (not timestamp).
                    This is the dedup that's clock-skew-proof. */
