@@ -1226,10 +1226,22 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
     inputEl.addEventListener('keydown', function(e) {
         if (sessionEnded && e.key === 'Enter') {
             e.preventDefault();
+            /* In-place restart — keep panel open */
             localStorage.removeItem(SESSION_KEY);
             localStorage.removeItem('zp-visitor-name');
             localStorage.removeItem('zp-no-name');
-            location.reload();
+            sessionEnded = false;
+            seenKeys.clear();
+            messagesEl.querySelectorAll('.zp-chat-msg, .zp-chat-ended').forEach(function(el) { el.remove(); });
+            /* Clear and re-ask name */
+            visitorName = null;
+            nameAsked = false;
+            if (sendBtn) sendBtn.disabled = false;
+            if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; inputEl.value = ''; }
+            /* Generate new session */
+            sessionId = 'chat-' + Math.random().toString(36).substring(2, 8);
+            localStorage.setItem(SESSION_KEY, sessionId);
+            setTimeout(function() { showNamePrompt(); }, 400);
         }
     });
 

@@ -469,6 +469,7 @@
 .zp-chat-backdrop.open {
   display: block;
   opacity: 1;
+  pointer-events: auto;
 }
 
 .zp-chat-panel {
