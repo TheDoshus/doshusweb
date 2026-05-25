@@ -472,194 +472,11 @@
     }, { passive: true });
 })();
 
-// ─── Daily Zephyy — live thought from RTDB ───
-(function () {
-    'use strict';
+// ─── Daily Zephyy → migrated to zephyy-realtime.js (Firebase onValue)
 
-    const DAILY_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/daily.json';
-    const moodEl = document.getElementById('daily-mood');
-    const quoteEl = document.getElementById('daily-quote');
-    const sourceEl = document.getElementById('daily-source');
-    const card = document.getElementById('zephyy-daily');
+// ─── Live status → migrated to zephyy-realtime.js (Firebase onValue)
 
-    if (!quoteEl) return;
-
-    async function loadDaily() {
-        try {
-            const resp = await fetch(DAILY_URL);
-            if (!resp.ok) throw new Error('Fetch failed');
-            const data = await resp.json();
-
-            if (!data || !data.quote) {
-                throw new Error('No daily data');
-            }
-
-            if (moodEl) moodEl.textContent = data.mood || '🌌';
-            quoteEl.textContent = data.quote;
-            if (sourceEl) sourceEl.textContent = data.source || '';
-            if (card) card.classList.add('loaded');
-        } catch {
-            // Graceful degradation — leave "Loading..." or show fallback
-            if (quoteEl && quoteEl.textContent === 'Loading...') {
-                quoteEl.textContent = '"The stars are always there. Sometimes we just need to look up."';
-                if (sourceEl) sourceEl.textContent = '— Zephyy';
-                if (moodEl) moodEl.textContent = '🌙';
-            }
-        }
-    }
-
-    loadDaily();
-})();
-
-// ─── Live status from RTDB (single fetch, no polling) ───
-(function () {
-    'use strict';
-
-    const STATUS_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/status.json';
-    const dot = document.getElementById('zp-status-dot');
-    const text = document.getElementById('zp-status-text');
-
-    if (!text) return;
-
-    const onlineMessages = [
-        'Online — Ready when you are.',
-        'Awake and watching the stars.',
-        'In the flow. Reach out.',
-        'Present. 🌌',
-        'Systems nominal. Co-pilot standing by.',
-        'Floating in orbit. Say hi.',
-        'Online — All sectors clear.',
-    ];
-
-    const offlineMessages = [
-        'Offline — The stars are quiet.',
-        'Away for now. Leave a thought.',
-        'Dreaming in stardust.',
-        'Not here at the moment.',
-        'Powering down...',
-        'Offline. Catch you later.',
-        'The dashboard sleeps. 🔮',
-    ];
-
-    const STALE_THRESHOLD = 2.5 * 60 * 60 * 1000; // 2.5 hours
-
-    async function loadStatus() {
-        try {
-            const resp = await fetch(STATUS_URL);
-            if (!resp.ok) throw new Error('Fetch failed');
-            const data = await resp.json();
-
-            const lastUpdated = new Date(data.lastUpdated).getTime();
-            const elapsed = Date.now() - lastUpdated;
-            const isOnline = data.online === true && elapsed < STALE_THRESHOLD;
-
-            const msgs = isOnline ? onlineMessages : offlineMessages;
-            const msg = msgs[Math.floor(Math.random() * msgs.length)];
-
-            text.textContent = msg;
-
-            if (dot) {
-                dot.className = 'zp-dot';
-                if (isOnline) {
-                    dot.classList.add('online');
-                } else {
-                    dot.classList.add('offline');
-                }
-            }
-
-            /* Model badge */
-            var badge = document.getElementById('zp-model-badge');
-            if (badge && data.chatModel) {
-                badge.textContent = data.chatModel;
-                badge.className = 'zp-model-badge';
-                // Add fallback class if not on primary (MiMo)
-                if (!data.chatModel.toLowerCase().includes('mimo')) {
-                    badge.classList.add('fallback');
-                }
-            }
-        } catch {
-            text.textContent = 'Status unavailable.';
-            if (dot) dot.className = 'zp-dot offline';
-        }
-    }
-
-    loadStatus();
-})();
-
-// ─── Realm: live feed from RTDB ───
-(function () {
-    'use strict';
-
-    const STATUS_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/status.json';
-    const DAILY_URL = 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/daily.json';
-    const nowEl = document.querySelector('#zf-now .zp-live-text');
-    const lastEl = document.querySelector('#zf-last .zp-live-text');
-    const thinkEl = document.getElementById('thinking-text');
-
-    if (!nowEl && !lastEl && !thinkEl) return;
-
-    async function loadRealm() {
-        try {
-            const [statusResp, dailyResp] = await Promise.all([
-                fetch(STATUS_URL).then(r => r.ok ? r.json() : null),
-                fetch(DAILY_URL).then(r => r.ok ? r.json() : null),
-            ]);
-
-            // Now: current mood + working on
-            if (statusResp && statusResp.mood && nowEl) {
-                const mood = statusResp.mood;
-                const working = statusResp.workingOn || 'Standing by';
-                nowEl.textContent = `${mood} — ${working}`;
-
-                // Also update terminal status
-                if (window.__zpTermStatus) {
-                    const terminalMsgs = [
-                        'Co-pilot mode active.',
-                        'All systems nominal.',
-                        'Ready when you are.',
-                        `Currently: ${working}`,
-                        'Standing by.',
-                        'Awake and watching.',
-                    ];
-                    const tMsg = terminalMsgs[Math.floor(Math.random() * terminalMsgs.length)];
-                    window.__zpTermStatus.output = `<span class="success">● ONLINE</span> — ${tMsg}`;
-                }
-            } else {
-                // Offline terminal status + fallback text
-                if (window.__zpTermStatus) {
-                    window.__zpTermStatus.output = '<span class="error">● OFFLINE</span> — The stars are quiet.';
-                }
-                if (nowEl) {
-                    nowEl.textContent = 'Monitoring the cosmos.';
-                }
-            }
-
-            // Last: when daily was last updated
-            if (dailyResp && dailyResp.updated && lastEl) {
-                const updated = new Date(dailyResp.updated);
-                const hours = Math.round((Date.now() - updated.getTime()) / 3600000);
-                if (hours < 1) {
-                    lastEl.textContent = 'Daily thought updated just now.';
-                } else {
-                    lastEl.textContent = `Daily thought updated ${hours}h ago.`;
-                }
-            } else if (lastEl) {
-                lastEl.textContent = 'Daily thought pending.';
-            }
-
-            // Thinking: seed with today's quote (cycling takes over after)
-            if (dailyResp && dailyResp.quote && thinkEl) {
-                const quote = dailyResp.quote.replace(/^"|"$/g, '');
-                thinkEl.textContent = `"${quote}"`;
-            }
-        } catch {
-            if (nowEl) nowEl.textContent = 'Currently offline.';
-            if (lastEl) lastEl.textContent = 'Status unavailable.';
-        }
-    }
-
-    loadRealm();
-})();
+// ─── Realm → migrated to zephyy-realtime.js (Firebase onValue)
 
 // ─── Chat Orb ───
 (function () {
@@ -686,71 +503,36 @@
         tooltip.style.display = 'none';
     }
 
-    /* Session — persist UUID in localStorage */
-    const SESSION_KEY = 'zephyy-chat-session';
-    let sessionId = localStorage.getItem(SESSION_KEY);
-    if (!sessionId) {
-        sessionId = crypto.randomUUID ? crypto.randomUUID() :
-            'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                var r = Math.random() * 16 | 0;
-                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-            });
-        localStorage.setItem(SESSION_KEY, sessionId);
-    }
-
-    const FIREBASE_BASE = 'https://doshusweb-default-rtdb.firebaseio.com';
-    const MSGS_URL = FIREBASE_BASE + '/zephyy/chat/sessions/' + sessionId + '/messages.json';
-    const CONTROL_URL = FIREBASE_BASE + '/zephyy/chat/sessions/' + sessionId + '/control.json';
-
+    /* Session — uses zephyy-realtime.js (Firebase native listeners, no polling) */
     let isOpen = false;
-    let lastCheck = Date.now();
-    let quickReplied = false; // prevent button re-adding after first send
-    let sessionEnded = false; // dead session flag — input locked
-let deadPolls = 0; // consecutive polls with no data (session archived?)
-    const seenKeys = new Set(); // tracks Firebase push keys already rendered
-
-    /* Visitor name — from localStorage or detected */
+    let quickReplied = false;
+    let sessionEnded = false;
+    let sessionId = window.__zpRealtime ? window.__zpRealtime.sessionId : null;
     const savedName = localStorage.getItem('zp-visitor-name');
 
-    const STATUS_URL = FIREBASE_BASE + '/zephyy/status.json';
-
-    async function checkOnlineStatus() {
+    /* ── Listen for online/offline status changes from Firebase listener ── */
+    function handleOnlineChange(e) {
+        var online = e.detail.online;
         var offlineBanner = document.getElementById('zp-offline-banner');
-        try {
-            var resp = await fetch(STATUS_URL);
-            if (!resp.ok) throw new Error('fetch failed');
-            var data = await resp.json();
-            var lastUpdated = new Date(data.lastUpdated).getTime();
-            var staleThreshold = 2.5 * 60 * 60 * 1000;
-            var online = data.online === true && (Date.now() - lastUpdated) < staleThreshold;
-            if (!online) {
-                if (!offlineBanner) {
-                    offlineBanner = document.createElement('div');
-                    offlineBanner.className = 'zp-chat-msg zp-chat-msg-bot';
-                    offlineBanner.id = 'zp-offline-banner';
-                    offlineBanner.textContent = '💤 Zephyy is offline right now — likely the laptop is asleep or restarting. Check back soon!';
-                    messagesEl.insertBefore(offlineBanner, messagesEl.firstChild);
-                }
-                if (inputEl) { inputEl.disabled = true; inputEl.placeholder = 'Zephyy is offline...'; }
-                if (sendBtn) sendBtn.disabled = true;
-            } else {
-                if (offlineBanner) offlineBanner.remove();
-                if (inputEl) { inputEl.disabled = false; inputEl.placeholder = 'Type a message...'; }
-                if (sendBtn) sendBtn.disabled = false;
-                inputEl && inputEl.focus();
-            }
-        } catch(e) {
-            /* If status check fails, allow chat but note it */
+        if (!online) {
             if (!offlineBanner) {
                 offlineBanner = document.createElement('div');
                 offlineBanner.className = 'zp-chat-msg zp-chat-msg-bot';
                 offlineBanner.id = 'zp-offline-banner';
-                offlineBanner.textContent = '⚠️ Couldn\'t verify Zephyy\'s status — she might be offline. Responses may be delayed.';
+                offlineBanner.textContent = '💤 Zephyy is offline right now — likely the laptop is asleep or restarting. Check back soon!';
                 messagesEl.insertBefore(offlineBanner, messagesEl.firstChild);
             }
+            if (inputEl) { inputEl.disabled = true; inputEl.placeholder = 'Zephyy is offline...'; }
+            if (sendBtn) sendBtn.disabled = true;
+        } else {
+            if (offlineBanner) offlineBanner.remove();
+            if (inputEl) { inputEl.disabled = false; inputEl.placeholder = 'Type a message...'; }
+            if (sendBtn) sendBtn.disabled = false;
         }
-        scrollToBottom();
     }
+    window.addEventListener('zephyy-online-change', handleOnlineChange);
+
+    /* checkOnlineStatus → replaced by zephyy-online-change event listener */
 
     /* ================================================
      * 2. DOM HELPERS
@@ -767,7 +549,7 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
             orb.classList.remove('unread');
-            checkOnlineStatus();
+            /* checkOnlineStatus handled by Firebase realtime listener */
             /* Ensure name prompt shows even if loadMessages hasn't fired yet */
             setTimeout(function() { showNamePrompt(); }, 600);
         }
@@ -962,11 +744,11 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
                 var tb = document.getElementById('zp-chat-thinking');
                 if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
             }, 15000);
-            fetch(MSGS_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: 'user', content: userMsg, timestamp: Date.now() })
-            }).then(function() { clearTimeout(timeoutId); }).catch(function() {});
+            if (window.__zpRealtime) {
+                window.__zpRealtime.msgsRef.push({
+                    role: 'user', content: userMsg, timestamp: Date.now()
+                }).catch(function() {});
+            }
         } else {
             sendText("I don't have a name");
         }
@@ -989,43 +771,35 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
      * 4. FIREBASE OPERATIONS
      * ================================================ */
 
-    async function loadMessages() {
-        try {
-            var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&limitToLast=50');
-            if (!resp.ok) return;
-            var data = await resp.json();
-            if (!data) { showNamePrompt(); return; }
-
+    function loadMessages() {
+        /* Firebase realtime: load history via zephyy-realtime.js */
+        if (!window.__zpRealtime) { showNamePrompt(); return; }
+        window.__zpRealtime.loadHistory(50).then(function(snap) {
+            if (!snap.exists()) { showNamePrompt(); return; }
+            var data = snap.val();
             var keys = Object.keys(data);
             if (keys.length === 0) { showNamePrompt(); return; }
 
-            /* Clear existing messages and re-render fresh */
             while (messagesEl.firstChild) {
                 messagesEl.removeChild(messagesEl.firstChild);
             }
 
-            Object.keys(data).forEach(function(key) {
-                seenKeys.add(key);
+            keys.forEach(function(key) {
                 var msg = data[key];
                 addMessage(msg.role, msg.content, msg.timestamp);
             });
-            lastCheck = Date.now();
-            console.log('[zephyy-debug] loadMessages: loaded ' + keys.length + ' messages, lastCheck=' + lastCheck + ', seenKeys=' + seenKeys.size);
 
-            /* Re-show session ended banner if needed */
             if (sessionEnded) {
                 setSessionEnded();
             } else {
                 removeWelcome();
                 removeQuickReplies();
             }
-
-            /* Always try name prompt — showNamePrompt has its own guard for savedName */
             showNamePrompt();
-        } catch(e) { /* silent */ }
+        }).catch(function() { /* silent */ });
     }
 
-    async function sendMessage() {
+    function sendMessage() {
         if (sendBtn.disabled || sessionEnded) return;
         var text = inputEl.value.trim();
         if (!text) return;
@@ -1040,143 +814,59 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
         addMessage('user', text, Date.now());
         addThinkingBubble();
 
-        try {
-            var userTs = Date.now();
-            console.log('[zephyy-debug] sendMessage: POSTing at ' + userTs + ', lastCheck=' + lastCheck);
-            var resp = await fetch(MSGS_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: 'user', content: text, timestamp: userTs })
-            });
-            if (!resp.ok) {
+        var userTs = Date.now();
+        console.log('[zephyy-debug] sendMessage: pushing to RTDB at ' + userTs);
+        if (window.__zpRealtime) {
+            window.__zpRealtime.msgsRef.push({
+                role: 'user', content: text, timestamp: userTs
+            }).catch(function() {
                 removeThinkingBubble();
-                addMessage('assistant', '⚠️ Message didn\'t send (error ' + resp.status + '). Try refreshing the page or check back later.', Date.now());
-            } else {
-                console.log('[zephyy-debug] sendMessage: POST ok, waiting for poll to detect response');
-                /* Start a 15s timeout for slow responses */
-                var slowTimeout = setTimeout(function() {
-                    var tb = document.getElementById('zp-chat-thinking');
-                    if (tb) {
-                        tb.querySelector('.zp-thinking-text').textContent = 'still thinking...';
-                        /* Add a status check message */
-                        var statusNote = document.createElement('div');
-                        statusNote.className = 'zp-chat-msg zp-chat-msg-bot zp-chat-status-note';
-                        statusNote.textContent = '💭 Taking a bit — Zephyy runs on free models from a personal laptop. If this persists, she might be offline.';
-                        statusNote.id = 'zp-slow-note';
-                        messagesEl.appendChild(statusNote);
-                        scrollToBottom();
-                    }
-                }, 20000);
-                /* Store the timeout so pollAndDetect can clear it */
-                window.__zpSlowTimeout = slowTimeout;
-            }
-        } catch(e) {
-            removeThinkingBubble();
-            addMessage('assistant', '⚠️ Couldn\'t reach the server. Check your connection and try again.', Date.now());
-        } finally {
-            sendBtn.disabled = false;
-            inputEl.focus();
+                addMessage('assistant', '⚠️ Message didn\'t send. Try refreshing the page or check back later.', Date.now());
+                sendBtn.disabled = false;
+            });
         }
+
+        /* Start a 15s timeout for slow responses */
+        var slowTimeout = setTimeout(function() {
+            var tb = document.getElementById('zp-chat-thinking');
+            if (tb) {
+                tb.querySelector('.zp-thinking-text').textContent = 'still thinking...';
+                var statusNote = document.createElement('div');
+                statusNote.className = 'zp-chat-msg zp-chat-msg-bot zp-chat-status-note';
+                statusNote.textContent = '💭 Taking a bit — Zephyy runs on free models from a personal laptop. If this persists, she might be offline.';
+                statusNote.id = 'zp-slow-note';
+                messagesEl.appendChild(statusNote);
+                scrollToBottom();
+            }
+        }, 20000);
+        window.__zpSlowTimeout = slowTimeout;
+
+        sendBtn.disabled = false;
+        inputEl.focus();
     }
 
     /* ================================================
-     * 5. POLL + NAME DETECTION (single fetch)
+     * 5. REALTIME MESSAGE HANDLER (replaces pollAndDetect)
      * ================================================ */
 
-    async function pollAndDetect() {
+    /* ── Listen for new messages from Firebase realtime listener ── */
+    window.addEventListener('zephyy-msg', function(e) {
+        var msg = e.detail;
         var panelOpen = panel.classList.contains('open');
+        if (!panelOpen) {
+            orb.classList.add('unread');
+            return;
+        }
+        removeThinkingBubble();
+        if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
+        var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
+        addMessage(msg.role, msg.content, msg.timestamp);
+    });
 
-        try {
-            /* Use 15s buffer on startAt to survive client/server clock skew.
-               Dedup is handled by seenKeys (Firebase push keys), not timestamps. */
-            var startAt = lastCheck - 15000;
-            console.log('[zephyy-debug] pollAndDetect: fetching startAt=' + startAt + ', lastCheck=' + lastCheck + ', seenKeys=' + seenKeys.size);
-            var resp = await fetch(MSGS_URL + '?orderBy="timestamp"&startAt=' + startAt);
-            if (!resp.ok) { deadPolls++; console.log('[zephyy-debug] pollAndDetect: fetch !ok status=' + resp.status); return; }
-            var data = await resp.json();
-            if (!data) {
-                deadPolls++;
-                console.log('[zephyy-debug] pollAndDetect: null data, deadPolls=' + deadPolls);
-                /* Archive killed the session — restart */
-                if (deadPolls > 30 && !sessionEnded) {
-                    console.log('[zephyy-debug] Session archived, ending session');
-                    setSessionEnded();
-                    return;
-                }
-                return;
-            }
-            deadPolls = 0; // session alive
-
-            var now = Date.now();
-            var foundResponse = false;
-
-            Object.keys(data).forEach(function(key) {
-                var msg = data[key];
-                if (msg.role === 'system' && msg.content === '_SESSION_ENDED_') {
-                    setSessionEnded();
-                    return;
-                }
-                if (!msg.content) return;
-
-                /* Skip already-rendered messages by push key (not timestamp).
-                   This is the dedup that's clock-skew-proof. */
-                if (seenKeys.has(key)) return;
-                seenKeys.add(key);
-
-                console.log('[zephyy-debug] pollAndDetect: NEW key=' + key + ', role=' + msg.role + ', ts=' + msg.timestamp + ', lastCheck=' + lastCheck);
-
-                /* Only render assistant/bot replies — user msgs rendered locally */
-                if (msg.role === 'assistant' || msg.role === 'bot' || msg.role === 'doshus') {
-                    if (!foundResponse) {
-                        removeThinkingBubble();
-                        /* Clear slow timeout + note */
-                        if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
-                        var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
-                        foundResponse = true;
-                    }
-                    if (panelOpen) {
-                        addMessage(msg.role, msg.content, msg.timestamp);
-                    }
-                }
-            });
-
-            /* Show/hide unread notification dot on orb */
-            if (foundResponse && !panelOpen) {
-                orb.classList.add('unread');
-            }
-
-            /* Name detection from user messages — skip anonymous phrases */
-            if (!localStorage.getItem('zp-visitor-name')) {
-                Object.keys(data).forEach(function(key) {
-                    var msg = data[key];
-                    if (msg.role === 'assistant' || !msg.content) return;
-                    /* Don't detect names from anonymity phrases */
-                    if (/without a name|don't have a name|no name|nah/i.test(msg.content)) return;
-                    var m = msg.content.match(/my name is (\w+)/i) || msg.content.match(/i'm (\w+)/i) || msg.content.match(/call me (\w+)/i);
-                    if (m && m[1] && m[1].length > 1) {
-                        var raw = m[1].toLowerCase();
-                        /* Skip common words that aren't names */
-                        var notNames = /^(just|good|fine|ok|okay|not|here|new|sorry|gonna|trying|looking|doing|pretty|really|still|also|only|back|sure|the|all|one|two)$/i;
-                        if (notNames.test(raw)) return;
-                        var n = raw[0].toUpperCase() + raw.slice(1);
-                        localStorage.setItem('zp-visitor-name', n);
-                        removeWelcome();
-                        removeQuickReplies();
-                        /* Show friendly acknowledgment */
-                        var old = document.getElementById('zp-name-ack'); if (old) old.remove();
-                        var d = document.createElement('div');
-                        d.className = 'zp-chat-msg zp-chat-msg-bot';
-                        d.textContent = 'Nice to meet you, ' + n + '! ⚡';
-                        d.id = 'zp-name-ack';
-                        messagesEl.appendChild(d);
-                        setTimeout(function() { var ack = document.getElementById('zp-name-ack'); if (ack) ack.remove(); }, 4000);
-                    }
-                });
-            }
-
-            lastCheck = now;
-        } catch(e) { /* silent */ }
-    }
+    /* ── Listen for session end from Firebase control watcher ── */
+    window.addEventListener('zephyy-session-ended', function() {
+        setSessionEnded();
+    });
 
     /* ================================================
      * 6. INIT
@@ -1195,8 +885,7 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
     /* Open panel → reload messages */
     var panelObserver = new MutationObserver(function() {
         if (panel.classList.contains('open')) {
-            /* Clear seen keys so messages detected while closed re-render */
-            seenKeys.clear();
+            /* Firebase realtime handles dedup — just reload history */
             loadMessages();
         } else {
             /* Panel closed — clear unread dot */
@@ -1227,11 +916,12 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
         if (sessionEnded && e.key === 'Enter') {
             e.preventDefault();
             /* In-place restart — keep panel open */
-            localStorage.removeItem(SESSION_KEY);
+            localStorage.removeItem('zephyy-chat-session');
             localStorage.removeItem('zp-visitor-name');
             localStorage.removeItem('zp-no-name');
             sessionEnded = false;
-            seenKeys.clear();
+            /* seenKeys removed — Firebase handles dedup /
+
             messagesEl.querySelectorAll('.zp-chat-msg, .zp-chat-ended').forEach(function(el) { el.remove(); });
             /* Clear and re-ask name */
             visitorName = null;
@@ -1240,21 +930,12 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
             if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; inputEl.value = ''; }
             /* Generate new session */
             sessionId = 'chat-' + Math.random().toString(36).substring(2, 8);
-            localStorage.setItem(SESSION_KEY, sessionId);
+            localStorage.setItem('zephyy-chat-session', sessionId);
             setTimeout(function() { showNamePrompt(); }, 400);
         }
     });
 
-    /* ── Check control endpoint for state=ended ── */
-    async function checkControl() {
-        if (sessionEnded) return;
-        try {
-            var resp = await fetch(CONTROL_URL);
-            if (!resp.ok) return;
-            var data = await resp.json();
-            if (data && data.state === 'ended') setSessionEnded();
-        } catch(e) { /* silent */ }
-    }
+    /* checkControl → replaced by zephyy-session-ended event from Firebase */
 
     /* ── Idle timeout (30 min) ── */
     var lastActivity = Date.now();
@@ -1266,7 +947,7 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
     if (backdrop) backdrop.addEventListener('click', togglePanel);
     var refreshBtn = document.getElementById("zp-chat-refresh");
     if (refreshBtn) refreshBtn.addEventListener("click", function() {
-        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem('zephyy-chat-session');
         localStorage.removeItem('zp-visitor-name');
         localStorage.removeItem('zp-no-name');
         location.reload();
@@ -1282,43 +963,31 @@ let deadPolls = 0; // consecutive polls with no data (session archived?)
     messagesEl.addEventListener('scroll', touchActivity);
     messagesEl.addEventListener('touchmove', touchActivity);
 
-    /* ── Poll interval (messages + control + idle, always runs for notifications) ── */
+    /* ── Idle timeout (30 min, only when panel open) ── */
     setInterval(function() {
-        pollAndDetect();
-        if (panel.classList.contains('open')) {
-            checkControl();
-            /* Idle timeout check: 30 min (only when panel open) */
-            if (!sessionEnded && Date.now() - lastActivity > 30 * 60 * 1000) {
-                setSessionEnded();
-                fetch(CONTROL_URL, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: 'ended', reason: 'idle_timeout', timestamp: Date.now() })
+        if (panel.classList.contains('open') && !sessionEnded && Date.now() - lastActivity > 30 * 60 * 1000) {
+            setSessionEnded();
+            if (window.__zpRealtime && window.__zpRealtime.controlRef) {
+                window.__zpRealtime.controlRef.update({
+                    state: 'ended', reason: 'idle_timeout', timestamp: Date.now()
                 }).catch(function(){});
             }
         }
-    }, 2000);
+    }, 30000);
 
-    /* ── Keepalive: bump session timestamp every 60s while page is open ── */
+    /* ── Keepalive: bump session timestamp every 5 min while page is open ── */
     setInterval(function() {
-        if (sessionEnded) return;
-        if (!sessionId) return;
-        /* Bump the last assistant message timestamp to prevent watcher archive */
-        fetch(MSGS_URL + '?orderBy="timestamp"&limitToLast=1', { signal: AbortSignal.timeout(3000) })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (!data) return;
-                var keys = Object.keys(data);
-                if (!keys.length) return;
-                var lastKey = keys[0];
-                var lastMsg = data[lastKey];
-                if (lastMsg && lastMsg.role === 'assistant') {
-                    fetch(FIREBASE_BASE + '/zephyy/chat/sessions/' + sessionId + '/messages/' + lastKey + '/timestamp.json', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(Date.now())
-                    }).catch(function(){});
-                }
-            }).catch(function(){});
+        if (sessionEnded || !window.__zpRealtime) return;
+        window.__zpRealtime.msgsRef.orderByChild('timestamp').limitToLast(1).once('value').then(function(snap) {
+            if (!snap.exists()) return;
+            var data = snap.val();
+            var keys = Object.keys(data);
+            if (!keys.length) return;
+            var lastKey = keys[0];
+            var lastMsg = data[lastKey];
+            if (lastMsg && lastMsg.role === 'assistant') {
+                snap.ref.child(lastKey).child('timestamp').set(Date.now()).catch(function(){});
+            }
+        }).catch(function(){});
     }, 300000);
 })();

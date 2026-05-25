@@ -1,6 +1,7 @@
 /* ─── ZEPHYY ONLINE STATUS WIDGET ───
  * Vanilla JS — renders the dual-vortex glyph + status badge.
- * Gracefully degrades (offline if fetch fails).
+ * Listens for realtime status from zephyy-realtime.js (Firebase onValue).
+ * Falls back to 5-min polling if Firebase module isn't loaded.
  *
  * Usage:
  *   <div class="zephyy-badge-embed" data-compact="false"></div>
@@ -10,11 +11,9 @@
 (function () {
   'use strict';
 
-  const CONFIG = {
-    endpoint: 'https://doshusweb-default-rtdb.firebaseio.com/zephyy/status.json',
-    pollInterval: 60000,
-    staleThresholdMs: 2.5 * 60 * 60 * 1000, // 2.5 hours dead-man switch
-  };
+  const STALE_MS = 120 * 1000; // heartbeat staleness threshold
+  const FALLBACK_POLL_MS = 300000; // 5-min fallback if Firebase unavailable
+  const RTDB_URL = 'https://doshusweb-default-rtdb.firebaseio.com';
 
   // ─── Dual-vortex glyph SVG ───
   function glyphSVG() {
@@ -39,6 +38,19 @@
     </svg>`;
   }
 
+  // ─── Parse status from RTDB data ───
+  function parseStatus(data) {
+    if (!data) return { online: false, mood: 'offline', workingOn: '' };
+    const lastHb = data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0;
+    return {
+      online: (Date.now() - lastHb) < STALE_MS,
+      mood: data.mood || 'idle',
+      workingOn: data.workingOn || 'Standing by',
+      lastUpdated: data.lastUpdated,
+      since: data.since,
+    };
+  }
+
   // ─── Render badge with link ───
   function renderBadge(container, status) {
     const isOnline = status.online;
@@ -46,7 +58,6 @@
     const workingOn = status.workingOn || '';
     const compact = container.dataset.compact === 'true';
 
-    // Build DOM in correct order: link > badge > (glyph + dot + label)
     const link = document.createElement('a');
     link.href = 'zephyy.html';
     link.target = '_self';
@@ -66,12 +77,11 @@
     const label = document.createElement('span');
     label.className = 'zephyy-label';
     if (compact) {
-      label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? '●' : '○'}</span>`;
+      label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? '\u25cf' : '\u25cb'}</span>`;
     } else {
       label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? mood : 'Offline'}</span>`;
     }
 
-    // Add tooltip with working-on info when online
     if (isOnline && workingOn) {
       badge.title = `Working on: ${workingOn}`;
     } else if (!isOnline) {
@@ -86,42 +96,32 @@
     container.appendChild(link);
   }
 
-  // ─── Fetch live status from Firebase RTDB ───
-  async function fetchStatus() {
-    const resp = await fetch(CONFIG.endpoint);
-    if (!resp.ok) throw new Error('Status fetch failed');
-    const data = await resp.json();
+  // ─── Fetch fallback (when Firebase SDK unavailable) ───
+  async function fetchStatusFallback() {
+    try {
+      const resp = await fetch(RTDB_URL + '/zephyy/status.json');
+      if (!resp.ok) throw new Error('fetch failed');
+      return parseStatus(await resp.json());
+    } catch {
+      return { online: false, mood: 'offline', workingOn: '' };
+    }
+  }
 
-    // Dead-man switch: if lastUpdated > 2.5h ago, treat as offline
-    const lastUpdated = new Date(data.lastUpdated).getTime();
-    const now = Date.now();
-    const elapsed = now - lastUpdated;
-    const isOnline = data.online === true && elapsed < CONFIG.staleThresholdMs;
-
-    return {
-      online: isOnline,
-      mood: data.mood || 'idle',
-      workingOn: data.workingOn || 'Standing by',
-      lastUpdated: data.lastUpdated,
-      since: data.since,
-    };
+  // ─── Update all badge containers ───
+  function updateAll(status) {
+    document.querySelectorAll('.zephyy-badge-embed').forEach(function (el) {
+      renderBadge(el, status);
+    });
   }
 
   // ─── Init ───
   async function init() {
-    const containers = document.querySelectorAll('.zephyy-badge-embed');
+    var containers = document.querySelectorAll('.zephyy-badge-embed');
     if (!containers.length) return;
 
-    try {
-      const status = await fetchStatus();
-      containers.forEach((el) => renderBadge(el, status));
-    } catch {
-      containers.forEach((el) => renderBadge(el, { online: false, mood: 'offline', workingOn: '' }));
-    }
-
-    // Inject keyframes for glyph animation if not already present
+    // Inject keyframes
     if (!document.getElementById('zephyy-keyframes')) {
-      const style = document.createElement('style');
+      var style = document.createElement('style');
       style.id = 'zephyy-keyframes';
       style.textContent = `
         @keyframes glyphSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -133,14 +133,30 @@
       document.head.appendChild(style);
     }
 
-    setInterval(async () => {
-      try {
-        const status = await fetchStatus();
-        containers.forEach((el) => renderBadge(el, status));
-      } catch {
-        containers.forEach((el) => renderBadge(el, { online: false, mood: 'offline', workingOn: '' }));
+    // Try realtime listener first (dispatched by zephyy-realtime.js)
+    var realtimeActive = false;
+
+    window.addEventListener('zephyy-status', function (e) {
+      realtimeActive = true;
+      updateAll(parseStatus(e.detail.data));
+    });
+
+    // If zephyy-realtime.js is already loaded, it fires zephyy-rt-ready
+    window.addEventListener('zephyy-rt-ready', function () {
+      realtimeActive = true;
+    });
+
+    // Initial render — try Firebase event, else fetch fallback
+    setTimeout(function () {
+      if (!realtimeActive) {
+        fetchStatusFallback().then(updateAll);
+        // Slow polling fallback
+        setInterval(function () {
+          if (!realtimeActive) fetchStatusFallback().then(updateAll);
+        }, FALLBACK_POLL_MS);
       }
-    }, CONFIG.pollInterval);
+      // If realtime becomes active, stop polling (realtimeActive will stay true)
+    }, 1500);
   }
 
   if (document.readyState === 'loading') {
