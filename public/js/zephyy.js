@@ -1006,7 +1006,7 @@
     /* ── Keepalive: bump session timestamp every 5 min while page is open ── */
     setInterval(function() {
         if (sessionEnded || !window.__zpRealtime) return;
-        window.__zpRealtime.msgsRef.orderByChild('timestamp').limitToLast(1).once('value').then(function(snap) {
+        window.__zpRealtime.msgsRef.limitToLast(1).once('value').then(function(snap) {
             if (!snap.exists()) return;
             var data = snap.val();
             var keys = Object.keys(data);

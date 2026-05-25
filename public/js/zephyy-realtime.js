@@ -268,12 +268,17 @@
 
     // ── Message watcher (replaces polling) ──
     function startMessageListener() {
-      const now = Date.now();
-      const query = msgsRef.orderByChild('timestamp').startAt(now - CHAT_BUFFER_MS);
+      const listenerStart = Date.now();
 
-      query.on('child_added', function (snap) {
+      // Simple child_added — no query/index required. Fires for every new message.
+      // We filter by timestamp to skip old history (loadHistory handles initial load).
+      msgsRef.on('child_added', function (snap) {
         const msg = snap.val();
         if (!msg || !msg.content) return;
+
+        // Skip messages older than listener start (handled by loadHistory)
+        const ts = msg.timestamp || 0;
+        if (ts < listenerStart - 30000) return;
 
         // Session end signal
         if (msg.role === 'system' && msg.content === '_SESSION_ENDED_') {
@@ -293,7 +298,7 @@
 
     // ── Expose for initial history load ──
     function loadHistory(limit) {
-      return msgsRef.orderByChild('timestamp').limitToLast(limit || 50).once('value');
+      return msgsRef.limitToLast(limit || 50).once('value');
     }
 
     startMessageListener();
