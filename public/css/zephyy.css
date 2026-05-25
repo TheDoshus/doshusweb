@@ -1338,8 +1338,8 @@
 }
 
 .zp-carousel-item {
-  flex: 0 0 180px;
-  min-width: 180px;
+  flex: 0 0 280px;
+  min-width: 260px;
   padding: 1.25rem 1rem;
   background: linear-gradient(160deg,
     oklch(25% 0.18 195 / 0.08) 0%,
@@ -1351,6 +1351,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+@media (max-width: 500px) {
+  .zp-carousel-item {
+    flex: 0 0 85%;
+    min-width: 0;
+  }
 }
 
 .zp-carousel-item:hover {
@@ -1369,20 +1376,6 @@
 .zp-carousel::-webkit-scrollbar-thumb {
   background: oklch(var(--brand-teal) / 0.3);
   border-radius: 2px;
-}
-
-.zp-carousel-item {
-  flex: 0 0 200px;
-  padding: 1rem;
-  background: oklch(var(--space-oled) / 0.3);
-  border: 1px solid oklch(var(--brand-teal) / 0.15);
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.zp-carousel-item:hover {
-  border-color: oklch(var(--brand-teal) / 0.3);
-  transform: translateY(-3px);
 }
 
 .zp-carousel-tag {
