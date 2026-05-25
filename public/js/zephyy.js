@@ -331,27 +331,34 @@
     const dots = document.querySelectorAll('.zp-carousel-dot');
     if (!carousel || !dots.length) return;
 
-    let currentIndex = 0;
-    const items = carousel.querySelectorAll('.zp-carousel-item');
-    const itemCount = items.length;
-    let autoScrollTimer = null;
-    let userInteracting = false;
-    let interactionTimeout = null;
-    const AUTO_INTERVAL = 5000; // 5s per slide
-    const RESUME_DELAY = 8000;   // resume auto after 8s of no interaction
+    var items = carousel.querySelectorAll('.zp-carousel-item');
+    var itemCount = items.length;
+    var currentIndex = 0;
+    var autoScrollTimer = null;
+    var userInteracting = false;
+    var interactionTimeout = null;
+    var scrollRaf = null;
+    var AUTO_INTERVAL = 5000; // 5s per slide
+    var RESUME_DELAY = 8000;  // resume auto-advance after 8s idle
 
-    function updateCarousel(index) {
+    function setActiveDot(i) {
+        dots.forEach(function (d, di) { d.classList.toggle('active', di === i); });
+    }
+
+    // The browser does the scrolling natively (touch/momentum/trackpad + CSS snap).
+    // We only nudge scrollLeft for dot clicks and auto-advance — never hijack the gesture.
+    function scrollToIndex(index) {
         currentIndex = Math.max(0, Math.min(index, itemCount - 1));
         var offset = items[currentIndex].offsetLeft - carousel.offsetLeft;
         carousel.scrollTo({ left: offset, behavior: 'smooth' });
-        dots.forEach(function(dot, i) { dot.classList.toggle('active', i === currentIndex); });
+        setActiveDot(currentIndex);
     }
 
     function startAutoScroll() {
         stopAutoScroll();
-        autoScrollTimer = setInterval(function() {
+        autoScrollTimer = setInterval(function () {
             if (!userInteracting && document.visibilityState !== 'hidden') {
-                updateCarousel((currentIndex + 1) % itemCount);
+                scrollToIndex((currentIndex + 1) % itemCount);
             }
         }, AUTO_INTERVAL);
     }
@@ -360,86 +367,41 @@
         if (autoScrollTimer) { clearInterval(autoScrollTimer); autoScrollTimer = null; }
     }
 
-    function onUserInteraction() {
+    // Any manual interaction pauses auto-advance so we never fight the user mid-scroll.
+    function pauseAuto() {
         userInteracting = true;
         if (interactionTimeout) clearTimeout(interactionTimeout);
-        interactionTimeout = setTimeout(function() {
-            userInteracting = false;
-        }, RESUME_DELAY);
+        interactionTimeout = setTimeout(function () { userInteracting = false; }, RESUME_DELAY);
     }
 
-    // Dot clicks
-    dots.forEach(function(dot, index) {
-        dot.addEventListener('click', function() {
-            updateCarousel(index);
-            onUserInteraction();
+    // Dot clicks jump to a slide.
+    dots.forEach(function (dot, index) {
+        dot.addEventListener('click', function () {
+            pauseAuto();
+            scrollToIndex(index);
         });
     });
 
-    // Touch swipe
-    var swX = 0, swY = 0;
-    carousel.addEventListener('touchstart', function(e) {
-        swX = e.touches[0].clientX;
-        swY = e.touches[0].clientY;
-        onUserInteraction();
-    }, { passive: true });
-    carousel.addEventListener('touchend', function(e) {
-        var dx = e.changedTouches[0].clientX - swX;
-        var dy = Math.abs(e.changedTouches[0].clientY - swY);
-        if (Math.abs(dx) > 50 && dy < Math.abs(dx) * 1.5) {
-            if (dx < 0) updateCarousel(currentIndex + 1);
-            else updateCarousel(currentIndex - 1);
-        }
-    }, { passive: true });
-
-    // Mouse drag (desktop)
-    var mdX = 0, dragging = false;
-    carousel.addEventListener('mousedown', function(e) {
-        mdX = e.clientX;
-        dragging = true;
-        onUserInteraction();
-    });
-    window.addEventListener('mousemove', function(e) {
-        if (!dragging) return;
-        var dx = e.clientX - mdX;
-        if (Math.abs(dx) > 40) {
-            if (dx < 0) updateCarousel(currentIndex + 1);
-            else updateCarousel(currentIndex - 1);
-            dragging = false;
-        }
-    });
-    window.addEventListener('mouseup', function() { dragging = false; });
-
-    // Wheel scroll (trackpad horizontal)
-    carousel.addEventListener('wheel', function(e) {
-        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-            e.preventDefault();
-            onUserInteraction();
-            if (e.deltaX > 30) updateCarousel(currentIndex + 1);
-            else if (e.deltaX < -30) updateCarousel(currentIndex - 1);
-        }
-    }, { passive: false });
-
-    // Sync dots on manual scroll
-    carousel.addEventListener('scroll', function() {
-        var center = carousel.scrollLeft + carousel.clientWidth / 2;
-        var closest = 0;
-        var closestDist = Infinity;
-        items.forEach(function(item, i) {
-            var itemCenter = item.offsetLeft - carousel.offsetLeft + item.offsetWidth / 2;
-            var dist = Math.abs(itemCenter - center);
-            if (dist < closestDist) { closestDist = dist; closest = i; }
+    // Native scroll (touch swipe, momentum, trackpad) drives the active dot and
+    // counts as interaction. rAF-throttled so it stays cheap.
+    carousel.addEventListener('scroll', function () {
+        pauseAuto();
+        if (scrollRaf) return;
+        scrollRaf = requestAnimationFrame(function () {
+            scrollRaf = null;
+            var center = carousel.scrollLeft + carousel.clientWidth / 2;
+            var closest = 0, closestDist = Infinity;
+            items.forEach(function (item, i) {
+                var itemCenter = item.offsetLeft - carousel.offsetLeft + item.offsetWidth / 2;
+                var dist = Math.abs(itemCenter - center);
+                if (dist < closestDist) { closestDist = dist; closest = i; }
+            });
+            if (closest !== currentIndex) { currentIndex = closest; setActiveDot(closest); }
         });
-        if (closest !== currentIndex) {
-            currentIndex = closest;
-            dots.forEach(function(dot, i) { dot.classList.toggle('active', i === currentIndex); });
-        }
     }, { passive: true });
 
-    // Pause auto on visibility change
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) stopAutoScroll();
-        else startAutoScroll();
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) stopAutoScroll(); else startAutoScroll();
     });
 
     startAutoScroll();
