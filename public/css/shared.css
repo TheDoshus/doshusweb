@@ -131,7 +131,7 @@ a { -webkit-tap-highlight-color: transparent; }
 body { position: relative; min-height: -webkit-fill-available; min-height: 100vh; background: oklch(var(--space-oled)); 
     font-family: 'Nata Sans', system-ui, sans-serif;
     color: var(--text-main);
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 button {
     font-family: 'Braah One', system-ui, sans-serif;
