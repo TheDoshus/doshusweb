@@ -134,6 +134,17 @@
       window.dispatchEvent(new CustomEvent('zephyy-status', {
         detail: { online: isOnline, data: data }
       }));
+
+      // ── Model badge ──
+      var badge = document.getElementById('zp-model-badge');
+      if (badge && data.chatModel) {
+        badge.textContent = data.chatModel;
+        badge.className = 'zp-model-badge';
+        if (data.chatModel.toLowerCase().includes('fallback') ||
+            data.chatModel.toLowerCase().includes('openrouter')) {
+          badge.classList.add('fallback');
+        }
+      }
     });
   }
 
