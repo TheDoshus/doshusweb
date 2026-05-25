@@ -1370,12 +1370,16 @@
 }
 
 .zp-carousel::-webkit-scrollbar {
-  height: 4px;
+  display: none;
 }
 
 .zp-carousel::-webkit-scrollbar-thumb {
-  background: oklch(var(--brand-teal) / 0.3);
-  border-radius: 2px;
+  display: none;
+}
+
+.zp-carousel {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .zp-carousel-tag {
