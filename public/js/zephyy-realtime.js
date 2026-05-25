@@ -40,7 +40,10 @@
       return;
     }
     try {
-      firebase.initializeApp({ databaseURL: RTDB_URL });
+      firebase.initializeApp({
+        databaseURL: RTDB_URL,
+        projectId: 'doshusweb'
+      });
       db = firebase.database();
       ready = true;
       console.log('[zephyy-rt] Firebase connected');
@@ -300,9 +303,38 @@
   // ──────────────────────────────────────────────
 
   function initFallbacks() {
-    // Keep existing fetch behavior as graceful degradation.
-    // The old IIFEs in zephyy.js handle this — they run if __zpRealtime is absent.
-    console.warn('[zephyy-rt] Using fetch fallback for RTDB');
+    // Direct fetch fallback — render status/daily even without Firebase SDK
+    console.warn('[zephyy-rt] No Firebase SDK — using direct fetch fallback');
+
+    // Status
+    fetch(RTDB_URL + '/zephyy/status.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var dot = document.getElementById('zp-status-dot');
+        var text = document.getElementById('zp-status-text');
+        if (text && data) {
+          var lastHb = data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0;
+          var online = (Date.now() - lastHb) < HEARTBEAT_MS;
+          text.textContent = online ? 'Online — Ready when you are.' : 'Offline — The stars are quiet.';
+          if (dot) { dot.className = 'zp-dot ' + (online ? 'online' : 'offline'); }
+        }
+      }).catch(function(){});
+
+    // Daily thought
+    fetch(RTDB_URL + '/zephyy/daily.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var quoteEl = document.getElementById('daily-quote');
+        var sourceEl = document.getElementById('daily-source');
+        var moodEl = document.getElementById('daily-mood');
+        var card = document.getElementById('zephyy-daily');
+        if (quoteEl && data && data.quote) {
+          if (moodEl) moodEl.textContent = data.mood || '🌌';
+          quoteEl.textContent = data.quote;
+          if (sourceEl) sourceEl.textContent = data.source || '';
+          if (card) card.classList.add('loaded');
+        }
+      }).catch(function(){});
   }
 
   // ──────────────────────────────────────────────
@@ -325,14 +357,30 @@
   // ENTRY
   // ──────────────────────────────────────────────
 
-  // Defer init until DOM + Firebase SDK are ready
+  var initAttempts = 0;
+  var MAX_ATTEMPTS = 15;
+
+  function tryInit() {
+    initAttempts++;
+    if (typeof firebase === 'undefined') {
+      if (initAttempts < MAX_ATTEMPTS) {
+        console.log('[zephyy-rt] Firebase SDK not loaded yet, retrying (' + initAttempts + '/' + MAX_ATTEMPTS + ')');
+        setTimeout(tryInit, 400);
+      } else {
+        console.warn('[zephyy-rt] Firebase SDK failed to load after ' + MAX_ATTEMPTS + ' attempts — falling back');
+        initFallbacks();
+      }
+      return;
+    }
+    init();
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      // Give Firebase SDK a moment to load from CDN
-      setTimeout(init, 500);
+      setTimeout(tryInit, 200);
     });
   } else {
-    setTimeout(init, 500);
+    setTimeout(tryInit, 200);
   }
 
   // Register chat orb setup — called by init() after db is ready
