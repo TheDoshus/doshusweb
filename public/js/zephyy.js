@@ -896,6 +896,28 @@
         setSessionEnded();
     });
 
+    /* ── Polling fallback: check for new messages every 3s (belt-and-suspenders) ── */
+    var _lastMsgKey = null;
+    setInterval(function() {
+        if (sessionEnded || !window.__zpRealtime) return;
+        window.__zpRealtime.msgsRef.limitToLast(1).once('value', function(snap) {
+            if (!snap.exists()) return;
+            var data = snap.val();
+            var keys = Object.keys(data);
+            if (!keys.length) return;
+            var key = keys[0];
+            var msg = data[key];
+            if (key === _lastMsgKey) return; // already seen
+            _lastMsgKey = key;
+            if (!msg || !msg.content) return;
+            if (msg.role === 'assistant' || msg.role === 'bot') {
+                window.dispatchEvent(new CustomEvent('zephyy-msg', {
+                    detail: { key: key, role: msg.role, content: msg.content, timestamp: msg.timestamp }
+                }));
+            }
+        }).catch(function() {});
+    }, 3000);
+
     /* ================================================
      * 6. INIT
      * ================================================ */
