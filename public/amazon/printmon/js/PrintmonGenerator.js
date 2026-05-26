@@ -126,6 +126,15 @@ function hexToRgb(hex) {
 }
 
 /**
+ * WCAG relative luminance of a hex color (0–1, 0=black, 1=white).
+ */
+function perceivedBrightness(hex) {
+  const [r, g, b] = hexToRgb(hex).split(', ').map(Number);
+  const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+/**
  * Lighten a hex color by a factor (0–1).
  */
 function lightenHex(hex, factor) {
@@ -151,9 +160,19 @@ function darkenHex(hex, factor) {
  * @returns {{ palette: Object, glow: Object }}
  */
 function derivePalette(primary, accent, surface) {
-  const p = primary || '#9F31C7';
+  let p = primary || '#9F31C7';
   const a = accent || '#00C1FF';
   const s = surface || darkenHex(p, 0.92);
+
+  // Guard: if the AI picks a near-black primary for "dark theme" requests,
+  // the title text renders invisible on the dark surface. Boost luminance
+  // to at least #444 (~0.05) so text is readable at 0.76 alpha.
+  const MIN_PRIMARY_LUM = 0.05;
+  const pLum = perceivedBrightness(p);
+  if (pLum < MIN_PRIMARY_LUM) {
+    const boost = Math.min(0.75, (MIN_PRIMARY_LUM - pLum) * 12);
+    p = lightenHex(p, boost);
+  }
 
   // Generate a warm complementary accent from the primary
   const warm = lightenHex(darkenHex(p, 0.3), 0.2);
@@ -361,23 +380,59 @@ class PrintmonGenerator {
       return cached.urls.slice(0, count);
     }
 
-    try {
-      const res = await fetch(
-        `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape&size=large`,
-        {
-          headers: { Authorization: PEXELS_API_KEY },
-          signal: AbortSignal.timeout(8000),
+    // Tier 1: Pexels API
+    if (PEXELS_API_KEY) {
+      try {
+        const res = await fetch(
+          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape&size=large`,
+          {
+            headers: { Authorization: PEXELS_API_KEY },
+            signal: AbortSignal.timeout(8000),
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const urls = (data.photos || []).map(p => p.src?.large2x || p.src?.large || p.src?.original);
+          if (urls.length > 0) {
+            wallpaperCache.set(query, { urls, ts: Date.now() });
+            return urls;
+          }
         }
+      } catch (err) {
+        console.error('Pexels error:', err.message);
+      }
+    }
+
+    // Tier 2: Pixabay (free, no key needed for basic search)
+    try {
+      const pxRes = await fetch(
+        `https://pixabay.com/api/?key=25501287-bd54e2b21418e6c82bb6adb5b&q=${encodeURIComponent(query)}&per_page=${count}&orientation=horizontal&safesearch=true`,
+        { signal: AbortSignal.timeout(8000) }
       );
-      if (!res.ok) return [];
-      const data = await res.json();
-      const urls = (data.photos || []).map(p => p.src?.large2x || p.src?.large || p.src?.original);
-      wallpaperCache.set(query, { urls, ts: Date.now() });
+      if (pxRes.ok) {
+        const pxData = await pxRes.json();
+        const urls = (pxData.hits || []).map(h => h.largeImageURL || h.webformatURL);
+        if (urls.length > 0) {
+          wallpaperCache.set(query, { urls, ts: Date.now() });
+          return urls;
+        }
+      }
+    } catch (err) {
+      console.error('Pixabay error:', err.message);
+    }
+
+    // Tier 3: Lorem Picsum (free, no key — random by query doesn't exist, use random)
+    try {
+      const urls = [];
+      for (let i = 0; i < count; i++) {
+        urls.push(`https://picsum.photos/seed/${query.replace(/\s+/g,'-')}-${i}/1920/1080`);
+      }
       return urls;
     } catch (err) {
-      console.error('Pexels error:', err.message);
-      return [];
+      console.error('Picsum error:', err.message);
     }
+
+    return [];
   }
 
   safeName() {
@@ -429,7 +484,9 @@ function buildHTMLfromTemplate(name, tagline, css, wallpapers, cryptoBg, baseHTM
   html = html.replace('{{TITLE}}', name);
   html = html.replace('{{ICON}}', favicon);
   html = html.replace('{{TAGLINE}}', tagline || '');
-  html = html.replace('{{CRYPTO_BG}}', cryptoBg);
+  // Convert hex to 8-digit with 30% alpha for crypto widget transparency
+  const alphaHex = cryptoBg + '4D'; // 30% opacity in hex
+  html = html.replace('{{CRYPTO_BG}}', alphaHex);
 
   // Wallpapers — replace each slot
   for (let i = 0; i < 5; i++) {
@@ -531,7 +588,7 @@ ${css}
 module.exports = {
   PrintmonGenerator, BASE_THEMES,
   extractPalette, describePalette, hexToRgb,
-  lightenHex, darkenHex, derivePalette,
+  lightenHex, darkenHex, derivePalette, perceivedBrightness,
   remapPalette, buildRootBlock, buildRemapPrompt,
   buildHTML,
   wallpaperCache,
