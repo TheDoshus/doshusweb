@@ -586,7 +586,14 @@
     function renderContent(text) {
         // Linkify BEFORE escaping — otherwise & in URLs gets corrupted to &amp;
         var placeholders = [];
+        var imgPlaceholders = [];
         var i = 0;
+        // 0. Markdown images: ![alt](url) → placeholder (must go before links)
+        text = text.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, function(m, alt, url) {
+            var ph = '\x00IMG' + (i++) + '\x00';
+            imgPlaceholders.push({ ph: ph, alt: alt, url: url });
+            return ph;
+        });
         // 1. Markdown links: [text](url) → placeholder
         text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, function(m, label, url) {
             var ph = '\x00LINK' + (i++) + '\x00';
@@ -603,7 +610,11 @@
         });
         // 3. HTML-escape remaining text
         text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        // 4. Restore links from placeholders (no re-escaping, URLs are raw)
+        // 4. Restore images from placeholders
+        imgPlaceholders.forEach(function(p) {
+            text = text.replace(p.ph, '<img src="' + p.url + '" alt="' + p.alt + '" style="max-width:100%;border-radius:8px;margin:8px 0" loading="lazy">');
+        });
+        // 5. Restore links from placeholders (no re-escaping, URLs are raw)
         placeholders.forEach(function(p) {
             text = text.replace(p.ph, '<a href="' + p.url + '" target="_blank" rel="noopener">' + p.label + '</a>');
         });
