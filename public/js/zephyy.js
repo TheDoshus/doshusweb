@@ -612,7 +612,7 @@
         text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         // 4. Restore images from placeholders
         imgPlaceholders.forEach(function(p) {
-            text = text.replace(p.ph, '<img src="' + p.url + '" alt="' + p.alt + '" style="max-width:100%;border-radius:8px;margin:8px 0" loading="lazy">');
+            text = text.replace(p.ph, '<a href="' + p.url + '" target="_blank" class="zp-chat-img-link"><img src="' + p.url + '" alt="' + p.alt + '" style="max-width:100%;max-height:300px;border-radius:8px;margin:8px 0;object-fit:contain" loading="lazy"></a>');
         });
         // 5. Restore links from placeholders (no re-escaping, URLs are raw)
         placeholders.forEach(function(p) {
