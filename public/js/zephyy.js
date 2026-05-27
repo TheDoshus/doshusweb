@@ -907,27 +907,8 @@
         setSessionEnded();
     });
 
-    /* ── Polling fallback: check for new messages every 3s (belt-and-suspenders) ── */
-    var _lastMsgKey = null;
-    setInterval(function() {
-        if (sessionEnded || !window.__zpRealtime) return;
-        window.__zpRealtime.msgsRef.limitToLast(1).once('value', function(snap) {
-            if (!snap.exists()) return;
-            var data = snap.val();
-            var keys = Object.keys(data);
-            if (!keys.length) return;
-            var key = keys[0];
-            var msg = data[key];
-            if (key === _lastMsgKey) return; // already seen
-            _lastMsgKey = key;
-            if (!msg || !msg.content) return;
-            if (msg.role === 'assistant' || msg.role === 'bot') {
-                window.dispatchEvent(new CustomEvent('zephyy-msg', {
-                    detail: { key: key, role: msg.role, content: msg.content, timestamp: msg.timestamp }
-                }));
-            }
-        }).catch(function() {});
-    }, 1500);
+    /* ── Message detection: handled exclusively by zephyy-realtime.js onValue listener.
+       No polling fallback — that duplicated every message fetch. ── */
 
     /* ================================================
      * 6. INIT
@@ -1036,19 +1017,6 @@
         }
     }, 30000);
 
-    /* ── Keepalive: bump session timestamp every 5 min while page is open ── */
-    setInterval(function() {
-        if (sessionEnded || !window.__zpRealtime) return;
-        window.__zpRealtime.msgsRef.limitToLast(1).once('value').then(function(snap) {
-            if (!snap.exists()) return;
-            var data = snap.val();
-            var keys = Object.keys(data);
-            if (!keys.length) return;
-            var lastKey = keys[0];
-            var lastMsg = data[lastKey];
-            if (lastMsg && lastMsg.role === 'assistant') {
-                snap.ref.child(lastKey).child('timestamp').set(Date.now()).catch(function(){});
-            }
-        }).catch(function(){});
-    }, 300000);
+    /* ── Session keepalive: handled server-side via RTDB control watcher.
+       Client no longer mutates message timestamps — that corrupted history. ── */
 })();
