@@ -50,7 +50,7 @@
 .zp-hero h1 {
   font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif;
   font-size: clamp(2.5rem, 8vw, 5rem);
-  margin: 0;
+  margin: 0; padding: 10px;
   background: linear-gradient(135deg,
     oklch(var(--brand-teal)) 0%,
     oklch(var(--brand-purple)) 50%,
