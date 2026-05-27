@@ -17,7 +17,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Read .env for API keys
-const envPath = path.join(process.env.HOME, '.openclaw', 'workspace', 'zephyy', '.env');
+const envPath = path.join(process.env.HOME, '.openclaw', 'workspace', '.env');
 try {
   const envContent = fs.readFileSync(envPath, 'utf-8');
   envContent.split('\n').forEach((line) => {
@@ -152,34 +152,36 @@ async function generate(themeInput) {
     return { ...similar, deduplicated: true, warning: 'Palette too similar to existing theme' };
   }
 
-  // Generate CSS from remapped tokens
-  const css = gen.recolor();
-  const cssPath = path.join(CSS_DIR, `${sn}.css`);
-  fs.writeFileSync(cssPath, css);
-
-  // Fetch wallpapers
-  let wallpapers = [];
+  // Generate complete theme (CSS + HTML + wallpapers)
+  const keywords = `${gen.name} ${gen.tagline}`;
+  let result;
   try {
-    wallpapers = await gen.fetchWallpapers(5);
+    result = await gen.generate(keywords);
   } catch (e) {
-    console.error('Wallpaper fetch failed:', e.message);
+    console.error('Theme generation failed:', e.message);
+    // Fallback: generate CSS-only and build minimal HTML
+    const css = gen.recolor();
+    const cssPath = path.join(CSS_DIR, `${sn}.css`);
+    fs.writeFileSync(cssPath, css);
+    return { name: gen.name, safeName: sn, tagline: gen.tagline, error: e.message };
   }
 
-  // Extract dominant color for crypto widget
-  const hexMatch = css.match(/#[0-9a-fA-F]{6}/);
-  const dominantColor = hexMatch ? hexMatch[0] : '#1a1a2e';
+  // Write CSS to file
+  const cssPath = path.join(CSS_DIR, `${sn}.css`);
+  fs.writeFileSync(cssPath, result.css);
 
-  // Build theme record
+  // Build theme record from generator result
   const record = {
-    name: gen.name,
-    safeName: sn,
-    tagline: gen.tagline,
+    name: result.name,
+    safeName: result.safeName || sn,
+    tagline: result.tagline,
     palette,
     glow,
-    baseTheme: gen.baseKey,
-    wallpapers,
+    baseTheme: result.baseTheme || baseKey,
+    wallpapers: result.wallpapers || [],
+    html: result.html || '',
     cssFile: `css/generated/${sn}.css`,
-    createdAt: new Date().toISOString(),
+    createdAt: result.createdAt || new Date().toISOString(),
   };
 
   // Update manifest
