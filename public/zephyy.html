@@ -506,6 +506,24 @@
     <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js"></script>
 
+    <!-- Guaranteed status fetch — runs before everything, updates dot immediately -->
+    <script>
+      (function(){
+        var dot=document.getElementById('zp-status-dot');
+        var text=document.getElementById('zp-status-text');
+        if(!dot||!text)return;
+        fetch('https://doshusweb-default-rtdb.firebaseio.com/zephyy/status.json')
+          .then(function(r){return r.json();})
+          .then(function(d){
+            var hb=d.lastHeartbeat?new Date(d.lastHeartbeat).getTime():0;
+            var on=(Date.now()-hb)<120000;
+            dot.className='zp-dot '+(on?'online':'offline');
+            text.textContent=on?'Online — Ready when you are.':'Offline — The stars are quiet.';
+          })
+          .catch(function(){});
+      })();
+    </script>
+
     <script src="js/main.js"></script>
     <script src="js/zephyy-realtime.js"></script>
     <script src="js/zephyy.js"></script>
