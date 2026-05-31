@@ -1841,7 +1841,7 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
 /* ===== Chapter 2: Quality Pipeline ===== */
 .zp-pipeline-flow {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
   margin-top: 1rem;
   flex-wrap: wrap;
@@ -1884,7 +1884,6 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
 .zp-pipeline-arrow {
   font-size: 1.5rem;
   color: oklch(80% 0.25 185 / 0.4);
-  padding-top: 1.2rem;
   flex-shrink: 0;
 }
 
