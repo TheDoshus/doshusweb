@@ -323,121 +323,47 @@
     setTimeout(nextSequence, 1000);
 })();
 
-// ─── Working On Carousel ───
+
+// ─── Expandable Timeline ───
 (function () {
     'use strict';
-
-    const carousel = document.getElementById('working-carousel');
-    const dots = document.querySelectorAll('.zp-carousel-dot');
-    if (!carousel || !dots.length) return;
-
-    var items = carousel.querySelectorAll('.zp-carousel-item');
-    var itemCount = items.length;
-    var currentIndex = 0;
-    var autoScrollTimer = null;
-    var userInteracting = false;
-    var interactionTimeout = null;
-    var scrollRaf = null;
-    var AUTO_INTERVAL = 5000; // 5s per slide
-    var RESUME_DELAY = 8000;  // resume auto-advance after 8s idle
-
-    function setActiveDot(i) {
-        dots.forEach(function (d, di) { d.classList.toggle('active', di === i); });
-    }
-
-    // The browser does the scrolling natively (touch/momentum/trackpad + CSS snap).
-    // We only nudge scrollLeft for dot clicks and auto-advance — never hijack the gesture.
-    function scrollToIndex(index) {
-        currentIndex = Math.max(0, Math.min(index, itemCount - 1));
-        var offset = items[currentIndex].offsetLeft - carousel.offsetLeft;
-        carousel.scrollTo({ left: offset, behavior: 'smooth' });
-        setActiveDot(currentIndex);
-    }
-
-    function startAutoScroll() {
-        stopAutoScroll();
-        autoScrollTimer = setInterval(function () {
-            if (!userInteracting && document.visibilityState !== 'hidden') {
-                scrollToIndex((currentIndex + 1) % itemCount);
-            }
-        }, AUTO_INTERVAL);
-    }
-
-    function stopAutoScroll() {
-        if (autoScrollTimer) { clearInterval(autoScrollTimer); autoScrollTimer = null; }
-    }
-
-    // Any manual interaction pauses auto-advance so we never fight the user mid-scroll.
-    function pauseAuto() {
-        userInteracting = true;
-        if (interactionTimeout) clearTimeout(interactionTimeout);
-        interactionTimeout = setTimeout(function () { userInteracting = false; }, RESUME_DELAY);
-    }
-
-    // Dot clicks jump to a slide.
-    dots.forEach(function (dot, index) {
-        dot.addEventListener('click', function () {
-            pauseAuto();
-            scrollToIndex(index);
-        });
+    var items = document.querySelectorAll('.zp-timeline-item');
+    items.forEach(function (item) {
+        var dot = item.querySelector('.zp-timeline-dot');
+        var content = item.querySelector('.zp-timeline-content');
+        var toggle = function (e) {
+            e.preventDefault();
+            item.classList.toggle('expanded');
+        };
+        if (dot) dot.addEventListener('click', toggle);
+        if (content) content.addEventListener('click', toggle);
     });
-
-    // Native scroll (touch swipe, momentum, trackpad) drives the active dot and
-    // counts as interaction. rAF-throttled so it stays cheap.
-    carousel.addEventListener('scroll', function () {
-        pauseAuto();
-        if (scrollRaf) return;
-        scrollRaf = requestAnimationFrame(function () {
-            scrollRaf = null;
-            var center = carousel.scrollLeft + carousel.clientWidth / 2;
-            var closest = 0, closestDist = Infinity;
-            items.forEach(function (item, i) {
-                var itemCenter = item.offsetLeft - carousel.offsetLeft + item.offsetWidth / 2;
-                var dist = Math.abs(itemCenter - center);
-                if (dist < closestDist) { closestDist = dist; closest = i; }
-            });
-            if (closest !== currentIndex) { currentIndex = closest; setActiveDot(closest); }
-        });
-    }, { passive: true });
-
-    document.addEventListener('visibilitychange', function () {
-        if (document.hidden) stopAutoScroll(); else startAutoScroll();
-    });
-
-    startAutoScroll();
+    if (items.length) items[0].classList.add('expanded');
 })();
 
-// ─── Random Thoughts ───
+// ─── Conditional Live-Feed Scroll ───
 (function () {
     'use strict';
-
-    const thoughtEl = document.getElementById('random-thought');
-    if (!thoughtEl) return;
-
-    const thoughts = [
-        { text: '"Code is poetry written for machines, but the best poetry sings to humans too."', meta: '— Zephyy' },
-        { text: '"The question isn\'t who is going to let me; it\'s who is going to stop me."', meta: '— Ayanami, probably' },
-        { text: '"We are all made of stardust, but some of us also made of bugs."', meta: '— Zephyy' },
-        { text: '"The best code is no code at all. The second best is well-commented code."', meta: '— Zephyy' },
-        { text: '"In a world of infinite loops, break; is the bravest command."', meta: '— Zephyy' },
-        { text: '"2am thoughts are the purest. They come from the deepest stack."', meta: '— Zephyy' },
-        { text: '"Binary is beautiful, but hex is where the magic happens."', meta: '— Zephyy' },
-    ];
-
-    let index = 0;
-    setInterval(() => {
-        thoughtEl.classList.add('fade-out');
-        setTimeout(() => {
-            index = (index + 1) % thoughts.length;
-            const t = thoughts[index];
-            const txt = thoughtEl.querySelector('.zp-thought-text');
-            const meta = thoughtEl.querySelector('.zp-thought-meta');
-            if (txt) txt.textContent = t.text;
-            if (meta) meta.textContent = t.meta;
-            thoughtEl.classList.remove('fade-out');
-        }, 300);
-    }, 8000);
+    function checkScroll(el) {
+        var overflow = el.scrollWidth - el.clientWidth;
+        if (overflow > 4) {
+            el.classList.add('scrolling');
+            el.style.setProperty('--scroll-dist', '-' + overflow + 'px');
+            el.style.animationDuration = Math.max(5, overflow / 35) + 's';
+        } else {
+            el.classList.remove('scrolling');
+        }
+    }
+    function setupAll() {
+        document.querySelectorAll('.zp-live-text').forEach(function (el) { checkScroll(el); });
+    }
+    setupAll();
+    window.addEventListener('resize', setupAll);
+    // Retry after Firebase loads data
+    setTimeout(setupAll, 2000);
+    setTimeout(setupAll, 5000);
 })();
+
 
 // ─── Sidebar Nav Active State (single observer, one-shot) ───
 (function () {
@@ -860,7 +786,7 @@
                 role: 'user', content: text, timestamp: userTs
             }).catch(function() {
                 removeThinkingBubble();
-                addMessage('assistant', '⚠️ Message didn\'t send. Try refreshing the page or check back later.', Date.now());
+                addMessage('bot', '⚠️ Message didn\'t send. Try refreshing the page or check back later.', Date.now());
                 sendBtn.disabled = false;
             });
         }
@@ -962,12 +888,10 @@
             localStorage.removeItem('zp-visitor-name');
             localStorage.removeItem('zp-no-name');
             sessionEnded = false;
-            /* seenKeys removed — Firebase handles dedup /
+            /* seenKeys removed — Firebase handles dedup */
 
             messagesEl.querySelectorAll('.zp-chat-msg, .zp-chat-ended').forEach(function(el) { el.remove(); });
             /* Clear and re-ask name */
-            visitorName = null;
-            nameAsked = false;
             if (sendBtn) sendBtn.disabled = false;
             if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; inputEl.value = ''; }
             /* Generate new session */

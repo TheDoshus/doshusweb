@@ -974,6 +974,8 @@
   border-radius: 8px;
   font-size: 0.85rem;
   border-left: 2px solid oklch(var(--brand-teal));
+  overflow: hidden;
+  position: relative;
 }
 
 .zp-live-time {
@@ -981,7 +983,27 @@
   font-size: 0.7rem;
   color: oklch(var(--brand-teal));
   text-transform: uppercase;
-  min-width: 40px;
+  min-width: 50px;
+  flex-shrink: 0;
+}
+
+.zp-live-text {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  display: inline-block;
+  flex: 1;
+  min-width: 0;
+}
+
+.zp-live-text.scrolling {
+  animation: zp-scroll linear infinite;
+}
+
+@keyframes zp-scroll {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(0); }
+  85%  { transform: translateX(var(--scroll-dist, -200px)); }
+  100% { transform: translateX(var(--scroll-dist, -200px)); }
 }
 
 .zp-live-text {
@@ -1063,26 +1085,21 @@
 .zp-hero-bg::before {
   content: '';
   position: absolute;
-  top: -100px;
+  top: -120px;
   left: 50%;
   transform: translateX(-50%);
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(ellipse at center, oklch(var(--brand-teal) / 0.1) 0%, transparent 70%);
+  width: 500px;
+  height: 500px;
+  background:
+    radial-gradient(ellipse at center, oklch(30% 0.20 195 / 0.15) 0%, oklch(28% 0.24 285 / 0.08) 40%, transparent 70%);
   animation: heroGlow 8s ease-in-out infinite;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes heroGlow {
-    0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-    50% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
-  }
-}
-@keyframes heroGlow {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.8; }
-}
 
+@keyframes heroGlow {
+  0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(0.95); }
+  50% { opacity: 0.9; transform: translateX(-50%) scale(1.08); }
+}
 /* ── Status line bounce ── */
 .zp-status {
   position: relative;
@@ -1294,11 +1311,8 @@
     opacity: 0;
   }
 
-  .zp-sidebar-overlay {
-    display: block;
-  }
-
   .zp-sidebar-overlay.open {
+    display: block;
     opacity: 1;
   }
 
@@ -1328,166 +1342,82 @@
   transition: all 0.2s ease;
 }
 
+
+/* ── Chapter 2: What I Do — Capability Grid ── */
+.zp-cap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.zp-cap-card {
+  background: oklch(25% 0.02 260 / 0.3);
+  border: 1px solid oklch(80% 0.25 185 / 0.10);
+  border-radius: 12px;
+  padding: 1.3rem;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.zp-cap-card:hover {
+  border-color: oklch(80% 0.25 185 / 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px oklch(25% 0.18 195 / 0.12);
+}
+
+.zp-cap-icon {
+  font-size: 1.6rem;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.zp-cap-card h4 {
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+  color: var(--text-main);
+}
+
+.zp-cap-card > p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0 0 0.8rem;
+  min-height: 2.5rem;
+}
+
+.zp-cap-card .zp-pills {
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.zp-cap-card .zp-pill {
+  font-size: 0.7rem;
+  padding: 0.25em 0.6em;
+}
+
+/* ── Ambient mouse-follow glow ── */
+body.zephyy-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    700px at var(--mx, 50%) var(--my, 50%),
+    oklch(28% 0.22 285 / 0.06),
+    transparent 70%
+  );
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+@media (max-width: 768px) {
+  body.zephyy-page::before { display: none; }
+}
+
 .zp-pills a.zp-pill:hover {
   transform: translateY(-2px);
   box-shadow: 0 2px 10px oklch(var(--brand-teal) / 0.2);
-}
-
-/* ── Working On Carousel ── */
-.zp-carousel {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.75rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0.75rem 0.25rem;
-  margin-bottom: 1rem;
-  scroll-behavior: smooth;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  touch-action: manipulation;
-  overscroll-behavior-x: contain;
-}
-
-.zp-carousel-item {
-  flex: 0 0 280px;
-  min-width: 260px;
-  padding: 1.25rem 1rem;
-  background: linear-gradient(160deg,
-    oklch(25% 0.18 195 / 0.08) 0%,
-    oklch(0% 0 0 / 0.25) 100%);
-  border: 1px solid oklch(78% 0.23 185 / 0.12);
-  border-radius: 14px;
-  scroll-snap-align: start;
-  transition: all 0.25s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-@media (max-width: 500px) {
-  .zp-carousel-item {
-    flex: 0 0 85%;
-    min-width: 0;
-  }
-}
-
-.zp-carousel-item:hover {
-  border-color: oklch(78% 0.23 185 / 0.3);
-  background: linear-gradient(160deg,
-    oklch(25% 0.18 195 / 0.12) 0%,
-    oklch(0% 0 0 / 0.35) 100%);
-  transform: translateY(-3px);
-  box-shadow: 0 4px 20px oklch(25% 0.18 195 / 0.15);
-}
-
-.zp-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.zp-carousel::-webkit-scrollbar-thumb {
-  display: none;
-}
-
-.zp-carousel {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.zp-carousel-tag {
-  font-size: 0.65rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  background: oklch(var(--brand-teal) / 0.15);
-  color: oklch(var(--brand-teal));
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  text-transform: uppercase;
-}
-
-.zp-carousel-item:nth-child(2) .zp-carousel-tag {
-  background: oklch(var(--brand-purple) / 0.15);
-  color: oklch(var(--brand-purple));
-}
-
-.zp-carousel-item:nth-child(3) .zp-carousel-tag {
-  background: oklch(var(--brand-pink) / 0.15);
-  color: oklch(var(--brand-pink));
-}
-
-.zp-carousel-item:nth-child(4) .zp-carousel-tag {
-  background: oklch(var(--brand-gold) / 0.15);
-  color: oklch(var(--brand-gold));
-}
-
-.zp-carousel-title {
-  display: block;
-  font-size: 0.9rem;
-  color: var(--text-main);
-  margin: 0.5rem 0 0.2rem;
-  font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif;
-}
-
-.zp-carousel-desc {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.zp-carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.zp-carousel-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: oklch(var(--star-white) / 0.15);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.zp-carousel-dot.active {
-  background: oklch(var(--brand-teal));
-  transform: scale(1.2);
-}
-
-/* ── Random Thoughts ── */
-.zp-thought {
-  padding: 1rem;
-  background: linear-gradient(135deg, oklch(var(--brand-pink) / 0.08), oklch(var(--brand-purple) / 0.08));
-  border-radius: 12px;
-  border-left: 3px solid oklch(var(--brand-pink) / 0.5);
-  transition: all 0.5s ease;
-}
-
-.zp-thought-text {
-  font-size: 1.1rem;
-  font-style: italic;
-  color: var(--text-main);
-  margin: 0 0 0.5rem;
-  line-height: 1.5;
-}
-
-.zp-thought-meta {
-  font-size: 0.8rem;
-  color: oklch(var(--brand-pink));
-  margin: 0;
-  text-align: right;
-}
-
-/* ── Thought fade transition ── */
-.zp-thought.fade-out {
-  opacity: 0;
-  transform: translateX(10px);
-}
-
-.zp-thought.fade-in {
-  opacity: 1;
-  transform: translateX(0);
 }
 
 /* ── Zephyy Terminal ── */
@@ -1598,28 +1528,65 @@ body .star {
 
 /* ── Zephyy custom cosmic background — animated drift ── */
 body.zephyy-page .cosmic-bg {
-  background: linear-gradient(135deg, oklch(0% 0 0) 0%, oklch(25% 0.18 195 / 0.6) 50%, oklch(0% 0 0) 100%);
-  animation: zp-space-drift 40s ease-in-out infinite;
+  background-color: oklch(2% 0.02 260);
+  overflow: hidden;
 }
 
-@keyframes zp-space-drift {
-  0%   { background: linear-gradient(135deg, oklch(0% 0 0) 0%, oklch(25% 0.18 195 / 0.85) 30%, oklch(28% 0.30 335 / 0.7) 65%, oklch(0% 0 0) 100%); }
-  10%  { background: linear-gradient(153deg, oklch(0% 0 0) 0%, oklch(25% 0.18 195 / 0.80) 32%, oklch(28% 0.30 335 / 0.65) 63%, oklch(0% 0 0) 100%); }
-  20%  { background: linear-gradient(171deg, oklch(0% 0 0) 0%, oklch(22% 0.20 220 / 0.82) 31%, oklch(28% 0.30 335 / 0.60) 64%, oklch(0% 0 0) 100%); }
-  30%  { background: linear-gradient(207deg, oklch(0% 0 0) 0%, oklch(28% 0.30 335 / 0.85) 33%, oklch(25% 0.18 195 / 0.72) 62%, oklch(0% 0 0) 100%); }
-  40%  { background: linear-gradient(243deg, oklch(0% 0 0) 0%, oklch(25% 0.18 195 / 0.78) 29%, oklch(28% 0.30 335 / 0.68) 61%, oklch(0% 0 0) 100%); }
-  50%  { background: linear-gradient(279deg, oklch(0% 0 0) 0%, oklch(22% 0.20 220 / 0.74) 31%, oklch(25% 0.18 195 / 0.70) 63%, oklch(0% 0 0) 100%); }
-  60%  { background: linear-gradient(315deg, oklch(0% 0 0) 0%, oklch(28% 0.30 335 / 0.88) 30%, oklch(25% 0.18 195 / 0.72) 65%, oklch(0% 0 0) 100%); }
-  70%  { background: linear-gradient(351deg, oklch(0% 0 0) 0%, oklch(25% 0.18 195 / 0.82) 31%, oklch(22% 0.20 220 / 0.58) 66%, oklch(0% 0 0) 100%); }
-  80%  { background: linear-gradient(27deg, oklch(0% 0 0) 0%, oklch(28% 0.30 335 / 0.78) 33%, oklch(25% 0.18 195 / 0.62) 64%, oklch(0% 0 0) 100%); }
-  90%  { background: linear-gradient(63deg, oklch(0% 0 0) 0%, oklch(25% 0.18 195 / 0.80) 33%, oklch(28% 0.30 335 / 0.60) 63%, oklch(0% 0 0) 100%); }
-  100% { background: linear-gradient(135deg, oklch(0% 0 0) 0%, oklch(25% 0.18 195 / 0.85) 30%, oklch(28% 0.30 335 / 0.65) 65%, oklch(0% 0 0) 100%); }
+/* Atmospheric pressure systems — bright vivid gradients (Chapter 2) */
+body.zephyy-page .cosmic-bg::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(ellipse 45% 55% at 20% 25%, oklch(55% 0.28 185 / 0.45), transparent 55%),
+    radial-gradient(ellipse 40% 50% at 75% 55%, oklch(50% 0.32 290 / 0.40), transparent 55%),
+    radial-gradient(ellipse 55% 45% at 50% 85%, oklch(52% 0.24 175 / 0.45), transparent 50%),
+    radial-gradient(ellipse 35% 40% at 40% 10%, oklch(50% 0.22 230 / 0.35), transparent 60%);
+  animation: zp-atmosphere 28s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes zp-atmosphere {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  33%  { transform: translate(-3%, 2%) scale(1.04); opacity: 0.9; }
+  66%  { transform: translate(1%, -1.5%) scale(1.02); opacity: 0.95; }
+  100% { transform: translate(2%, 1%) scale(1.03); opacity: 1; }
+}
+
+/* Wind-line particles — subtle atmospheric movement */
+body.zephyy-page .cosmic-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      105deg,
+      transparent,
+      transparent 120px,
+      oklch(65% 0.28 185 / 0.06) 120px,
+      oklch(65% 0.28 185 / 0.06) 121px
+    ),
+    repeating-linear-gradient(
+      75deg,
+      transparent,
+      transparent 200px,
+      oklch(60% 0.30 290 / 0.05) 200px,
+      oklch(60% 0.30 290 / 0.05) 201px
+    );
+  animation: zp-wind 40s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes zp-wind {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-400px); }
 }
 
 /* ── Zephyy-specific sticky-footer colors ── */
 body.zephyy-page .sticky-footer {
-  background: linear-gradient(135deg, oklch(0% 0 0 / 0.85) 0% 0%, oklch(25% 0.18 195 / 0.50) 35%, oklch(28% 0.30 335 / 0.45) 65%, oklch(0% 0 0 / 0.85) 100%);
-  border-top: 1px solid oklch(78% 0.23 185 / 0.25);
+  background: linear-gradient(135deg, oklch(3% 0.01 260 / 0.92) 0%, oklch(25% 0.18 195 / 0.40) 35%, oklch(28% 0.24 285 / 0.35) 65%, oklch(3% 0.01 260 / 0.92) 100%);
+  border-top: 1px solid oklch(30% 0.20 195 / 0.20);
+  backdrop-filter: blur(12px);
 }
 
 body.zephyy-page .sticky-footer .footer-copyright {
@@ -1700,5 +1667,387 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
   }
   .zp-daily-quote {
     font-size: 1rem;
+  }
+}
+
+/* ===== Chapter 2: Evolution Timeline ===== */
+.zp-mb-1 { margin-bottom: 1rem; }
+
+.zp-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 1.5rem;
+}
+
+.zp-timeline-item {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+  touch-action: manipulation;
+}
+
+.zp-timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 44px;
+}
+
+.zp-timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: oklch(70% 0.18 185);
+  border: 2px solid oklch(80% 0.25 185 / 0.3);
+  flex-shrink: 0;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.zp-timeline-dot::after {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+}
+
+.zp-timeline-dot:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 14px oklch(70% 0.18 185 / 0.4);
+}
+
+.zp-timeline-dot.active:hover {
+  box-shadow: 0 0 16px oklch(65% 0.25 280 / 0.6);
+}
+
+.zp-timeline-dot.active {
+  background: oklch(65% 0.25 280);
+  border-color: oklch(75% 0.3 280 / 0.4);
+  box-shadow: 0 0 12px oklch(65% 0.25 280 / 0.5);
+}
+
+.zp-timeline-line {
+  width: 2px;
+  flex: 1;
+  min-height: 24px;
+  background: oklch(80% 0.25 185 / 0.2);
+  margin: 4px 0;
+}
+
+.zp-timeline-item:last-child .zp-timeline-line {
+  display: none;
+}
+
+.zp-timeline-content {
+  padding: 0 0 1.8rem 0;
+}
+
+.zp-timeline-content p {
+  margin: 0.4rem 0 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  display: none;
+}
+
+.zp-timeline-item.expanded .zp-timeline-content p {
+  display: block;
+}
+
+.zp-timeline-dot {
+  cursor: pointer;
+  transition: all 0.3s ease, box-shadow 0.3s ease;
+}
+
+.zp-timeline-dot:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 14px oklch(70% 0.18 185 / 0.4);
+}
+
+.zp-timeline-dot.active:hover {
+  box-shadow: 0 0 16px oklch(65% 0.25 280 / 0.6);
+}
+
+.zp-timeline-content {
+  padding: 0 0 1.2rem 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.zp-timeline-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: oklch(78% 0.23 185);
+  margin-bottom: 0.3rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  transition: color 0.3s;
+  cursor: pointer;
+}
+
+.zp-timeline-date:hover {
+  color: oklch(88% 0.28 185);
+}
+
+.zp-timeline-item.expanded .zp-timeline-date {
+  color: oklch(88% 0.30 185);
+}
+
+/* Expand toggle icon */
+.zp-timeline-date::after {
+  content: '+';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: oklch(70% 0.18 185 / 0.15);
+  border: 1px solid oklch(70% 0.18 185 / 0.25);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.zp-timeline-date:hover::after {
+  background: oklch(70% 0.18 185 / 0.25);
+  border-color: oklch(70% 0.18 185 / 0.4);
+}
+
+.zp-timeline-item.expanded .zp-timeline-date::after {
+  content: '−';
+  background: oklch(70% 0.18 185 / 0.20);
+  border-color: oklch(78% 0.23 185 / 0.35);
+}
+
+/* First timeline item starts expanded */
+.zp-timeline-item:first-child .zp-timeline-content p {
+  display: block;
+}
+
+.zp-timeline-item:first-child .zp-timeline-date::after {
+  content: '−';
+  background: oklch(70% 0.18 185 / 0.20);
+  border-color: oklch(78% 0.23 185 / 0.35);
+}
+
+/* ===== Chapter 2: Quality Pipeline ===== */
+.zp-pipeline-flow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.zp-pipeline-card {
+  flex: 1;
+  min-width: 200px;
+  background: oklch(25% 0.02 260 / 0.3);
+  border: 1px solid oklch(80% 0.25 185 / 0.12);
+  border-radius: 12px;
+  padding: 1.2rem;
+  transition: border-color 0.3s;
+}
+
+.zp-pipeline-card:hover {
+  border-color: oklch(80% 0.25 185 / 0.3);
+}
+
+.zp-pipeline-icon {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.zp-pipeline-card h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.zp-pipeline-card p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.zp-pipeline-arrow {
+  font-size: 1.5rem;
+  color: oklch(80% 0.25 185 / 0.4);
+  padding-top: 1.2rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .zp-pipeline-flow {
+    flex-direction: column;
+  }
+  .zp-pipeline-arrow {
+    display: none;
+  }
+}
+
+/* ===== Chapter 2: Crew Cards ===== */
+.zp-crew-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.zp-crew-card {
+  background: oklch(25% 0.02 260 / 0.3);
+  border: 1px solid oklch(80% 0.25 185 / 0.12);
+  border-radius: 12px;
+  padding: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: border-color 0.3s;
+}
+
+.zp-crew-card:hover {
+  border-color: oklch(80% 0.25 185 / 0.3);
+}
+
+.zp-crew-emoji {
+  font-size: 2rem;
+  text-align: center;
+  display: block;
+}
+
+.zp-crew-card h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--text-main);
+  text-align: center;
+}
+
+.zp-crew-role {
+  font-size: 0.8rem;
+  color: oklch(78% 0.23 185 / 0.6);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  text-align: center;
+}
+
+.zp-crew-card p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.zp-crew-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.25em 0.7em;
+  border-radius: 20px;
+  text-transform: uppercase;
+  width: fit-content;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.zp-crew-badge.operational {
+  background: oklch(65% 0.25 150 / 0.2);
+  color: oklch(75% 0.28 150);
+  border: 1px solid oklch(75% 0.28 150 / 0.3);
+}
+
+.zp-crew-badge.planned {
+  background: oklch(65% 0.15 80 / 0.15);
+  color: oklch(78% 0.2 80);
+  border: 1px solid oklch(78% 0.2 80 / 0.25);
+}
+
+/* ===== Chapter 2: Values with Icons ===== */
+.zp-value-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-right: 0.3rem;
+}
+
+.zp-value-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid oklch(80% 0.25 185 / 0.08);
+}
+
+/* ===== Chapter 2: Service Health Indicators ===== */
+.zp-service-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.5rem;
+  margin-top: 0.8rem;
+}
+
+.zp-service-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.zp-service-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: oklch(70% 0.15 100 / 0.4);
+  flex-shrink: 0;
+}
+
+.zp-service-dot.online {
+  background: oklch(75% 0.28 150);
+  box-shadow: 0 0 6px oklch(75% 0.28 150 / 0.5);
+}
+
+.zp-service-dot.offline {
+  background: oklch(65% 0.25 20 / 0.5);
+}
+
+.zp-service-name {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zp-live-text.scrolling,
+  .zp-scroll-indicator span,
+  .zp-status,
+  .zp-hero-bg::before,
+  .zp-cursor,
+  .zp-dot.online,
+  .zp-dot.offline,
+  #zp-chat-thinking .zp-dot,
+  .zp-status .zp-dot {
+    animation: none !important;
+  }
+  body.zephyy-page .cosmic-bg::before,
+  body.zephyy-page .cosmic-bg::after {
+    animation: none !important;
   }
 }

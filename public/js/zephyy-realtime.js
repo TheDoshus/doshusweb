@@ -209,6 +209,15 @@
       if (thinkEl && data.workingOn) {
         thinkEl.textContent = data.workingOn;
       }
+
+      // Service health dots
+      if (data.services) {
+        var map = { gateway: 'svc-dot-gateway', orb: 'svc-dot-orb', ws: 'svc-dot-ws', embed: 'svc-dot-embed', aether: 'svc-dot-aether' };
+        Object.keys(map).forEach(function (key) {
+          var dot = document.getElementById(map[key]);
+          if (dot) dot.className = 'zp-service-dot ' + (data.services[key] === 'active' ? 'online' : 'offline');
+        });
+      }
     });
 
     // ── Daily-driven "Last" ──
@@ -355,6 +364,21 @@
           if (sourceEl) sourceEl.textContent = data.source || '';
           if (card) card.classList.add('loaded');
         }
+      }).catch(function(){});
+
+    // Service health indicators (from RTDB status)
+    fetch(RTDB_URL + '/zephyy/status.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || !data.services) return;
+        var svcs = data.services;
+        var map = { gateway: 'svc-dot-gateway', orb: 'svc-dot-orb', ws: 'svc-dot-ws', embed: 'svc-dot-embed', aether: 'svc-dot-aether' };
+        Object.keys(map).forEach(function(key) {
+          var dot = document.getElementById(map[key]);
+          if (dot) {
+            dot.className = 'zp-service-dot ' + (svcs[key] === 'active' ? 'online' : 'offline');
+          }
+        });
       }).catch(function(){});
   }
 
