@@ -1836,15 +1836,7 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
 }
 
 /* First timeline item starts expanded */
-.zp-timeline-item:first-child .zp-timeline-content p {
-  display: block;
-}
 
-.zp-timeline-item:first-child .zp-timeline-date::after {
-  content: '−';
-  background: oklch(70% 0.18 185 / 0.20);
-  border-color: oklch(78% 0.23 185 / 0.35);
-}
 
 /* ===== Chapter 2: Quality Pipeline ===== */
 .zp-pipeline-flow {
