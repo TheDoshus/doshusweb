@@ -1,0 +1,70 @@
+/* ─── ZEPHYY SUBPAGES — Shared styles
+ * Extends zephyy.css. All oklch design system.
+ * Each subpage sets --accent in :root to its theme color.
+ */
+
+/* ── Subpage nav ── */
+.zp-sub-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1.5rem;
+    background: oklch(var(--space-oled) / 0.85);
+    border-bottom: 1px solid oklch(var(--star-white) / 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 100;
+}
+
+.zp-sub-back {
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: oklch(var(--brand-teal));
+    text-decoration: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+.zp-sub-back:hover { opacity: 0.7; }
+
+.zp-sub-title {
+    font-family: 'Fugaz One', system-ui, sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    letter-spacing: 0.04em;
+    flex: 1;
+    text-align: center;
+}
+
+.zp-sub-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.zp-sub-links a {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.zp-sub-links a:hover { color: oklch(var(--brand-teal)); }
+
+@media (max-width: 600px) {
+    .zp-sub-links { display: none; }
+    .zp-sub-title { text-align: left; }
+}
+
+/* ── Main content area ── */
+.zp-subpage-main {
+    padding-top: 52px; /* nav height */
+}
+
+/* Tighten section spacing on subpages */
+.zp-subpage-main .zp-section {
+    padding: 4rem 1.5rem;
+}

@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "doshusweb"
+  },
+  "targets": {
+    "doshusweb": {
+      "hosting": {
+        "main": ["doshusweb"],
+        "zephyy": ["zephyy"]
+      }
+    }
   }
 }

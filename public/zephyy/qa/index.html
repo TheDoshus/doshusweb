@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zephyy — Quality Pipeline</title>
+    <link rel="icon" type="image/ico" href="https://doshus.net/doshusfavi.ico">
+    <meta name="description" content="Zephyy's quality pipeline — qa-gate, audit, coding standards.">
+    <link rel="canonical" href="https://doshus.net/zephyy/qa">
+    <link rel="stylesheet" href="/css/shared.css">
+    <link rel="stylesheet" href="/css/zephyy.css">
+    <link rel="stylesheet" href="/css/zephyy-subpage.css">
+    <style>
+        :root { --accent: var(--brand-green); }
+
+        /* ── Gate detail cards ── */
+        .qa-gate-flow {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .qa-gate-card {
+            flex: 1;
+            min-width: 220px;
+            background: oklch(25% 0.02 260 / 0.3);
+            border: 1px solid oklch(var(--brand-green) / 0.12);
+            border-radius: 12px;
+            padding: 1.4rem;
+            transition: border-color 0.3s;
+        }
+        .qa-gate-card:hover { border-color: oklch(var(--brand-green) / 0.35); }
+        .qa-gate-arrow {
+            display: flex;
+            align-items: center;
+            padding: 0 0.5rem;
+            color: oklch(var(--brand-green) / 0.4);
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        @media (max-width: 700px) {
+            .qa-gate-flow { flex-direction: column; }
+            .qa-gate-arrow { display: none; }
+        }
+        .qa-gate-icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+        .qa-gate-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 0.5rem;
+        }
+        .qa-gate-desc {
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+            margin: 0 0 0.8rem;
+        }
+        .qa-gate-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2em 0.6em;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            background: oklch(var(--brand-green) / 0.12);
+            color: oklch(var(--brand-green));
+            border: 1px solid oklch(var(--brand-green) / 0.2);
+            text-transform: uppercase;
+        }
+
+        /* ── Severity legend ── */
+        .sev-grid { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+        .sev-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 1rem;
+            background: oklch(var(--space-oled) / 0.3);
+            border-radius: 10px;
+            border: 1px solid oklch(var(--star-white) / 0.06);
+            flex: 1;
+            min-width: 160px;
+        }
+        .sev-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .sev-dot.red    { background: oklch(65% 0.28 20); box-shadow: 0 0 8px oklch(65% 0.28 20 / 0.5); }
+        .sev-dot.yellow { background: oklch(var(--brand-gold)); }
+        .sev-dot.blue   { background: oklch(var(--brand-blue)); }
+        .sev-label { font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
+        .sev-desc  { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* ── Rules list ── */
+        .rule-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+        .rule-item {
+            display: flex;
+            gap: 0.8rem;
+            align-items: flex-start;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid oklch(var(--star-white) / 0.04);
+            font-size: 0.85rem;
+        }
+        .rule-item:last-child { border-bottom: none; }
+        .rule-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            background: oklch(var(--brand-green) / 0.1);
+            color: oklch(var(--brand-green));
+            border: 1px solid oklch(var(--brand-green) / 0.2);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .rule-text { color: var(--text-main); opacity: 0.85; line-height: 1.5; }
+    </style>
+</head>
+<body class="zephyy-page">
+    <div class="cosmic-bg"></div>
+    <div class="stars" id="stars"></div>
+
+    <nav class="zp-sub-nav">
+        <a href="/zephyy" class="zp-sub-back">← Profile</a>
+        <span class="zp-sub-title">Quality Pipeline</span>
+        <div class="zp-sub-links">
+            <a href="/zephyy/crew">Crew</a>
+            <a href="/zephyy/changelog">Changelog</a>
+            <a href="/zephyy/status">Status</a>
+        </div>
+    </nav>
+
+    <main class="zp-subpage-main">
+
+        <!-- Pipeline gates -->
+        <section class="zp-section">
+            <div class="zp-section-header">
+                <div class="zp-icon zp-icon-green">✅</div>
+                <h2>Quality Pipeline</h2>
+                <div class="zp-accent-line"></div>
+            </div>
+            <p style="color:var(--text-muted);font-size:0.9rem;margin:0 0 0.5rem">No script reaches production without passing all three gates. Quality is structural, not aspirational.</p>
+
+            <div class="zp-card">
+                <div class="qa-gate-flow">
+                    <div class="qa-gate-card">
+                        <span class="qa-gate-icon">🔍</span>
+                        <h3 class="qa-gate-name">qa-gate-v2.sh</h3>
+                        <p class="qa-gate-desc">Strict mode — syntax check, error handling validation, env var declarations, shellcheck. Sha256-tracked registry. Any edit invalidates the entry and requires re-gate. No registry entry = hasn't passed.</p>
+                        <span class="qa-gate-badge">Gate 1 — Static Analysis</span>
+                    </div>
+                    <div class="qa-gate-arrow">→</div>
+                    <div class="qa-gate-card">
+                        <span class="qa-gate-icon">📊</span>
+                        <h3 class="qa-gate-name">zephyy-audit.sh</h3>
+                        <p class="qa-gate-desc">RED blocks deploy. YELLOW goes to backlog. BLUE gets fixed when already in the file. Runs on every sweep cycle. False positives are flagged and suppressed — not blindly "fixed" by damaging correct code.</p>
+                        <span class="qa-gate-badge">Gate 2 — Runtime Audit</span>
+                    </div>
+                    <div class="qa-gate-arrow">→</div>
+                    <div class="qa-gate-card">
+                        <span class="qa-gate-icon">📐</span>
+                        <h3 class="qa-gate-name">coding-standards.md</h3>
+                        <p class="qa-gate-desc">Bash ≤ 10 lines of glue. Anything with branching, loops, file I/O, or network → Python. Mandatory preflight checks up front. Every dependency declared. Fails loud or doesn't run.</p>
+                        <span class="qa-gate-badge">Gate 3 — Standards</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Severity legend -->
+        <section class="zp-section">
+            <div class="zp-section-header">
+                <div class="zp-icon zp-icon-teal">🎯</div>
+                <h2>Severity Levels</h2>
+                <div class="zp-accent-line"></div>
+            </div>
+            <div class="zp-card">
+                <p style="font-size:0.88rem;color:var(--text-muted);margin:0 0 0.8rem">How audit findings are handled. The hierarchy is strict.</p>
+                <div class="sev-grid">
+                    <div class="sev-item">
+                        <div class="sev-dot red"></div>
+                        <div>
+                            <div class="sev-label">RED — Blocks deploy</div>
+                            <div class="sev-desc">Fixed same session. No exceptions. Deploy is gated until clean.</div>
+                        </div>
+                    </div>
+                    <div class="sev-item">
+                        <div class="sev-dot yellow"></div>
+                        <div>
+                            <div class="sev-label">YELLOW — Backlog</div>
+                            <div class="sev-desc">Logged and tracked. Fixed on next scheduled audit or when the file is open anyway.</div>
+                        </div>
+                    </div>
+                    <div class="sev-item">
+                        <div class="sev-dot blue"></div>
+                        <div>
+                            <div class="sev-label">BLUE — Opportunistic</div>
+                            <div class="sev-desc">Fixed when already in the file. Never opens a file just for BLUE.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core rules -->
+        <section class="zp-section">
+            <div class="zp-section-header">
+                <div class="zp-icon zp-icon-green">⚖️</div>
+                <h2>Non-Negotiables</h2>
+                <div class="zp-accent-line"></div>
+            </div>
+            <div class="zp-card">
+                <div class="rule-list">
+                    <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>rm is forbidden in scripts.</strong> Use <code>gio trash</code> or move to <code>.trash/YYYYMMDD-HHMMSS/</code>. Gate grep-rejects bare rm. Only exception: cleaning a mktemp dir inside a trap EXIT.</span></div>
+                    <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>Every script runs set -euo pipefail.</strong> Bash gets binary checks up top. Python gets shutil.which() + os.getenv() in preflight() before main().</span></div>
+                    <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>No registry entry = not production-ready.</strong> Sha256 key — any edit invalidates it. Re-gate required before re-registration.</span></div>
+                    <div class="rule-item"><span class="rule-tag">RULE</span><span class="rule-text"><strong>A finding is a claim, not a verdict.</strong> If a RED looks like a false positive, verify it. Don't blindly fix things that aren't broken to satisfy a linter.</span></div>
+                    <div class="rule-item"><span class="rule-tag">RULE</span><span class="rule-text"><strong>Stale code is lying code.</strong> When something is deprecated, grep the workspace for every reference, update or delete, and archive the old file.</span></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="sticky-footer" id="sticky-footer">
+        <span class="footer-copyright"><span>⚡</span> ZEPHYY <span class="divider">│</span> Quality Pipeline</span>
+        <nav class="footer-nav">
+            <a href="/zephyy"><svg xmlns="http://www.w3.org/2000/svg" width="25px" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 12h3v9h6v-6h2v6h6v-9h3L12 3z"/></svg><span>Profile</span></a>
+            <a href="/"><img src="https://doshus.net/doshusfavi.ico" width="25px" alt="Doshus" class="zp-logo-icon"><span>Doshus</span></a>
+        </nav>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/zephyy-subpage.js"></script>
+</body>
+</html>
