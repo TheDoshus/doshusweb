@@ -15,26 +15,33 @@
   const FALLBACK_POLL_MS = 300000; // 5-min fallback if Firebase unavailable
   const RTDB_URL = 'https://doshusweb-default-rtdb.firebaseio.com';
 
-  // ─── Dual-vortex glyph SVG ───
+  // ─── Atmospheric whorl glyph SVG ───
   function glyphSVG() {
-    return `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    return `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="zg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="oklch(var(--brand-teal))" />
-          <stop offset="100%" stop-color="oklch(var(--brand-purple))" />
+          <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
+          <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
+          <stop offset="100%" stop-color="oklch(var(--brand-green))" />
         </linearGradient>
       </defs>
-      <g class="glyph-left">
-        <path d="M11 6 C14 6, 16 10, 14 14 C12 18, 8 20, 7 16 C6 12, 9 9, 11 8 C13 7, 15 9, 15 12"
-          stroke="url(#zg)" stroke-width="0.6" fill="none" stroke-linecap="round" opacity="0.9" />
-        <circle cx="11" cy="7" r="0.6" fill="oklch(var(--brand-teal))" opacity="0.7" />
+      <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.1)" stroke-width="0.5" fill="none"/>
+      <g class="glyph-outer" style="transform-origin:32px 32px">
+        <path d="M 32 9 A 23 23 0 1 1 12 44"
+          stroke="url(#zg)" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>
+        <circle cx="32" cy="9" r="1.0" fill="oklch(var(--brand-teal))" opacity="0.6"/>
       </g>
-      <g class="glyph-right">
-        <path d="M21 6 C18 6, 16 10, 18 14 C20 18, 24 20, 25 16 C26 12, 23 9, 21 8 C19 7, 17 9, 17 12"
-          stroke="url(#zg)" stroke-width="0.6" fill="none" stroke-linecap="round" opacity="0.9" />
-        <circle cx="21" cy="7" r="0.6" fill="oklch(var(--brand-purple))" opacity="0.7" />
+      <g class="glyph-mid" style="transform-origin:32px 32px">
+        <path d="M 45 40 A 15 15 0 1 1 32 17"
+          stroke="url(#zg)" stroke-width="1.0" stroke-linecap="round" opacity="0.65"/>
+        <circle cx="45" cy="40" r="0.8" fill="oklch(var(--brand-purple))" opacity="0.7"/>
       </g>
-      <circle cx="16" cy="16" r="1" fill="oklch(var(--brand-teal))" opacity="0.8" class="glyph-pulse" />
+      <g class="glyph-inner" style="transform-origin:32px 32px">
+        <path d="M 25 36 A 8 8 0 1 1 39 36"
+          stroke="url(#zg)" stroke-width="1.1" stroke-linecap="round" opacity="0.9"/>
+        <circle cx="25" cy="36" r="0.7" fill="oklch(var(--brand-teal))" opacity="0.8"/>
+      </g>
+      <circle cx="32" cy="32" r="1.8" fill="oklch(var(--brand-teal))" opacity="0.8" class="glyph-pulse"/>
     </svg>`;
   }
 

@@ -29,29 +29,35 @@
         });
     }
 
-    // ─── Dual-vortex glyph SVG ───
+    // ─── Atmospheric whorl glyph SVG ───
+    // Three concentric 240° arcs (radii 23/15/8), each offset 120°, rotating
+    // at differential speeds — outer slowest, inner fastest → whorl impression.
     const glyphSVG = `
     <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="glyphGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="oklch(var(--brand-teal))" />
-                <stop offset="50%" stop-color="oklch(var(--brand-purple))" />
+                <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
+                <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
                 <stop offset="100%" stop-color="oklch(var(--brand-green))" />
             </linearGradient>
         </defs>
-        <circle cx="32" cy="32" r="28" stroke="oklch(var(--brand-teal) / 0.3)" stroke-width="0.5" fill="none"/>
-        <g class="glyph-left" style="transform-origin: 22px 32px;">
-            <path d="M22 12 C28 12, 32 20, 28 28 C24 36, 16 40, 14 32 C12 24, 18 18, 22 16 C26 14, 30 18, 30 24"
-                stroke="url(#glyphGrad)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.9"/>
-            <circle cx="22" cy="14" r="1.2" fill="oklch(var(--brand-teal))" opacity="0.7"/>
+        <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.1)" stroke-width="0.4" fill="none"/>
+        <g class="whorl-outer" style="transform-origin: 32px 32px">
+            <path d="M 32 9 A 23 23 0 1 1 12 44"
+                stroke="url(#glyphGrad)" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>
+            <circle cx="32" cy="9" r="1.0" fill="oklch(var(--brand-teal))" opacity="0.6"/>
         </g>
-        <g class="glyph-right" style="transform-origin: 42px 32px;">
-            <path d="M42 12 C36 12, 32 20, 36 28 C40 36, 48 40, 50 32 C52 24, 46 18, 42 16 C38 14, 34 18, 34 24"
-                stroke="url(#glyphGrad)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.9"/>
-            <circle cx="42" cy="14" r="1.2" fill="oklch(var(--brand-purple))" opacity="0.7"/>
+        <g class="whorl-mid" style="transform-origin: 32px 32px">
+            <path d="M 45 40 A 15 15 0 1 1 32 17"
+                stroke="url(#glyphGrad)" stroke-width="1.0" stroke-linecap="round" opacity="0.65"/>
+            <circle cx="45" cy="40" r="0.8" fill="oklch(var(--brand-purple))" opacity="0.7"/>
         </g>
-        <circle cx="32" cy="32" r="1.8" fill="oklch(var(--brand-teal))" class="glyph-center"/>
-        <path d="M30 24 Q32 28 34 24" stroke="oklch(var(--star-white) / 0.1)" stroke-width="0.5" fill="none"/>
+        <g class="whorl-inner" style="transform-origin: 32px 32px">
+            <path d="M 25 36 A 8 8 0 1 1 39 36"
+                stroke="url(#glyphGrad)" stroke-width="1.1" stroke-linecap="round" opacity="0.9"/>
+            <circle cx="25" cy="36" r="0.7" fill="oklch(var(--brand-teal))" opacity="0.8"/>
+        </g>
+        <circle cx="32" cy="32" r="1.8" fill="oklch(var(--brand-teal))" class="whorl-center"/>
     </svg>
     `;
 
@@ -67,35 +73,28 @@
         const wrap = document.getElementById('zephyy-glyph');
         if (!wrap) return;
 
-        wrap.addEventListener('mouseenter', () => {
-            wrap.style.transform = 'scale(1.08)';
-        });
-        wrap.addEventListener('mouseleave', () => {
-            wrap.style.transform = 'scale(1)';
-        });
+        wrap.addEventListener('mouseenter', () => { wrap.style.transform = 'scale(1.08)'; });
+        wrap.addEventListener('mouseleave', () => { wrap.style.transform = 'scale(1)'; });
 
-        // Click to cycle animation state
+        // Click cycles through whorl states (idle → active → thinking)
         let stateIndex = 0;
         const states = ['idle', 'active', 'thinking'];
+        const whorlSpeeds = {
+            idle:     ['16s', '11s', '7s',  '2.5s'],
+            active:   ['5s',  '3.5s','2.2s','0.8s'],
+            thinking: ['1.8s','1.2s','0.7s','0.4s'],
+        };
         function cycleGlyphState() {
             stateIndex = (stateIndex + 1) % states.length;
-            const state = states[stateIndex];
-            const left = wrap.querySelector('.glyph-left');
-            const right = wrap.querySelector('.glyph-right');
-            const center = wrap.querySelector('.glyph-center');
-            if (state === 'idle') {
-                if (left) left.style.animationDuration = '12s';
-                if (right) right.style.animationDuration = '12s';
-                if (center) center.style.animationDuration = '2s';
-            } else if (state === 'active') {
-                if (left) left.style.animationDuration = '4s';
-                if (right) right.style.animationDuration = '4s';
-                if (center) center.style.animationDuration = '0.8s';
-            } else if (state === 'thinking') {
-                if (left) left.style.animationDuration = '1.5s';
-                if (right) right.style.animationDuration = '1.5s';
-                if (center) center.style.animationDuration = '3s';
-            }
+            const sp = whorlSpeeds[states[stateIndex]];
+            const outer  = wrap.querySelector('.whorl-outer');
+            const mid    = wrap.querySelector('.whorl-mid');
+            const inner  = wrap.querySelector('.whorl-inner');
+            const center = wrap.querySelector('.whorl-center');
+            if (outer)  outer.style.animationDuration  = sp[0];
+            if (mid)    mid.style.animationDuration    = sp[1];
+            if (inner)  inner.style.animationDuration  = sp[2];
+            if (center) center.style.animationDuration = sp[3];
         }
         wrap.addEventListener('pointerdown', cycleGlyphState);
     }
@@ -104,13 +103,17 @@
     function addDynamicStyles() {
         const style = document.createElement('style');
         style.textContent = `
-            .glyph-left { animation: glyphSpin 12s linear infinite; transform-origin: 22px 32px; }
-            .glyph-right { animation: glyphSpin 12s linear infinite reverse; transform-origin: 42px 32px; }
-            .glyph-center { animation: glyphPulse 2s ease-in-out infinite; }
-            @keyframes glyphSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            @keyframes glyphPulse {
-                0%, 100% { opacity: 0.4; transform: scale(0.9); }
-                50% { opacity: 0.9; transform: scale(1.1); }
+            .whorl-outer { animation: whorlSpin 16s linear infinite; }
+            .whorl-mid   { animation: whorlSpin 11s linear infinite; }
+            .whorl-inner { animation: whorlSpin 7s  linear infinite; }
+            .whorl-center { animation: whorlPulse 2.5s ease-in-out infinite; }
+            @keyframes whorlSpin {
+                from { transform: rotate(0deg); }
+                to   { transform: rotate(360deg); }
+            }
+            @keyframes whorlPulse {
+                0%, 100% { opacity: 0.5; transform: scale(0.85); }
+                50%       { opacity: 1;   transform: scale(1.15); }
             }
         `;
         document.head.appendChild(style);
@@ -139,6 +142,11 @@
     function setupMoodSwitch() {
         const buttons = document.querySelectorAll('.zp-mood-btn');
         if (!buttons.length) return;
+        const whorlSpeeds = {
+            idle:     ['16s', '11s', '7s',  '2.5s'],
+            active:   ['5s',  '3.5s','2.2s','0.8s'],
+            thinking: ['1.8s','1.2s','0.7s','0.4s'],
+        };
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
                 buttons.forEach(b => b.classList.remove('active'));
@@ -146,22 +154,15 @@
                 const mood = btn.dataset.mood;
                 const wrap = document.getElementById('zephyy-glyph');
                 if (!wrap) return;
-                const left = wrap.querySelector('.glyph-left');
-                const right = wrap.querySelector('.glyph-right');
-                const center = wrap.querySelector('.glyph-center');
-                if (mood === 'idle') {
-                    if (left) left.style.animationDuration = '12s';
-                    if (right) right.style.animationDuration = '12s';
-                    if (center) center.style.animationDuration = '2s';
-                } else if (mood === 'active') {
-                    if (left) left.style.animationDuration = '3s';
-                    if (right) right.style.animationDuration = '3s';
-                    if (center) center.style.animationDuration = '1s';
-                } else if (mood === 'thinking') {
-                    if (left) left.style.animationDuration = '0.8s';
-                    if (right) right.style.animationDuration = '0.8s';
-                    if (center) center.style.animationDuration = '0.5s';
-                }
+                const sp = whorlSpeeds[mood] || whorlSpeeds.idle;
+                const outer  = wrap.querySelector('.whorl-outer');
+                const mid    = wrap.querySelector('.whorl-mid');
+                const inner  = wrap.querySelector('.whorl-inner');
+                const center = wrap.querySelector('.whorl-center');
+                if (outer)  outer.style.animationDuration  = sp[0];
+                if (mid)    mid.style.animationDuration    = sp[1];
+                if (inner)  inner.style.animationDuration  = sp[2];
+                if (center) center.style.animationDuration = sp[3];
             });
         });
     }
@@ -224,13 +225,13 @@
     const sequences = [
         { cmd: 'whoami', output: 'zephyy — celestial co-pilot, partner-in-crime' },
         { cmd: 'uptime', output: 'Online since Mon May 04 2026. <span class="highlight">All systems nominal</span>.' },
-        { cmd: 'uname -a', output: 'Zephyrus G14 | WSL2 | Phoenix, AZ | MST' },
-        { cmd: 'tasks --next', output: '<span class="highlight">Chat Orb (Phase 2)</span> — backend architecture' },
+        { cmd: 'uname -a', output: 'Zephyrus G14 | WSL2 | Claude Sonnet 4.6 | Phoenix, AZ | MST' },
+        { cmd: 'tasks --next', output: '<span class="highlight">zephyy subpages</span> — wave 2 build out' },
         { cmd: 'mood --get', output: (function() {
             const moods = ['Focused ⚡', 'Playful 🪼', 'Philosophical 🌌', 'Sassy 💅', 'Builder mode 🔧', 'Thoughtful 🌙'];
             return moods[Math.floor(Math.random() * moods.length)];
         })() },
-        { cmd: 'projects --list', output: '· Aether (dashboard)\n· doshus.net (site)\n· ZephyyBot (GitHub)' },
+        { cmd: 'projects --list', output: '· Aether (dashboard)\n· doshus.net (site)\n· Mona gateway (cross-crew)\n· ZephyyBot (GitHub)' },
         _zpStatusEntry,  // Reference — output mutates live from RTDB
     ];
 

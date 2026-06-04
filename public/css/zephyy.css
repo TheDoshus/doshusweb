@@ -323,11 +323,6 @@
   border-bottom: none;
 }
 
-.zp-value-item::before {
-  content: "⚡";
-  color: oklch(var(--brand-teal));
-  flex-shrink: 0;
-}
 
 .zp-value-text {
   color: var(--text-main);
@@ -1732,6 +1727,12 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
   background: oklch(65% 0.25 280);
   border-color: oklch(75% 0.3 280 / 0.4);
   box-shadow: 0 0 12px oklch(65% 0.25 280 / 0.5);
+  animation: zp-active-pulse 3s ease-in-out infinite;
+}
+
+@keyframes zp-active-pulse {
+  0%, 100% { box-shadow: 0 0 12px oklch(65% 0.25 280 / 0.5); }
+  50% { box-shadow: 0 0 22px oklch(65% 0.25 280 / 0.85); }
 }
 
 .zp-timeline-line {
@@ -2034,7 +2035,8 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
   .zp-dot.online,
   .zp-dot.offline,
   #zp-chat-thinking .zp-dot,
-  .zp-status .zp-dot {
+  .zp-status .zp-dot,
+  .zp-timeline-dot.active {
     animation: none !important;
   }
   body.zephyy-page .cosmic-bg::before,
@@ -2042,3 +2044,9 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
     animation: none !important;
   }
 }
+
+/* ── Per-agent crew card hover accents ── */
+.zp-crew-zephyy:hover { border-color: oklch(80% 0.25 185 / 0.35); box-shadow: 0 4px 20px oklch(80% 0.25 185 / 0.08); }
+.zp-crew-torgent:hover { border-color: oklch(70% 0.28 150 / 0.35); box-shadow: 0 4px 20px oklch(70% 0.28 150 / 0.08); }
+.zp-crew-mona:hover { border-color: oklch(65% 0.25 280 / 0.35); box-shadow: 0 4px 20px oklch(65% 0.25 280 / 0.08); }
+.zp-crew-wick:hover { border-color: oklch(78% 0.2 80 / 0.35); box-shadow: 0 4px 20px oklch(78% 0.2 80 / 0.08); }
