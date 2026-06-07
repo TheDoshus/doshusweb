@@ -452,6 +452,15 @@
 
     if (!orb || !panel) return;
 
+    /* Replace the 💬 placeholder with the dual-vortex glyph */
+    if (orb && !orb.querySelector('.zp-orb-glyph')) {
+        const orbGlyph = document.createElement('span');
+        orbGlyph.className = 'zp-orb-glyph';
+        orbGlyph.innerHTML = glyphSVG;
+        orb.insertBefore(orbGlyph, orb.firstChild);
+        orb.classList.add('has-glyph');
+    }
+
     /* Detect touch device — hide tooltip, open panel on tap directly */
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice && tooltip) {

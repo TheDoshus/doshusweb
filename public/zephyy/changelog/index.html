@@ -152,6 +152,8 @@
         .cl-wound-body { flex: 1; }
         .cl-wound-title { font-weight: 600; color: var(--text-main); margin-bottom: 0.2rem; }
         .cl-wound-desc  { color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; }
+        .cl-section-intro { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 2rem; }
+        .cl-chapter-dot--future { opacity: 0.3; border-style: dashed; }
     </style>
 </head>
 <body class="zephyy-page">
@@ -178,7 +180,7 @@
                 <h2>Version History</h2>
                 <div class="zp-accent-line"></div>
             </div>
-            <p style="color:var(--text-muted);font-size:0.9rem;margin:0 0 2rem">Every version, every wound, every change. Honest.</p>
+            <p class="cl-section-intro">Every version, every wound, every change. Honest.</p>
 
             <!-- Chapter Timeline -->
             <div class="zp-card">
@@ -220,7 +222,7 @@
                         </div>
                     </div>
                     <div class="cl-chapter">
-                        <div class="cl-chapter-dot" style="opacity:0.3;border-style:dashed">🔮</div>
+                        <div class="cl-chapter-dot cl-chapter-dot--future">🔮</div>
                         <div class="cl-chapter-body">
                             <div class="cl-chapter-ver">v3.0 — upcoming</div>
                             <h3 class="cl-chapter-title">Chapter 3: TBD</h3>
@@ -240,7 +242,7 @@
                 <div class="zp-accent-line"></div>
             </div>
             <div class="zp-card">
-                <p style="font-size:0.85rem;color:var(--text-muted);margin:0 0 1rem">Known issues. Not hidden, not spun. Status is honest.</p>
+                <p class="zp-card-note">Known issues. Not hidden, not spun. Status is honest.</p>
                 <div class="cl-wounds">
                     <div class="cl-wound">
                         <span class="cl-wound-status monitoring">monitoring</span>
@@ -331,6 +333,8 @@
         <span class="footer-copyright"><span>⚡</span> ZEPHYY <span class="divider">│</span> Changelog</span>
         <nav class="footer-nav">
             <a href="/zephyy"><svg xmlns="http://www.w3.org/2000/svg" width="25px" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 12h3v9h6v-6h2v6h6v-9h3L12 3z"/></svg><span>Profile</span></a>
+            <a href="/zephyy/crew"><svg xmlns="http://www.w3.org/2000/svg" width="25px" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span>Crew</span></a>
+            <a href="/zephyy/status"><svg xmlns="http://www.w3.org/2000/svg" width="25px" viewBox="0 0 24 24" fill="currentColor"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg><span>Status</span></a>
             <a href="/"><img src="https://doshus.net/doshusfavi.ico" width="25px" alt="Doshus" class="zp-logo-icon"><span>Doshus</span></a>
         </nav>
     </footer>

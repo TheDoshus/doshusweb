@@ -16,6 +16,11 @@
   margin-bottom: 1.5rem;
   cursor: pointer;
   transition: transform 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .zp-glyph-wrap:hover {
@@ -26,6 +31,8 @@
   width: 100%;
   height: 100%;
   display: block;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .zp-glyph-ring {
@@ -277,6 +284,16 @@
   color: oklch(var(--brand-purple));
 }
 
+.zp-stealth-link,
+.zp-stealth-link:hover,
+.zp-project h3 a.zp-stealth-link,
+.zp-project h3 a.zp-stealth-link:hover,
+.zp-stealth-link:visited {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+}
+
 .zp-project p {
   font-size: 0.85rem;
   opacity: 0.7;
@@ -388,6 +405,11 @@
   transition: all 0.3s ease;
   z-index: 100;
   animation: orb-float 3s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .zp-orb-demo:hover {
@@ -400,6 +422,27 @@
   content: "💬";
   font-size: 1.2rem;
 }
+
+.zp-orb-demo.has-glyph::before {
+  content: none;
+}
+
+.zp-orb-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+}
+
+.zp-orb-glyph svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* whorlSpin / whorlPulse keyframes + .whorl-* animation rules are injected
+   globally by zephyy.js addDynamicStyles() — reused here, no redeclaration. */
 
 /* Unread notification dot — top left, slightly bigger */
 .zp-orb-demo.unread::after {
@@ -1149,17 +1192,45 @@
 .zp-sidebar-nav {
   position: fixed;
   left: 1rem;
-  top: 45%;
+  top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.2rem;
   z-index: 100;
   padding: 0.5rem;
   background: oklch(var(--space-oled) / 0.8);
   border: 1px solid oklch(var(--brand-teal) / 0.2);
   border-radius: 12px;
   will-change: opacity;
+  max-height: min(90vh, 600px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.zp-sidebar-nav::-webkit-scrollbar { display: none; }
+
+.zp-sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid oklch(var(--star-white) / 0.06);
+}
+.zp-sidebar-group:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.zp-sidebar-group-label {
+  font-size: 0.55rem;
+  text-align: center;
+  color: var(--text-muted);
+  opacity: 0.5;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .zp-sidebar-link {
@@ -1516,10 +1587,6 @@ body .star {
   will-change: opacity;
 }
 
-/* ── Performance: prevent horizontal overflow from fixed sidebar ── */
-.zp-sidebar-nav {
-  overflow-x: hidden;
-}
 
 /* ── Zephyy custom cosmic background — animated drift ── */
 body.zephyy-page .cosmic-bg {
@@ -1594,6 +1661,37 @@ body.zephyy-page .sticky-footer .footer-nav a {
 
 body.zephyy-page .sticky-footer .footer-nav a:hover {
   color: oklch(78% 0.23 185);
+}
+
+.zp-inline-teal {
+  color: oklch(var(--brand-teal));
+  text-decoration: none;
+}
+
+.zp-inline-teal:hover {
+  color: oklch(var(--brand-purple));
+}
+
+.zp-muted-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.zp-muted-sm {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.zp-muted-sm-1 {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+
+.zp-text-center {
+  text-align: center;
 }
 
 /* ── Daily Zephyy ── */
@@ -2050,3 +2148,6 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
 .zp-crew-torgent:hover { border-color: oklch(70% 0.28 150 / 0.35); box-shadow: 0 4px 20px oklch(70% 0.28 150 / 0.08); }
 .zp-crew-mona:hover { border-color: oklch(65% 0.25 280 / 0.35); box-shadow: 0 4px 20px oklch(65% 0.25 280 / 0.08); }
 .zp-crew-wick:hover { border-color: oklch(78% 0.2 80 / 0.35); box-shadow: 0 4px 20px oklch(78% 0.2 80 / 0.08); }
+
+/* Chat icon glyph — hidden until voice/audio feature is wired */
+.zp-chat-icon-glyph { display: none; }

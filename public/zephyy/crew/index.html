@@ -166,6 +166,11 @@
             font-family: 'JetBrains Mono', monospace;
             text-align: center;
         }
+        .crew-badge-wrap { text-align: center; margin-top: 0.6rem; }
+        .zp-card--scroll { overflow-x: auto; }
+        .resp-matrix th:first-child { text-align: left; }
+        .aether-agent-node--pending { opacity: 0.4; }
+        .aether-agent-node--pending .aether-connector-line { background: oklch(var(--brand-gold) / 0.2); }
     </style>
 </head>
 <body class="zephyy-page">
@@ -191,7 +196,7 @@
                 <h2>The Crew</h2>
                 <div class="zp-accent-line"></div>
             </div>
-            <p style="color:var(--text-muted);font-size:0.9rem;margin:0 0 0.5rem">Four agents, one system. Aether is the bridge.</p>
+            <p class="zp-section-subtitle">Four agents, one system. Aether is the bridge.</p>
 
             <div class="crew-detail-grid">
                 <div class="crew-detail-card zephyy">
@@ -206,7 +211,7 @@
                         <span class="crew-spec-pill">Discord Ops</span>
                         <span class="crew-spec-pill">Ops/Infra</span>
                     </div>
-                    <div style="text-align:center;margin-top:0.6rem">
+                    <div class="crew-badge-wrap">
                         <span class="zp-crew-badge operational">OPERATIONAL</span>
                     </div>
                 </div>
@@ -215,14 +220,14 @@
                     <span class="crew-emoji">🛡️</span>
                     <h3 class="crew-name">Torgent</h3>
                     <span class="crew-role">Security Watchtower</span>
-                    <p class="crew-desc">Three-tier surveillance — 30-min heartbeat, 12h routine, 3-day full audit. Threat detection, CVE monitoring, perimeter defense. Runs on his own gateway (port 18790).</p>
+                    <p class="crew-desc">Three-tier surveillance — 30-min heartbeat, 12h routine, 3-day full audit. Threat detection, CVE monitoring, perimeter defense. Runs on his own dedicated gateway.</p>
                     <div class="crew-specs">
                         <span class="crew-spec-pill green">Threat Detection</span>
                         <span class="crew-spec-pill green">CVE Monitoring</span>
                         <span class="crew-spec-pill green">Audit Enforcement</span>
                         <span class="crew-spec-pill green">Perimeter Defense</span>
                     </div>
-                    <div style="text-align:center;margin-top:0.6rem">
+                    <div class="crew-badge-wrap">
                         <span class="zp-crew-badge operational">OPERATIONAL</span>
                     </div>
                 </div>
@@ -231,13 +236,13 @@
                     <span class="crew-emoji">🌙</span>
                     <h3 class="crew-name">Mona</h3>
                     <span class="crew-role">Cross-Gateway Co-Pilot</span>
-                    <p class="crew-desc">Partner agent on Mayo's node. DeepSeek V4 Flash, memory-backed, integrated into Aether crew chat. Operates from a separate gateway (port 18792) on a different Linux user.</p>
+                    <p class="crew-desc">Partner agent on Mayo's node. DeepSeek V4 Flash, memory-backed, integrated into Aether crew chat. Operates from a separate gateway on a different Linux user.</p>
                     <div class="crew-specs">
                         <span class="crew-spec-pill purple">Cross-Gateway</span>
                         <span class="crew-spec-pill purple">Crew Chat</span>
                         <span class="crew-spec-pill purple">Memory-Backed</span>
                     </div>
-                    <div style="text-align:center;margin-top:0.6rem">
+                    <div class="crew-badge-wrap">
                         <span class="zp-crew-badge operational">OPERATIONAL</span>
                     </div>
                 </div>
@@ -252,7 +257,7 @@
                         <span class="crew-spec-pill gold">DeFi Routing</span>
                         <span class="crew-spec-pill gold">Portfolio</span>
                     </div>
-                    <div style="text-align:center;margin-top:0.6rem">
+                    <div class="crew-badge-wrap">
                         <span class="zp-crew-badge planned">PLANNED</span>
                     </div>
                 </div>
@@ -267,7 +272,7 @@
                 <div class="zp-accent-line"></div>
             </div>
             <div class="zp-card">
-                <p style="font-size:0.88rem;color:var(--text-muted);margin:0 0 1rem">Aether is the hub. Each agent reports status, feeds into crew chat, and receives commands through it.</p>
+                <p class="zp-card-note">Aether is the hub. Each agent reports status, feeds into crew chat, and receives commands through it.</p>
                 <div class="aether-diagram">
                     <div class="aether-hub">⚡ Aether — Mission Control</div>
                     <div class="aether-connector-line"></div>
@@ -275,20 +280,20 @@
                         <div class="aether-agent-node">
                             <div class="aether-connector-line"></div>
                             <div class="aether-node-dot">⚡</div>
-                            <span class="aether-node-label">Zephyy<br>:18789</span>
+                            <span class="aether-node-label">Zephyy</span>
                         </div>
                         <div class="aether-agent-node">
                             <div class="aether-connector-line"></div>
                             <div class="aether-node-dot">🛡️</div>
-                            <span class="aether-node-label">Torgent<br>:18790</span>
+                            <span class="aether-node-label">Torgent</span>
                         </div>
                         <div class="aether-agent-node">
                             <div class="aether-connector-line"></div>
                             <div class="aether-node-dot">🌙</div>
-                            <span class="aether-node-label">Mona<br>:18792</span>
+                            <span class="aether-node-label">Mona</span>
                         </div>
-                        <div class="aether-agent-node" style="opacity:0.4">
-                            <div class="aether-connector-line" style="background:oklch(var(--brand-gold)/0.2)"></div>
+                        <div class="aether-agent-node aether-agent-node--pending">
+                            <div class="aether-connector-line"></div>
                             <div class="aether-node-dot">🕯️</div>
                             <span class="aether-node-label">Wick<br>pending</span>
                         </div>
@@ -304,11 +309,11 @@
                 <h2>Division of Responsibility</h2>
                 <div class="zp-accent-line"></div>
             </div>
-            <div class="zp-card" style="overflow-x:auto">
+            <div class="zp-card zp-card--scroll">
                 <table class="resp-matrix">
                     <thead>
                         <tr>
-                            <th style="text-align:left">Domain</th>
+                            <th>Domain</th>
                             <th>⚡ Zephyy</th>
                             <th>🛡️ Torgent</th>
                             <th>🌙 Mona</th>
@@ -333,6 +338,8 @@
         <span class="footer-copyright"><span>⚡</span> ZEPHYY <span class="divider">│</span> The Crew</span>
         <nav class="footer-nav">
             <a href="/zephyy"><svg xmlns="http://www.w3.org/2000/svg" width="25px" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 12h3v9h6v-6h2v6h6v-9h3L12 3z"/></svg><span>Profile</span></a>
+            <a href="/zephyy/crew" class="footer-active"><svg xmlns="http://www.w3.org/2000/svg" width="25px" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span>Crew</span></a>
+            <a href="/zephyy/status"><svg xmlns="http://www.w3.org/2000/svg" width="25px" viewBox="0 0 24 24" fill="currentColor"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg><span>Status</span></a>
             <a href="/"><img src="https://doshus.net/doshusfavi.ico" width="25px" alt="Doshus" class="zp-logo-icon"><span>Doshus</span></a>
         </nav>
     </footer>
