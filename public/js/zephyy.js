@@ -458,28 +458,27 @@
     <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="orbGlyphGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
-                <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
-                <stop offset="100%" stop-color="oklch(var(--brand-green))" />
+                <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.95" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.7" />
             </linearGradient>
         </defs>
-        <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.1)" stroke-width="0.4" fill="none"/>
+        <circle cx="32" cy="32" r="29" stroke="#ffffff" stroke-opacity="0.15" stroke-width="0.6" fill="none"/>
         <g class="whorl-outer" style="transform-origin: 32px 32px">
             <path d="M 32 9 A 23 23 0 1 1 12 44"
-                stroke="url(#orbGlyphGrad)" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>
-            <circle cx="32" cy="9" r="1.0" fill="oklch(var(--brand-teal))" opacity="0.6"/>
+                stroke="url(#orbGlyphGrad)" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+            <circle cx="32" cy="9" r="1.3" fill="#ffffff" opacity="0.85"/>
         </g>
         <g class="whorl-mid" style="transform-origin: 32px 32px">
             <path d="M 45 40 A 15 15 0 1 1 32 17"
-                stroke="url(#orbGlyphGrad)" stroke-width="1.0" stroke-linecap="round" opacity="0.65"/>
-            <circle cx="45" cy="40" r="0.8" fill="oklch(var(--brand-purple))" opacity="0.7"/>
+                stroke="url(#orbGlyphGrad)" stroke-width="1.7" stroke-linecap="round" opacity="0.85"/>
+            <circle cx="45" cy="40" r="1.1" fill="#ffffff" opacity="0.9"/>
         </g>
         <g class="whorl-inner" style="transform-origin: 32px 32px">
             <path d="M 25 36 A 8 8 0 1 1 39 36"
-                stroke="url(#orbGlyphGrad)" stroke-width="1.1" stroke-linecap="round" opacity="0.9"/>
-            <circle cx="25" cy="36" r="0.7" fill="oklch(var(--brand-teal))" opacity="0.8"/>
+                stroke="url(#orbGlyphGrad)" stroke-width="1.9" stroke-linecap="round" opacity="0.95"/>
+            <circle cx="25" cy="36" r="1.0" fill="#ffffff" opacity="0.95"/>
         </g>
-        <circle cx="32" cy="32" r="1.8" fill="oklch(var(--brand-teal))" class="whorl-center"/>
+        <circle cx="32" cy="32" r="2.4" fill="#ffffff" class="whorl-center"/>
     </svg>
     `;
     if (orb && !orb.querySelector('.zp-orb-glyph')) {
