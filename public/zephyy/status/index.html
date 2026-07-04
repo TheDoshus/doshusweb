@@ -255,7 +255,7 @@
                         <span class="st-svc-name">Chat Orb</span>
                         <span class="st-svc-label loading">—</span>
                     </div>
-                    <p class="st-svc-desc">Public chat bridge — RTDB → OpenRouter cascade. Powers doshus.net chat widget.</p>
+                    <p class="st-svc-desc">Public chat bridge — routes messages from the site's realtime database to the model. Powers doshus.net chat widget.</p>
                 </div>
                 <div class="st-svc-card" id="svc-ws">
                     <div class="st-svc-head">
@@ -345,7 +345,7 @@
                 <div class="zp-accent-line"></div>
             </div>
             <div class="zp-card">
-                <p class="zp-card-note">Every 6h (02/08/14/20 MST). Most recent beat is live from RTDB.</p>
+                <p class="zp-card-note">Every 6h (02/08/14/20 MST). Most recent beat is live from the database.</p>
                 <div class="st-beat-list">
                     <div class="st-beat-item live" id="st-beat-live">
                         <span class="st-beat-time" id="st-beat-live-time">—</span>
@@ -360,17 +360,17 @@
                     <div class="st-beat-item st-beat-aged-2">
                         <span class="st-beat-time">Jul 2</span>
                         <span class="st-beat-status">●</span>
-                        <span class="st-beat-detail">Maintenance Night — 8 fixes: clock skew, Node CVE, memory-wiki removal, flash stall, watchdog.</span>
+                        <span class="st-beat-detail">Maintenance Night — 8 fixes: clock skew, runtime security patch, stale tooling removed, model hang patched.</span>
                     </div>
                     <div class="st-beat-item st-beat-aged-3">
                         <span class="st-beat-time">Jun 28</span>
                         <span class="st-beat-status">●</span>
-                        <span class="st-beat-detail">ext-tasks MCP live. Kanban migrated from markdown to SQLite-backed MCP server (7 tools).</span>
+                        <span class="st-beat-detail">Task board migrated from markdown files to live tool-powered kanban.</span>
                     </div>
                     <div class="st-beat-item st-beat-aged-4">
                         <span class="st-beat-time">Jun 24</span>
                         <span class="st-beat-status">●</span>
-                        <span class="st-beat-detail">Sentinel gate deployed. Discord MCP bridge live. Phone node paired. Gate wave 2 begins.</span>
+                        <span class="st-beat-detail">Fact-checking AI deployed. Discord unified behind a single control panel. Phone paired as a live sensor.</span>
                     </div>
                     <div class="st-beat-item st-beat-aged-5">
                         <span class="st-beat-time">Jun 20</span>
@@ -381,7 +381,7 @@
             </div>
         </section>
 
-        <div class="st-updated" id="st-updated-text">Connecting to RTDB...</div>
+        <div class="st-updated" id="st-updated-text">Connecting to live feed...</div>
 
     </main>
 
@@ -436,7 +436,7 @@
         }
 
         function applyStatus(data) {
-            if (!data) { el('st-updated-text').textContent = 'No data in RTDB.'; return; }
+            if (!data) { el('st-updated-text').textContent = 'No data in the database.'; return; }
 
             var fresh = data.lastHeartbeat && (Date.now() - new Date(data.lastHeartbeat).getTime()) < STALE_MS;
             var isOnline = data.online && fresh;
@@ -496,7 +496,7 @@
             db.ref('zephyy/status').on('value', function (snap) {
                 applyStatus(snap.val());
             }, function (err) {
-                el('st-updated-text').textContent = 'RTDB listener error: ' + err.message;
+                el('st-updated-text').textContent = 'Listener error: ' + err.message;
             });
 
             // Connection state — Firebase .info/connected tells us if WS is live
