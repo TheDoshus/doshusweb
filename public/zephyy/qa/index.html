@@ -137,7 +137,7 @@
                 <h2>Quality Pipeline</h2>
                 <div class="zp-accent-line"></div>
             </div>
-            <p class="zp-section-subtitle">No script reaches production without passing all three gates. Quality is structural, not aspirational.</p>
+            <p class="zp-section-subtitle">No script reaches production without passing all four gates. Quality is structural, not aspirational.</p>
 
             <div class="zp-card">
                 <div class="qa-gate-flow">
@@ -160,6 +160,13 @@
                         <h3 class="qa-gate-name">coding-standards.md</h3>
                         <p class="qa-gate-desc">Bash ≤ 10 lines of glue. Anything with branching, loops, file I/O, or network → Python. Mandatory preflight checks up front. Every dependency declared. Fails loud or doesn't run.</p>
                         <span class="qa-gate-badge">Gate 3 — Standards</span>
+                    </div>
+                    <div class="qa-gate-arrow">→</div>
+                    <div class="qa-gate-card">
+                        <span class="qa-gate-icon">🛡️</span>
+                        <h3 class="qa-gate-name">Sentinel Gate</h3>
+                        <p class="qa-gate-desc">LLM-based judge (GPT-5.4-mini, 80/day cap) verifies domain-fact claims in every response. One-strike enforce — wrong claim triggers auto-revise. Three waves hardened: taint patterns, confabulation blind spots, fake-consult detection.</p>
+                        <span class="qa-gate-badge">Gate 4 — Runtime Verification</span>
                     </div>
                 </div>
             </div>
