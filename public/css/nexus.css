@@ -10,7 +10,7 @@
 /* ─── HERO STATS ─── */
 .nx-stats { display: flex; gap: 1.5rem; justify-content: center; margin-top: 1rem;
     font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.75rem; 
-    color: oklch(var(--text-muted)); 
+    color: var(--text-muted); 
 }
 .nx-stats span { display: flex; align-items: center; gap: 0.4rem; }
 .nx-stats b { color: oklch(var(--accent-finance) / 0.9); }
@@ -91,7 +91,7 @@
 .node-sigil { margin-left: auto;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 0.68rem; letter-spacing: 0.15em;
-    color: oklch(var(--text-muted)); opacity: 0.8;
+    color: var(--text-muted); opacity: 0.8;
 }
 .node-desc { font-size: 0.82rem; line-height: 1.55; opacity: 0.8; margin-bottom: 0.85rem;
     position: relative; z-index: 1;
@@ -140,7 +140,7 @@
 /* Description blurbs inside cards */
 .zone-blurb {
     font-size: 0.78rem; line-height: 1.5;
-    color: oklch(var(--text-muted)); opacity: 0.85;
+    color: var(--text-muted); opacity: 0.85;
     margin-bottom: 0.4rem;
 }
 
@@ -186,7 +186,7 @@
 }
 .tip-row .tip-desc {
     font-size: 0.74rem; line-height: 1.5;
-    color: oklch(var(--text-muted));
+    color: var(--text-muted);
 }
 .tip-row .tip-cmd {
     display: block;
@@ -220,7 +220,7 @@
     display: flex; justify-content: space-between; align-items: center;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 0.65rem; letter-spacing: 0.08em;
-    color: oklch(var(--text-muted));
+    color: var(--text-muted);
 }
 .node-foot b { color: oklch(var(--node-accent)); font-weight: 600; }
 

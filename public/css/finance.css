@@ -138,7 +138,7 @@
     margin-bottom: 0.3rem;
 }
 .srcClose { position: absolute; top: 0.8rem; right: 0.8rem; background: none; border: none; cursor: pointer; transition: color 0.3s ease;
-    color: oklch(var(--text-muted));
+    color: var(--text-muted);
     font-size: 1.2rem;
 }
 .srcClose:hover { color: oklch(var(--accent-myth)); }
@@ -273,7 +273,7 @@
 .widget-updated {
     font-size: 0.75rem;
     opacity: 0.5;
-    color: oklch(var(--text-muted));
+    color: var(--text-muted);
 }
 
 /* ─── CREDIT SCORES ROW ─── */
@@ -347,134 +347,55 @@
 /* ─── SECTION SPACING & DIVIDERS ─── */
 .finance-box { margin-bottom: 3rem; }
 
-/* ─── SECTION ACCENT OVERRIDES ─── */
-/* Crypto section — blue-purple accent */
-#crypto-section { border: 1px solid oklch(var(--accent-crypto) / 0.2); }
-#crypto-section:hover { border: 1px solid oklch(var(--accent-crypto)); box-shadow: 0 10px 40px oklch(var(--accent-crypto) / 0.15); }
-#crypto-section h2 { color: oklch(var(--accent-crypto)); }
-#crypto-section .finance-box { color: oklch(var(--accent-crypto)); }
-#crypto-section .cta-button { font-size: 0.95rem; }
-#crypto-section .quickLinks { background: oklch(var(--accent-crypto) / 0.03); border: 1px solid oklch(var(--nebula-blue) / 0.3);}
-#crypto-section .quickLinks .qlBtn { color: oklch(var(--accent-crypto)); background: oklch(var(--accent-crypto) / 0.1); border: 1px solid oklch(var(--accent-crypto) / 0.3);}
-#crypto-section .infoTitle { color: oklch(var(--accent-crypto)); }
-#crypto-section .infoBox {
-    background: oklch(var(--accent-crypto) / 0.03);
-    border-color: oklch(var(--accent-crypto) / 0.15);
-}
+/* ─── SECTION ACCENT ROUTING ───
+   Each section card sets one --sec variable; the shared rules below consume it.
+   Same pattern as --node-accent on the Nexus bento grid. */
+.finance-box       { --sec: var(--accent-finance); }
+#crypto-section    { --sec: var(--accent-crypto); }
+#investing-section { --sec: var(--accent-invest); }
+#taxes-section     { --sec: var(--accent-taxes); }
+#networth-section  { --sec: var(--accent-networth); }
 
-#crypto-section .qlBtn:hover {
-    border-color: oklch(var(--accent-crypto));
-    box-shadow: 0 5px 15px oklch(var(--accent-crypto) / 0.2);
-}
-#crypto-section .crypto-ticker-wrapper {
-    border-color: oklch(var(--accent-crypto) / 0.15);
-    background: oklch(var(--accent-crypto) / 0.03);
-}
+/* Card frame */
+.finance-box { border: 1px solid oklch(var(--sec) / 0.25); }
+.finance-box:hover { border-color: oklch(var(--sec) / 0.9); box-shadow: 0 10px 40px oklch(var(--sec) / 0.15); }
+.finance-box h2 { color: oklch(var(--sec)); }
+
+/* Quick links */
+.finance-box .quickLinks { background: oklch(var(--sec) / 0.04); border: 1px solid oklch(var(--sec) / 0.3); }
+.finance-box .quickLinks .qlBtn { color: oklch(var(--sec)); background: oklch(var(--sec) / 0.1); border: 1px solid oklch(var(--sec) / 0.3); }
+.finance-box .qlBtn:hover { border-color: oklch(var(--sec)); box-shadow: 0 5px 15px oklch(var(--sec) / 0.2); }
+
+/* Info boxes */
+.finance-box .infoTitle { color: oklch(var(--sec)); }
+.finance-box .infoBox { background: oklch(var(--sec) / 0.03); border-color: oklch(var(--sec) / 0.15); border-left: 3px solid oklch(var(--sec) / 0.4); }
+.finance-box .tips-list li::before { color: oklch(var(--sec)); }
+
+/* Collapsibles pick up the section accent too */
+.finance-box .collapse { background: oklch(var(--sec) / 0.03); border-color: oklch(var(--sec) / 0.15); }
+.finance-box .collapseBtn { color: oklch(var(--sec)); background: oklch(var(--sec) / 0.05); }
+.finance-box .collapseBtn:hover { background: oklch(var(--sec) / 0.1); }
+
+/* One-off per-section touches */
 .midbtn { margin-top: 1.5rem; align-self: center; text-align: center; }
-
-/* Investing section — warm amber accent */
-#investing-section { border: 1px solid oklch(var(--accent-invest) / 0.3); }
-#investing-section:hover { border: 1px solid oklch(var(--accent-invest) / 0.9); box-shadow: 0 10px 40px oklch(var(--accent-invest) / 0.15); }
-#investing-section h2 { color: oklch(var(--accent-invest) / 0.9); }
-#investing-section .finance-box { color: oklch(var(--accent-invest) / 0.9); }
-#investing-section .quickLinks { background: oklch(var(--accent-invest) / 0.04); border: 1px solid oklch(var(--accent-invest) / 0.3);}
-#investing-section .quickLinks .qlBtn { color: oklch(var(--accent-invest) / 0.9); background: oklch(var(--accent-invest) / 0.1); border: 1px solid oklch(var(--accent-invest) / 0.3);}
-#investing-section .infoTitle { color: oklch(var(--accent-invest)); }
-
-#investing-section .infoBox {
-    background: oklch(var(--accent-invest) / 0.03);
-    border-color: oklch(var(--accent-invest) / 0.15);
-}
-#investing-section .tips-list li::before {color: oklch(var(--accent-invest)); }
-#investing-section .qlBtn:hover { border-color: oklch(var(--accent-invest));
-    box-shadow: 0 5px 15px oklch(var(--accent-invest) / 0.2);
-}
-
-/* Taxes section — neutral cool blue accent */
-#taxes-section { border: 1px solid oklch(var(--accent-taxes)); }
-#taxes-section:hover { border: 1px solid oklch(var(--accent-taxes)); box-shadow: 0 10px 40px oklch(var(--accent-taxes) / 0.15); }
-#taxes-section h2 { color: oklch(var(--accent-taxes)); }
-#taxes-section .finance-box { color: oklch(var(--accent-taxes)); }
 .gov-sub-title { color: oklch(var(--accent-taxes)); font-size: 0.95rem; margin-bottom: 0.6rem; }
 .gov-desc { font-size: 0.85rem; opacity: 0.8; line-height: 1.5; margin-bottom: 0.8rem; }
-#taxes-section .quickLinks { background: oklch(var(--accent-taxes) / 0.045); border: 1px solid oklch(var(--accent-taxes) / 0.3); }
-#taxes-section .quickLinks .qlBtn { color: oklch(var(--accent-taxes)); background: oklch(var(--accent-taxes) / 0.1); border: 1px solid oklch(var(--accent-taxes) / 0.3); }
-#taxes-section .infoTitle {
-    color: oklch(var(--accent-taxes));
-}
-#taxes-section .infoBox {
-    background: oklch(var(--accent-taxes) / 0.03);
-    border-color: oklch(var(--accent-taxes) / 0.15);
-}
-#taxes-section .tips-list li::before {
-    color: oklch(var(--accent-taxes));
-}
-#taxes-section .qlBtn:hover {
-    border-color: oklch(var(--accent-taxes));
-    box-shadow: 0 5px 15px oklch(var(--accent-taxes) / 0.2);
-}
+#crypto-section .cta-button { font-size: 0.95rem; }
+#crypto-section .crypto-ticker-wrapper { border-color: oklch(var(--sec) / 0.15); background: oklch(var(--sec) / 0.03); }
+#crypto-section .infoBox { margin-bottom: 1.5rem; }
 
-/* Net Worth section — teal-green gradient feel */
-#networth-section { border: 1px solid oklch(var(--accent-networth) / 0.3); }
-#networth-section:hover { border: 1px solid oklch(var(--accent-networth) / 0.825); box-shadow: 0 10px 40px oklch(var(--accent-finance) / 0.15); }
-#networth-section h2 { color: oklch(var(--accent-networth) / 0.825); }
-#networth-section .finance-box { color: oklch(var(--accent-networth) / 0.825); }
-#networth-section .cta-button { border-color: oklch(var(--accent-networth) / 0.825); background: oklch(var(--accent-finance) / 0.15); font-size: 0.9rem;}
+/* Net Worth — teal-green gradient feel */
+#networth-section .cta-button { border-color: oklch(var(--sec) / 0.825); background: oklch(var(--accent-finance) / 0.15); font-size: 0.9rem; }
 #networth-section .tracker-widget,
-#networth-section .score-card {
-    border-color: oklch(var(--accent-networth) / 0.25);
-    background: oklch(var(--accent-networth) / 0.05);
-}
-#networth-section .tracker-widget:hover {
-    border-color: oklch(var(--accent-networth));
-    box-shadow: 0 10px 30px oklch(var(--accent-networth) / 0.2);
-}
-#networth-section .widget-value {
-    background: linear-gradient(45deg, oklch(var(--accent-networth)), oklch(var(--accent-finance)));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
+#networth-section .score-card { border-color: oklch(var(--sec) / 0.25); background: oklch(var(--sec) / 0.05); }
+#networth-section .tracker-widget:hover { border-color: oklch(var(--sec)); box-shadow: 0 10px 30px oklch(var(--sec) / 0.2); }
+#networth-section .widget-value,
 #networth-section .score-value {
-    background: linear-gradient(45deg, oklch(var(--accent-networth)), oklch(var(--accent-finance)));
+    background: linear-gradient(45deg, oklch(var(--sec)), oklch(var(--accent-finance)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-#networth-section .infoTitle {
-    color: oklch(var(--accent-networth));
-}
-#networth-section .infoBox {
-    background: oklch(var(--accent-networth) / 0.03);
-    border-color: oklch(var(--accent-networth) / 0.15);
-}
-
-/* ─── QUICK LINK BUTTONS — BASE OVERRIDE ─── */
-#credit-section .qlBtn:hover {
-    border-color: oklch(var(--accent-finance));
-    box-shadow: 0 5px 15px oklch(var(--accent-finance) / 0.2);
-}
-
-/* ─── SECTION TITLE ACCENT BARS ─── */
-#crypto-section h3::after {
-    background: oklch(var(--accent-crypto));
-}
-#investing-section h3::after {
-    background: oklch(var(--accent-invest));
-}
-#taxes-section h3::after {
-    background: oklch(var(--accent-taxes));
-}
-#networth-section h3::after {
-    background: oklch(var(--accent-networth));
-}
-
-/* ─── INFO BOX LEFT ACCENT ─── */
-#credit-section .infoBox { border-left: 3px solid oklch(var(--accent-finance) / 0.4); }
-#crypto-section .infoBox { border-left: 3px solid oklch(var(--accent-crypto) / 0.4); margin-bottom: 1.5rem; }
-#investing-section .infoBox { border-left: 3px solid oklch(var(--accent-invest)/ 0.4); }
-#taxes-section .infoBox { border-left: 3px solid oklch(var(--accent-taxes) / 0.4); }
-#networth-section .infoBox { border-left: 3px solid oklch(var(--accent-networth) / 0.4); }
 
 /* ─── FINANCE CARD SLIDER ─── */
 .sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: relative; overflow-x: clip; overflow-y: visible; }
@@ -556,7 +477,7 @@
     border-color: oklch(var(--star-white)/ 0.5);
     transform: scale(1.15);
 }
-.dot-label { color: oklch(var(--text-muted)); white-space: nowrap; transition: color 0.3s ease;
+.dot-label { color: var(--text-muted); white-space: nowrap; transition: color 0.3s ease;
     font-size: 0.7rem;
 }
 .nav-dot.active .dot-label {

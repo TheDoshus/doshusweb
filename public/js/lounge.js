@@ -78,7 +78,6 @@ function initSurpriseButton() {
         // Open the link
         window.open(randomLink.href, '_blank', 'noopener,noreferrer');
 
-        console.log('🎲 Surprise! Opening:', randomLink.href);
     });
 }
 
@@ -106,9 +105,7 @@ function initFilterMemory() {
 
 // Add to your DOMContentLoaded event
 window.addEventListener('DOMContentLoaded', function() {
-    console.log('🎮 The Lounge is loading...');
     initCategoryFilters();
     initSurpriseButton();
-    initFilterMemory(); // Add this line
-    console.log('✅ The Lounge is ready!');
+    initFilterMemory();
 });
