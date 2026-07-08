@@ -181,6 +181,8 @@
 .site-link.hidden { display: none; }
 
 /* ─── DISCORD SERVER WIDGET ─── */
+/* Short section — trim the default .content-section air around it */
+#discord { padding-top: 1.5rem; padding-bottom: 1.5rem; margin-bottom: 1rem; }
 #discord .section-title {
     background: linear-gradient(45deg, oklch(var(--accent-discord) / 0.9), oklch(var(--accent-crypto) / 0.75), oklch(var(--accent-taxes) / 0.85));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
