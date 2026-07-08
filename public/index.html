@@ -57,10 +57,22 @@
             <button class="ctaPopup-close" id="closeDiscordModal" aria-label="Close">&times;</button>
             <h2 class="ctaPopup-title">Slide Into the Server</h2>
             <div class="discord-popup-body">
-                <iframe id="discord-widget-frame" title="Doshus Discord Server"
-                    data-src="https://discord.com/widget?id=1026149685846605925&theme=dark"
-                    width="350" height="500" allowtransparency="true" frameborder="0"
-                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+                <div class="discord-widget">
+                    <div class="discord-head">
+                        <div class="discord-logo-wrap">
+                            <img src="assets/icons/discordcon.svg" alt="Discord" class="discord-logo">
+                        </div>
+                        <div class="discord-id">
+                            <h3 class="discord-server-name">Doshus HQ</h3>
+                            <span class="discord-presence">
+                                <span class="presence-dot" aria-hidden="true"></span>
+                                <span class="discord-count">loading the roster…</span>
+                            </span>
+                        </div>
+                        <a href="https://discord.gg/DAnxjPZsFb" class="discord-join" target="_blank" rel="noreferrer">Join the Server →</a>
+                    </div>
+                    <div class="discord-members" aria-live="polite"></div>
+                </div>
                 <div class="discord-popup-side">
                     <p class="discord-copy-label">or add me directly</p>
                     <button class="discord-username" id="copyDiscordUser" data-username="doshus.">

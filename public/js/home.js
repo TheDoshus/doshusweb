@@ -13,13 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── DISCORD WIDGET MODAL ───
 // Socials Discord button opens a popup with the embedded server widget
-// and a click-to-copy username chip. The iframe src is only set on first
-// open so Discord's embed never loads for visitors who don't ask for it.
+// (custom-styled, populated by main.js on first open — no requests to
+// Discord for visitors who never click) and a click-to-copy username chip.
 function initDiscordModal() {
     const openBtn = document.getElementById('discordSocial');
     const modal = document.getElementById('discordPopup');
     const closeBtn = document.getElementById('closeDiscordModal');
-    const frame = document.getElementById('discord-widget-frame');
     const copyBtn = document.getElementById('copyDiscordUser');
 
     if (!openBtn || !modal || !closeBtn) return;
@@ -30,7 +29,7 @@ function initDiscordModal() {
     }
 
     openBtn.addEventListener('click', function() {
-        if (frame && !frame.src) frame.src = frame.dataset.src;
+        window.populateDiscordWidget(modal.querySelector('.discord-widget'));
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     });

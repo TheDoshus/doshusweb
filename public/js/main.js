@@ -304,3 +304,70 @@ if (stickyFooter) window.addEventListener('scroll', () => {
     }
     lastScrollY = currentScrollY;
 });
+// ─── DISCORD WIDGET (shared component: lounge section + home modal) ───
+// Pulls live presence from the Discord widget API and renders it in-house.
+// Falls back to a static join card if unreachable (adblock/shields, widget
+// disabled, Discord down). Widgets with [data-autoload] populate on page
+// load; others (the home modal) call window.populateDiscordWidget on open.
+const DISCORD_GUILD_ID = '1026149685846605925';
+const DISCORD_MAX_AVATARS = 12;
+
+window.populateDiscordWidget = async function(widget) {
+    if (!widget || widget.dataset.loaded) return;
+    widget.dataset.loaded = '1';
+
+    const nameEl = widget.querySelector('.discord-server-name');
+    const countEl = widget.querySelector('.discord-count');
+    const membersEl = widget.querySelector('.discord-members');
+    const joinEl = widget.querySelector('.discord-join');
+
+    try {
+        const res = await fetch(`https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`);
+        if (!res.ok) throw new Error(`widget API ${res.status}`);
+        const data = await res.json();
+
+        if (data.name && nameEl) nameEl.textContent = data.name;
+        if (data.instant_invite && joinEl) joinEl.href = data.instant_invite;
+
+        const online = data.presence_count ?? (data.members ? data.members.length : 0);
+        countEl.textContent = online === 0 ? 'quiet right now — be the first in'
+            : online === 1 ? '1 member online now'
+            : `${online} members online now`;
+
+        // Avatar bubbles for whoever's on right now
+        membersEl.textContent = '';
+        (data.members || []).slice(0, DISCORD_MAX_AVATARS).forEach(member => {
+            const bubble = document.createElement('span');
+            bubble.className = 'discord-member';
+            if (member.status === 'idle' || member.status === 'dnd') {
+                bubble.classList.add(`status-${member.status}`);
+            }
+
+            const img = document.createElement('img');
+            img.src = member.avatar_url;
+            img.alt = member.username;
+            img.loading = 'lazy';
+            img.title = member.game ? `${member.username} — playing ${member.game.name}` : member.username;
+            img.onerror = function() { bubble.remove(); };
+
+            bubble.appendChild(img);
+            membersEl.appendChild(bubble);
+        });
+
+        const extras = online - Math.min(online, DISCORD_MAX_AVATARS);
+        if (extras > 0) {
+            const more = document.createElement('span');
+            more.className = 'discord-more';
+            more.textContent = `+${extras} more`;
+            membersEl.appendChild(more);
+        }
+    } catch (error) {
+        // Static fallback — still sells the click
+        widget.classList.add('discord-offline');
+        countEl.textContent = "the chat's always open — tap in";
+    }
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.discord-widget[data-autoload]').forEach(w => window.populateDiscordWidget(w));
+});
