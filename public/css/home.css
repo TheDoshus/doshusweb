@@ -51,6 +51,55 @@
 }
 .ctaPopup-btn:active { transform: translateX(10px) scale(0.98); }
 
+/* ─── DISCORD WIDGET MODAL ─── */
+.discord-popup-content { max-width: 680px; max-height: 92dvh; overflow-y: auto; border-color: oklch(var(--accent-discord) / 0.35); }
+.discord-popup-content .ctaPopup-title {
+    background: linear-gradient(45deg, oklch(var(--accent-discord)), oklch(var(--accent-crypto)), oklch(var(--accent-taxes)));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.discord-popup-content .ctaPopup-close:hover { background: oklch(var(--accent-discord) / 0.2); }
+.discord-popup-body { display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+    gap: 1.5rem;
+}
+.discord-popup-body iframe { max-width: 100%; border-radius: 14px;
+    border: 1px solid oklch(var(--accent-discord) / 0.3);
+    background: oklch(var(--space-oled) / 0.4);
+}
+.discord-popup-side { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 180px;
+    gap: 0.5rem;
+}
+.discord-copy-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.discord-username { display: inline-flex; align-items: center; cursor: pointer; transition: all 0.3s ease;
+    gap: 0.5rem;
+    padding: 0.7rem 1.2rem;
+    font-family: 'Braah One', system-ui, sans-serif;
+    font-size: 1rem;
+    color: oklch(var(--accent-discord) / 0.95);
+    background: oklch(var(--accent-discord) / 0.12);
+    border: 2px solid oklch(var(--accent-discord) / 0.45);
+    border-radius: 30px;
+}
+.discord-username:hover {
+    background: oklch(var(--accent-discord) / 0.25);
+    border-color: oklch(var(--accent-discord));
+    box-shadow: 0 0 20px oklch(var(--accent-discord) / 0.4);
+    transform: translateY(-2px);
+}
+.discord-username.copied {
+    color: oklch(var(--accent-finance));
+    border-color: oklch(var(--accent-finance));
+    background: oklch(var(--accent-finance) / 0.12);
+    box-shadow: 0 0 20px oklch(var(--accent-finance) / 0.35);
+}
+.discord-copy-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
 .glass-card {
     background: oklch(var(--space-oled) / 0.02);
     backdrop-filter: blur(6px);

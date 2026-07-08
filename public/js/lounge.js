@@ -128,7 +128,9 @@ async function initDiscordWidget() {
         if (data.instant_invite) joinEl.href = data.instant_invite;
 
         const online = data.presence_count ?? (data.members ? data.members.length : 0);
-        countEl.textContent = online === 1 ? '1 member online now' : `${online} members online now`;
+        countEl.textContent = online === 0 ? 'quiet right now — be the first in'
+            : online === 1 ? '1 member online now'
+            : `${online} members online now`;
 
         // Avatar bubbles for whoever's on right now
         membersEl.textContent = '';
