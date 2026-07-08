@@ -19,6 +19,7 @@
     --brand-pink:    65% 0.27 340; /* The Lounge / Entertainment */
     --brand-amazon:  66% 0.21 50;  /* Amazonian Spot */
     --brand-red:     65% 0.33 30;  /* Errors / Myths */
+    --brand-blurple: 59% 0.19 277; /* Discord */
 
     /* ─── TIER 2: SEMANTIC TOKENS (What they DO) ─── */
     --bg-main: oklch(var(--neutral-900));
@@ -34,6 +35,7 @@
     --accent-lounge: var(--brand-pink);
     --accent-amzn: var(--brand-amazon);
     --accent-myth: var(--brand-red);
+    --accent-discord: var(--brand-blurple);
 
     /* Lets max-height animate to fit-content — makes .collapse actually
        ease open in supporting browsers (progressive enhancement) */

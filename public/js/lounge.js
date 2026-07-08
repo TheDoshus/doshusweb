@@ -103,9 +103,73 @@ function initFilterMemory() {
     });
 }
 
+// ─── DISCORD SERVER WIDGET ───
+// Pulls live presence from the Discord widget API and renders it
+// in-house style. Falls back to a static join card if the API is
+// unreachable (adblock, widget disabled, Discord down).
+const DISCORD_GUILD_ID = '1026149685846605925';
+const DISCORD_MAX_AVATARS = 12;
+
+async function initDiscordWidget() {
+    const widget = document.getElementById('discord-widget');
+    if (!widget) return;
+
+    const nameEl = document.getElementById('discord-server-name');
+    const countEl = document.getElementById('discord-count');
+    const membersEl = document.getElementById('discord-members');
+    const joinEl = document.getElementById('discord-join');
+
+    try {
+        const res = await fetch(`https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`);
+        if (!res.ok) throw new Error(`widget API ${res.status}`);
+        const data = await res.json();
+
+        if (data.name) nameEl.textContent = data.name;
+        if (data.instant_invite) joinEl.href = data.instant_invite;
+
+        const online = data.presence_count ?? (data.members ? data.members.length : 0);
+        countEl.textContent = online === 0 ? 'quiet right now — be the first in'
+            : online === 1 ? '1 member online now'
+            : `${online} members online now`;
+
+        // Avatar bubbles for whoever's on right now
+        membersEl.textContent = '';
+        (data.members || []).slice(0, DISCORD_MAX_AVATARS).forEach(member => {
+            const bubble = document.createElement('span');
+            bubble.className = 'discord-member';
+            if (member.status === 'idle' || member.status === 'dnd') {
+                bubble.classList.add(`status-${member.status}`);
+            }
+
+            const img = document.createElement('img');
+            img.src = member.avatar_url;
+            img.alt = member.username;
+            img.loading = 'lazy';
+            img.title = member.game ? `${member.username} — playing ${member.game.name}` : member.username;
+            img.onerror = function() { bubble.remove(); };
+
+            bubble.appendChild(img);
+            membersEl.appendChild(bubble);
+        });
+
+        const extras = online - Math.min(online, DISCORD_MAX_AVATARS);
+        if (extras > 0) {
+            const more = document.createElement('span');
+            more.className = 'discord-more';
+            more.textContent = `+${extras} more`;
+            membersEl.appendChild(more);
+        }
+    } catch (error) {
+        // Static fallback — still sells the click
+        widget.classList.add('discord-offline');
+        countEl.textContent = "the chat's always open — tap in";
+    }
+}
+
 // Add to your DOMContentLoaded event
 window.addEventListener('DOMContentLoaded', function() {
     initCategoryFilters();
     initSurpriseButton();
     initFilterMemory();
+    initDiscordWidget();
 });

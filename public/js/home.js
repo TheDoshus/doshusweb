@@ -2,13 +2,71 @@
 document.addEventListener('DOMContentLoaded', () => {
     initCTApop();
     initAmazonLinkToggle();
-    
+
     // Wire up Slack Button
     const slackText = document.getElementById('slackText');
     if (slackText) slackText.addEventListener('click', handleSlackClick);
 
     initSpotifyEmbed();
+    initDiscordModal();
 });
+
+// ─── DISCORD WIDGET MODAL ───
+// Socials Discord button opens a popup with the embedded server widget
+// and a click-to-copy username chip. The iframe src is only set on first
+// open so Discord's embed never loads for visitors who don't ask for it.
+function initDiscordModal() {
+    const openBtn = document.getElementById('discordSocial');
+    const modal = document.getElementById('discordPopup');
+    const closeBtn = document.getElementById('closeDiscordModal');
+    const frame = document.getElementById('discord-widget-frame');
+    const copyBtn = document.getElementById('copyDiscordUser');
+
+    if (!openBtn || !modal || !closeBtn) return;
+
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    openBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // href stays as no-JS fallback to the invite link
+        if (frame && !frame.src) frame.src = frame.dataset.src;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+
+    // Click-to-copy username chip
+    if (copyBtn) {
+        const label = document.getElementById('discordUserText');
+        const username = copyBtn.dataset.username;
+        let resetTimer = null;
+
+        copyBtn.addEventListener('click', async function() {
+            try {
+                await navigator.clipboard.writeText(username);
+                copyBtn.classList.add('copied');
+                label.textContent = 'copied! ✓';
+                clearTimeout(resetTimer);
+                resetTimer = setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    label.textContent = '@' + username;
+                }, 1600);
+            } catch {
+                // Clipboard API blocked (http, permissions) — let them copy manually
+                window.prompt('Copy my Discord username:', username);
+            }
+        });
+    }
+}
 
 // --- Feature Functions Below ---
 function initSpotifyEmbed() {
