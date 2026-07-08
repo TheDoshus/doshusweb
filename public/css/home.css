@@ -173,6 +173,7 @@
 }
 
 /* Social Media Carousel */
+button.social-item { cursor: pointer; font: inherit; }
 .social-carousel { position: relative; width: 100%; overflow: hidden; }
 .social-container { display: flex; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: oklch(var(--accent-crypto) / 0.5) oklch(var(--star-white) / 0.1);
     gap: clamp(1rem, 3vw, 2rem);

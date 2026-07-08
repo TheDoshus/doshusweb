@@ -29,8 +29,7 @@ function initDiscordModal() {
         document.body.style.overflow = '';
     }
 
-    openBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // href stays as no-JS fallback to the invite link
+    openBtn.addEventListener('click', function() {
         if (frame && !frame.src) frame.src = frame.dataset.src;
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -58,7 +57,7 @@ function initDiscordModal() {
                 clearTimeout(resetTimer);
                 resetTimer = setTimeout(() => {
                     copyBtn.classList.remove('copied');
-                    label.textContent = '@' + username;
+                    label.textContent = username;
                 }, 1600);
             } catch {
                 // Clipboard API blocked (http, permissions) — let them copy manually
