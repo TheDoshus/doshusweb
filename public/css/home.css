@@ -261,12 +261,15 @@
 }
 
 .btn-icon { width: 20px; height: 20px; object-fit: contain; border-radius: 5px;}
+/* Variants only swap --pill-accent / --pill-glow — same routing pattern as --sec / --node-accent */
 .pillBtn {
+    --pill-accent: var(--accent-taxes);
+    --pill-glow: 20px;
     padding: 0.8rem 1.5rem;
     font-family: 'Braah One';
     font-size: clamp(0.9rem, 2.5vw, 1rem);
-    background: oklch(var(--accent-taxes) / 0.2);
-    border: 2px solid oklch(var(--accent-taxes) / 0.6);
+    background: oklch(var(--pill-accent) / 0.2);
+    border: 2px solid oklch(var(--pill-accent) / 0.6);
     color: var(--text-main);
     border-radius: 30px;
     cursor: pointer;
@@ -277,52 +280,15 @@
     gap: 8px;
 }
 .pillBtn:hover {
-    background: oklch(var(--accent-taxes) / 0.4);
-    box-shadow: 0 0 20px oklch(var(--accent-taxes) / 0.5);
+    background: oklch(var(--pill-accent) / 0.4);
+    box-shadow: 0 0 var(--pill-glow) oklch(var(--pill-accent) / 0.5);
     transform: translateX(5px);
 }
 
-.pillBtn.reg {
-    background: oklch(var(--accent-crypto) / 0.2);
-    border-color: oklch(var(--accent-crypto)/ 0.6);
-    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
-}
-.pillBtn.reg:hover {
-    background: oklch(var(--accent-crypto) / 0.4);
-    box-shadow: 0 0 15px oklch(var(--accent-crypto) / 0.5);
-}
-
-.pillBtn.amzn {
-    background: oklch(var(--accent-amzn) / 0.2);
-    border-color: oklch(var(--accent-amzn) / 0.6);
-    font-weight: 600;
-}
-
-.pillBtn.amzn:hover {
-    background: oklch(var(--accent-amzn) / 0.4);
-    box-shadow: 0 0 25px oklch(var(--accent-amzn) / 0.5);
-}
-
-.pillBtn.lounge {
-    background: oklch(var(--accent-lounge) / 0.2);
-    border-color: oklch(var(--accent-lounge) / 0.6);
-    font-weight: 600;
-}
-.pillBtn.lounge:hover {
-    background: oklch(var(--accent-lounge) / 0.4);
-    box-shadow: 0 0 25px oklch(var(--accent-lounge) / 0.5);
-}
-
-.pillBtn.fin {
-    background: oklch(var(--accent-finance) / 0.2);
-    border-color: oklch(var(--accent-finance) / 0.6);
-    font-weight: 600;
-}
-
-.pillBtn.fin:hover {
-    background: oklch(var(--accent-finance) / 0.4);
-    box-shadow: 0 0 15px oklch(var(--accent-finance) / 0.5);
-}
+.pillBtn.reg    { --pill-accent: var(--accent-crypto);  --pill-glow: 15px; font-size: clamp(0.85rem, 2.5vw, 0.95rem); }
+.pillBtn.amzn   { --pill-accent: var(--accent-amzn);    --pill-glow: 25px; font-weight: 600; }
+.pillBtn.lounge { --pill-accent: var(--accent-lounge);  --pill-glow: 25px; font-weight: 600; }
+.pillBtn.fin    { --pill-accent: var(--accent-finance); --pill-glow: 15px; font-weight: 600; }
 
 /* lounge Box */
 .lounge-box { border: 1px solid oklch(var(--accent-lounge) / 0.2); }

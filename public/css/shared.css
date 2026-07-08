@@ -34,6 +34,10 @@
     --accent-lounge: var(--brand-pink);
     --accent-amzn: var(--brand-amazon);
     --accent-myth: var(--brand-red);
+
+    /* Lets max-height animate to fit-content — makes .collapse actually
+       ease open in supporting browsers (progressive enhancement) */
+    interpolate-size: allow-keywords;
 }
 /* SELF-HOSTED FONTS */
 @font-face {
@@ -146,6 +150,22 @@ h2 {
 h3 {
     font-family: 'Jaro Regular-var', system-ui, sans-serif;
 }
+h1, h2, h3 { text-wrap: balance; }
+
+/* Keyboard focus ring in the site accent — invisible for mouse/touch */
+:where(a, button, input, [tabindex]):focus-visible {
+    outline: 2px solid oklch(var(--accent-crypto) / 0.9);
+    outline-offset: 3px;
+}
+
+/* Respect OS-level reduced-motion: freeze cosmic drift, twinkle, glow, floats */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
 
 /* ─── COSMIC BACKGROUND ─── */
 .cosmic-bg { 
@@ -181,7 +201,7 @@ h3 {
 
 /* ─── STAR BASE ─── */
 .star { position: absolute; background: oklch(var(--star-white)); border-radius: 50%;
-    will-change: transform, opacity, left, top;
+    will-change: transform, opacity;
 }
 #stars { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; pointer-events: none;
     z-index: -1;
@@ -389,7 +409,7 @@ h3 {
 .footer-nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none;
     gap: 1px; color: oklch(var(--accent-taxes) / 0.75);
 }
-.footer-nav a svg, img { transition: transform 0.2s ease, opacity 0.2s ease; }
+.footer-nav a svg, .footer-nav a img { transition: transform 0.2s ease, opacity 0.2s ease; }
 .footer-nav a:hover svg { transform: translateY(-2px); }
 .footer-nav a span { font-size: 0.85rem; font-weight: 500; }
 
@@ -410,14 +430,14 @@ h3 {
     0%, 100% {  filter: drop-shadow(0 0 30px oklch(var(--accent-crypto) / 0.6));
         transform: scale(1);
     }
-    50% {  filter: drop-shadow(0 0 60px rgba(96, 165, 250, 0.9));
+    50% {  filter: drop-shadow(0 0 60px oklch(var(--accent-taxes) / 0.9));
         transform: scale(1.05);
     }
 }
 .error-title { color: var(--text-main); margin-bottom: 1rem; opacity: 0.9;
     font-size: clamp(2rem, 6vw, 3rem);
 }
-.error-message { color: oklch(var(--text-muted)); margin-bottom: 3rem; max-width: 600px; line-height: 1.6;
+.error-message { color: var(--text-muted); margin-bottom: 3rem; max-width: 600px; line-height: 1.6;
     font-size: clamp(1rem, 3vw, 1.3rem);
 }
 .error-actions { display: flex; flex-wrap: wrap; justify-content: center;
@@ -436,7 +456,7 @@ h3 {
 .error-button.secondary { background: oklch(var(--accent-taxes) / 0.2); border-color: oklch(var(--accent-taxes)); }
 .error-button.secondary:hover {
     background: oklch(var(--accent-taxes) / 0.4);
-    box-shadow: 0 0 30px rgba(96, 165, 250, 0.6);
+    box-shadow: 0 0 30px oklch(var(--accent-taxes) / 0.6);
 }
 
 .floating-astronaut { position: absolute; animation: floatAround 15s ease-in-out infinite; opacity: 0.3;

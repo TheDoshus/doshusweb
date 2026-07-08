@@ -7,13 +7,18 @@ gtag('config', 'G-KQ1RGHNMZG');
 // Smooth scrolling
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href.length < 2) return; // bare "#" — nothing to scroll to
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.getElementById(href.slice(1));
         if (target) {
             target.scrollIntoView({ behavior: 'smooth' });
         }
     });
 });
+
+// Respect the user's OS-level motion preference
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Deep Space Stars
 const starsContainer = document.getElementById('stars');
@@ -152,8 +157,15 @@ if (starsContainer) {
         requestAnimationFrame(animateStars);
     }
 
-    // Kick off the animation loop
-    animateStars();
+    if (prefersReducedMotion) {
+        // Static starfield: place each star once, skip the drift/parallax loop
+        starsData.forEach(star => {
+            star.el.style.transform = `translate3d(${star.x}vw, ${star.y}vh, 0)`;
+        });
+    } else {
+        // Kick off the animation loop
+        animateStars();
+    }
 }
 
 // Universal meme/video loader - Auto-loads from JSON on ANY page
@@ -198,11 +210,10 @@ async function loadUniversalMemes() {
                 video.style.borderRadius = '10px';
 
                 video.onerror = function() {
-                    container.innerHTML = '<img src="assets/images/Image_not_available.webp" alt="Error">';
+                    container.innerHTML = '<img src="/assets/images/Image_not_available.webp" alt="Error">';
                 };
 
                 container.appendChild(video);
-                console.log(`🎬 Loaded video in container ${index + 1}: ${randomFile}`);
             } else {
                 const img = document.createElement('img');
                 img.src = randomFile;
@@ -213,11 +224,10 @@ async function loadUniversalMemes() {
                 img.style.borderRadius = '10px';
 
                 img.onerror = function() {
-                    this.src = 'assets/images/Image_not_available.webp';
+                    this.src = '/assets/images/Image_not_available.webp';
                 };
 
                 container.appendChild(img);
-                console.log(`🎲 Loaded meme in container ${index + 1}: ${randomFile}`);
             }
         });
 
@@ -225,7 +235,7 @@ async function loadUniversalMemes() {
         console.error('❌ Error loading memes:', error);
         // Fallback: Fill all broken containers with the error image
         document.querySelectorAll('.random-meme, .random-meme-fixed').forEach(c => {
-            c.innerHTML = '<img src="assets/images/Image_not_available.webp" alt="Loading Error">';
+            c.innerHTML = '<img src="/assets/images/Image_not_available.webp" alt="Loading Error">';
         });
     }
 }
@@ -275,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
 let lastScrollY = window.scrollY;
 const stickyFooter = document.getElementById('sticky-footer');
-window.addEventListener('scroll', () => {
+if (stickyFooter) window.addEventListener('scroll', () => {
     const currentScrollY = window.scrollY;
     const scrollPosition = window.scrollY + window.innerHeight;
     const pageHeight = document.documentElement.scrollHeight;

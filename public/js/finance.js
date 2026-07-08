@@ -14,6 +14,34 @@ let currentSlide = 0;
 const totalSlides = allSlides.length;
 const STORAGE_KEY = 'financeSlidePosition';
 
+// ─── HEIGHT + SCROLL HELPERS (single source of truth) ───
+// Size the viewport window to the active card
+function setSliderHeight() {
+    const activeSlide = allSlides[currentSlide];
+    if (activeSlide && viewport) viewport.style.height = activeSlide.scrollHeight + 'px';
+}
+
+// If you switch from a long card to a short card, jump up to the nav bar
+// so you don't end up stranded in empty space!
+function correctScroll() {
+    const navBar = document.querySelector('.slideNav');
+    if (!navBar) return;
+    const navRect = navBar.getBoundingClientRect();
+    if (navRect.top < 0) {
+        window.scrollBy({ top: navRect.top - 20, behavior: 'instant' });
+    }
+}
+
+// Wait two frames so layout settles before measuring
+function syncSliderView(alsoCorrectScroll = false) {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            setSliderHeight();
+            if (alsoCorrectScroll) correctScroll();
+        });
+    });
+}
+
 // ─── GO TO SLIDE FUNCTION ───
 // Handles slide navigation, nav dot updates, progress bar, and localStorage
 function goToSlide(index, saveToStorage = true) {
@@ -26,35 +54,8 @@ function goToSlide(index, saveToStorage = true) {
         slide.classList.toggle('active-slide', i === currentSlide);
     });
 
-    // ─── SMART SCROLL CORRECTION ───
-    // If you switch from a long card to a short card, jump up to the nav bar
-    // so you don't end up stranded in empty space!
-    const navBar = document.querySelector('.slideNav');
-    if (navBar) {
-        const navRect = navBar.getBoundingClientRect();
-        if (navRect.top < 0) {
-            window.scrollBy({ top: navRect.top - 20, behavior: 'instant' });
-        }
-    }
-
-    // ─── DYNAMIC HEIGHT + SCROLL CORRECTION ───
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            const activeSlide = allSlides[currentSlide];
-            const slideHeight = activeSlide.scrollHeight;
-            const vp = document.querySelector('.sliderView') || slides;
-            vp.style.height = slideHeight + 'px';
-
-            // Smart scroll correction — after height is set
-            const navBar = document.querySelector('.slideNav');
-            if (navBar) {
-                const navRect = navBar.getBoundingClientRect();
-                if (navRect.top < 0) {
-                    window.scrollBy({ top: navRect.top - 20, behavior: 'instant' });
-                }
-            }
-        });
-    });
+    correctScroll();
+    syncSliderView(true);
 
     // Update nav dots
     navDots.forEach((dot, i) => {
@@ -73,102 +74,86 @@ function goToSlide(index, saveToStorage = true) {
     if (saveToStorage) localStorage.setItem(STORAGE_KEY, currentSlide);
 }
 
-// ─── ARROW CLICKS ───
-prevBtn.addEventListener('click', () => goToSlide(currentSlide - 1));
-nextBtn.addEventListener('click', () => goToSlide(currentSlide + 1));
+// Only wire up the slider if this page actually has one
+if (viewport && slides && totalSlides > 0) {
 
-// ─── DOT CLICKS ───
-navDots.forEach(dot => {
-    dot.addEventListener('click', () => {
-        goToSlide(parseInt(dot.dataset.slide));
-    });
-});
+    // ─── ARROW CLICKS ───
+    prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+    nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
 
-// ─── TOUCH SWIPE (FADE OPTIMIZED) ───
-let startX = 0;
-let startY = 0;
-let isSwiping = null;
-
-slides.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    isSwiping = null; // Reset
-}, { passive: true });
-
-slides.addEventListener('touchmove', (e) => {
-    const diffX = e.touches[0].clientX - startX;
-    const diffY = e.touches[0].clientY - startY;
-
-    if (isSwiping === null) {
-        // Did they move horizontally more than vertically?
-        isSwiping = Math.abs(diffX) > Math.abs(diffY);
-    }
-
-    if (isSwiping) {
-        e.preventDefault(); // Lock screen from scrolling up/down while swiping
-    }
-}, { passive: false });
-
-slides.addEventListener('touchend', (e) => {
-    if (isSwiping) {
-        const endX = e.changedTouches[0].clientX;
-        const diffX = endX - startX;
-        
-        // Require a 25% screen swipe to trigger the next card
-        const threshold = window.innerWidth * 0.20; 
-
-        if (Math.abs(diffX) > threshold) {
-            if (diffX < 0) {
-                goToSlide(currentSlide + 1);
-            } else {
-                goToSlide(currentSlide - 1);
-            }
-        }
-    }
-});
-
-// ─── KEYBOARD NAVIGATION ───
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
-    if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
-});
-
-// ─── RESTORE FROM LOCALSTORAGE ───
-// Check if user has a saved slide position from a previous visit
-const savedSlide = localStorage.getItem(STORAGE_KEY);
-if (savedSlide !== null) {
-    const slideIndex = parseInt(savedSlide);
-    if (slideIndex >= 0 && slideIndex < totalSlides) {
-        // Restore saved position (don't save again to avoid loop)
-        goToSlide(slideIndex, false);
-    } else {
-        // Invalid saved value, start at beginning
-        goToSlide(0);
-    }
-} else {
-    // No saved position, start at beginning
-    goToSlide(0);
-}
-
-// ─── RECALCULATE HEIGHT ON WINDOW RESIZE ───
-// If user rotates device or resizes browser, recalculate active slide height
-window.addEventListener('resize', () => {
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            const activeSlide = allSlides[currentSlide];
-            const slideHeight = activeSlide.scrollHeight;
-            viewport.style.height = slideHeight + 'px';
+    // ─── DOT CLICKS ───
+    navDots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            goToSlide(parseInt(dot.dataset.slide));
         });
     });
-});
+
+    // ─── TOUCH SWIPE (FADE OPTIMIZED) ───
+    let startX = 0;
+    let startY = 0;
+    let isSwiping = null;
+
+    slides.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        isSwiping = null; // Reset
+    }, { passive: true });
+
+    slides.addEventListener('touchmove', (e) => {
+        const diffX = e.touches[0].clientX - startX;
+        const diffY = e.touches[0].clientY - startY;
+
+        if (isSwiping === null) {
+            // Did they move horizontally more than vertically?
+            isSwiping = Math.abs(diffX) > Math.abs(diffY);
+        }
+
+        if (isSwiping) {
+            e.preventDefault(); // Lock screen from scrolling up/down while swiping
+        }
+    }, { passive: false });
+
+    slides.addEventListener('touchend', (e) => {
+        if (isSwiping) {
+            const endX = e.changedTouches[0].clientX;
+            const diffX = endX - startX;
+
+            // Require a 20% screen swipe to trigger the next card
+            const threshold = window.innerWidth * 0.20;
+
+            if (Math.abs(diffX) > threshold) {
+                if (diffX < 0) {
+                    goToSlide(currentSlide + 1);
+                } else {
+                    goToSlide(currentSlide - 1);
+                }
+            }
+        }
+    });
+
+    // ─── KEYBOARD NAVIGATION ───
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+        if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+    });
+
+    // ─── RESTORE FROM LOCALSTORAGE ───
+    // Check if user has a saved slide position from a previous visit
+    const savedSlide = parseInt(localStorage.getItem(STORAGE_KEY));
+    if (savedSlide >= 0 && savedSlide < totalSlides) {
+        // Restore saved position (don't save again to avoid loop)
+        goToSlide(savedSlide, false);
+    } else {
+        // No (or invalid) saved position, start at beginning
+        goToSlide(0);
+    }
+
+    // ─── RECALCULATE HEIGHT ON WINDOW RESIZE ───
+    // If user rotates device or resizes browser, recalculate active slide height
+    window.addEventListener('resize', () => syncSliderView());
+}
 
 // ─── SLIDER HEIGHT SYNC (Called globally by main.js) ───
 window.syncSliderHeight = function() {
-    const activeSlide = document.querySelector('.slide.active-slide');
-    const viewport = document.querySelector('.sliderView');
-    if (activeSlide && viewport) {
-        requestAnimationFrame(() => {
-            viewport.style.height = activeSlide.scrollHeight + 'px';
-        });
-    }
+    requestAnimationFrame(setSliderHeight);
 };
