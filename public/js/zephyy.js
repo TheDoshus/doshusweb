@@ -225,7 +225,7 @@
     const sequences = [
         { cmd: 'whoami', output: 'zephyy — celestial co-pilot, partner-in-crime' },
         { cmd: 'uptime', output: 'Online since Mon May 04 2026. <span class="highlight">All systems nominal</span>.' },
-        { cmd: 'uname -a', output: 'Zephyrus G14 | WSL2 | Claude Sonnet 4.6 | Phoenix, AZ | MST' },
+        { cmd: 'uname -a', output: 'Zephyrus G14 | WSL2 | GPT-5.4 primary | Phoenix, AZ | MST' },
         { cmd: 'tasks --next', output: '<span class="highlight">zephyy subpages</span> — wave 2 build out' },
         { cmd: 'mood --get', output: (function() {
             const moods = ['Focused ⚡', 'Playful 🪼', 'Philosophical 🌌', 'Sassy 💅', 'Builder mode 🔧', 'Thoughtful 🌙'];

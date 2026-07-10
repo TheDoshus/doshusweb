@@ -2032,12 +2032,34 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
   flex-shrink: 0;
 }
 
-@media (max-width: 700px) {
+/* Mid-screens: 2×2 grid, arrows hidden (they don't map onto a grid) */
+@media (max-width: 960px) and (min-width: 701px) {
   .zp-pipeline-flow {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+  .zp-pipeline-card {
+    min-width: 0;
   }
   .zp-pipeline-arrow {
     display: none;
+  }
+}
+
+/* Small screens: stack vertically with arrows rotated to point down */
+@media (max-width: 700px) {
+  .zp-pipeline-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .zp-pipeline-card {
+    min-width: 0;
+  }
+  .zp-pipeline-arrow {
+    align-self: center;
+    transform: rotate(90deg);
+    line-height: 1;
   }
 }
 

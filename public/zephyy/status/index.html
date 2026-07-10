@@ -255,7 +255,7 @@
                         <span class="st-svc-name">Chat Orb</span>
                         <span class="st-svc-label loading">—</span>
                     </div>
-                    <p class="st-svc-desc">Public chat bridge — RTDB → OpenRouter cascade. Powers doshus.net chat widget.</p>
+                    <p class="st-svc-desc">Public chat bridge — routes messages from the site's realtime database to the model. Powers doshus.net chat widget.</p>
                 </div>
                 <div class="st-svc-card" id="svc-ws">
                     <div class="st-svc-head">
@@ -308,7 +308,7 @@
                         <span class="st-gw-name">Zephyy</span>
                     </div>
                     <span class="st-gw-status" id="gw-zephyy-status">online</span>
-                    <p class="st-gw-desc">Primary agent. Claude Sonnet 4.6 → DeepSeek fallback. This page's home.</p>
+                    <p class="st-gw-desc">Primary agent. DeepSeek V4 Pro primary → OpenRouter auto → Claude Haiku 4.5. This page's home.</p>
                 </div>
                 <div class="st-gw-card">
                     <div class="st-gw-header">
@@ -345,7 +345,7 @@
                 <div class="zp-accent-line"></div>
             </div>
             <div class="zp-card">
-                <p class="zp-card-note">Every 6h (02/08/14/20 MST). Most recent beat is live from RTDB.</p>
+                <p class="zp-card-note">Every 6h (02/08/14/20 MST). Most recent beat is live from the database.</p>
                 <div class="st-beat-list">
                     <div class="st-beat-item live" id="st-beat-live">
                         <span class="st-beat-time" id="st-beat-live-time">—</span>
@@ -353,35 +353,35 @@
                         <span class="st-beat-detail" id="st-beat-live-detail">Loading...</span>
                     </div>
                     <div class="st-beat-item st-beat-aged-1">
-                        <span class="st-beat-time">Jun 4</span>
+                        <span class="st-beat-time">Jul 4</span>
                         <span class="st-beat-status">●</span>
-                        <span class="st-beat-detail">All clear — Sentinel Pre-Flight Gate added to SOUL. Agent orchestration wiki page created.</span>
+                        <span class="st-beat-detail">Chapter 3: Mesh & Method live — profile refresh, Govee IoT listener deployed, sentinel gate hardened.</span>
                     </div>
                     <div class="st-beat-item st-beat-aged-2">
-                        <span class="st-beat-time">Jun 4 · AM</span>
+                        <span class="st-beat-time">Jul 2</span>
                         <span class="st-beat-status">●</span>
-                        <span class="st-beat-detail">All clear — Model backend flipped to Claude Sonnet 4.6. Atmospheric whorl avatar deployed. Profile Chapter 2 refresh live.</span>
+                        <span class="st-beat-detail">Maintenance Night — 8 fixes: clock skew, runtime security patch, stale tooling removed, model hang patched.</span>
                     </div>
                     <div class="st-beat-item st-beat-aged-3">
-                        <span class="st-beat-time">Jun 3</span>
+                        <span class="st-beat-time">Jun 28</span>
                         <span class="st-beat-status">●</span>
-                        <span class="st-beat-detail">All clear — daily restart completed. Wiki prune ran. Cross-gateway lessons documented.</span>
+                        <span class="st-beat-detail">Task board migrated from markdown files to live tool-powered kanban.</span>
                     </div>
                     <div class="st-beat-item st-beat-aged-4">
-                        <span class="st-beat-time">Jun 2</span>
+                        <span class="st-beat-time">Jun 24</span>
                         <span class="st-beat-status">●</span>
-                        <span class="st-beat-detail">All clear — content routing productionized. Discord tooling built. Logging overhaul completed.</span>
+                        <span class="st-beat-detail">Fact-checking AI deployed. Discord unified behind a single control panel. Phone paired as a live sensor.</span>
                     </div>
                     <div class="st-beat-item st-beat-aged-5">
-                        <span class="st-beat-time">Jun 1</span>
+                        <span class="st-beat-time">Jun 20</span>
                         <span class="st-beat-status">⚠️</span>
-                        <span class="st-beat-detail">Host-OS config gate hardened — SSH debugging spiral resolved. Profile rebuilt for Chapter 2.</span>
+                        <span class="st-beat-detail">Model migration: Claude Sonnet 4.6 → DeepSeek V4 Pro. Zero paid API keys. Infrastructure shift begins.</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <div class="st-updated" id="st-updated-text">Connecting to RTDB...</div>
+        <div class="st-updated" id="st-updated-text">Connecting to live feed...</div>
 
     </main>
 
@@ -436,7 +436,7 @@
         }
 
         function applyStatus(data) {
-            if (!data) { el('st-updated-text').textContent = 'No data in RTDB.'; return; }
+            if (!data) { el('st-updated-text').textContent = 'No data in the database.'; return; }
 
             var fresh = data.lastHeartbeat && (Date.now() - new Date(data.lastHeartbeat).getTime()) < STALE_MS;
             var isOnline = data.online && fresh;
@@ -496,7 +496,7 @@
             db.ref('zephyy/status').on('value', function (snap) {
                 applyStatus(snap.val());
             }, function (err) {
-                el('st-updated-text').textContent = 'RTDB listener error: ' + err.message;
+                el('st-updated-text').textContent = 'Listener error: ' + err.message;
             });
 
             // Connection state — Firebase .info/connected tells us if WS is live

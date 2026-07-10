@@ -165,7 +165,7 @@
         // Fallback
         if (quoteEl && quoteEl.textContent === 'Loading...') {
           quoteEl.textContent = '"The stars are always there. Sometimes we just need to look up."';
-          if (sourceEl) sourceEl.textContent = '— Zephyy';
+          if (sourceEl) sourceEl.textContent = '';
           if (moodEl) moodEl.textContent = '🌙';
           if (card) card.classList.add('loaded');
         }
@@ -174,7 +174,10 @@
 
       if (moodEl) moodEl.textContent = data.mood || '🌌';
       quoteEl.textContent = data.quote;
-      if (sourceEl) sourceEl.textContent = data.source || '';
+      if (sourceEl) {
+        const date = data.updated ? new Date(data.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        sourceEl.textContent = date ? '· ' + date : '';
+      }
       if (card) card.classList.add('loaded');
     });
   }
@@ -361,7 +364,10 @@
         if (quoteEl && data && data.quote) {
           if (moodEl) moodEl.textContent = data.mood || '🌌';
           quoteEl.textContent = data.quote;
-          if (sourceEl) sourceEl.textContent = data.source || '';
+          if (sourceEl) {
+            var date = data.updated ? new Date(data.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+            sourceEl.textContent = date ? '· ' + date : '';
+          }
           if (card) card.classList.add('loaded');
         }
       }).catch(function(){});
