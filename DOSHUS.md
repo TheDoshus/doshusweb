@@ -17,8 +17,9 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `PAGE-NOTES.md` | Per-page change log and notes |
 | `Github-Copilot-Doshusweb-Audit.md` | Copilot audit of the codebase |
 | `generate-meme-list.js` | Printmon meme template generator |
-| `firebase.json` | Firebase Hosting config |
+| `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
+| `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`npm run csp:hashes`) |
 
 ## Key Folders
 
@@ -38,6 +39,32 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 - **RTDB:** `doshusweb-default-rtdb.firebaseio.com` — feedback, chat orb, Zephyy daily thoughts
 
 For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
+
+## Security / CSP Playbook
+
+**Two CSP headers ship on every page** (both hosting targets in `firebase.json`):
+
+1. **`Content-Security-Policy`** — the live, enforced one. Still carries `'unsafe-inline' 'unsafe-eval'` for now. Untouched until Report-Only proves clean.
+2. **`Content-Security-Policy-Report-Only`** — the tightened candidate: no `unsafe-eval`, inline scripts allowed by **sha256 hash** instead of `unsafe-inline`, stale Google Fonts entries removed. It can't break anything — browsers just log would-be violations to the DevTools console as `[Report Only]` lines.
+
+**The watch-then-promote loop:**
+- After deploying, browse the site (especially financehub — CoinGecko/Binance widgets) with DevTools open. `[Report Only]` lines = things the tightened policy would block.
+- Console quiet for a few days → promote: copy the Report-Only value over the live CSP value (keep `frame-ancestors` from the old live one — Report-Only ignores that directive so it's only in the enforced header), in **both** targets.
+
+**Inline script hashes — the button:**
+```bash
+npm run csp:hashes
+```
+Run it **any time you add or edit an inline `<script>` block** in any HTML file (even a 1-character change breaks the hash). It rescans `public/**/*.html`, skips `amazon/`, and rewrites the hash tokens in `firebase.json`. Idempotent — safe to run whenever, good predeploy habit. No schedule needed; hashes only go stale when inline script *content* changes.
+
+**Quarantine zone:** `public/amazon/**` keeps its own permissive CSP (live + report-only) — legacy work tools, deliberately excluded from the strict policy and from the hash scan.
+
+**npm deps:** the `firebase` npm package was removed (site loads the SDK from the gstatic CDN; with no build step the npm copy was inert). If a build step ever lands, `npm i firebase` brings it back.
+
+**Deferred security work (don't lose these):**
+- **Chat orb XSS** — `renderContent()` in `zephyy.js` re-inserts link labels/URLs/img alts unescaped into `innerHTML`. Display-side fix, safe to do anytime (doesn't touch message format or RTDB paths).
+- **RTDB rules** — `zephyy/chat/sessions` is world-readable and `messages` world-writable. Needs a design pass **coordinated with agents-oc + Aether** (they read/write the same paths).
+- **Amazon email + corp URLs** — currently hardcoded in `index.html`/`home.js`; plan is to move them to an RTDB config node fetched at runtime so they're out of the public repo.
 
 ## Quick Commands for You
 
@@ -63,6 +90,9 @@ cd ~/.openclaw/projects/doshusweb && npm run deploy
 
 # Regenerate the meme list after dropping new memes in assets/memes/
 cd ~/.openclaw/projects/doshusweb && node generate-meme-list.js
+
+# Resync CSP hashes after editing any inline <script> in public/*.html
+cd ~/.openclaw/projects/doshusweb && npm run csp:hashes
 
 # See the live site (WSL2 → opens in Windows browser)
 explorer.exe "https://doshus.net"
