@@ -7,9 +7,7 @@
   "private": true,
   "scripts": {
     "deploy": "firebase deploy --only hosting",
-    "deploy:full": "firebase deploy"
-  },
-  "dependencies": {
-    "firebase": "^12.9.0"
+    "deploy:full": "firebase deploy",
+    "csp:hashes": "node scripts/update-csp-hashes.js"
   }
 }
