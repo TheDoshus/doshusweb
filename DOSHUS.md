@@ -45,7 +45,9 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 **Two CSP headers ship on every page** (both hosting targets in `firebase.json`):
 
 1. **`Content-Security-Policy`** — the live, enforced one. Still carries `'unsafe-inline' 'unsafe-eval'` for now. Untouched until Report-Only proves clean.
-2. **`Content-Security-Policy-Report-Only`** — the tightened candidate: no `unsafe-eval`, inline scripts allowed by **sha256 hash** instead of `unsafe-inline`, stale Google Fonts entries removed. It can't break anything — browsers just log would-be violations to the DevTools console as `[Report Only]` lines.
+2. **`Content-Security-Policy-Report-Only`** — the tightened candidate: no `unsafe-eval`, inline scripts allowed by **sha256 hash** instead of `unsafe-inline`. It can't break anything — browsers just log would-be violations to the DevTools console as `[Report Only]` lines.
+
+**Reading the reports:** violations sourced from `content.js` or `sandbox eval code` are **browser extensions** injecting scripts — not the site. Verify in a private window with extensions off before chasing them. Real site violations trace to your own files or a widget's JS (e.g. the first monitoring round caught `gecko-coin-price-chart-widget.js` loading the Inter font from Google Fonts — which is why `fonts.googleapis.com`/`fonts.gstatic.com` stay in `style-src`/`font-src`: the CoinGecko widget needs them, they're not stale).
 
 **The watch-then-promote loop:**
 - After deploying, browse the site (especially financehub — CoinGecko/Binance widgets) with DevTools open. `[Report Only]` lines = things the tightened policy would block.
