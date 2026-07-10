@@ -43,8 +43,8 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 ## Security / CSP Playbook
 
 Every page ships **two CSP headers** (both hosting targets in `firebase.json`):
-- **`Content-Security-Policy`** — live, enforced. Still carries `'unsafe-inline' 'unsafe-eval'` until Report-Only proves clean.
-- **`Content-Security-Policy-Report-Only`** — the strict candidate (sha256 hashes instead of `unsafe-inline`, no `unsafe-eval`). Only logs `[Report Only]` console lines, never blocks. Console quiet → promote: copy its value over the live one in **both** targets, keeping `frame-ancestors` in the live header.
+- **`Content-Security-Policy`** — live, enforced, **strict** (promoted 2026-07-10): script-src has no `unsafe-inline`/`unsafe-eval`; inline scripts run via sha256 hashes only.
+- **`Content-Security-Policy-Report-Only`** — staging ground for future tightenings. Currently identical to live (minus `frame-ancestors`, which Report-Only ignores). To test a stricter policy later: tighten this one, watch the console, promote when quiet.
 
 **Edited an inline `<script>`?** → `npm run csp:hashes` (rewrites the hash tokens in firebase.json; idempotent, good predeploy habit).
 
