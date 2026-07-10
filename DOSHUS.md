@@ -42,31 +42,21 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 ## Security / CSP Playbook
 
-**Two CSP headers ship on every page** (both hosting targets in `firebase.json`):
+Every page ships **two CSP headers** (both hosting targets in `firebase.json`):
+- **`Content-Security-Policy`** — live, enforced. Still carries `'unsafe-inline' 'unsafe-eval'` until Report-Only proves clean.
+- **`Content-Security-Policy-Report-Only`** — the strict candidate (sha256 hashes instead of `unsafe-inline`, no `unsafe-eval`). Only logs `[Report Only]` console lines, never blocks. Console quiet → promote: copy its value over the live one in **both** targets, keeping `frame-ancestors` in the live header.
 
-1. **`Content-Security-Policy`** — the live, enforced one. Still carries `'unsafe-inline' 'unsafe-eval'` for now. Untouched until Report-Only proves clean.
-2. **`Content-Security-Policy-Report-Only`** — the tightened candidate: no `unsafe-eval`, inline scripts allowed by **sha256 hash** instead of `unsafe-inline`. It can't break anything — browsers just log would-be violations to the DevTools console as `[Report Only]` lines.
+**Edited an inline `<script>`?** → `npm run csp:hashes` (rewrites the hash tokens in firebase.json; idempotent, good predeploy habit).
 
-**Reading the reports:** violations sourced from `content.js` or `sandbox eval code` are **browser extensions** injecting scripts — not the site. Verify in a private window with extensions off before chasing them. Real site violations trace to your own files or a widget's JS (e.g. the first monitoring round caught `gecko-coin-price-chart-widget.js` loading the Inter font from Google Fonts — which is why `fonts.googleapis.com`/`fonts.gstatic.com` stay in `style-src`/`font-src`: the CoinGecko widget needs them, they're not stale).
+**RTDB rules:** edit `database.rules.json` → `firebase deploy --only database`. Repo is source of truth, console Rules tab is the mirror. `npm run deploy` does NOT push rules.
 
-**The watch-then-promote loop:**
-- After deploying, browse the site (especially financehub — CoinGecko/Binance widgets) with DevTools open. `[Report Only]` lines = things the tightened policy would block.
-- Console quiet for a few days → promote: copy the Report-Only value over the live CSP value (keep `frame-ancestors` from the old live one — Report-Only ignores that directive so it's only in the enforced header), in **both** targets.
+**Work links:** Amazonian Spot pills + work email live in RTDB `/config/worklinks`, not the repo. Edit in the Firebase console — live instantly, no deploy. Node missing/unreachable → section degrades gracefully (no pills, toggle hidden, email blurred).
 
-**Inline script hashes — the button:**
-```bash
-npm run csp:hashes
-```
-Run it **any time you add or edit an inline `<script>` block** in any HTML file (even a 1-character change breaks the hash). It rescans `public/**/*.html`, skips `amazon/`, and rewrites the hash tokens in `firebase.json`. Idempotent — safe to run whenever, good predeploy habit. No schedule needed; hashes only go stale when inline script *content* changes.
-
-**Quarantine zone:** `public/amazon/**` keeps its own permissive CSP (live + report-only) — legacy work tools, deliberately excluded from the strict policy and from the hash scan.
-
-**npm deps:** the `firebase` npm package was removed (site loads the SDK from the gstatic CDN; with no build step the npm copy was inert). If a build step ever lands, `npm i firebase` brings it back.
+**Quarantine:** `public/amazon/**` keeps its own loose CSP — excluded from the strict policy and the hash scan.
 
 **Deferred security work (don't lose these):**
-- **Chat orb XSS** — `renderContent()` in `zephyy.js` re-inserts link labels/URLs/img alts unescaped into `innerHTML`. Display-side fix, safe to do anytime (doesn't touch message format or RTDB paths).
-- **RTDB rules** — `zephyy/chat/sessions` is world-readable and `messages` world-writable. Needs a design pass **coordinated with agents-oc + Aether** (they read/write the same paths).
-- ~~**Amazon email + corp URLs**~~ — DONE: moved out of the repo. `home.js` now builds the Amazonian Spot pills + work email at runtime from RTDB `/config/worklinks` (shape: `{ email, slackUrl, pills: [{ internal, external, internalText, externalText, amzn }] }`). **Before deploying this**: (1) seed the node in the Firebase console, (2) `firebase deploy --only database` so the new `.read` rule for `/config` is live — `npm run deploy` only pushes hosting, not rules. If the node is missing or RTDB is down, the section degrades gracefully (no pills, toggle hidden, email stays blurred). Reminder: the old strings still exist in git history; the live site and current tree are clean.
+- **Chat orb XSS** — `renderContent()` in `zephyy.js` injects link labels/URLs/img alts unescaped into `innerHTML`. Display-only fix, safe anytime.
+- **RTDB chat rules** — `zephyy/chat/sessions` world-readable, `messages` world-writable. Coordinate with **agents-oc + Aether** before changing.
 
 ## Quick Commands for You
 
