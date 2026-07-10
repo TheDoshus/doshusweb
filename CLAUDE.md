@@ -39,3 +39,7 @@ python3 -m http.server 8080 -d public          # eyeball locally
 ```
 
 Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
+
+## Session handoffs
+
+Read the newest file in `handoff/` before starting work; append/create `handoff/YYYY-MM-DD.md` (today's date) with what you did + open items before wrapping up.
