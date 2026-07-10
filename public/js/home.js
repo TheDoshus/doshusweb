@@ -1,7 +1,7 @@
 // --- Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
     initCTApop();
-    initAmazonLinkToggle();
+    loadWorkLinks(); // builds the Amazonian Spot pills, then runs initAmazonLinkToggle()
 
     // Wire up Slack Button
     const slackText = document.getElementById('slackText');
@@ -10,6 +10,43 @@ document.addEventListener('DOMContentLoaded', () => {
     initSpotifyEmbed();
     initDiscordModal();
 });
+
+// ─── AMAZONIAN SPOT WORK LINKS ───
+// Pill links, work email, and Slack URL live in RTDB at /config/worklinks
+// so they stay out of the public repo. Shape:
+// { email, slackUrl, pills: [{ internal, external, internalText, externalText, amzn }] }
+let workConfig = null;
+function loadWorkLinks() {
+    const container = document.getElementById('workLinks');
+    if (!container) return;
+
+    fetch('https://doshusweb-default-rtdb.firebaseio.com/config/worklinks.json')
+        .then((r) => r.json())
+        .then((cfg) => {
+            if (!cfg || !Array.isArray(cfg.pills)) return;
+            workConfig = cfg;
+
+            const slackText = document.getElementById('slackText');
+            if (slackText && cfg.email) slackText.textContent = cfg.email;
+
+            cfg.pills.forEach((pill) => {
+                const link = document.createElement('a');
+                link.className = 'pillBtn amazon-link' + (pill.amzn ? ' amzn' : '');
+                link.dataset.internal = pill.internal;
+                link.dataset.external = pill.external;
+                link.dataset.internalText = pill.internalText;
+                link.dataset.externalText = pill.externalText;
+                link.target = '_blank';
+                container.appendChild(link);
+            });
+            initAmazonLinkToggle(); // sets href/text on the fresh pills
+        })
+        .catch(() => {
+            /* RTDB unreachable — hide the toggle, leave the section text */
+            const toggleWrap = document.querySelector('.link-toggle-container');
+            if (toggleWrap) toggleWrap.style.display = 'none';
+        });
+}
 
 // ─── DISCORD WIDGET MODAL ───
 // Socials Discord button opens a popup with the embedded server widget
@@ -135,16 +172,16 @@ function initCTApop() {
 let slackRevealed = false;
 function handleSlackClick() {
     const slackText = document.getElementById('slackText');
-    
+    if (!workConfig || !workConfig.email) return; // config not loaded — stay blurred
+
     if (!slackRevealed) {
         // First click: Remove the blur to reveal the handle
         slackText.classList.remove('email-hidden');
         slackText.classList.add('email-revealed');
         slackRevealed = true;
-    } else {
+    } else if (workConfig.slackUrl) {
         // Second click: Execute the redirect to Slack
-        const slackUrl = 'https://amazon.enterprise.slack.com/team/U03AWNH0XJ8'; 
-        window.open(slackUrl, '_blank', 'noopener,noreferrer');
+        window.open(workConfig.slackUrl, '_blank', 'noopener,noreferrer');
     }
 }
 

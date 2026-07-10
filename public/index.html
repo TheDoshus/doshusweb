@@ -193,8 +193,8 @@
                 <p>Useful tools and resource pages I've created for my Amazon team that makes our work life easier.</p>
                 
                 <div class="work-email">
-                    <img src="assets/icons/slackcon.svg" alt="Slack" class="slack-icon"> 
-                    <span id="slackText" class="email-hidden">aaustinp@amazon.com</span>
+                    <img src="assets/icons/slackcon.svg" alt="Slack" class="slack-icon">
+                    <span id="slackText" class="email-hidden">•••••••@••••••••••</span>
                 </div>
                                 
                 <div class="tool-description">
@@ -213,39 +213,9 @@
                     <strong>Corners Page:</strong> A quadscreen tool page that allows you to use multiple tools in one window simultaneously.
                 </div>
                 
-                <div class="button-group">
-                    <a href="https://drive-render.corp.amazon.com/view/aaustinp@/Printmon2Doshus.html"
-                    data-internal="https://drive-render.corp.amazon.com/view/aaustinp@/Printmon2Doshus.html"
-                    data-external="amazon/printmon/Printmon2Doshus.html"
-                    data-internal-text="🖨️ Internal Doshus Printmon →"
-                    data-external-text="🖨️ External Doshus Printmon →"
-                    target="_blank"
-                    class="pillBtn amzn amazon-link">🖨️ Doshus Printmon →</a>
-                    
-                    <a href="https://drive-render.corp.amazon.com/view/aaustinp@/sites/TMB/Tampermonkey-Bookmarks_Tutorial.html"
-                    data-internal="https://drive-render.corp.amazon.com/view/aaustinp@/sites/TMB/Tampermonkey-Bookmarks_Tutorial.html"
-                    data-external="amazon/tmb/Tampermonkey-Bookmarks_Tutorial.html"
-                    data-internal-text="Internal TamperMonkey & Bookmarks →"
-                    data-external-text="External TamperMonkey & Bookmarks →"
-                    target="_blank"
-                    class="pillBtn amazon-link">TamperMonkey & Bookmarks →</a>
-                    
-                    <a href="https://drive-render.corp.amazon.com/view/aaustinp@/sites/All-In-One/AIO.html"
-                    data-internal="https://drive-render.corp.amazon.com/view/aaustinp@/sites/All-In-One/AIO.html"
-                    data-external="amazon/aio/AIO.html"
-                    data-internal-text="Internal AIO →"
-                    data-external-text="External AIO →"
-                    target="_blank"
-                    class="pillBtn amazon-link">AIO →</a>
-                    
-                    <a href="https://drive-render.corp.amazon.com/view/aaustinp@/sites/corners/CornerSelect.html"
-                    data-internal="https://drive-render.corp.amazon.com/view/aaustinp@/sites/corners/CornerSelect.html"
-                    data-external="https://atoz.amazon.work/"
-                    data-internal-text="Internal-only Corners →"
-                    data-external-text="Amazon A to Z"
-                    target="_blank"
-                    class="pillBtn amazon-link">Internal-only Corners →</a>
-                </div>
+                <!-- Pills are built at runtime by home.js from RTDB /config/worklinks
+                     (keeps corp URLs and the work email out of the repo) -->
+                <div class="button-group" id="workLinks"></div>
             </div>
 
             <!-- lounge Box -->

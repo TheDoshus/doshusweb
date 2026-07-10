@@ -64,7 +64,7 @@ Run it **any time you add or edit an inline `<script>` block** in any HTML file 
 **Deferred security work (don't lose these):**
 - **Chat orb XSS** — `renderContent()` in `zephyy.js` re-inserts link labels/URLs/img alts unescaped into `innerHTML`. Display-side fix, safe to do anytime (doesn't touch message format or RTDB paths).
 - **RTDB rules** — `zephyy/chat/sessions` is world-readable and `messages` world-writable. Needs a design pass **coordinated with agents-oc + Aether** (they read/write the same paths).
-- **Amazon email + corp URLs** — currently hardcoded in `index.html`/`home.js`; plan is to move them to an RTDB config node fetched at runtime so they're out of the public repo.
+- ~~**Amazon email + corp URLs**~~ — DONE: moved out of the repo. `home.js` now builds the Amazonian Spot pills + work email at runtime from RTDB `/config/worklinks` (shape: `{ email, slackUrl, pills: [{ internal, external, internalText, externalText, amzn }] }`). **Before deploying this**: (1) seed the node in the Firebase console, (2) `firebase deploy --only database` so the new `.read` rule for `/config` is live — `npm run deploy` only pushes hosting, not rules. If the node is missing or RTDB is down, the section degrades gracefully (no pills, toggle hidden, email stays blurred). Reminder: the old strings still exist in git history; the live site and current tree are clean.
 
 ## Quick Commands for You
 

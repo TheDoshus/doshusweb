@@ -35,6 +35,12 @@
         ".read": true,
         ".write": "auth !== null"
       }
+    },
+    "config": {
+      "worklinks": {
+        ".read": true,
+        ".write": "auth !== null"
+      }
     }
   }
 }
