@@ -548,6 +548,15 @@
         }
     }
 
+    function escapeHtml(s) {
+        // Safe for both text content and double-quoted attribute values.
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
     function renderContent(text) {
         // Linkify BEFORE escaping — otherwise & in URLs gets corrupted to &amp;
         var placeholders = [];
@@ -574,14 +583,19 @@
             return ph;
         });
         // 3. HTML-escape remaining text
-        text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        // 4. Restore images from placeholders
+        text = escapeHtml(text);
+        // 4. Restore images from placeholders (escape url/alt — regex already pins scheme to http(s)).
+        //    Function replacement avoids $-token interpretation on urls containing '$'.
         imgPlaceholders.forEach(function(p) {
-            text = text.replace(p.ph, '<a href="' + p.url + '" target="_blank" class="zp-chat-img-link"><img src="' + p.url + '" alt="' + p.alt + '" style="max-width:100%;max-height:300px;border-radius:8px;margin:8px 0;object-fit:contain" loading="lazy"></a>');
+            var url = escapeHtml(p.url);
+            var alt = escapeHtml(p.alt);
+            var html = '<a href="' + url + '" target="_blank" class="zp-chat-img-link"><img src="' + url + '" alt="' + alt + '" style="max-width:100%;max-height:300px;border-radius:8px;margin:8px 0;object-fit:contain" loading="lazy"></a>';
+            text = text.replace(p.ph, function() { return html; });
         });
-        // 5. Restore links from placeholders (no re-escaping, URLs are raw)
+        // 5. Restore links from placeholders (escape label + url — they were captured raw before step 3)
         placeholders.forEach(function(p) {
-            text = text.replace(p.ph, '<a href="' + p.url + '" target="_blank" rel="noopener">' + p.label + '</a>');
+            var html = '<a href="' + escapeHtml(p.url) + '" target="_blank" rel="noopener">' + escapeHtml(p.label) + '</a>';
+            text = text.replace(p.ph, function() { return html; });
         });
         // 5. Bold: **text**
         text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
