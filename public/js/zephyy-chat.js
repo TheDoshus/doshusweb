@@ -168,12 +168,14 @@
         });
         // 3. HTML-escape remaining text
         text = escapeHtml(text);
-        // 4. Restore images from placeholders (escape url/alt — regex already pins scheme to http(s)).
-        //    Function replacement avoids $-token interpretation on urls containing '$'.
+        // 4. Restore images from placeholders → click-to-expand lightbox
         imgPlaceholders.forEach(function(p) {
             var url = escapeHtml(p.url);
             var alt = escapeHtml(p.alt);
-            var html = '<a href="' + url + '" target="_blank" class="zp-chat-img-link"><img src="' + url + '" alt="' + alt + '" style="max-width:100%;max-height:300px;border-radius:8px;margin:8px 0;object-fit:contain" loading="lazy"></a>';
+            var id = 'zpli' + (i++);
+            // Store URL in a data-map so onclick can look it up (avoids inline data URIs in attribute)
+            imgUrlMap[id] = p.url;
+            var html = '<img src="' + url + '" alt="' + alt + '" data-zpli="' + id + '" class="zp-chat-img" style="max-width:100%;max-height:300px;border-radius:8px;margin:8px 0;object-fit:contain;cursor:pointer" loading="lazy">';
             text = text.replace(p.ph, function() { return html; });
         });
         // 5. Restore links from placeholders (escape label + url — they were captured raw before step 3)
@@ -206,6 +208,47 @@
         scrollToBottom();
         return div;
     }
+
+    /* ── Image lightbox: store raw URLs keyed by element id so onclick
+       can look up data URIs without inlining them in DOM attributes. ── */
+    var imgUrlMap = {};
+
+    /* ── Lightbox: inject once, reused for every image click ── */
+    var lightboxEl = null;
+    function ensureLightbox() {
+        if (lightboxEl) return;
+        lightboxEl = document.createElement('div');
+        lightboxEl.className = 'zp-lightbox';
+        lightboxEl.innerHTML =
+            '<div class="zp-lightbox-bg"></div>' +
+            '<div class="zp-lightbox-close">&times;</div>' +
+            '<img class="zp-lightbox-img" alt="">';
+        lightboxEl.querySelector('.zp-lightbox-bg').addEventListener('click', closeLightbox);
+        lightboxEl.querySelector('.zp-lightbox-close').addEventListener('click', closeLightbox);
+        document.body.appendChild(lightboxEl);
+    }
+    function openLightbox(url) {
+        ensureLightbox();
+        lightboxEl.querySelector('.zp-lightbox-img').src = url;
+        lightboxEl.classList.add('zp-lightbox--open');
+        document.addEventListener('keydown', onLightboxKey);
+    }
+    function closeLightbox() {
+        if (!lightboxEl) return;
+        lightboxEl.classList.remove('zp-lightbox--open');
+        document.removeEventListener('keydown', onLightboxKey);
+    }
+    function onLightboxKey(e) {
+        if (e.key === 'Escape') closeLightbox();
+    }
+
+    // Delegate clicks on .zp-chat-img to the lightbox
+    document.addEventListener('click', function(e) {
+        var img = e.target.closest('.zp-chat-img');
+        if (!img || !img.dataset.zpli) return;
+        var url = imgUrlMap[img.dataset.zpli];
+        if (url) openLightbox(url);
+    });
 
     /* ── Local message cache: instant paint on panel open, before the
        Firebase round-trip lands. Reconciled by loadMessages' full repaint. ── */

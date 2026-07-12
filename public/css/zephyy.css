@@ -903,6 +903,33 @@
 .zp-qr-btn:active {
   transform: scale(0.97);
 }
+/* ── Chat image lightbox ── */
+.zp-lightbox {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.zp-lightbox--open {
+  pointer-events: auto; opacity: 1;
+}
+.zp-lightbox-bg {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.85);
+  cursor: pointer;
+}
+.zp-lightbox-close {
+  position: absolute; top: 16px; right: 20px;
+  font-size: 2rem; color: #fff; cursor: pointer;
+  z-index: 1; line-height: 1;
+}
+.zp-lightbox-close:hover { color: oklch(var(--brand-teal)); }
+.zp-lightbox-img {
+  position: relative; z-index: 1;
+  max-width: 90vw; max-height: 90vh;
+  border-radius: 10px; object-fit: contain;
+}
+
 /* ── Chat thinking indicator ── */
 .zp-chat-thinking {
   min-width: 100px;
