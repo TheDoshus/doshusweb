@@ -11,6 +11,9 @@
 (function () {
   'use strict';
 
+  if (window.__zephyyWidgetInit) return;
+  window.__zephyyWidgetInit = true;
+
   const STALE_MS = 120 * 1000; // heartbeat staleness threshold
   const FALLBACK_POLL_MS = 300000; // 5-min fallback if Firebase unavailable
   const RTDB_URL = 'https://doshusweb-default-rtdb.firebaseio.com';
@@ -58,12 +61,31 @@
     };
   }
 
+  function buildLabel(compact, isOnline, mood) {
+    const label = document.createElement('span');
+    label.className = 'zephyy-label';
+
+    const name = document.createElement('span');
+    name.className = 'zephyy-name';
+    name.textContent = 'Zephyy';
+
+    const status = document.createElement('span');
+    status.className = 'zephyy-status';
+    status.textContent = compact
+      ? (isOnline ? '\u25cf' : '\u25cb')
+      : (isOnline ? mood : 'Offline');
+
+    label.append(name, document.createTextNode(' '), status);
+    return label;
+  }
+
   // ─── Render badge with link ───
   function renderBadge(container, status) {
     const isOnline = status.online;
     const mood = status.mood || 'idle';
     const workingOn = status.workingOn || '';
     const compact = container.dataset.compact === 'true';
+    const heroVariant = container.classList.contains('inline-hero');
 
     const link = document.createElement('a');
     link.href = 'zephyy.html';
@@ -73,6 +95,7 @@
 
     const badge = document.createElement('span');
     badge.className = `zephyy-badge${compact ? ' compact' : ''}`;
+    if (heroVariant) badge.classList.add('inline-hero');
 
     const glyphWrap = document.createElement('span');
     glyphWrap.className = 'zephyy-glyph';
@@ -81,13 +104,7 @@
     const dot = document.createElement('span');
     dot.className = `zephyy-dot ${isOnline ? 'online' : 'offline'}`;
 
-    const label = document.createElement('span');
-    label.className = 'zephyy-label';
-    if (compact) {
-      label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? '\u25cf' : '\u25cb'}</span>`;
-    } else {
-      label.innerHTML = `<span class="zephyy-name">Zephyy</span> <span class="zephyy-status">${isOnline ? mood : 'Offline'}</span>`;
-    }
+    const label = buildLabel(compact, isOnline, mood);
 
     if (isOnline && workingOn) {
       badge.title = `Working on: ${workingOn}`;
@@ -98,8 +115,7 @@
     badge.append(glyphWrap, dot, label);
     link.appendChild(badge);
 
-    container.innerHTML = '';
-    container.className = 'zephyy-badge-embed';
+    container.replaceChildren();
     container.appendChild(link);
   }
 
@@ -125,6 +141,7 @@
   async function init() {
     var containers = document.querySelectorAll('.zephyy-badge-embed');
     if (!containers.length) return;
+    var fallbackPoll = null;
 
     // Inject keyframes
     if (!document.getElementById('zephyy-keyframes')) {
@@ -145,12 +162,20 @@
 
     window.addEventListener('zephyy-status', function (e) {
       realtimeActive = true;
+      if (fallbackPoll) {
+        clearInterval(fallbackPoll);
+        fallbackPoll = null;
+      }
       updateAll(parseStatus(e.detail.data));
     });
 
     // If zephyy-realtime.js is already loaded, it fires zephyy-rt-ready
     window.addEventListener('zephyy-rt-ready', function () {
       realtimeActive = true;
+      if (fallbackPoll) {
+        clearInterval(fallbackPoll);
+        fallbackPoll = null;
+      }
     });
 
     // Initial render — try Firebase event, else fetch fallback
@@ -158,7 +183,7 @@
       if (!realtimeActive) {
         fetchStatusFallback().then(updateAll);
         // Slow polling fallback
-        setInterval(function () {
+        fallbackPoll = setInterval(function () {
           if (!realtimeActive) fetchStatusFallback().then(updateAll);
         }, FALLBACK_POLL_MS);
       }
