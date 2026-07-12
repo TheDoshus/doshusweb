@@ -140,6 +140,12 @@
     return Array.from(new Set(base.filter(Boolean)));
   }
 
+  /** Map internal base key to a UI-friendly label (GTA → Classic). */
+  function baseDisplayName(key) {
+    const map = { GTA: 'Classic', gta: 'Classic' };
+    return map[key] || titleCase(key || 'Classic');
+  }
+
   function buildFilterTokens(theme, primaryFamily, accentFamily, wallpaperCount) {
     const tokens = [];
     const baseTheme = String(theme.baseTheme || 'GTA').toLowerCase();
@@ -152,7 +158,7 @@
 
   function buildDisplayChips(theme, primaryFamily, accentFamily, wallpaperCount) {
     const chips = [
-      `${titleCase(theme.baseTheme || 'GTA')} base`,
+      `${baseDisplayName(theme.baseTheme)} base`,
       familyCardLabel(primaryFamily, 'primary'),
       familyCardLabel(accentFamily, 'accent'),
       wallpaperCount > 0 ? `${wallpaperCount} wallpapers` : 'CSS only',
@@ -206,7 +212,7 @@
   function filterLabel(token) {
     if (token === 'state:wallpaper-backed') return 'Wallpaper-backed';
     if (token === 'state:css-only') return 'CSS only';
-    if (token.startsWith('base:')) return `${titleCase(token.slice(5))} base`;
+    if (token.startsWith('base:')) return `${baseDisplayName(token.slice(5))} base`;
     if (token.startsWith('mood:')) return `${familyLabel(token.slice(5))} mood`;
     return titleCase(token);
   }
@@ -277,26 +283,15 @@
     const gradient = swatches.length >= 3
       ? `linear-gradient(135deg, ${swatches[0]} 0%, ${swatches[1]} 52%, ${swatches[2]} 100%)`
       : `linear-gradient(135deg, ${swatches[0]} 0%, ${swatches[1] || swatches[0]} 100%)`;
-    const chips = [
-      ...(theme.displayChips || []),
-    ];
 
     return `
       <article class="theme-card" onclick="window.openTheme('${escapeHtml(theme.safeName)}')" style="animation-delay:${index * 0.04}s">
         <div class="card-preview" style="background:${gradient}">
           <div class="card-preview-overlay"></div>
           <div class="card-preview-copy">
-            <span class="card-eyebrow">Printmon / ${escapeHtml(titleCase(theme.baseTheme || 'GTA'))}</span>
+            <span class="card-eyebrow">Printmon / ${escapeHtml(baseDisplayName(theme.baseTheme))}</span>
             <h3 class="card-name">${escapeHtml(theme.name)}</h3>
             <p class="card-tagline">${escapeHtml(theme.tagline || 'Generated for the gallery')}</p>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-swatches">
-            ${swatches.slice(0, 4).map((swatch) => `<span class="swatch-dot" style="background:${escapeHtml(swatch)}"></span>`).join('')}
-          </div>
-          <div class="card-meta">
-            ${chips.slice(0, 4).map((chip) => `<span class="theme-chip">${escapeHtml(chip)}</span>`).join('')}
           </div>
         </div>
       </article>
@@ -379,7 +374,8 @@
     if (previewTagline) previewTagline.textContent = theme.tagline || 'Generated theme preview';
     if (previewMeta) {
       const metaBits = [
-        ...(theme.displayChips || []),
+        `${baseDisplayName(theme.baseTheme)} base`,
+        theme.wallpaperCount > 0 ? `${theme.wallpaperCount} wallpapers` : 'CSS only',
       ];
       previewMeta.innerHTML = metaBits.map((bit) => `<span class="theme-chip">${escapeHtml(bit)}</span>`).join('');
     }

@@ -14,31 +14,31 @@ const wallpaperCache = new Map();
 const BASE_THEMES = {
   GTA: {
     name: 'GTA 6',
-    cssFile: 'css/newer/_template.css',
+    cssFile: 'css/newer/_template-gta.css',
     htmlFile: 'template.html',
-    description: 'Custom generated theme — GTA base',
+    description: 'Custom generated theme — Classic base',
   },
   Glass: {
     name: 'Glass',
-    cssFile: 'css/newer/_template.css',
+    cssFile: 'css/newer/_template-glass.css',
     htmlFile: 'template.html',
     description: 'Custom generated theme — Glass base',
   },
   Halloween: {
     name: 'Halloween',
-    cssFile: 'css/newer/_template.css',
+    cssFile: 'css/newer/_template-halloween.css',
     htmlFile: 'template.html',
     description: 'Custom generated theme — Halloween base',
   },
   Forest: {
     name: 'Forest',
-    cssFile: 'css/newer/_template.css',
+    cssFile: 'css/newer/_template-forest.css',
     htmlFile: 'template.html',
     description: 'Custom generated theme — Forest base',
   },
   Witch: {
     name: 'Witchery',
-    cssFile: 'css/newer/_template.css',
+    cssFile: 'css/newer/_template-witch.css',
     htmlFile: 'template.html',
     description: 'Custom generated theme — Witch base',
   },
