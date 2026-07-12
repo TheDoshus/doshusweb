@@ -325,13 +325,6 @@
         var msg = data[newestKey];
         if (!msg || !msg.content) return;
 
-        // Session end signal
-        if (msg.role === 'system' && msg.content === '_SESSION_ENDED_') {
-          _sessionEnded = true;
-          window.dispatchEvent(new CustomEvent('zephyy-session-ended', { detail: {} }));
-          return;
-        }
-
         // Only forward assistant/bot/doshus messages
         if (msg.role === 'assistant' || msg.role === 'bot' || msg.role === 'doshus') {
           window.dispatchEvent(new CustomEvent('zephyy-msg', {
