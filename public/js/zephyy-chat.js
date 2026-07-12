@@ -587,7 +587,8 @@
         tick.textContent = '…';
         tick.title = 'Sending';
         tick.dataset.ts = userTs;
-        msgEl.appendChild(tick);
+        var timeEl = msgEl.querySelector('.zp-chat-msg-time');
+        (timeEl || msgEl).appendChild(tick);
 
         if (zephyyOnline) {
             /* Optimistic thinking bubble + slow-response note, online only */
