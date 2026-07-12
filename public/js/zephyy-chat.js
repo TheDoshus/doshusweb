@@ -146,7 +146,8 @@
         var imgPlaceholders = [];
         var i = 0;
         // 0. Markdown images: ![alt](url) → placeholder (must go before links)
-        text = text.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, function(m, alt, url) {
+        //    Accept https:// AND data: URIs (HuggingFace/Gemini return base64 data URIs)
+        text = text.replace(/!\[([^\]]*)\]\(((?:https?:\/\/|data:image\/)[^\s)]+)\)/g, function(m, alt, url) {
             var ph = '\x00IMG' + (i++) + '\x00';
             imgPlaceholders.push({ ph: ph, alt: alt, url: url });
             return ph;
