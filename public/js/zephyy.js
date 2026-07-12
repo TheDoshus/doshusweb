@@ -947,8 +947,13 @@
             /* Clear and re-ask name */
             if (sendBtn) sendBtn.disabled = false;
             if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; inputEl.value = ''; }
-            /* Generate new session */
-            sessionId = 'chat-' + Math.random().toString(36).substring(2, 8);
+            /* Generate new session — same unguessable UUID as zephyy-realtime.js
+               (session ID doubles as the read capability under the RTDB rules) */
+            sessionId = crypto.randomUUID ? crypto.randomUUID() :
+                'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0;
+                    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
             localStorage.setItem('zephyy-chat-session', sessionId);
             setTimeout(function() { showNamePrompt(); }, 400);
         }
