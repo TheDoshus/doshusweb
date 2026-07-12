@@ -1,0 +1,256 @@
+/* ═══════════════════════════════════════════════════════════
+   PRINTMON TEMPLATE VARIANT — AURORA
+   Cosmic-glass flavor matching doshus.net: frosted translucent
+   panels, gradient title, pill buttons, soft glow + hover lift.
+   Same token contract as _template.css — recolor() swaps the
+   :root block, everything below is flavor.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─── HUE 1: PRIMARY (main identity color) ─── */
+  --pm-hue1:        #9F31C7;
+  --pm-hue1-rgb:    159, 49, 199;
+  --pm-hue1-deep:   #660a97;
+  --pm-hue1-deep-rgb: 102, 10, 151;
+  --pm-hue1-bright: #a912fd;
+  --pm-hue1-bright-rgb: 169, 18, 253;
+
+  /* ─── HUE 2: WARM (secondary accent) ─── */
+  --pm-hue2:        #c4ab49;
+  --pm-hue2-rgb:    196, 171, 73;
+  --pm-hue2-bright: #cdb34e;
+  --pm-hue2-bright-rgb: 205, 179, 78;
+  --pm-hue2-deep:   #cb8316;
+  --pm-hue2-deep-rgb: 203, 131, 22;
+
+  /* ─── HUE 3: COOL (highlights) ─── */
+  --pm-hue3:        #00C1FF;
+  --pm-hue3-rgb:    0, 193, 255;
+  --pm-hue3-light:  #8cffff;
+  --pm-hue3-light-rgb: 140, 255, 255;
+
+  /* ─── SURFACE ─── */
+  --pm-surface:     #060101;
+  --pm-surface-rgb: 6, 1, 1;
+  --pm-surface-alt: #360748;
+  --pm-surface-alt-rgb: 54, 7, 72;
+
+  /* ─── LIGHT SURFACES ─── */
+  --pm-light:       #e6b7ff;
+  --pm-light-rgb:   230, 183, 255;
+  --pm-neutral:     #e3e3e3;
+  --pm-neutral-rgb: 227, 227, 227;
+
+  /* ─── GLOW ─── */
+  --pm-glow-warm: 255, 107, 107;
+  --pm-glow-cool: 78, 205, 196;
+
+  /* ─── TEXT ─── */
+  --pm-text:        #ffffff;
+  --pm-text-dark:   #000000;
+}
+
+/* ═══ AURORA FLAVOR RULES ═══ */
+
+.printbox,
+.MultiBarcode-printer {
+    background:
+        linear-gradient(160deg,
+            rgba(var(--pm-hue1-deep-rgb), 0.18),
+            rgba(var(--pm-surface-rgb), 0.42) 55%,
+            rgba(var(--pm-hue3-rgb), 0.08));
+    border: 1px solid rgba(var(--pm-hue1-bright-rgb), 0.35);
+    border-radius: 18px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow:
+        0 8px 32px rgba(var(--pm-surface-rgb), 0.55),
+        inset 0 1px 0 rgba(var(--pm-hue3-light-rgb), 0.18);
+}
+
+h1 {
+    background: linear-gradient(100deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.95),
+        rgba(var(--pm-hue3-light-rgb), 0.95));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 0 14px rgba(var(--pm-hue1-rgb), 0.45));
+}
+
+.subtitle {
+    color: rgba(var(--pm-hue3-light-rgb), 0.8);
+    font-family: 'Amazon Ember', 'system-ui';
+    letter-spacing: 0.04em;
+}
+
+.input-group label {
+    color: var(--pm-hue3-light);
+}
+
+.input-group label span {
+    color: var(--pm-hue3);
+}
+
+input[type="text"],
+#textAreaID {
+    border: 1px solid rgba(var(--pm-hue1-rgb), 0.5);
+    border-radius: 10px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+input[type="text"]:focus,
+#textAreaID:focus {
+    border-color: rgba(var(--pm-hue3-rgb), 0.85);
+    box-shadow: 0 0 0 3px rgba(var(--pm-hue3-rgb), 0.18);
+    outline: none;
+}
+
+/* ─── PRIMARY BUTTON: glass pill, soft lift ─── */
+
+.print-button,
+.multiButton {
+    background: linear-gradient(120deg,
+        rgba(var(--pm-hue1-rgb), 0.65),
+        rgba(var(--pm-hue3-rgb), 0.55));
+    color: var(--pm-text);
+    border: 1px solid rgba(var(--pm-hue3-light-rgb), 0.4);
+    border-radius: 999px;
+    box-shadow:
+        0 4px 18px rgba(var(--pm-glow-cool), 0.35),
+        inset 0 1px 0 rgba(var(--pm-hue3-light-rgb), 0.3);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.print-button:hover,
+.multiButton:hover {
+    background: linear-gradient(120deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.8),
+        rgba(var(--pm-hue3-rgb), 0.7));
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 26px rgba(var(--pm-glow-warm), 0.4),
+        0 4px 18px rgba(var(--pm-glow-cool), 0.45),
+        inset 0 1px 0 rgba(var(--pm-hue3-light-rgb), 0.35);
+}
+
+/* ─── QUICK-PRINT BUTTONS ─── */
+
+.buttonsLine1,
+.buttonsLine2,
+.buttonsLine3 {
+    background: rgba(var(--pm-hue1-deep-rgb), 0.35);
+    color: var(--pm-text);
+    border: 1px solid rgba(var(--pm-hue1-bright-rgb), 0.45);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 14px rgba(var(--pm-surface-rgb), 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease,
+                background 0.2s ease;
+}
+
+.quick-print-buttons button:hover {
+    background-color: rgba(var(--pm-hue1-bright-rgb), 0.4);
+    border-color: rgba(var(--pm-hue3-light-rgb), 0.6);
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 22px rgba(var(--pm-glow-cool), 0.35),
+        0 4px 14px rgba(var(--pm-surface-rgb), 0.45);
+}
+
+.quick-print-buttons button:active {
+    background-color: rgba(var(--pm-hue3-rgb), 0.45);
+    border-color: var(--pm-hue3);
+    transform: translateY(0);
+}
+
+/* ─── SCROLLBAR ─── */
+
+.scroll-container {
+    scrollbar-color:
+        rgba(var(--pm-hue1-bright-rgb), 0.7)
+        rgba(var(--pm-surface-rgb), 0.6);
+}
+
+.scroll-button {
+    background-color: rgba(var(--pm-hue2-bright-rgb), 0.7);
+    border-radius: 999px;
+}
+.scroll-button:hover {
+    background-color: var(--pm-hue2-deep);
+}
+
+/* ─── ASIN STICKER ─── */
+
+.asin-sticker-container {
+    background-color: rgba(var(--pm-surface-alt-rgb), 0.45);
+    border: 1px solid rgba(var(--pm-hue3-light-rgb), 0.35);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.asin-sticker-header {
+    color: var(--pm-text);
+}
+.asin-sticker-content button {
+    background-color: rgba(var(--pm-hue2-deep-rgb), 0.75);
+    border-radius: 999px;
+}
+.asin-sticker-content button:hover {
+    background-color: rgba(var(--pm-hue3-light-rgb), 0.6);
+}
+
+/* ─── MULTI-BARCODE HEADER ─── */
+
+.MultiBarcode-printer h2 {
+    color: var(--pm-text);
+    text-shadow: 0 0 16px rgba(var(--pm-hue1-rgb), 0.6);
+}
+
+/* ─── QUICK BUTTONS DROPDOWN ─── */
+
+#quickbuttons-dropdown .qb-dropbtn {
+    background: linear-gradient(120deg,
+        rgba(var(--pm-hue1-rgb), 0.65),
+        rgba(var(--pm-hue3-rgb), 0.55));
+    color: var(--pm-text);
+    border: 1px solid rgba(var(--pm-hue3-light-rgb), 0.4);
+    border-radius: 999px;
+    box-shadow: 0 4px 18px rgba(var(--pm-glow-cool), 0.35);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+    background-color: rgba(var(--pm-surface-rgb), 0.75);
+    border: 1px solid rgba(var(--pm-hue1-bright-rgb), 0.35);
+    border-radius: 14px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: var(--pm-text);
+}
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background-color: rgba(var(--pm-hue1-bright-rgb), 0.25);
+}
+#quickbuttons-dropdown:hover .qb-dropbtn {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 26px rgba(var(--pm-glow-warm), 0.4),
+        0 4px 18px rgba(var(--pm-glow-cool), 0.45);
+}
+
+/* Reduced motion: kill the lifts */
+@media (prefers-reduced-motion: reduce) {
+    .print-button, .multiButton,
+    .buttonsLine1, .buttonsLine2, .buttonsLine3,
+    #quickbuttons-dropdown .qb-dropbtn {
+        transition: none;
+    }
+    .print-button:hover, .multiButton:hover,
+    .quick-print-buttons button:hover,
+    #quickbuttons-dropdown:hover .qb-dropbtn {
+        transform: none;
+    }
+}

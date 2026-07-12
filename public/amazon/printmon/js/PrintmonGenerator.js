@@ -42,6 +42,18 @@ const BASE_THEMES = {
     htmlFile: 'template.html',
     description: 'Custom generated theme — Witch base',
   },
+  Terminal: {
+    name: 'Terminal',
+    cssFile: 'css/newer/_template-terminal.css',
+    htmlFile: 'template.html',
+    description: 'CRT console flavor — monospace, scanlines, hard corners',
+  },
+  Aurora: {
+    name: 'Aurora',
+    cssFile: 'css/newer/_template-aurora.css',
+    htmlFile: 'template.html',
+    description: 'Cosmic glass flavor — frosted panels, gradient title, pill buttons',
+  },
 };
 
 // ─── Token Palette Extraction ──────────────────────────────
