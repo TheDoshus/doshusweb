@@ -85,6 +85,7 @@
     const mood = status.mood || 'idle';
     const workingOn = status.workingOn || '';
     const compact = container.dataset.compact === 'true';
+    const heroVariant = container.classList.contains('inline-hero');
 
     const link = document.createElement('a');
     link.href = 'zephyy.html';
@@ -94,6 +95,7 @@
 
     const badge = document.createElement('span');
     badge.className = `zephyy-badge${compact ? ' compact' : ''}`;
+    if (heroVariant) badge.classList.add('inline-hero');
 
     const glyphWrap = document.createElement('span');
     glyphWrap.className = 'zephyy-glyph';
@@ -114,7 +116,6 @@
     link.appendChild(badge);
 
     container.replaceChildren();
-    container.className = 'zephyy-badge-embed';
     container.appendChild(link);
   }
 
