@@ -904,6 +904,39 @@
   transform: scale(0.97);
 }
 /* ── Chat image lightbox ── */
+.zp-chat-img-card {
+  margin: 0.55rem 0 0.35rem;
+  max-width: min(100%, 420px);
+}
+.zp-chat-img {
+  display: block;
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+  cursor: pointer;
+}
+.zp-chat-img-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.45rem;
+  color: oklch(var(--text-muted) / 0.78);
+  font: 500 0.72rem/1.2 'JetBrains Mono', 'Fira Code', monospace;
+}
+.zp-chat-img-copy {
+  border: 1px solid oklch(var(--brand-teal) / 0.38);
+  background: oklch(var(--space-oled) / 0.34);
+  color: oklch(var(--brand-teal));
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.zp-chat-img-copy:hover {
+  border-color: oklch(var(--brand-teal) / 0.72);
+  background: oklch(var(--brand-teal) / 0.13);
+}
 .zp-lightbox {
   position: fixed; inset: 0; z-index: 10000;
   display: flex; align-items: center; justify-content: center;
