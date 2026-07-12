@@ -173,8 +173,8 @@
             var url = escapeHtml(p.url);
             var alt = escapeHtml(p.alt);
             var id = 'zpli' + (i++);
-            // Store URL in a data-map so onclick can look it up (avoids inline data URIs in attribute)
-            imgUrlMap[id] = p.url;
+            // Store raw data off-DOM so large data URIs do not live in attributes.
+            imgUrlMap[id] = { url: p.url, alt: p.alt };
             var html = '<img src="' + url + '" alt="' + alt + '" data-zpli="' + id + '" class="zp-chat-img" style="max-width:100%;max-height:300px;border-radius:8px;margin:8px 0;object-fit:contain;cursor:pointer" loading="lazy">';
             text = text.replace(p.ph, function() { return html; });
         });
@@ -221,15 +221,21 @@
         lightboxEl.className = 'zp-lightbox';
         lightboxEl.innerHTML =
             '<div class="zp-lightbox-bg"></div>' +
+            '<button type="button" class="zp-lightbox-download" aria-label="Download image">Download</button>' +
             '<div class="zp-lightbox-close">&times;</div>' +
             '<img class="zp-lightbox-img" alt="">';
         lightboxEl.querySelector('.zp-lightbox-bg').addEventListener('click', closeLightbox);
         lightboxEl.querySelector('.zp-lightbox-close').addEventListener('click', closeLightbox);
+        lightboxEl.querySelector('.zp-lightbox-download').addEventListener('click', downloadLightboxImage);
         document.body.appendChild(lightboxEl);
     }
-    function openLightbox(url) {
+    var currentLightboxImage = null;
+    function openLightbox(item) {
         ensureLightbox();
-        lightboxEl.querySelector('.zp-lightbox-img').src = url;
+        currentLightboxImage = item;
+        var image = lightboxEl.querySelector('.zp-lightbox-img');
+        image.src = item.url;
+        image.alt = item.alt || 'Generated image';
         lightboxEl.classList.add('zp-lightbox--open');
         document.addEventListener('keydown', onLightboxKey);
     }
@@ -237,6 +243,48 @@
         if (!lightboxEl) return;
         lightboxEl.classList.remove('zp-lightbox--open');
         document.removeEventListener('keydown', onLightboxKey);
+    }
+    function imageDownloadName(alt, url) {
+        var base = (alt || 'zephyy-generated-image')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 60) || 'zephyy-generated-image';
+        var ext = '.png';
+        if (/^data:image\/jpe?g/i.test(url) || /\.jpe?g(?:[?#]|$)/i.test(url)) ext = '.jpg';
+        if (/^data:image\/webp/i.test(url) || /\.webp(?:[?#]|$)/i.test(url)) ext = '.webp';
+        return base + ext;
+    }
+    function triggerDownload(url, filename) {
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+    function downloadLightboxImage(e) {
+        if (e) e.stopPropagation();
+        if (!currentLightboxImage || !currentLightboxImage.url) return;
+        var url = currentLightboxImage.url;
+        var filename = imageDownloadName(currentLightboxImage.alt, url);
+        if (url.indexOf('data:image/') === 0) {
+            triggerDownload(url, filename);
+            return;
+        }
+        fetch(url)
+            .then(function(resp) {
+                if (!resp.ok) throw new Error('image fetch failed');
+                return resp.blob();
+            })
+            .then(function(blob) {
+                var objectUrl = URL.createObjectURL(blob);
+                triggerDownload(objectUrl, filename);
+                setTimeout(function() { URL.revokeObjectURL(objectUrl); }, 1000);
+            })
+            .catch(function() {
+                window.open(url, '_blank', 'noopener');
+            });
     }
     function onLightboxKey(e) {
         if (e.key === 'Escape') closeLightbox();
@@ -246,8 +294,8 @@
     document.addEventListener('click', function(e) {
         var img = e.target.closest('.zp-chat-img');
         if (!img || !img.dataset.zpli) return;
-        var url = imgUrlMap[img.dataset.zpli];
-        if (url) openLightbox(url);
+        var item = imgUrlMap[img.dataset.zpli];
+        if (item) openLightbox(item);
     });
 
     /* ── Local message cache: instant paint on panel open, before the

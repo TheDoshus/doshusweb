@@ -924,6 +924,21 @@
   z-index: 1; line-height: 1;
 }
 .zp-lightbox-close:hover { color: oklch(var(--brand-teal)); }
+.zp-lightbox-download {
+  position: absolute; top: 18px; right: 64px; z-index: 1;
+  border: 1px solid oklch(var(--brand-teal) / 0.55);
+  background: oklch(var(--space-oled) / 0.72);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font: 600 0.78rem/1 'JetBrains Mono', 'Fira Code', monospace;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+.zp-lightbox-download:hover {
+  color: oklch(var(--brand-teal));
+  border-color: oklch(var(--brand-teal));
+}
 .zp-lightbox-img {
   position: relative; z-index: 1;
   max-width: 90vw; max-height: 90vh;
