@@ -251,13 +251,13 @@
 
   function renderStats(list) {
     if (!statsEl) return;
-    const wallpaperThemes = list.filter((theme) => theme.wallpaperCount > 0).length;
+    const baseCount = new Set(list.map((theme) => String(theme.baseTheme || 'GTA').toLowerCase())).size;
     const newest = list[0] && list[0].createdAt
       ? new Date(list[0].createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })
       : 'n/a';
     statsEl.innerHTML = [
       `<div class="gallery-stat"><span class="stat-value">${themes.length}</span><span class="stat-label">themes archived</span></div>`,
-      `<div class="gallery-stat"><span class="stat-value">${wallpaperThemes}</span><span class="stat-label">with wallpapers</span></div>`,
+      `<div class="gallery-stat"><span class="stat-value">${baseCount}</span><span class="stat-label">base skins in play</span></div>`,
       `<div class="gallery-stat"><span class="stat-value">${newest}</span><span class="stat-label">freshest drop</span></div>`,
     ].join('');
   }
