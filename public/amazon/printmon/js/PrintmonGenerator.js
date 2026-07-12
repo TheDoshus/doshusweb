@@ -153,6 +153,23 @@ function darkenHex(hex, factor) {
 }
 
 /**
+ * Blend two hex colors.
+ * @param {string} fromHex
+ * @param {string} toHex
+ * @param {number} ratio - 0 keeps fromHex, 1 becomes toHex
+ * @returns {string}
+ */
+function blendHex(fromHex, toHex, ratio) {
+  const clamped = Math.max(0, Math.min(1, Number(ratio) || 0));
+  const from = hexToRgb(fromHex).split(', ').map(Number);
+  const to = hexToRgb(toHex).split(', ').map(Number);
+  const mixed = from.map((value, index) => {
+    return Math.round(value + (to[index] - value) * clamped);
+  });
+  return '#' + mixed.map(c => c.toString(16).padStart(2, '0')).join('');
+}
+
+/**
  * Auto-derive a full 14-token palette from 3 seed colors.
  * @param {string} primary - main brand color (hex)
  * @param {string} accent - cool accent (hex)
@@ -161,8 +178,7 @@ function darkenHex(hex, factor) {
  */
 function derivePalette(primary, accent, surface) {
   let p = primary || '#9F31C7';
-  const a = accent || '#00C1FF';
-  const s = surface || darkenHex(p, 0.92);
+  let a = accent || '#00C1FF';
 
   // Guard: if the AI picks a near-black primary for "dark theme" requests,
   // the title text renders invisible on the dark surface. Boost luminance
@@ -174,29 +190,40 @@ function derivePalette(primary, accent, surface) {
     p = lightenHex(p, boost);
   }
 
-  // Generate a warm complementary accent from the primary
-  const warm = lightenHex(darkenHex(p, 0.3), 0.2);
+  if (perceivedBrightness(a) < 0.08) {
+    a = lightenHex(a, 0.42);
+  }
+
+  // Build a bridge color so two-input themes feel intentional instead of flat.
+  const bridge = blendHex(p, a, 0.34);
+  const warm = blendHex(lightenHex(p, 0.08), lightenHex(bridge, 0.22), 0.46);
+  const brightPrimary = lightenHex(blendHex(p, a, 0.12), 0.28);
+  const accentLight = lightenHex(blendHex(a, '#ffffff', 0.14), 0.24);
+  const surfaceSeed = surface || darkenHex(blendHex(p, a, 0.16), 0.9);
+  const deepSurface = darkenHex(surfaceSeed, 0.08);
+  const altSurface = darkenHex(blendHex(surfaceSeed, bridge, 0.18), 0.18);
+  const lightTone = lightenHex(blendHex(p, bridge, 0.24), 0.68);
 
   return {
     palette: {
       '--pm-hue1': p,
       '--pm-hue1-deep': darkenHex(p, 0.5),
-      '--pm-hue1-bright': lightenHex(p, 0.35),
+      '--pm-hue1-bright': brightPrimary,
       '--pm-hue2': warm,
       '--pm-hue2-bright': lightenHex(warm, 0.25),
       '--pm-hue2-deep': darkenHex(warm, 0.35),
       '--pm-hue3': a,
-      '--pm-hue3-light': lightenHex(a, 0.4),
-      '--pm-surface': s,
-      '--pm-surface-alt': darkenHex(s, 0.15),
-      '--pm-light': lightenHex(p, 0.65),
+      '--pm-hue3-light': accentLight,
+      '--pm-surface': deepSurface,
+      '--pm-surface-alt': altSurface,
+      '--pm-light': lightTone,
       '--pm-neutral': '#e3e3e3',
       '--pm-text': '#ffffff',
       '--pm-text-dark': '#000000',
     },
     glow: {
-      '--pm-glow-warm': hexToRgb(warm),
-      '--pm-glow-cool': hexToRgb(lightenHex(a, 0.3)),
+      '--pm-glow-warm': hexToRgb(lightenHex(blendHex(warm, p, 0.3), 0.05)),
+      '--pm-glow-cool': hexToRgb(lightenHex(blendHex(a, bridge, 0.18), 0.18)),
     },
   };
 }

@@ -16,6 +16,32 @@
   let activeTag = 'all';
   let sortMode = 'newest';
 
+  const FAMILY_LABELS = {
+    ember: 'Ember',
+    amber: 'Amber',
+    gold: 'Solar',
+    verdant: 'Forest',
+    aqua: 'Aqua',
+    cobalt: 'Cobalt',
+    violet: 'Violet',
+    rose: 'Rose',
+    frost: 'Frost',
+    monochrome: 'Shadow',
+  };
+
+  const FAMILY_CARD_VOICES = {
+    ember: { primary: 'Ember lead', accent: 'Ember spark' },
+    amber: { primary: 'Amber heat', accent: 'Amber spark' },
+    gold: { primary: 'Solar pulse', accent: 'Solar edge' },
+    verdant: { primary: 'Forest pulse', accent: 'Verdant edge' },
+    aqua: { primary: 'Aqua drift', accent: 'Aqua flare' },
+    cobalt: { primary: 'Cobalt current', accent: 'Cobalt edge' },
+    violet: { primary: 'Violet haze', accent: 'Violet edge' },
+    rose: { primary: 'Rose pulse', accent: 'Rose glow' },
+    frost: { primary: 'Frost bloom', accent: 'Frost edge' },
+    monochrome: { primary: 'Shadow tone', accent: 'Shadow edge' },
+  };
+
   const grid = document.getElementById('themeGrid');
   const searchInput = document.getElementById('gallerySearch');
   const sortSelect = document.getElementById('gallerySort');
@@ -47,6 +73,15 @@
       .filter(Boolean)
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  }
+
+  function familyLabel(family) {
+    return FAMILY_LABELS[family] || titleCase(family || 'signal');
+  }
+
+  function familyCardLabel(family, role) {
+    const familyVoice = FAMILY_CARD_VOICES[family] || FAMILY_CARD_VOICES.monochrome;
+    return familyVoice[role] || familyVoice.primary;
   }
 
   function hueToFamily(hex) {
@@ -105,49 +140,98 @@
     return Array.from(new Set(base.filter(Boolean)));
   }
 
+  function buildFilterTokens(theme, primaryFamily, accentFamily, wallpaperCount) {
+    const tokens = [];
+    const baseTheme = String(theme.baseTheme || 'GTA').toLowerCase();
+    tokens.push(`base:${baseTheme}`);
+    if (primaryFamily) tokens.push(`mood:${primaryFamily}`);
+    if (accentFamily && accentFamily !== primaryFamily) tokens.push(`mood:${accentFamily}`);
+    tokens.push(wallpaperCount > 0 ? 'state:wallpaper-backed' : 'state:css-only');
+    return tokens;
+  }
+
+  function buildDisplayChips(theme, primaryFamily, accentFamily, wallpaperCount) {
+    const chips = [
+      `${titleCase(theme.baseTheme || 'GTA')} base`,
+      familyCardLabel(primaryFamily, 'primary'),
+      familyCardLabel(accentFamily, 'accent'),
+      wallpaperCount > 0 ? `${wallpaperCount} wallpapers` : 'CSS only',
+    ];
+    return Array.from(new Set(chips.filter(Boolean)));
+  }
+
   function normalizeTheme(theme) {
     if (!theme || !theme.name || !theme.safeName) return null;
     const swatches = deriveSwatches(theme);
     const wallpaperCount = Array.isArray(theme.wallpapers) ? theme.wallpapers.length : (theme.wallpaperCount || 0);
     const tags = Array.isArray(theme.tags) && theme.tags.length ? theme.tags : deriveTags(theme);
     const createdTs = Date.parse(theme.createdAt || '') || 0;
+    const palette = theme.palette || {};
+    const primaryFamily = hueToFamily(palette['--pm-hue1'] || swatches[0]);
+    const accentFamily = hueToFamily(palette['--pm-hue3'] || swatches[2] || swatches[1]);
+    const filterTokens = buildFilterTokens(theme, primaryFamily, accentFamily, wallpaperCount);
+    const displayChips = buildDisplayChips(theme, primaryFamily, accentFamily, wallpaperCount);
     return {
       ...theme,
       swatches,
       tags,
       wallpaperCount,
       createdTs,
+      primaryFamily,
+      accentFamily,
+      filterTokens,
+      displayChips,
       searchText: [
         theme.name,
         theme.tagline,
         theme.baseTheme,
         tags.join(' '),
+        displayChips.join(' '),
+        familyLabel(primaryFamily),
+        familyLabel(accentFamily),
       ].join(' ').toLowerCase(),
     };
   }
 
-  function tagCounts(list) {
+  function filterCounts(list) {
     const counts = new Map();
     list.forEach((theme) => {
-      (theme.tags || []).forEach((tag) => {
-        if (tag === 'generated') return;
-        counts.set(tag, (counts.get(tag) || 0) + 1);
+      (theme.filterTokens || []).forEach((token) => {
+        counts.set(token, (counts.get(token) || 0) + 1);
       });
     });
-    return Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-      .slice(0, 8);
+    return counts;
+  }
+
+  function filterLabel(token) {
+    if (token === 'state:wallpaper-backed') return 'Wallpaper-backed';
+    if (token === 'state:css-only') return 'CSS only';
+    if (token.startsWith('base:')) return `${titleCase(token.slice(5))} base`;
+    if (token.startsWith('mood:')) return `${familyLabel(token.slice(5))} mood`;
+    return titleCase(token);
   }
 
   function renderFilters() {
     if (!filterBar) return;
-    const tags = tagCounts(themes);
+    const counts = filterCounts(themes);
+    const baseTokens = Array.from(counts.entries())
+      .filter(([token]) => token.startsWith('base:'))
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 4);
+    const moodTokens = Array.from(counts.entries())
+      .filter(([token]) => token.startsWith('mood:'))
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 4);
     const pills = [
       { key: 'all', label: 'All themes' },
-      { key: 'with-wallpapers', label: 'Wallpaper-backed' },
-      ...tags.map(([tag, count]) => ({
-        key: tag,
-        label: `${titleCase(tag)} · ${count}`,
+      { key: 'state:wallpaper-backed', label: `Wallpaper-backed · ${counts.get('state:wallpaper-backed') || 0}` },
+      ...baseTokens.map(([token, count]) => ({
+        key: token,
+        label: `${filterLabel(token)} · ${count}`,
+      })),
+      ...moodTokens.map(([token, count]) => ({
+        key: token,
+        label: `${filterLabel(token)} · ${count}`,
       })),
     ];
     filterBar.innerHTML = pills.map((pill) => `
@@ -177,8 +261,7 @@
     let list = themes.filter((theme) => {
       if (query && !theme.searchText.includes(query)) return false;
       if (activeTag === 'all') return true;
-      if (activeTag === 'with-wallpapers') return theme.wallpaperCount > 0;
-      return (theme.tags || []).includes(activeTag);
+      return (theme.filterTokens || []).includes(activeTag);
     });
 
     list = list.slice().sort((a, b) => {
@@ -195,10 +278,8 @@
       ? `linear-gradient(135deg, ${swatches[0]} 0%, ${swatches[1]} 52%, ${swatches[2]} 100%)`
       : `linear-gradient(135deg, ${swatches[0]} 0%, ${swatches[1] || swatches[0]} 100%)`;
     const chips = [
-      titleCase(theme.baseTheme || 'GTA'),
-      ...theme.tags.filter((tag) => tag !== 'generated' && String(tag).toLowerCase() !== String(theme.baseTheme || '').toLowerCase()).slice(0, 2).map(titleCase),
+      ...(theme.displayChips || []),
     ];
-    if (theme.wallpaperCount > 0) chips.push(`${theme.wallpaperCount} wallpapers`);
 
     return `
       <article class="theme-card" onclick="window.openTheme('${escapeHtml(theme.safeName)}')" style="animation-delay:${index * 0.04}s">
@@ -298,9 +379,7 @@
     if (previewTagline) previewTagline.textContent = theme.tagline || 'Generated theme preview';
     if (previewMeta) {
       const metaBits = [
-        titleCase(theme.baseTheme || 'GTA'),
-        theme.wallpaperCount ? `${theme.wallpaperCount} wallpapers` : 'CSS-only',
-        ...(theme.tags || []).filter((tag) => tag !== 'generated').slice(0, 2).map(titleCase),
+        ...(theme.displayChips || []),
       ];
       previewMeta.innerHTML = metaBits.map((bit) => `<span class="theme-chip">${escapeHtml(bit)}</span>`).join('');
     }
