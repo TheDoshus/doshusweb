@@ -243,28 +243,52 @@
 
   function setupChatOrb(db) {
     const SESSION_KEY = 'zephyy-chat-session';
-    let sessionId = localStorage.getItem(SESSION_KEY);
-    if (!sessionId) {
-      sessionId = crypto.randomUUID ? crypto.randomUUID() :
+
+    function newSessionId() {
+      // Unguessable UUID — the session ID doubles as the read capability
+      // under the RTDB rules, so entropy matters.
+      return crypto.randomUUID ? crypto.randomUUID() :
         'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
           var r = Math.random() * 16 | 0;
           return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
-      localStorage.setItem(SESSION_KEY, sessionId);
     }
 
-    const msgsRef = db.ref('zephyy/chat/sessions/' + sessionId + '/messages');
-    const controlRef = db.ref('zephyy/chat/sessions/' + sessionId + '/control');
+    let sessionId = localStorage.getItem(SESSION_KEY) || newSessionId();
+    let msgsRef = null;
+    let controlRef = null;
+    let _sessionEnded = false;
 
     // ── Control watcher (session end, etc.) ──
-    let _sessionEnded = false;
-    controlRef.on('value', function (snap) {
-      const ctrl = snap.val() || {};
-      if (ctrl.state === 'ended') {
-        _sessionEnded = true;
-        window.dispatchEvent(new CustomEvent('zephyy-session-ended', { detail: ctrl }));
+    function attachControlWatcher() {
+      controlRef.on('value', function (snap) {
+        const ctrl = snap.val() || {};
+        if (ctrl.state === 'ended') {
+          _sessionEnded = true;
+          window.dispatchEvent(new CustomEvent('zephyy-session-ended', { detail: ctrl }));
+        }
+      });
+    }
+
+    // ── Session (re)bind — the single owner of session lifecycle.
+    //    Detaches old listeners, swaps refs, reattaches. Restart flows call
+    //    resetSession() below instead of doing localStorage surgery. ──
+    function bindSession(id) {
+      if (msgsRef) msgsRef.off();
+      if (controlRef) controlRef.off();
+      sessionId = id;
+      localStorage.setItem(SESSION_KEY, id);
+      msgsRef = db.ref('zephyy/chat/sessions/' + id + '/messages');
+      controlRef = db.ref('zephyy/chat/sessions/' + id + '/control');
+      _sessionEnded = false;
+      attachControlWatcher();
+      startMessageListener();
+      if (window.__zpRealtime) {
+        window.__zpRealtime.sessionId = sessionId;
+        window.__zpRealtime.msgsRef = msgsRef;
+        window.__zpRealtime.controlRef = controlRef;
       }
-    });
+    }
 
     // ── Status watcher (online/offline for chat input) ──
     const statusRef = db.ref('zephyy/status');
@@ -318,17 +342,21 @@
       return msgsRef.limitToLast(limit || 50).once('value');
     }
 
-    startMessageListener();
-
-    // Expose API for zephyy.js chat orb
+    // Expose API for zephyy.js chat orb (sessionId/refs kept live by bindSession)
     window.__zpRealtime = {
-      sessionId: sessionId,
-      msgsRef: msgsRef,
-      controlRef: controlRef,
+      sessionId: null,
+      msgsRef: null,
+      controlRef: null,
       loadHistory: loadHistory,
+      resetSession: function () {
+        bindSession(newSessionId());
+        return sessionId;
+      },
       get sessionEnded() { return _sessionEnded; },
       set sessionEnded(v) { _sessionEnded = v; },
     };
+
+    bindSession(sessionId);
   }
 
   // ──────────────────────────────────────────────

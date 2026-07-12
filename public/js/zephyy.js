@@ -947,14 +947,20 @@
             /* Clear and re-ask name */
             if (sendBtn) sendBtn.disabled = false;
             if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; inputEl.value = ''; }
-            /* Generate new session — same unguessable UUID as zephyy-realtime.js
-               (session ID doubles as the read capability under the RTDB rules) */
-            sessionId = crypto.randomUUID ? crypto.randomUUID() :
-                'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = Math.random() * 16 | 0;
-                    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-                });
-            localStorage.setItem('zephyy-chat-session', sessionId);
+            /* Generate new session via realtime's lifecycle API — rebinds the
+               Firebase refs so post-restart messages reach the NEW session
+               (previously they kept flowing to the old refs until a reload). */
+            if (window.__zpRealtime && window.__zpRealtime.resetSession) {
+                sessionId = window.__zpRealtime.resetSession();
+            } else {
+                /* Realtime not loaded — swap localStorage so a reload picks it up */
+                sessionId = crypto.randomUUID ? crypto.randomUUID() :
+                    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                        var r = Math.random() * 16 | 0;
+                        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                    });
+                localStorage.setItem('zephyy-chat-session', sessionId);
+            }
             setTimeout(function() { showNamePrompt(); }, 400);
         }
     });
