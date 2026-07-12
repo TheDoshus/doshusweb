@@ -23,7 +23,7 @@ external-side change and mark the link caveat.
 | Date | Change | Files touched (external) | Notes for internal edit |
 |---|---|---|---|
 | 2026-07-12 | 5 handmade skins ported as generator bases — handcrafted pages themselves untouched, **no sync needed** (listed for awareness) | `css/`, `template.html` | — |
-| _(queued)_ | Zephyy gallery orb button next to Swap Themes (planned — not built yet) | `template.html`, all `TheDoshusPrintmon2*.html`, swap-button CSS | Orb links to external gallery — decide whether internal copies get the orb (it points off-network) or skip it |
+| 2026-07-12 | **Zephyy gallery orb** added beside Swap Themes button; "Theme Gallery 🖼️" link removed from dropdown; `?v=orb1` cache-busters on swapbtn.css/swap-img.js refs | all 32 printmon pages (`template.html` + handcrafted), `css/swapbtn.css` (orb styles appended), `js/swap-img.js` (quip rotator appended) | ctrl+H strings: add `<a class="zephyy-orb" ...>` after the Swap Themes button OR skip entirely — orb links to the **external** gallery, which internal machines may not want. Dropdown gallery-link removal + cache-busters apply either way |
 
 ## Synced history
 

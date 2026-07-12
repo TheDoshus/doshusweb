@@ -67,3 +67,18 @@ function downloadAllArcs() {
 		}, index * 300);
 	});
 }
+
+// ZEPHYY GALLERY ORB — rotate the tooltip quip each page load
+(function() {
+	var tip = document.querySelector('.zephyy-orb-tip');
+	if (!tip) return;
+	var quips = [
+		'skins I cooked up — come see ✨',
+		'psst… the theme vault is this way 🌌',
+		'fresh palette drops in the gallery',
+		'your coworkers keep requesting skins. peek the results',
+		'tap the orb. cosmic printmons await',
+		'I recolor this whole page on request, you know'
+	];
+	tip.textContent = quips[Math.floor(Math.random() * quips.length)];
+})();
