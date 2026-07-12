@@ -266,7 +266,11 @@
         if (ctrl.state === 'ended') {
           _sessionEnded = true;
           window.dispatchEvent(new CustomEvent('zephyy-session-ended', { detail: ctrl }));
+          return;
         }
+        // Forward full control state (typing, lastSeen, …) — widget features
+        // no-op gracefully until the orb starts writing these fields.
+        window.dispatchEvent(new CustomEvent('zephyy-ctrl', { detail: ctrl }));
       });
     }
 
