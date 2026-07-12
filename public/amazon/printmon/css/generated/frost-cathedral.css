@@ -1,0 +1,320 @@
+/* ═══════════════════════════════════════════════════════════
+   PRINTMON TEMPLATE VARIANT — GLASS
+   Frosted-glass flavor: heavy backdrop-filter blur, white
+   borders, translucent panels, French Script MT subtitle.
+   Same token contract as _template.css — recolor() swaps the
+   :root block, everything below is flavor.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --pm-hue1: #9fd8ff;
+  --pm-hue1-rgb: 159, 216, 255;
+  --pm-hue1-deep: #506c80;
+  --pm-hue1-deep-rgb: 80, 108, 128;
+  --pm-hue1-bright: #c0e0ff;
+  --pm-hue1-bright-rgb: 192, 224, 255;
+  --pm-hue2: #b5d9ff;
+  --pm-hue2-rgb: 181, 217, 255;
+  --pm-hue2-bright: #c8e3ff;
+  --pm-hue2-bright-rgb: 200, 227, 255;
+  --pm-hue2-deep: #768da6;
+  --pm-hue2-deep-rgb: 118, 141, 166;
+  --pm-hue3: #e0b3ff;
+  --pm-hue3-rgb: 224, 179, 255;
+  --pm-hue3-light: #eaceff;
+  --pm-hue3-light-rgb: 234, 206, 255;
+  --pm-surface: #101317;
+  --pm-surface-rgb: 16, 19, 23;
+  --pm-surface-alt: #272c36;
+  --pm-surface-alt-rgb: 39, 44, 54;
+  --pm-light: #e2f2ff;
+  --pm-light-rgb: 226, 242, 255;
+  --pm-neutral: #e3e3e3;
+  --pm-neutral-rgb: 227, 227, 227;
+  --pm-text: #ffffff;
+  --pm-text-rgb: 255, 255, 255;
+  --pm-text-dark: #000000;
+  --pm-text-dark-rgb: 0, 0, 0;
+  --pm-glow-warm: 178, 219, 255;
+  --pm-glow-cool: 223, 196, 255;
+}
+
+/* ═══ GLASS FLAVOR RULES ═══ */
+
+.printbox {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px) saturate(165%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px rgba(var(--pm-surface-rgb), 0.37),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    will-change: transform, backdrop-filter;
+}
+
+h1 {
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3),
+                 0 0 20px rgba(var(--pm-hue3-light-rgb), 0.2);
+    font-weight: 700;
+}
+
+.subtitle {
+    color: rgba(var(--pm-neutral-rgb), 0.85);
+    font-family: 'French Script MT', -apple-system, BlinkMacSystemFont, sans-serif;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    font-size: 1.85rem;
+}
+
+.input-group label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.input-group label span {
+    color: rgba(var(--pm-hue3-rgb), 0.9);
+}
+
+.options label {
+    color: rgba(var(--pm-neutral-rgb), 0.95);
+}
+
+input[type="text"] {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    will-change: border-color, box-shadow;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+input[type="text"]:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(var(--pm-hue3-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--pm-hue3-rgb), 0.1),
+                inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    outline: none;
+}
+
+/* ─── PRIMARY BUTTON: frosted glass, subtle lift ─── */
+
+.print-button {
+    background: linear-gradient(135deg,
+        rgba(var(--pm-hue3-light-rgb), 0.15),
+        rgba(var(--pm-hue1-rgb), 0.15));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    will-change: transform, box-shadow, border-color;
+    transition: transform 0.22s ease, box-shadow 0.22s ease,
+                background 0.22s ease, border-color 0.22s ease;
+}
+
+.print-button:hover {
+    background: linear-gradient(135deg,
+        rgba(var(--pm-hue3-light-rgb), 0.25),
+        rgba(var(--pm-hue1-rgb), 0.25));
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.02) translateY(-1px);
+    box-shadow: 0 6px 20px rgba(var(--pm-hue3-rgb), 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ─── QUICK-PRINT BUTTONS ─── */
+
+.buttonsLine1,
+.buttonsLine2,
+.buttonsLine3 {
+    background: linear-gradient(135deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.12),
+        rgba(var(--pm-hue2-bright-rgb), 0.12));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    will-change: box-shadow, border-color;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease,
+                background 0.2s ease;
+}
+
+.buttonsLine1:hover,
+.buttonsLine2:hover,
+.buttonsLine3:hover {
+    background: linear-gradient(135deg,
+        rgba(var(--pm-hue3-light-rgb), 0.2),
+        rgba(var(--pm-hue1-rgb), 0.2));
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 6px 18px rgba(var(--pm-glow-cool), 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* ─── BUTTON STATE OVERRIDES ─── */
+
+.quick-print-buttons button:hover {
+    background: rgba(var(--pm-hue1-bright-rgb), 0.15);
+    border-color: rgba(var(--pm-hue1-bright-rgb), 0.4);
+    box-shadow: 0 4px 12px rgba(var(--pm-hue1-bright-rgb), 0.2);
+}
+
+.quick-print-buttons button:active {
+    background: rgba(var(--pm-hue3-rgb), 0.2);
+    border-color: rgba(var(--pm-hue3-rgb), 0.5);
+}
+
+/* ─── SCROLLBAR ─── */
+
+.scroll-container {
+    scrollbar-color:
+        rgba(var(--pm-hue1-bright-rgb), 0.4)
+        rgba(var(--pm-hue1-deep-rgb), 0.2);
+}
+
+.scroll-button {
+    background: rgba(var(--pm-hue2-bright-rgb), 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    will-change: box-shadow, background-color, border-color;
+}
+.scroll-button:hover {
+    background: rgba(var(--pm-hue2-deep-rgb), 0.25);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--pm-hue2-deep-rgb), 0.3);
+}
+
+/* ─── ASIN STICKER ─── */
+
+.asin-sticker-container {
+    background: rgba(var(--pm-surface-alt-rgb), 0.15);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    will-change: transform, backdrop-filter;
+}
+.asin-sticker-header {
+    color: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+.asin-sticker-content button {
+    background: rgba(var(--pm-hue2-deep-rgb), 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    will-change: box-shadow, background-color, border-color;
+}
+.asin-sticker-content button:hover {
+    background: rgba(var(--pm-hue3-light-rgb), 0.25);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 4px 12px rgba(var(--pm-hue3-light-rgb), 0.3);
+}
+
+/* ─── MULTI-BARCODE PRINTER ─── */
+
+.MultiBarcode-printer {
+    background: rgba(var(--pm-surface-rgb), 0.2);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(var(--pm-hue2-rgb), 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    will-change: transform, backdrop-filter;
+}
+.MultiBarcode-printer h2 {
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 8px rgba(var(--pm-hue1-rgb), 0.4);
+}
+
+#textAreaID {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--pm-hue1-rgb), 0.3);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    will-change: border-color, box-shadow;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+#textAreaID:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(var(--pm-hue1-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--pm-hue1-rgb), 0.1),
+                inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    outline: none;
+}
+
+.multiButton {
+    background: linear-gradient(135deg,
+        rgba(var(--pm-hue3-light-rgb), 0.15),
+        rgba(var(--pm-hue1-rgb), 0.15));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    will-change: transform, box-shadow, border-color;
+    transition: transform 0.22s ease, box-shadow 0.22s ease,
+                background 0.22s ease, border-color 0.22s ease;
+}
+.multiButton:hover {
+    background: linear-gradient(135deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.2),
+        rgba(var(--pm-hue2-bright-rgb), 0.2));
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.02) translateY(-1px);
+    box-shadow: 0 6px 20px rgba(var(--pm-hue1-bright-rgb), 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ─── QUICK BUTTONS DROPDOWN ─── */
+
+#quickbuttons-dropdown .qb-dropbtn {
+    background: linear-gradient(135deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.12),
+        rgba(var(--pm-hue2-bright-rgb), 0.12));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    will-change: box-shadow, border-color;
+    transition: box-shadow 0.22s ease, border-color 0.22s ease;
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+    background: rgba(var(--pm-light-rgb), 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    will-change: transform, opacity, backdrop-filter;
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background: rgba(var(--pm-neutral-rgb), 0.15);
+    backdrop-filter: blur(10px);
+}
+#quickbuttons-dropdown:hover .qb-dropbtn {
+    background: linear-gradient(135deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.2),
+        rgba(var(--pm-hue2-bright-rgb), 0.2));
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 6px 18px rgba(var(--pm-glow-cool), 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Reduced motion: kill transforms and transitions */
+@media (prefers-reduced-motion: reduce) {
+    .print-button, .multiButton,
+    .buttonsLine1, .buttonsLine2, .buttonsLine3,
+    #quickbuttons-dropdown .qb-dropbtn,
+    input[type="text"], #textAreaID {
+        transition: none;
+    }
+    .print-button:hover, .multiButton:hover {
+        transform: none;
+    }
+}

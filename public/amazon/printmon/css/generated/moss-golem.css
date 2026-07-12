@@ -1,0 +1,243 @@
+/* ═══════════════════════════════════════════════════════════
+   PRINTMON TEMPLATE VARIANT — FOREST
+   Woodland flavor: Vivaldi cursive calligraphy, green/gold
+   nature palette, scale(1.05) hover growth, earthy gradients.
+   Same token contract as _template.css — recolor() swaps the
+   :root block, everything below is flavor.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --pm-hue1: #3e8e41;
+  --pm-hue1-rgb: 62, 142, 65;
+  --pm-hue1-deep: #1f4721;
+  --pm-hue1-deep-rgb: 31, 71, 33;
+  --pm-hue1-bright: #80b177;
+  --pm-hue1-bright-rgb: 128, 177, 119;
+  --pm-hue2: #6aa35d;
+  --pm-hue2-rgb: 106, 163, 93;
+  --pm-hue2-bright: #8fba86;
+  --pm-hue2-bright-rgb: 143, 186, 134;
+  --pm-hue2-deep: #456a3c;
+  --pm-hue2-deep-rgb: 69, 106, 60;
+  --pm-hue3: #c2b34a;
+  --pm-hue3-rgb: 194, 179, 74;
+  --pm-hue3-light: #d7ce88;
+  --pm-hue3-light-rgb: 215, 206, 136;
+  --pm-surface: #070e06;
+  --pm-surface-rgb: 7, 14, 6;
+  --pm-surface-alt: #15210f;
+  --pm-surface-alt-rgb: 21, 33, 15;
+  --pm-light: #c5dcc3;
+  --pm-light-rgb: 197, 220, 195;
+  --pm-neutral: #e3e3e3;
+  --pm-neutral-rgb: 227, 227, 227;
+  --pm-text: #ffffff;
+  --pm-text-rgb: 255, 255, 255;
+  --pm-text-dark: #000000;
+  --pm-text-dark-rgb: 0, 0, 0;
+  --pm-glow-warm: 101, 162, 94;
+  --pm-glow-cool: 192, 189, 106;
+}
+
+/* ═══ FOREST FLAVOR RULES ═══ */
+
+.printbox {
+    background-color: rgba(var(--pm-surface-rgb), 0.59);
+    border: 5px double rgba(var(--pm-hue3-rgb), 0.71);
+}
+
+h1 {
+    color: var(--pm-hue1);
+    text-shadow: 2px 2px var(--pm-hue3);
+}
+
+.subtitle {
+    color: var(--pm-hue3);
+    font-family: 'Vivaldi', cursive;
+    font-size: 20pt;
+}
+
+.input-group label {
+    color: var(--pm-text);
+}
+
+.input-group label span {
+    color: var(--pm-hue3);
+}
+
+.structured-input span {
+    color: rgba(var(--pm-hue1-rgb), 0.93);
+}
+
+input[type="text"],
+#textAreaID {
+    border: 1.5px solid var(--pm-hue3);
+}
+
+/* ─── PRIMARY BUTTON: green gradient, bright hover ─── */
+
+.print-button,
+.multiButton {
+    background: linear-gradient(120deg,
+        var(--pm-hue3),
+        var(--pm-hue3-light));
+    color: var(--pm-text);
+    box-shadow:
+        0 0 15px rgba(var(--pm-hue3-rgb), 0.5),
+        0 0 30px rgba(var(--pm-hue3-light-rgb), 0.6);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease;
+}
+
+.print-button:hover,
+.multiButton:hover {
+    background: linear-gradient(145deg,
+        var(--pm-hue1-bright),
+        var(--pm-hue1));
+    transform: scale(1.05);
+    box-shadow:
+        0 0 20px rgba(var(--pm-hue3-rgb), 0.7),
+        0 0 40px rgba(var(--pm-hue1-rgb), 0.5);
+}
+
+/* ─── QUICK-PRINT BUTTONS ─── */
+
+.buttonsLine1 {
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue2-rgb), 0.84),
+        rgba(var(--pm-hue3-light-rgb), 0.86));
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.94);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.7),
+        0 0 30px rgba(var(--pm-glow-cool), 0.6);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease;
+}
+
+.buttonsLine2 {
+    background: linear-gradient(290deg,
+        rgba(var(--pm-hue2-rgb), 0.84),
+        rgba(var(--pm-hue3-light-rgb), 0.86));
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.94);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.7),
+        0 0 30px rgba(var(--pm-glow-cool), 0.6);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease;
+}
+
+.buttonsLine3 {
+    background: linear-gradient(65deg,
+        rgba(var(--pm-hue2-rgb), 0.84),
+        rgba(var(--pm-hue3-light-rgb), 0.86));
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.94);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.7),
+        0 0 30px rgba(var(--pm-glow-cool), 0.6);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease;
+}
+
+.buttonsLine1:hover,
+.buttonsLine2:hover,
+.buttonsLine3:hover {
+    background: linear-gradient(145deg,
+        var(--pm-hue1),
+        var(--pm-hue3));
+    box-shadow:
+        0 0 20px rgba(var(--pm-hue1-rgb), 0.9),
+        0 0 40px rgba(var(--pm-hue3-rgb), 0.7);
+}
+
+/* ─── BUTTON STATE OVERRIDES ─── */
+
+.quick-print-buttons button:hover {
+    background-color: rgba(var(--pm-surface-rgb), 0.69);
+    border-color: #0C9D00;
+    transform: scale(1.05);
+}
+
+.quick-print-buttons button:active {
+    background-color: #0212FF;
+    border-color: #0600C7;
+}
+
+/* ─── SCROLLBAR ─── */
+
+.scroll-container {
+    scrollbar-color:
+        #00C115
+        #2F8E43;
+}
+
+.scroll-button {
+    background-color: #43338D;
+}
+.scroll-button:hover {
+    background-color: var(--pm-hue3);
+}
+
+/* ─── ASIN STICKER ─── */
+
+.asin-sticker-container {
+    background-color: rgba(var(--pm-surface-alt-rgb), 0.79);
+    border: 2px dashed rgba(204, 204, 204, 0.80);
+}
+.asin-sticker-header {
+    color: var(--pm-text);
+}
+.asin-sticker-content button {
+    background-color: rgba(var(--pm-hue2-rgb), 0.84);
+}
+.asin-sticker-content button:hover {
+    background-color: #00B367;
+}
+
+/* ─── MULTI-BARCODE PRINTER ─── */
+
+.MultiBarcode-printer {
+    background-color: rgba(var(--pm-surface-rgb), 0.59);
+    border: 5px double rgba(var(--pm-hue3-rgb), 0.71);
+}
+.MultiBarcode-printer h2 {
+    color: var(--pm-text);
+    text-shadow: 2px 2px var(--pm-hue3);
+}
+
+/* ─── QUICK BUTTONS DROPDOWN ─── */
+
+#quickbuttons-dropdown .qb-dropbtn {
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue2-rgb), 0.84),
+        rgba(var(--pm-hue3-light-rgb), 0.86));
+    color: var(--pm-text);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.7),
+        0 0 30px rgba(var(--pm-glow-cool), 0.6);
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+    background-color: rgba(var(--pm-light-rgb), 0.87);
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: var(--pm-hue1);
+}
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background-color: rgba(var(--pm-hue3-rgb), 0.63);
+}
+#quickbuttons-dropdown:hover .qb-dropbtn {
+    box-shadow:
+        0 0 20px rgba(var(--pm-hue1-rgb), 0.9),
+        0 0 40px rgba(var(--pm-hue3-rgb), 0.7);
+}
+
+/* Reduced motion: kill the scales */
+@media (prefers-reduced-motion: reduce) {
+    .print-button, .multiButton,
+    .buttonsLine1, .buttonsLine2, .buttonsLine3 {
+        transition: none;
+    }
+    .print-button:hover, .multiButton:hover,
+    .quick-print-buttons button:hover {
+        transform: none;
+    }
+}

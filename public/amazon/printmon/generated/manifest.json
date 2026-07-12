@@ -1,8 +1,426 @@
 [
   {
+    "name": "Phosphor Dawn",
+    "safeName": "phosphor-dawn",
+    "tagline": "boot sequence complete",
+    "fontTitle": "",
+    "fontSubtitle": "",
+    "palette": {
+      "--pm-hue1": "#ffb000",
+      "--pm-hue1-deep": "#805800",
+      "--pm-hue1-bright": "#eecd50",
+      "--pm-hue2": "#e6c531",
+      "--pm-hue2-bright": "#ecd465",
+      "--pm-hue2-deep": "#968020",
+      "--pm-hue3": "#33ff66",
+      "--pm-hue3-light": "#7aff9b",
+      "--pm-surface": "#141102",
+      "--pm-surface-alt": "#2b2b07",
+      "--pm-light": "#fae8b0",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "239, 194, 45",
+      "--pm-glow-cool": "107, 248, 120"
+    },
+    "baseTheme": "Terminal",
+    "wallpapers": [
+      "https://images.pexels.com/photos/29505140/pexels-photo-29505140.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/30206101/pexels-photo-30206101.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/3672355/pexels-photo-3672355.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/37755432/pexels-photo-37755432.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/38499139/pexels-photo-38499139.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/phosphor-dawn.css",
+    "createdAt": "2026-07-12T20:31:25.308Z",
+    "tags": [
+      "generated",
+      "terminal",
+      "amber",
+      "verdant"
+    ],
+    "swatches": [
+      "#ffb000",
+      "#e6c531",
+      "#33ff66",
+      "#141102"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
+    "name": "Concrete Poetry",
+    "safeName": "concrete-poetry",
+    "tagline": "form follows function follows form",
+    "fontTitle": "",
+    "fontSubtitle": "",
+    "palette": {
+      "--pm-hue1": "#c8c8c8",
+      "--pm-hue1-deep": "#646464",
+      "--pm-hue1-bright": "#dccbca",
+      "--pm-hue2": "#d7bfbd",
+      "--pm-hue2-bright": "#e1cfce",
+      "--pm-hue2-deep": "#8c7c7b",
+      "--pm-hue3": "#ff3b30",
+      "--pm-hue3-light": "#ff7f78",
+      "--pm-surface": "#131111",
+      "--pm-surface-alt": "#2f2222",
+      "--pm-light": "#efeaea",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "213, 197, 195",
+      "--pm-glow-cool": "250, 108, 100"
+    },
+    "baseTheme": "Brutalist",
+    "wallpapers": [
+      "https://images.pexels.com/photos/13761046/pexels-photo-13761046.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/9530311/pexels-photo-9530311.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/35177525/pexels-photo-35177525.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/29546665/pexels-photo-29546665.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/18358094/pexels-photo-18358094.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/concrete-poetry.css",
+    "createdAt": "2026-07-12T20:31:07.469Z",
+    "tags": [
+      "generated",
+      "brutalist",
+      "frost",
+      "ember"
+    ],
+    "swatches": [
+      "#c8c8c8",
+      "#d7bfbd",
+      "#ff3b30",
+      "#131111"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
+    "name": "Midnight Arcade",
+    "safeName": "midnight-arcade",
+    "tagline": "insert coin to continue",
+    "fontTitle": "",
+    "fontSubtitle": "",
+    "palette": {
+      "--pm-hue1": "#ff2d95",
+      "--pm-hue1-deep": "#80174b",
+      "--pm-hue1-bright": "#e978bc",
+      "--pm-hue2": "#e062b1",
+      "--pm-hue2-bright": "#e889c5",
+      "--pm-hue2-deep": "#924073",
+      "--pm-hue3": "#00e5ff",
+      "--pm-hue3-light": "#59eeff",
+      "--pm-surface": "#130610",
+      "--pm-surface-alt": "#271527",
+      "--pm-light": "#f8c1e0",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "234, 91, 173",
+      "--pm-glow-cool": "71, 216, 244"
+    },
+    "baseTheme": "Synthwave",
+    "wallpapers": [
+      "https://images.pexels.com/photos/37024886/pexels-photo-37024886.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/32222690/pexels-photo-32222690.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/18425165/pexels-photo-18425165.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/36484265/pexels-photo-36484265.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/31472400/pexels-photo-31472400.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/midnight-arcade.css",
+    "createdAt": "2026-07-12T20:31:06.569Z",
+    "tags": [
+      "generated",
+      "synthwave",
+      "rose",
+      "aqua"
+    ],
+    "swatches": [
+      "#ff2d95",
+      "#e062b1",
+      "#00e5ff",
+      "#130610"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
+    "name": "Borealis Drip",
+    "safeName": "borealis-drip",
+    "tagline": "the sky is leaking again",
+    "fontTitle": "",
+    "fontSubtitle": "",
+    "palette": {
+      "--pm-hue1": "#7c4dff",
+      "--pm-hue1-deep": "#3e2780",
+      "--pm-hue1-bright": "#968efa",
+      "--pm-hue2": "#807df8",
+      "--pm-hue2-bright": "#a09efa",
+      "--pm-hue2-deep": "#5351a1",
+      "--pm-hue3": "#00ffc8",
+      "--pm-hue3-light": "#59ffdb",
+      "--pm-surface": "#090917",
+      "--pm-surface-alt": "#131b34",
+      "--pm-light": "#d2cbfd",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "133, 118, 250",
+      "--pm-glow-cool": "58, 238, 215"
+    },
+    "baseTheme": "Aurora",
+    "wallpapers": [
+      "https://images.pexels.com/photos/28237726/pexels-photo-28237726.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/23995631/pexels-photo-23995631.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/28920480/pexels-photo-28920480.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/16681026/pexels-photo-16681026.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/36054420/pexels-photo-36054420.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/borealis-drip.css",
+    "createdAt": "2026-07-12T20:31:05.873Z",
+    "tags": [
+      "generated",
+      "aurora",
+      "violet",
+      "aqua"
+    ],
+    "swatches": [
+      "#7c4dff",
+      "#807df8",
+      "#00ffc8",
+      "#090917"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
+    "name": "Moss Golem",
+    "safeName": "moss-golem",
+    "tagline": "slow, green, unstoppable",
+    "fontTitle": "",
+    "fontSubtitle": "",
+    "palette": {
+      "--pm-hue1": "#3e8e41",
+      "--pm-hue1-deep": "#1f4721",
+      "--pm-hue1-bright": "#80b177",
+      "--pm-hue2": "#6aa35d",
+      "--pm-hue2-bright": "#8fba86",
+      "--pm-hue2-deep": "#456a3c",
+      "--pm-hue3": "#c2b34a",
+      "--pm-hue3-light": "#d7ce88",
+      "--pm-surface": "#070e06",
+      "--pm-surface-alt": "#15210f",
+      "--pm-light": "#c5dcc3",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "101, 162, 94",
+      "--pm-glow-cool": "192, 189, 106"
+    },
+    "baseTheme": "Forest",
+    "wallpapers": [
+      "https://images.pexels.com/photos/11932114/pexels-photo-11932114.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/32667141/pexels-photo-32667141.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/30002039/pexels-photo-30002039.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/30682051/pexels-photo-30682051.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/36839943/pexels-photo-36839943.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/moss-golem.css",
+    "createdAt": "2026-07-12T20:31:05.159Z",
+    "tags": [
+      "generated",
+      "forest",
+      "verdant",
+      "gold"
+    ],
+    "swatches": [
+      "#3e8e41",
+      "#6aa35d",
+      "#c2b34a",
+      "#070e06"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
+    "name": "Hex and Hemlock",
+    "safeName": "hex-and-hemlock",
+    "tagline": "brewed under a bad moon",
+    "fontTitle": "",
+    "fontSubtitle": "",
+    "palette": {
+      "--pm-hue1": "#a32642",
+      "--pm-hue1-deep": "#521321",
+      "--pm-hue1-bright": "#b46e78",
+      "--pm-hue2": "#a4565f",
+      "--pm-hue2-bright": "#bb8087",
+      "--pm-hue2-deep": "#6b383e",
+      "--pm-hue3": "#3fae52",
+      "--pm-hue3-light": "#82ca8e",
+      "--pm-surface": "#0e0606",
+      "--pm-surface-alt": "#1e1010",
+      "--pm-light": "#dfbdc3",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "169, 81, 94",
+      "--pm-glow-cool": "107, 175, 112"
+    },
+    "baseTheme": "Witch",
+    "wallpapers": [
+      "https://images.pexels.com/photos/29507975/pexels-photo-29507975.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/5538254/pexels-photo-5538254.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/5538159/pexels-photo-5538159.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/30025211/pexels-photo-30025211.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/36854566/pexels-photo-36854566.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/hex-and-hemlock.css",
+    "createdAt": "2026-07-12T20:31:03.868Z",
+    "tags": [
+      "generated",
+      "witch",
+      "rose",
+      "verdant"
+    ],
+    "swatches": [
+      "#a32642",
+      "#a4565f",
+      "#3fae52",
+      "#0e0606"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
+    "name": "Frost Cathedral",
+    "safeName": "frost-cathedral",
+    "tagline": "stained glass, zero degrees",
+    "fontTitle": "",
+    "fontSubtitle": "",
+    "palette": {
+      "--pm-hue1": "#9fd8ff",
+      "--pm-hue1-deep": "#506c80",
+      "--pm-hue1-bright": "#c0e0ff",
+      "--pm-hue2": "#b5d9ff",
+      "--pm-hue2-bright": "#c8e3ff",
+      "--pm-hue2-deep": "#768da6",
+      "--pm-hue3": "#e0b3ff",
+      "--pm-hue3-light": "#eaceff",
+      "--pm-surface": "#101317",
+      "--pm-surface-alt": "#272c36",
+      "--pm-light": "#e2f2ff",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "178, 219, 255",
+      "--pm-glow-cool": "223, 196, 255"
+    },
+    "baseTheme": "Glass",
+    "wallpapers": [
+      "https://images.pexels.com/photos/6757653/pexels-photo-6757653.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/36296930/pexels-photo-36296930.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/12013439/pexels-photo-12013439.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/12013441/pexels-photo-12013441.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/20398983/pexels-photo-20398983.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/frost-cathedral.css",
+    "createdAt": "2026-07-12T20:31:03.185Z",
+    "tags": [
+      "generated",
+      "glass",
+      "cobalt",
+      "violet"
+    ],
+    "swatches": [
+      "#9fd8ff",
+      "#b5d9ff",
+      "#e0b3ff",
+      "#101317"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
+    "name": "Pumpkin Static",
+    "safeName": "pumpkin-static",
+    "tagline": "the signal is coming from inside the patch",
+    "fontTitle": "",
+    "fontSubtitle": "",
+    "palette": {
+      "--pm-hue1": "#ff7a00",
+      "--pm-hue1-deep": "#803d00",
+      "--pm-hue1-bright": "#f3945e",
+      "--pm-hue2": "#ef7f44",
+      "--pm-hue2-bright": "#f39f73",
+      "--pm-hue2-deep": "#9b532c",
+      "--pm-hue3": "#7a00ff",
+      "--pm-hue3-light": "#a859ff",
+      "--pm-surface": "#150904",
+      "--pm-surface-alt": "#2f1310",
+      "--pm-light": "#fbd1b4",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "245, 132, 58",
+      "--pm-glow-cool": "159, 58, 230"
+    },
+    "baseTheme": "Halloween",
+    "wallpapers": [
+      "https://images.pexels.com/photos/34369749/pexels-photo-34369749.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/10050249/pexels-photo-10050249.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/10084233/pexels-photo-10084233.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/10011898/pexels-photo-10011898.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/14145264/pexels-photo-14145264.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/pumpkin-static.css",
+    "createdAt": "2026-07-12T20:31:02.947Z",
+    "tags": [
+      "generated",
+      "halloween",
+      "amber",
+      "violet"
+    ],
+    "swatches": [
+      "#ff7a00",
+      "#ef7f44",
+      "#7a00ff",
+      "#150904"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
     "name": "Caprine Creamery",
     "safeName": "caprine-creamery",
     "tagline": "goats just wanna have ice cream",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#c0842f",
       "--pm-hue1-deep": "#604218",
@@ -53,6 +471,8 @@
     "name": "Skittle Storm",
     "safeName": "skittle-storm",
     "tagline": "taste the spectrum",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#ed1c24",
       "--pm-hue1-deep": "#770e12",
@@ -103,6 +523,8 @@
     "name": "Monkey Mayhem",
     "safeName": "monkey-mayhem",
     "tagline": "bananas. chaos. you.",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#8B5E3C",
       "--pm-hue1-deep": "#462f1e",
@@ -152,6 +574,8 @@
     "name": "Cacao Dream",
     "safeName": "cacao-dream",
     "tagline": "melted gold and dark velvet",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#816f6e",
       "--pm-hue1-deep": "#413837",
@@ -202,6 +626,8 @@
     "name": "Test Debug",
     "safeName": "test-debug",
     "tagline": "debugging",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#ff5500",
       "--pm-hue1-deep": "#802b00",
@@ -252,6 +678,8 @@
     "name": "Man of Steel",
     "safeName": "man-of-steel",
     "tagline": "strength from within",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#1565C0",
       "--pm-hue1-deep": "#0b3360",
@@ -302,6 +730,8 @@
     "name": "Dark Horizon",
     "safeName": "dark-horizon",
     "tagline": "the void breathes back",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#93939a",
       "--pm-hue1-deep": "#4a4a4d",
@@ -352,6 +782,8 @@
     "name": "Wild Grace",
     "safeName": "wild-grace",
     "tagline": "where the earth breathes",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#4ade80",
       "--pm-hue1-deep": "#256f40",
@@ -402,6 +834,8 @@
     "name": "Cherry Blossom Drift",
     "safeName": "cherry-blossom-drift",
     "tagline": "ripe and rolling",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#dc2626",
       "--pm-hue1-deep": "#6e1313",
@@ -451,6 +885,8 @@
     "name": "Neon Drift",
     "safeName": "neon-drift",
     "tagline": "ride the waveform",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#a855f7",
       "--pm-hue1-deep": "#542b7c",
@@ -501,6 +937,8 @@
     "name": "Surge Spark",
     "safeName": "surge-spark",
     "tagline": "ride the lightning",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#facc15",
       "--pm-hue1-deep": "#7d660b",
@@ -551,6 +989,8 @@
     "name": "Gotham's Shadow",
     "safeName": "gothams-shadow",
     "tagline": "vengeance wears midnight",
+    "fontTitle": "",
+    "fontSubtitle": "",
     "palette": {
       "--pm-hue1": "#dc2626",
       "--pm-hue1-deep": "#6e1313",

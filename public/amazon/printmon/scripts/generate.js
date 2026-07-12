@@ -238,7 +238,10 @@ async function generate(themeInput) {
   const baseKey = themeInput.baseTheme || 'GTA';
   
   let { fontTitle, fontSubtitle } = themeInput;
-  if (!fontTitle || !fontSubtitle) {
+  // Auto-pick fonts only for default-base generations (orb path — variety
+  // wanted). An explicit baseTheme keeps that base's signature fonts unless
+  // fonts were explicitly requested too.
+  if ((!fontTitle || !fontSubtitle) && !themeInput.baseTheme) {
     const family = hueToFamily(palette['--pm-hue1'] || '#000000');
     const mood = familyToMood(family);
     const pool = FONT_POOL[mood] || FONT_POOL.classic;

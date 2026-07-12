@@ -1,0 +1,245 @@
+/* ═══════════════════════════════════════════════════════════
+   PRINTMON TEMPLATE VARIANT — WITCH
+   Witchy flavor: Curlz MT whimsy type, deep purple / burgundy /
+   poison-green palette, scale(1.05) hover pop, gold label
+   accents, solid burgundy borders. Same token contract as
+   _template.css — recolor() swaps the :root block, everything
+   below is flavor.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --pm-hue1: #a32642;
+  --pm-hue1-rgb: 163, 38, 66;
+  --pm-hue1-deep: #521321;
+  --pm-hue1-deep-rgb: 82, 19, 33;
+  --pm-hue1-bright: #b46e78;
+  --pm-hue1-bright-rgb: 180, 110, 120;
+  --pm-hue2: #a4565f;
+  --pm-hue2-rgb: 164, 86, 95;
+  --pm-hue2-bright: #bb8087;
+  --pm-hue2-bright-rgb: 187, 128, 135;
+  --pm-hue2-deep: #6b383e;
+  --pm-hue2-deep-rgb: 107, 56, 62;
+  --pm-hue3: #3fae52;
+  --pm-hue3-rgb: 63, 174, 82;
+  --pm-hue3-light: #82ca8e;
+  --pm-hue3-light-rgb: 130, 202, 142;
+  --pm-surface: #0e0606;
+  --pm-surface-rgb: 14, 6, 6;
+  --pm-surface-alt: #1e1010;
+  --pm-surface-alt-rgb: 30, 16, 16;
+  --pm-light: #dfbdc3;
+  --pm-light-rgb: 223, 189, 195;
+  --pm-neutral: #e3e3e3;
+  --pm-neutral-rgb: 227, 227, 227;
+  --pm-text: #ffffff;
+  --pm-text-rgb: 255, 255, 255;
+  --pm-text-dark: #000000;
+  --pm-text-dark-rgb: 0, 0, 0;
+  --pm-glow-warm: 169, 81, 94;
+  --pm-glow-cool: 107, 175, 112;
+}
+
+/* ═══ WITCH FLAVOR RULES ═══ */
+
+.printbox {
+    background-color: rgba(var(--pm-surface-rgb), 0.50);
+    border: 5px double rgba(var(--pm-hue2-rgb), 0.80);
+}
+
+h1 {
+    color: rgba(var(--pm-hue1-rgb), 0.88);
+    text-shadow: 2px 2px rgba(var(--pm-hue3-light-rgb), 0.90);
+}
+
+.subtitle {
+    color: rgba(var(--pm-hue3-rgb), 0.93);
+    font-family: 'Curlz MT', fantasy;
+    font-size: 16pt;
+}
+
+.input-group label {
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.85);
+}
+
+.input-group label span {
+    color: var(--pm-hue2-bright);
+}
+
+input[type="text"],
+#textAreaID {
+    border: 1.5px solid var(--pm-hue2);
+}
+
+/* ─── PRIMARY BUTTON: dark purple gradient, burgundy border ─── */
+
+.print-button,
+.multiButton {
+    background: linear-gradient(90deg,
+        rgba(var(--pm-hue1-bright-rgb), 0.70),
+        rgba(52, 4, 79, 0.82));
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.73);
+    border: solid 1.33px rgba(var(--pm-hue2-rgb), 0.60);
+    box-shadow:
+        0 0 15px rgba(var(--pm-glow-warm), 0.5),
+        0 0 30px rgba(var(--pm-glow-cool), 0.48);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease;
+}
+
+.print-button:hover,
+.multiButton:hover {
+    background: linear-gradient(145deg,
+        rgba(var(--pm-surface-rgb), 0.94),
+        rgba(46, 38, 76, 0.92));
+    transform: scale(1.05);
+    box-shadow:
+        0 0 20px rgba(var(--pm-glow-warm), 0.7),
+        0 0 40px rgba(var(--pm-glow-cool), 0.5);
+}
+
+/* ─── QUICK-PRINT BUTTONS ─── */
+
+.buttonsLine1 {
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue1-rgb), 0.84),
+        rgba(0, 84, 25, 0.93));
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.85);
+    border: solid 1.5px rgba(var(--pm-hue2-rgb), 0.60);
+    box-shadow:
+        0 0 15px rgba(var(--pm-hue1-rgb), 0.6),
+        0 0 30px rgba(0, 84, 25, 0.5);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease;
+}
+
+.buttonsLine2 {
+    background: linear-gradient(195deg,
+        rgba(var(--pm-hue1-rgb), 0.84),
+        rgba(0, 84, 25, 0.93));
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.85);
+    border: solid 1.5px rgba(var(--pm-hue2-rgb), 0.60);
+    box-shadow:
+        0 0 15px rgba(var(--pm-hue1-rgb), 0.6),
+        0 0 30px rgba(0, 84, 25, 0.5);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease;
+}
+
+.buttonsLine3 {
+    background: linear-gradient(70deg,
+        rgba(var(--pm-hue1-rgb), 0.84),
+        rgba(0, 84, 25, 0.93));
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.85);
+    border: solid 1.5px rgba(var(--pm-hue2-rgb), 0.60);
+    box-shadow:
+        0 0 15px rgba(var(--pm-hue1-rgb), 0.6),
+        0 0 30px rgba(0, 84, 25, 0.5);
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background 0.15s ease;
+}
+
+.buttonsLine1:hover,
+.buttonsLine2:hover,
+.buttonsLine3:hover {
+    background: linear-gradient(145deg,
+        rgba(151, 139, 164, 0.72),
+        rgba(var(--pm-surface-rgb), 0.96));
+    box-shadow:
+        0 0 20px rgba(151, 139, 164, 0.9),
+        0 0 40px rgba(var(--pm-glow-cool), 0.7);
+}
+
+/* ─── BUTTON STATE OVERRIDES ─── */
+
+.quick-print-buttons button:hover {
+    background-color: rgba(75, 18, 123, 0.68);
+    border-color: var(--pm-surface);
+    transform: scale(1.05);
+}
+
+.quick-print-buttons button:active {
+    background-color: var(--pm-surface);
+    border-color: #0DA400;
+}
+
+/* ─── SCROLLBAR: poison green on burgundy ─── */
+
+.scroll-container {
+    scrollbar-color:
+        var(--pm-hue3)
+        var(--pm-hue2);
+}
+
+.scroll-button {
+    background-color: rgba(var(--pm-hue2-rgb), 0.68);
+}
+.scroll-button:hover {
+    background-color: rgba(var(--pm-hue1-rgb), 0.87);
+}
+
+/* ─── ASIN STICKER ─── */
+
+.asin-sticker-container {
+    background-color: rgba(var(--pm-surface-alt-rgb), 0.79);
+    border: 2px dashed rgba(var(--pm-hue3-rgb), 0.88);
+}
+.asin-sticker-header {
+    color: var(--pm-text);
+}
+.asin-sticker-content button {
+    background-color: rgba(var(--pm-hue2-rgb), 0.68);
+}
+.asin-sticker-content button:hover {
+    background-color: rgba(var(--pm-hue3-rgb), 0.75);
+}
+
+/* ─── MULTI-BARCODE PRINTER ─── */
+
+.MultiBarcode-printer {
+    background-color: rgba(var(--pm-surface-rgb), 0.59);
+    border: 5px double rgba(var(--pm-hue2-rgb), 0.80);
+}
+.MultiBarcode-printer h2 {
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.85);
+    text-shadow: 2px 2px rgba(var(--pm-hue3-light-rgb), 0.90);
+}
+
+/* ─── QUICK BUTTONS DROPDOWN ─── */
+
+#quickbuttons-dropdown .qb-dropbtn {
+    background: linear-gradient(145deg,
+        rgba(var(--pm-hue1-rgb), 0.84),
+        rgba(0, 84, 25, 0.93));
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.85);
+    border: solid 1.5px rgba(var(--pm-hue2-rgb), 0.60);
+    box-shadow:
+        0 0 15px rgba(var(--pm-hue1-rgb), 0.6),
+        0 0 30px rgba(0, 84, 25, 0.5);
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+    background-color: rgba(var(--pm-light-rgb), 0.68);
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: rgba(var(--pm-text-rgb, 255, 255, 255), 0.85);
+}
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background-color: rgba(var(--pm-neutral-rgb), 0.63);
+}
+#quickbuttons-dropdown:hover .qb-dropbtn {
+    box-shadow:
+        0 0 20px rgba(151, 139, 164, 0.9),
+        0 0 40px rgba(var(--pm-glow-cool), 0.7);
+}
+
+/* Reduced motion: kill the scales */
+@media (prefers-reduced-motion: reduce) {
+    .print-button, .multiButton,
+    .buttonsLine1, .buttonsLine2, .buttonsLine3 {
+        transition: none;
+    }
+    .print-button:hover, .multiButton:hover,
+    .quick-print-buttons button:hover {
+        transform: none;
+    }
+}

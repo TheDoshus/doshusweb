@@ -1,0 +1,232 @@
+/* ═══════════════════════════════════════════════════════════
+   PRINTMON TEMPLATE VARIANT — SYNTHWAVE
+   80s retrowave flavor: Outrun sunset colors, neon text shadows,
+   scanlines, and high-tech typography.
+   Same token contract as _template.css.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --pm-hue1: #ff2d95;
+  --pm-hue1-rgb: 255, 45, 149;
+  --pm-hue1-deep: #80174b;
+  --pm-hue1-deep-rgb: 128, 23, 75;
+  --pm-hue1-bright: #e978bc;
+  --pm-hue1-bright-rgb: 233, 120, 188;
+  --pm-hue2: #e062b1;
+  --pm-hue2-rgb: 224, 98, 177;
+  --pm-hue2-bright: #e889c5;
+  --pm-hue2-bright-rgb: 232, 137, 197;
+  --pm-hue2-deep: #924073;
+  --pm-hue2-deep-rgb: 146, 64, 115;
+  --pm-hue3: #00e5ff;
+  --pm-hue3-rgb: 0, 229, 255;
+  --pm-hue3-light: #59eeff;
+  --pm-hue3-light-rgb: 89, 238, 255;
+  --pm-surface: #130610;
+  --pm-surface-rgb: 19, 6, 16;
+  --pm-surface-alt: #271527;
+  --pm-surface-alt-rgb: 39, 21, 39;
+  --pm-light: #f8c1e0;
+  --pm-light-rgb: 248, 193, 224;
+  --pm-neutral: #e3e3e3;
+  --pm-neutral-rgb: 227, 227, 227;
+  --pm-text: #ffffff;
+  --pm-text-rgb: 255, 255, 255;
+  --pm-text-dark: #000000;
+  --pm-text-dark-rgb: 0, 0, 0;
+  --pm-glow-warm: 234, 91, 173;
+  --pm-glow-cool: 71, 216, 244;
+}
+
+/* ─── LAYOUT / CONTAINERS ─── */
+
+.printbox {
+    background: 
+        linear-gradient(to bottom, rgba(var(--pm-surface-rgb), 0.85) 0%, rgba(var(--pm-surface-alt-rgb), 0.95) 100%),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(var(--pm-hue1-rgb), 0.1) 2px, rgba(var(--pm-hue1-rgb), 0.1) 4px);
+    border: 2px solid var(--pm-hue3);
+    border-radius: 4px;
+    box-shadow: 
+        0 0 10px rgba(var(--pm-glow-warm), 0.5), 
+        inset 0 0 20px rgba(var(--pm-glow-cool), 0.2);
+}
+
+h1 {
+    font-family: 'OCR A Extended', 'Consolas', monospace;
+    color: var(--pm-text);
+    text-shadow: 
+        2px 2px 0px var(--pm-hue1),
+        -2px -2px 0px var(--pm-hue3);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+.subtitle {
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: var(--pm-hue2-bright);
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(var(--pm-hue2-bright-rgb), 0.8);
+}
+
+/* ─── INPUTS ─── */
+
+.input-group input, .input-group select {
+    background-color: rgba(var(--pm-surface-rgb), 0.7);
+    border: 1px solid var(--pm-hue1);
+    color: var(--pm-text);
+    border-radius: 0;
+    font-family: 'Consolas', monospace;
+}
+.input-group input:focus, .input-group select:focus {
+    box-shadow: 0 0 10px rgba(var(--pm-glow-warm), 0.6);
+    outline: none;
+}
+
+.input-group label {
+    color: var(--pm-hue3);
+    font-family: 'Consolas', monospace;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 1px;
+}
+
+/* ─── BUTTONS ─── */
+
+.print-button {
+    background: transparent;
+    border: 2px solid var(--pm-hue1);
+    color: var(--pm-hue1-bright);
+    font-family: 'OCR A Extended', monospace;
+    text-transform: uppercase;
+    border-radius: 0;
+    box-shadow: 0 0 10px rgba(var(--pm-glow-warm), 0.4);
+    transition: all 0.2s ease;
+}
+.print-button:hover {
+    background: var(--pm-hue1);
+    color: var(--pm-text);
+    box-shadow: 0 0 20px rgba(var(--pm-glow-warm), 0.8);
+    transform: scale(1.02);
+}
+.print-button:active {
+    transform: scale(0.98);
+}
+
+.buttonsLine1 button, .buttonsLine2 button, .buttonsLine3 button, .quick-print-buttons button {
+    background-color: rgba(var(--pm-surface-alt-rgb), 0.8);
+    border: 1px solid var(--pm-hue3);
+    color: var(--pm-hue3-light);
+    border-radius: 0;
+    font-family: 'Consolas', monospace;
+    transition: all 0.2s ease;
+}
+.buttonsLine1 button:hover, .buttonsLine2 button:hover, .buttonsLine3 button:hover, .quick-print-buttons button:hover {
+    background-color: var(--pm-hue3);
+    color: var(--pm-surface);
+    box-shadow: 0 0 15px rgba(var(--pm-glow-cool), 0.6);
+    transform: translateY(-2px);
+}
+
+/* ─── SCROLLBAR ─── */
+
+.scroll-container {
+    scrollbar-color: var(--pm-hue1) var(--pm-surface);
+    border-top: 1px solid var(--pm-hue1-deep);
+}
+
+.scroll-button {
+    background-color: var(--pm-hue1);
+    color: var(--pm-text);
+    border-radius: 0;
+}
+.scroll-button:hover {
+    background-color: var(--pm-hue1-bright);
+    box-shadow: 0 0 10px rgba(var(--pm-glow-warm), 0.8);
+}
+
+/* ─── ASIN STICKER ─── */
+
+.asin-sticker-container {
+    background-color: rgba(var(--pm-surface-rgb), 0.9);
+    border: 1px solid var(--pm-hue1);
+    box-shadow: inset 0 0 15px rgba(var(--pm-glow-warm), 0.3);
+}
+.asin-sticker-header {
+    color: var(--pm-hue2-bright);
+    text-transform: uppercase;
+    font-family: 'OCR A Extended', monospace;
+    border-bottom: 1px dashed var(--pm-hue1-deep);
+}
+.asin-sticker-content button {
+    background-color: transparent;
+    border: 1px solid var(--pm-hue3);
+    color: var(--pm-hue3);
+    border-radius: 0;
+}
+.asin-sticker-content button:hover {
+    background-color: var(--pm-hue3);
+    color: var(--pm-surface);
+}
+
+/* ─── MULTI-BARCODE PRINTER ─── */
+
+.MultiBarcode-printer {
+    background-color: rgba(var(--pm-surface-alt-rgb), 0.9);
+    border: 2px solid var(--pm-hue1-deep);
+    border-radius: 0;
+}
+.MultiBarcode-printer h2 {
+    color: var(--pm-hue1-bright);
+    font-family: 'OCR A Extended', monospace;
+    text-shadow: 2px 2px 0px rgba(var(--pm-hue3-rgb), 0.5);
+}
+#textAreaID {
+    background-color: rgba(var(--pm-surface-rgb), 0.8);
+    border: 1px solid var(--pm-hue1);
+    color: var(--pm-text);
+    font-family: 'Consolas', monospace;
+    border-radius: 0;
+}
+.multiButton {
+    background-color: transparent;
+    border: 2px solid var(--pm-hue2);
+    color: var(--pm-hue2-bright);
+    font-family: 'OCR A Extended', monospace;
+    border-radius: 0;
+    transition: all 0.2s ease;
+}
+.multiButton:hover {
+    background-color: var(--pm-hue2);
+    color: var(--pm-surface);
+    box-shadow: 0 0 15px rgba(var(--pm-hue2-bright-rgb), 0.8);
+}
+
+/* ─── QUICK BUTTONS DROPDOWN ─── */
+
+#quickbuttons-dropdown .qb-dropbtn {
+    background-color: transparent;
+    border: 1px solid var(--pm-hue1);
+    color: var(--pm-hue1);
+    border-radius: 0;
+    font-family: 'Consolas', monospace;
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+    background-color: var(--pm-surface);
+    border: 1px solid var(--pm-hue1);
+    border-radius: 0;
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: var(--pm-hue3);
+    font-family: 'Consolas', monospace;
+}
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background-color: rgba(var(--pm-hue3-rgb), 0.2);
+    color: var(--pm-hue3-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .print-button, .buttonsLine1 button, .buttonsLine2 button, .buttonsLine3 button, .quick-print-buttons button, .multiButton {
+        transition: none;
+        transform: none !important;
+    }
+}
