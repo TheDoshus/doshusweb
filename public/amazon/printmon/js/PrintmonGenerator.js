@@ -54,6 +54,57 @@ const BASE_THEMES = {
     htmlFile: 'template.html',
     description: 'Cosmic glass flavor — frosted panels, gradient title, pill buttons',
   },
+  Synthwave: {
+    name: 'Synthwave',
+    cssFile: 'css/newer/_template-synthwave.css',
+    htmlFile: 'template.html',
+    description: '80s retrowave flavor — neon text shadows, scanlines, and high-tech typography',
+  },
+  Brutalist: {
+    name: 'Brutalist',
+    cssFile: 'css/newer/_template-brutalist.css',
+    htmlFile: 'template.html',
+    description: 'Stark, high-contrast brutalist design — hard shadows, thick borders, flat colors',
+  },
+};
+
+// ─── Font Pool ───────────────────────────────────────────────
+
+const FONT_POOL = {
+  spooky: [
+    "'Chiller', cursive",
+    "'Jokerman', cursive",
+    "'Blackadder ITC', cursive"
+  ],
+  elegant: [
+    "'French Script MT', cursive",
+    "'Vivaldi', cursive",
+    "'Edwardian Script ITC', cursive",
+    "'Vladimir Script', cursive"
+  ],
+  bold: [
+    "'Impact', sans-serif",
+    "'Broadway', fantasy",
+    "'Showcard Gothic', fantasy",
+    "'Stencil', fantasy",
+    "'Wide Latin', serif"
+  ],
+  playful: [
+    "'Curlz MT', fantasy",
+    "'Kristen ITC', fantasy",
+    "'Ravie', fantasy",
+    "'Jokerman', fantasy",
+    "'Snap ITC', fantasy"
+  ],
+  tech: [
+    "'Consolas', monospace",
+    "'OCR A Extended', monospace"
+  ],
+  classic: [
+    "'Old English Text MT', serif",
+    "'Castellar', serif",
+    "'Colonna MT', serif"
+  ]
 };
 
 // ─── Token Palette Extraction ──────────────────────────────
@@ -383,10 +434,12 @@ class PrintmonGenerator {
    * @param {string} [opts.baseTheme] — 'GTA', 'Glass', 'Halloween', 'Forest', 'Witch'
    * @param {Object} [opts.palette] — AI-generated palette remap
    * @param {Object} [opts.glow] — AI-generated glow remap
+   * @param {string} [opts.fontTitle] — custom font-family for h1
+   * @param {string} [opts.fontSubtitle] — custom font-family for .subtitle
    * @param {string} opts.baseCSS — pre-loaded base theme CSS content
    * @param {string} [opts.baseHTML] — pre-loaded base theme HTML template
    */
-  constructor({ name, tagline, baseTheme, palette, glow }, baseCSS, baseHTML) {
+  constructor({ name, tagline, baseTheme, palette, glow, fontTitle, fontSubtitle }, baseCSS, baseHTML) {
     this.name = name || 'Untitled';
     this.tagline = tagline || '';
     this.baseKey = baseTheme || 'GTA';
@@ -394,19 +447,31 @@ class PrintmonGenerator {
     this.baseHTML = baseHTML || '';
     this.palette = palette || {};
     this.glow = glow || {};
+    this.fontTitle = fontTitle || '';
+    this.fontSubtitle = fontSubtitle || '';
   }
 
   recolor() {
-    if (!this.palette || Object.keys(this.palette).length === 0) return this.baseCSS;
+    let outCSS = this.baseCSS;
+    if (this.palette && Object.keys(this.palette).length > 0) {
+      // Extract current palette, merge remapped values
+      const current = extractPalette(this.baseCSS);
+      const mergedHex = { ...current.hexVars, ...this.palette };
+      const mergedGlow = { ...current.glowVars, ...(this.glow || {}) };
 
-    // Extract current palette, merge remapped values
-    const current = extractPalette(this.baseCSS);
-    const mergedHex = { ...current.hexVars, ...this.palette };
-    const mergedGlow = { ...current.glowVars, ...(this.glow || {}) };
-
-    // Rebuild the entire :root block with correct RGB tuples
-    const newRoot = buildRootBlock(mergedHex, mergedGlow);
-    return this.baseCSS.replace(/:root\s*\{[^}]+\}/s, newRoot);
+      // Rebuild the entire :root block with correct RGB tuples
+      const newRoot = buildRootBlock(mergedHex, mergedGlow);
+      outCSS = this.baseCSS.replace(/:root\s*\{[^}]+\}/s, newRoot);
+    }
+    
+    // Inject font overrides if provided
+    if (this.fontTitle || this.fontSubtitle) {
+      outCSS += '\n/* --- Generated Font Overrides --- */\n';
+      if (this.fontTitle) outCSS += `h1 { font-family: ${this.fontTitle} !important; }\n`;
+      if (this.fontSubtitle) outCSS += `.subtitle { font-family: ${this.fontSubtitle} !important; }\n`;
+    }
+    
+    return outCSS;
   }
 
   async fetchWallpapers(count = 5, keywords) {
@@ -625,7 +690,7 @@ ${css}
 }
 
 module.exports = {
-  PrintmonGenerator, BASE_THEMES,
+  PrintmonGenerator, BASE_THEMES, FONT_POOL,
   extractPalette, describePalette, hexToRgb,
   lightenHex, darkenHex, derivePalette, perceivedBrightness,
   remapPalette, buildRootBlock, buildRemapPrompt,

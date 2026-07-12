@@ -28,7 +28,7 @@ try {
   console.error('Warning: .env not loaded');
 }
 
-const { PrintmonGenerator, BASE_THEMES, derivePalette } = require('../js/PrintmonGenerator.js');
+const { PrintmonGenerator, BASE_THEMES, FONT_POOL, derivePalette } = require('../js/PrintmonGenerator.js');
 
 const ROOT = __dirname;
 const CSS_DIR = path.join(ROOT, '..', 'css', 'generated');
@@ -86,6 +86,22 @@ function hueToFamily(hex) {
   return 'rose';
 }
 
+function familyToMood(family) {
+  const map = {
+    monochrome: 'tech',
+    frost: 'elegant',
+    ember: 'spooky',
+    amber: 'bold',
+    gold: 'classic',
+    verdant: 'playful',
+    aqua: 'tech',
+    cobalt: 'bold',
+    violet: 'elegant',
+    rose: 'playful'
+  };
+  return map[family] || 'classic';
+}
+
 function buildThemeTags(record) {
   const tags = [
     'generated',
@@ -112,6 +128,8 @@ function slimThemeRecord(record) {
     name: record.name,
     safeName: record.safeName,
     tagline: record.tagline || '',
+    fontTitle: record.fontTitle || '',
+    fontSubtitle: record.fontSubtitle || '',
     palette: record.palette || {},
     glow: record.glow || {},
     baseTheme: record.baseTheme || 'GTA',
@@ -218,12 +236,27 @@ async function generate(themeInput) {
   }
 
   const baseKey = themeInput.baseTheme || 'GTA';
+  
+  let { fontTitle, fontSubtitle } = themeInput;
+  if (!fontTitle || !fontSubtitle) {
+    const family = hueToFamily(palette['--pm-hue1'] || '#000000');
+    const mood = familyToMood(family);
+    const pool = FONT_POOL[mood] || FONT_POOL.classic;
+    // deterministic pick based on name length so same theme gets same fonts
+    const i1 = (themeInput.name || 'a').length % pool.length;
+    const i2 = ((themeInput.name || 'a').length + 1) % pool.length;
+    if (!fontTitle) fontTitle = pool[i1];
+    if (!fontSubtitle) fontSubtitle = pool[i2];
+  }
+
   const gen = new PrintmonGenerator({
     name: themeInput.name || 'Untitled',
     tagline: themeInput.tagline || '',
     baseTheme: baseKey,
     palette,
     glow,
+    fontTitle,
+    fontSubtitle,
   }, BASE_CSS[baseKey] || '', BASE_HTML[baseKey] || '');
 
   // Load manifest early for dedup + cap checks
@@ -263,6 +296,8 @@ async function generate(themeInput) {
       html: buildHTMLfromTemplate(gen.name, gen.tagline, css, [], '#1a1a2e', BASE_HTML[baseKey] || ''),
       css,
       cssFile: `css/generated/${sn}.css`,
+      fontTitle,
+      fontSubtitle,
       createdAt: new Date().toISOString(),
       status: 'partial',
       error: e.message,
@@ -294,6 +329,8 @@ async function generate(themeInput) {
     html: result.html || '',
     css: result.css,
     cssFile: `css/generated/${sn}.css`,
+    fontTitle,
+    fontSubtitle,
     createdAt: result.createdAt || new Date().toISOString(),
     status: 'ok',
   };

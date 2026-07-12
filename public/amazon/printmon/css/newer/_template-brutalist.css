@@ -1,0 +1,273 @@
+/* ═══════════════════════════════════════════════════════════
+   PRINTMON TEMPLATE VARIANT — BRUTALIST
+   Stark, high-contrast brutalist design: flat colors, hard black
+   borders, solid drop shadows, no gradients or soft blurs.
+   Same token contract as _template.css.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─── HUE 1: PRIMARY (stark red) ─── */
+  --pm-hue1:        #FF3333;
+  --pm-hue1-rgb:    255, 51, 51;
+  --pm-hue1-deep:   #CC0000;
+  --pm-hue1-deep-rgb: 204, 0, 0;
+  --pm-hue1-bright: #FF6666;
+  --pm-hue1-bright-rgb: 255, 102, 102;
+
+  /* ─── HUE 2: WARM (hazard yellow) ─── */
+  --pm-hue2:        #FFEA00;
+  --pm-hue2-rgb:    255, 234, 0;
+  --pm-hue2-bright: #FFFF33;
+  --pm-hue2-bright-rgb: 255, 255, 51;
+  --pm-hue2-deep:   #CCBB00;
+  --pm-hue2-deep-rgb: 204, 187, 0;
+
+  /* ─── HUE 3: COOL (blueprint blue) ─── */
+  --pm-hue3:        #3333FF;
+  --pm-hue3-rgb:    51, 51, 255;
+  --pm-hue3-light:  #6666FF;
+  --pm-hue3-light-rgb: 102, 102, 255;
+
+  /* ─── SURFACES (concrete white/gray) ─── */
+  --pm-surface:     #F5F5F5;
+  --pm-surface-rgb: 245, 245, 245;
+  --pm-surface-alt: #E0E0E0;
+  --pm-surface-alt-rgb: 224, 224, 224;
+  --pm-light:       #FFFFFF;
+  --pm-light-rgb:   255, 255, 255;
+  --pm-neutral:     #CCCCCC;
+  --pm-neutral-rgb: 204, 204, 204;
+
+  /* ─── TEXT ─── */
+  --pm-text:        #000000;
+  --pm-text-rgb:    0, 0, 0;
+  --pm-text-dark:   #000000;
+  --pm-text-dark-rgb: 0, 0, 0;
+
+  /* ─── GLOWS (ignored for brutalist, kept for contract) ─── */
+  --pm-glow-warm:   255, 0, 0;
+  --pm-glow-cool:   0, 0, 255;
+}
+
+/* ─── LAYOUT / CONTAINERS ─── */
+
+.printbox {
+    background-color: var(--pm-surface);
+    border: 4px solid var(--pm-text);
+    border-radius: 0;
+    box-shadow: 8px 8px 0px var(--pm-text);
+}
+
+h1 {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    color: var(--pm-text);
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 0;
+}
+
+.subtitle {
+    font-family: 'Courier New', monospace;
+    color: var(--pm-hue1-deep);
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 4px solid var(--pm-text);
+    display: inline-block;
+    padding-bottom: 4px;
+}
+
+/* ─── INPUTS ─── */
+
+.input-group input, .input-group select {
+    background-color: var(--pm-light);
+    border: 3px solid var(--pm-text);
+    color: var(--pm-text);
+    border-radius: 0;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+.input-group input:focus, .input-group select:focus {
+    box-shadow: 4px 4px 0px var(--pm-hue1);
+    outline: none;
+    transform: translate(-2px, -2px);
+}
+
+.input-group label {
+    color: var(--pm-text);
+    font-family: 'Impact', sans-serif;
+    text-transform: uppercase;
+    font-size: 1.1em;
+}
+
+/* ─── BUTTONS ─── */
+
+.print-button {
+    background-color: var(--pm-hue1);
+    border: 4px solid var(--pm-text);
+    color: var(--pm-light);
+    font-family: 'Impact', sans-serif;
+    text-transform: uppercase;
+    font-size: 1.5em;
+    border-radius: 0;
+    box-shadow: 6px 6px 0px var(--pm-text);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.print-button:hover {
+    background-color: var(--pm-hue1-bright);
+    color: var(--pm-text);
+}
+.print-button:active {
+    transform: translate(6px, 6px);
+    box-shadow: 0px 0px 0px var(--pm-text);
+}
+
+.buttonsLine1 button, .buttonsLine2 button, .buttonsLine3 button, .quick-print-buttons button {
+    background-color: var(--pm-hue2);
+    border: 3px solid var(--pm-text);
+    color: var(--pm-text);
+    border-radius: 0;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    box-shadow: 4px 4px 0px var(--pm-text);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.buttonsLine1 button:hover, .buttonsLine2 button:hover, .buttonsLine3 button:hover, .quick-print-buttons button:hover {
+    background-color: var(--pm-hue3);
+    color: var(--pm-light);
+}
+.buttonsLine1 button:active, .buttonsLine2 button:active, .buttonsLine3 button:active, .quick-print-buttons button:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0px 0px 0px var(--pm-text);
+}
+
+/* ─── SCROLLBAR ─── */
+
+.scroll-container {
+    scrollbar-color: var(--pm-text) var(--pm-surface-alt);
+    border-top: 4px solid var(--pm-text);
+}
+
+.scroll-button {
+    background-color: var(--pm-text);
+    color: var(--pm-light);
+    border-radius: 0;
+    border: 2px solid var(--pm-light);
+}
+.scroll-button:hover {
+    background-color: var(--pm-hue1);
+}
+
+/* ─── ASIN STICKER ─── */
+
+.asin-sticker-container {
+    background-color: var(--pm-hue2);
+    border: 4px solid var(--pm-text);
+    box-shadow: 6px 6px 0px var(--pm-text);
+    border-radius: 0;
+}
+.asin-sticker-header {
+    color: var(--pm-text);
+    font-family: 'Impact', sans-serif;
+    text-transform: uppercase;
+    font-size: 1.2em;
+    border-bottom: 4px solid var(--pm-text);
+}
+.asin-sticker-content button {
+    background-color: var(--pm-light);
+    border: 3px solid var(--pm-text);
+    color: var(--pm-text);
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    border-radius: 0;
+    box-shadow: 3px 3px 0px var(--pm-text);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.asin-sticker-content button:hover {
+    background-color: var(--pm-hue3);
+    color: var(--pm-light);
+}
+.asin-sticker-content button:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0px 0px 0px var(--pm-text);
+}
+
+/* ─── MULTI-BARCODE PRINTER ─── */
+
+.MultiBarcode-printer {
+    background-color: var(--pm-surface-alt);
+    border: 4px solid var(--pm-text);
+    border-radius: 0;
+    box-shadow: 8px 8px 0px var(--pm-text);
+}
+.MultiBarcode-printer h2 {
+    color: var(--pm-light);
+    background-color: var(--pm-text);
+    font-family: 'Impact', sans-serif;
+    display: inline-block;
+    padding: 4px 8px;
+}
+#textAreaID {
+    background-color: var(--pm-light);
+    border: 4px solid var(--pm-text);
+    color: var(--pm-text);
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    border-radius: 0;
+    box-shadow: inset 4px 4px 0px var(--pm-neutral);
+}
+.multiButton {
+    background-color: var(--pm-hue3);
+    border: 4px solid var(--pm-text);
+    color: var(--pm-light);
+    font-family: 'Impact', sans-serif;
+    font-size: 1.2em;
+    text-transform: uppercase;
+    border-radius: 0;
+    box-shadow: 6px 6px 0px var(--pm-text);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.multiButton:hover {
+    background-color: var(--pm-hue1);
+}
+.multiButton:active {
+    transform: translate(6px, 6px);
+    box-shadow: 0px 0px 0px var(--pm-text);
+}
+
+/* ─── QUICK BUTTONS DROPDOWN ─── */
+
+#quickbuttons-dropdown .qb-dropbtn {
+    background-color: var(--pm-light);
+    border: 3px solid var(--pm-text);
+    color: var(--pm-text);
+    font-family: 'Impact', sans-serif;
+    text-transform: uppercase;
+    border-radius: 0;
+    box-shadow: 4px 4px 0px var(--pm-text);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+#quickbuttons-dropdown .qb-dropdown-content {
+    background-color: var(--pm-surface);
+    border: 4px solid var(--pm-text);
+    border-radius: 0;
+    box-shadow: 6px 6px 0px var(--pm-text);
+}
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: var(--pm-text);
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    border-bottom: 2px solid var(--pm-text);
+}
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background-color: var(--pm-hue2);
+}
+#quickbuttons-dropdown:hover .qb-dropbtn {
+    background-color: var(--pm-hue2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .print-button, .buttonsLine1 button, .buttonsLine2 button, .buttonsLine3 button, .quick-print-buttons button, .multiButton, .input-group input, .input-group select, .asin-sticker-content button, .qb-dropbtn {
+        transition: none;
+        transform: none !important;
+    }
+}
