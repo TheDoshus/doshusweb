@@ -11,16 +11,30 @@
       },
       "chat": {
         "sessions": {
-          ".read": true,
           "$sessionId": {
             "messages": {
               ".read": true,
-              ".write": true,
-              ".indexOn": ["timestamp"]
+              ".indexOn": ["timestamp"],
+              "$msgId": {
+                ".write": "!data.exists() && newData.exists()",
+                ".validate": "newData.hasChildren(['role', 'content', 'timestamp'])",
+                "role": {
+                  ".validate": "newData.val() === 'user'"
+                },
+                "content": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 2000"
+                },
+                "timestamp": {
+                  ".validate": "newData.isNumber()"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
             },
             "control": {
               ".read": true,
-              ".write": "auth !== null"
+              ".write": "auth !== null || newData.child('state').val() === 'ended'"
             }
           }
         }
