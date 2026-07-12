@@ -52,16 +52,96 @@ function safeName(name) {
     .toLowerCase() || 'untitled';
 }
 
+function uniqueSafeName(base, manifest) {
+  const taken = new Set((manifest || []).map((theme) => theme && theme.safeName).filter(Boolean));
+  if (!taken.has(base)) return base;
+  let suffix = 2;
+  while (taken.has(`${base}-${suffix}`)) suffix += 1;
+  return `${base}-${suffix}`;
+}
+
+function hueToFamily(hex) {
+  const clean = (hex || '#000000').replace('#', '');
+  if (clean.length < 6) return 'monochrome';
+  const r = parseInt(clean.slice(0, 2), 16) / 255;
+  const g = parseInt(clean.slice(2, 4), 16) / 255;
+  const b = parseInt(clean.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  if (delta < 0.08) return max > 0.72 ? 'frost' : 'monochrome';
+  let hue = 0;
+  if (max === r) hue = ((g - b) / delta) % 6;
+  else if (max === g) hue = (b - r) / delta + 2;
+  else hue = (r - g) / delta + 4;
+  hue = Math.round(hue * 60);
+  if (hue < 0) hue += 360;
+  if (hue < 20) return 'ember';
+  if (hue < 45) return 'amber';
+  if (hue < 75) return 'gold';
+  if (hue < 150) return 'verdant';
+  if (hue < 195) return 'aqua';
+  if (hue < 250) return 'cobalt';
+  if (hue < 315) return 'violet';
+  return 'rose';
+}
+
+function buildThemeTags(record) {
+  const tags = [
+    'generated',
+    record.baseTheme || 'GTA',
+    hueToFamily(record.palette?.['--pm-hue1']),
+    hueToFamily(record.palette?.['--pm-hue3']),
+  ];
+  return Array.from(new Set(tags.filter(Boolean).map((tag) => String(tag).trim().toLowerCase())));
+}
+
+function buildThemeSwatches(record) {
+  const palette = record.palette || {};
+  return [
+    palette['--pm-hue1'],
+    palette['--pm-hue2'],
+    palette['--pm-hue3'],
+    palette['--pm-surface'],
+  ].filter(Boolean).slice(0, 4);
+}
+
+function slimThemeRecord(record) {
+  if (!record || !record.safeName) return null;
+  return {
+    name: record.name,
+    safeName: record.safeName,
+    tagline: record.tagline || '',
+    palette: record.palette || {},
+    glow: record.glow || {},
+    baseTheme: record.baseTheme || 'GTA',
+    wallpapers: Array.isArray(record.wallpapers) ? record.wallpapers : [],
+    cssFile: record.cssFile || '',
+    createdAt: record.createdAt || new Date().toISOString(),
+    tags: Array.isArray(record.tags) ? record.tags : buildThemeTags(record),
+    swatches: Array.isArray(record.swatches) ? record.swatches : buildThemeSwatches(record),
+    wallpaperCount: Number.isFinite(record.wallpaperCount)
+      ? record.wallpaperCount
+      : (Array.isArray(record.wallpapers) ? record.wallpapers.length : 0),
+    deduplicated: Boolean(record.deduplicated),
+    status: record.status || 'ok',
+  };
+}
+
 function loadManifest() {
   try {
-    return JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf-8'));
+    const parsed = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf-8'));
+    return Array.isArray(parsed)
+      ? parsed.map(slimThemeRecord).filter(Boolean)
+      : [];
   } catch {
     return [];
   }
 }
 
 function saveManifest(manifest) {
-  fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
+  const slim = (manifest || []).map(slimThemeRecord).filter(Boolean);
+  fs.writeFileSync(MANIFEST_PATH, JSON.stringify(slim, null, 2));
 }
 
 // ─── Deduplication ──────────────────────────────────────────
@@ -90,15 +170,22 @@ function findSimilarTheme(palette, manifest) {
 
 // ─── Manifest Cap & Cleanup ─────────────────────────────────
 function trimManifest(manifest) {
-  if (manifest.length <= MAX_THEMES) return manifest;
+  const deduped = [];
+  const seen = new Set();
+  for (const theme of manifest) {
+    if (!theme || !theme.safeName || seen.has(theme.safeName)) continue;
+    seen.add(theme.safeName);
+    deduped.push(theme);
+  }
+  if (deduped.length <= MAX_THEMES) return deduped;
   // Keep newest 100, evict oldest CSS files
-  const kept = manifest.slice(0, MAX_THEMES);
-  const evicted = manifest.slice(MAX_THEMES);
+  const kept = deduped.slice(0, MAX_THEMES);
+  const evicted = deduped.slice(MAX_THEMES);
   for (const t of evicted) {
     const cssPath = path.join(ROOT, '..', t.cssFile);
     try { fs.unlinkSync(cssPath); } catch { /* already gone */ }
   }
-  console.log(`  🧹 Trimmed ${evicted.length} old themes (cap: ${MAX_THEMES})`);
+  console.error(`Trimmed ${evicted.length} old themes (cap: ${MAX_THEMES})`);
   return kept;
 }
 
@@ -139,17 +226,20 @@ async function generate(themeInput) {
     glow,
   }, BASE_CSS[baseKey] || '', BASE_HTML[baseKey] || '');
 
-  const sn = safeName(gen.name);
-
   // Load manifest early for dedup + cap checks
   const manifest = loadManifest();
+  const sn = uniqueSafeName(safeName(gen.name), manifest);
 
   // Deduplication: compare palette tokens
   const similar = findSimilarTheme(palette, manifest);
   if (similar) {
-    const msg = `  ⚠️  Palette too similar to existing theme "${similar.name}". Skipping generation.`;
-    console.log(msg);
-    return { ...similar, deduplicated: true, warning: 'Palette too similar to existing theme' };
+    return {
+      ...similar,
+      deduplicated: true,
+      generated: false,
+      warning: 'Palette too similar to existing theme',
+      status: 'deduplicated',
+    };
   }
 
   // Generate complete theme (CSS + HTML + wallpapers)
@@ -158,12 +248,34 @@ async function generate(themeInput) {
   try {
     result = await gen.generate(keywords);
   } catch (e) {
-    console.error('Theme generation failed:', e.message);
-    // Fallback: generate CSS-only and build minimal HTML
+    // Fallback: ship a CSS-only theme instead of hard failing the orb request.
     const css = gen.recolor();
     const cssPath = path.join(CSS_DIR, `${sn}.css`);
     fs.writeFileSync(cssPath, css);
-    return { name: gen.name, safeName: sn, tagline: gen.tagline, error: e.message };
+    const fallbackRecord = {
+      name: gen.name,
+      safeName: sn,
+      tagline: gen.tagline,
+      palette,
+      glow,
+      baseTheme: baseKey,
+      wallpapers: [],
+      html: buildHTMLfromTemplate(gen.name, gen.tagline, css, [], '#1a1a2e', BASE_HTML[baseKey] || ''),
+      css,
+      cssFile: `css/generated/${sn}.css`,
+      createdAt: new Date().toISOString(),
+      status: 'partial',
+      error: e.message,
+    };
+    fallbackRecord.swatches = buildThemeSwatches(fallbackRecord);
+    fallbackRecord.tags = buildThemeTags(fallbackRecord);
+    fallbackRecord.wallpaperCount = 0;
+    const idx = manifest.findIndex((t) => t.safeName === sn);
+    if (idx >= 0) manifest[idx] = fallbackRecord;
+    else manifest.unshift(fallbackRecord);
+    saveManifest(trimManifest(manifest));
+    generatePreviewPage(loadManifest());
+    return fallbackRecord;
   }
 
   // Write CSS to file
@@ -173,19 +285,24 @@ async function generate(themeInput) {
   // Build theme record from generator result
   const record = {
     name: result.name,
-    safeName: result.safeName || sn,
+    safeName: sn,
     tagline: result.tagline,
     palette,
     glow,
     baseTheme: result.baseTheme || baseKey,
     wallpapers: result.wallpapers || [],
     html: result.html || '',
+    css: result.css,
     cssFile: `css/generated/${sn}.css`,
     createdAt: result.createdAt || new Date().toISOString(),
+    status: 'ok',
   };
+  record.swatches = buildThemeSwatches(record);
+  record.tags = buildThemeTags(record);
+  record.wallpaperCount = record.wallpapers.length;
 
   // Update manifest
-  const idx = manifest.findIndex((t) => t.safeName === sn);
+  const idx = manifest.findIndex((t) => t.safeName === record.safeName);
   if (idx >= 0) manifest[idx] = record;
   else manifest.unshift(record);
 
