@@ -34,7 +34,6 @@ const ROOT = __dirname;
 const CSS_DIR = path.join(ROOT, '..', 'css', 'generated');
 const GEN_DIR = path.join(ROOT, '..', 'generated');
 const MANIFEST_PATH = path.join(GEN_DIR, 'manifest.json');
-const PREVIEW_PATH = path.join(GEN_DIR, 'preview.html');
 
 // Ensure dirs
 [CSS_DIR, GEN_DIR].forEach((d) => fs.mkdirSync(d, { recursive: true }));
@@ -312,7 +311,6 @@ async function generate(themeInput) {
     if (idx >= 0) manifest[idx] = fallbackRecord;
     else manifest.unshift(fallbackRecord);
     saveManifest(trimManifest(manifest));
-    generatePreviewPage(loadManifest());
     return fallbackRecord;
   }
 
@@ -350,156 +348,7 @@ async function generate(themeInput) {
   const trimmed = trimManifest(manifest);
   saveManifest(trimmed);
 
-  // Generate/update preview page
-  generatePreviewPage(trimmed);
-
   return record;
-}
-
-// ─── Preview Page Generator ─────────────────────────────────
-function generatePreviewPage(manifest) {
-  // Generate the preview page that loads any theme by query param
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Printmon Preview</title>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KQ1RGHNMZG"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-KQ1RGHNMZG");</script>
-  <link rel="stylesheet" href="../css/swapbtn.css">
-  <link rel="stylesheet" href="../css/newer/Shared2Printmon.css">
-  <link rel="stylesheet" id="themeCSS" href="">
-  <style id="wallpaperJS"></style>
-</head>
-<body>
-  <div class="dropdown2">
-    <button onclick="toggleDropdown()" class="dropbtn2">Swap Themes</button>
-    <div id="myDropdown" class="dropdown2-content">
-      <h2>Generated Themes</h2>
-      ${manifest
-        .map((t) => `<a href="preview.html?theme=${t.safeName}">${t.name}</a>`)
-        .join('\n')}
-      <h2>Printmon 2</h2>
-      <a href="../Printmon2Doshus.html">RANDOM 🎲</a>
-      <a href="../TheDoshusPrintmon2Halloween.html">Halloween</a>
-      <a href="../TheDoshusPrintmon2Forest.html">Forest</a>
-      <a href="../TheDoshusPrintmon2GTA.html">GTA 6</a>
-      <a href="../TheDoshusPrintmon2Kuromi.html">Kuromi</a>
-      <a href="../TheDoshusPrintmon2Spongebob.html">Spongebob</a>
-      <a href="../TheDoshusPrintmon2Strawberry.html">Strawberry Shortcake</a>
-      <a href="../TheDoshusPrintmon2Witch.html">Witchery</a>
-      <a href="../gallery.html">← Back to Gallery</a>
-    </div>
-  </div>
-  <div class="container">
-    <div class="left">
-      <div class="printbox">
-        <h1>Printmon 2</h1>
-        <p class="subtitle" id="subtitleTag">A generated theme</p>
-        <div class="options">
-          <label><input id="printafter" type="checkbox" checked> Print after scanning</label>
-          <label><input id="jumptoq" type="checkbox"> Jump to quantity</label>
-          <label><input id="nowhitespace" type="checkbox" checked> Trim whitespace characters</label>
-        </div>
-        <div class="input-group">
-          <label for="barcodedata">Enter Barcode Data <span>(43 Characters Max)</span></label>
-          <input id="barcodedata" type="text" maxlength="43">
-        </div>
-        <div class="input-group">
-          <label for="displaytext">Enter Display Text</label>
-          <input id="displaytext" type="text" maxlength="43">
-        </div>
-        <div class="input-group">
-          <label for="quantity">Enter Quantity <span>(500 Max)</span></label>
-          <input id="quantity" type="number" min="1" max="500" value="1">
-        </div>
-        <button type="button" class="print-button" onclick="alert('Preview mode — printing disabled')">Preview</button>
-      </div>
-      <div class="MultiBarcode-printer">
-        <h2>Multiple Barcode Printer</h2>
-        <div class="MultiPrinter-content">
-          <textarea id="textAreaID" placeholder="Preview mode — enter test barcodes..."></textarea>
-          <button type="button" class="multiButton" onclick="alert('Preview mode')">Preview Print</button>
-        </div>
-      </div>
-    </div>
-    <div class="right">
-      <div class="quick-print-buttons">
-        <button class="buttonsLine1" onclick="alert('Preview')">ATAC</button>
-        <button class="buttonsLine2" onclick="alert('Preview')">DAMAGE</button>
-        <button class="buttonsLine3" onclick="alert('Preview')">RECALL</button>
-        <button class="buttonsLine1" onclick="alert('Preview')">NON-CON</button>
-        <button class="buttonsLine2" onclick="alert('Preview')">1</button>
-        <button class="buttonsLine3" onclick="alert('Preview')">C</button>
-      </div>
-    </div>
-  </div>
-  <script src="../js/swap-img.js"></script>
-  <script>
-    // Load theme CSS based on URL query param
-    const params = new URLSearchParams(window.location.search);
-    const themeName = params.get('theme');
-    const isRTDB = params.get('rtdb') === 'true';
-
-    if (themeName) {
-      if (isRTDB) {
-        // ── RTDB mode: fetch CSS + metadata from Firebase ──
-        const R = 'https://doshusweb-default-rtdb.firebaseio.com';
-        Promise.all([
-          fetch(R + '/printmon/css/' + themeName + '.json'),
-          fetch(R + '/printmon/themes/' + themeName + '.json'),
-        ])
-          .then(([cssRes, themeRes]) => Promise.all([cssRes.json(), themeRes.json()]))
-          .then(([css, theme]) => {
-            if (css && typeof css === 'string') {
-              const style = document.createElement('style');
-              style.textContent = css;
-              document.head.appendChild(style);
-            }
-            if (theme) {
-              document.getElementById('subtitleTag').textContent = theme.tagline || '';
-              document.title = (theme.name || themeName) + ' — Printmon Preview';
-              if (theme.wallpapers && theme.wallpapers.length) {
-                const wall = theme.wallpapers[Math.floor(Math.random() * theme.wallpapers.length)];
-                document.body.style.backgroundImage = "url('" + wall + "')";
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundAttachment = 'fixed';
-                document.body.style.backgroundPosition = 'center';
-              }
-            }
-          })
-          .catch(() => {
-            document.getElementById('subtitleTag').textContent = '(theme loading...)';
-          });
-      } else {
-        // ── Local mode: CSS file + manifest.json ──
-        const cssLink = document.getElementById('themeCSS');
-        cssLink.href = '../css/generated/' + themeName + '.css';
-
-        fetch('manifest.json')
-          .then(r => r.json())
-          .then(manifest => {
-            const theme = manifest.find(t => t.safeName === themeName);
-            if (theme) {
-              document.getElementById('subtitleTag').textContent = theme.tagline;
-              document.title = theme.name + ' — Printmon Preview';
-              if (theme.wallpapers && theme.wallpapers.length > 0) {
-                const wall = theme.wallpapers[Math.floor(Math.random() * theme.wallpapers.length)];
-                document.body.style.backgroundImage = "url('" + wall + "')";
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundAttachment = 'fixed';
-                document.body.style.backgroundPosition = 'center';
-              }
-            }
-          })
-          .catch(() => {});
-      }
-    }
-  </script>
-</body>
-</html>`;
-
-  fs.writeFileSync(PREVIEW_PATH, html);
 }
 
 // ─── Demo Themes ────────────────────────────────────────────
