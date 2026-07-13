@@ -40,7 +40,8 @@ const MANIFEST_PATH = path.join(GEN_DIR, 'manifest.json');
 
 // ─── Maintenance Constants ──────────────────────────────────
 const MAX_THEMES = 100;
-const DEDUP_THRESHOLD = 0.15; // 15% palette similarity → dedup
+const DEDUP_THRESHOLD = 0.15; // 15% palette similarity → dedup (only when names overlap)
+const NEAR_IDENTICAL_THRESHOLD = 0.05; // below this, dedup regardless of name
 
 // ─── Helpers ────────────────────────────────────────────────
 function safeName(name) {
@@ -177,10 +178,29 @@ function paletteSimilarity(a, b) {
   return Math.max(d1, d2);
 }
 
-function findSimilarTheme(palette, manifest) {
+function nameTokens(name) {
+  return new Set(
+    String(name || '')
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((w) => w.length > 2)
+  );
+}
+
+function namesOverlap(a, b) {
+  const tb = nameTokens(b);
+  for (const w of nameTokens(a)) if (tb.has(w)) return true;
+  return false;
+}
+
+function findSimilarTheme(palette, manifest, name) {
   for (const t of manifest) {
     if (!t.palette) continue;
-    if (paletteSimilarity(palette, t.palette) < DEDUP_THRESHOLD) return t;
+    const sim = paletteSimilarity(palette, t.palette);
+    if (sim >= DEDUP_THRESHOLD) continue;
+    // Different-named themes only dedup when palettes are nearly identical —
+    // "Berry Rush" must not collide with "Cherry Blossom Drift" over shared pinks.
+    if (sim < NEAR_IDENTICAL_THRESHOLD || namesOverlap(name, t.name)) return t;
   }
   return null;
 }
@@ -265,13 +285,14 @@ async function generate(themeInput) {
   const manifest = loadManifest();
   const sn = uniqueSafeName(safeName(gen.name), manifest);
 
-  // Deduplication: compare palette tokens
-  const similar = findSimilarTheme(palette, manifest);
+  // Deduplication: compare palette tokens (skippable via force flag)
+  const similar = themeInput.force ? null : findSimilarTheme(palette, manifest, gen.name);
   if (similar) {
     return {
       ...similar,
       deduplicated: true,
       generated: false,
+      requestedName: gen.name,
       warning: 'Palette too similar to existing theme',
       status: 'deduplicated',
     };
