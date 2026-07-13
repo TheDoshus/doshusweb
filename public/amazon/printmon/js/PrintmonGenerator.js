@@ -426,6 +426,76 @@ DESIGN RULES:
 
 // ─── PrintmonGenerator ─────────────────────────────────────
 
+/**
+ * Build short, palette-aware wallpaper searches, ordered best to safest.
+ */
+function buildWallpaperQueries(name, tagline, palette, keywords) {
+  const stripPromptWords = (value) => String(value || '')
+    .replace(/\b(make|create|generate|design|build|me|a|an|theme|printmon|skin)\b/gi, '')
+    .replace(/[^a-z0-9\s-]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const limitWords = (value, max) => value.split(/\s+/).filter(Boolean).slice(0, max).join(' ');
+  const parseHex = (hex) => {
+    const clean = String(hex || '').replace(/^#/, '').slice(0, 6);
+    if (!/^[0-9a-f]{6}$/i.test(clean)) return null;
+    const [r, g, b] = [0, 2, 4].map((offset) => parseInt(clean.slice(offset, offset + 2), 16) / 255);
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+    let hue = 0;
+    if (delta) {
+      if (max === r) hue = 60 * (((g - b) / delta) % 6);
+      else if (max === g) hue = 60 * (((b - r) / delta) + 2);
+      else hue = 60 * (((r - g) / delta) + 4);
+    }
+    return { hue: hue < 0 ? hue + 360 : hue, lightness: (max + min) / 2, chroma: delta };
+  };
+  const hueWord = ({ hue, chroma }) => {
+    if (chroma < 0.08) return 'monochrome';
+    if (hue < 15 || hue >= 345) return 'crimson';
+    if (hue < 45) return 'orange';
+    if (hue < 70) return 'gold';
+    if (hue < 155) return 'green';
+    if (hue < 195) return 'teal';
+    if (hue < 255) return 'blue';
+    if (hue < 315) return 'purple';
+    return 'pink';
+  };
+
+  const strippedKeywords = keywords ? stripPromptWords(keywords) : '';
+  const strippedName = stripPromptWords(name);
+  const subjectSource = strippedKeywords || stripPromptWords(`${name || ''} ${tagline || ''}`) || String(name || '').trim();
+  const safetySource = keywords ? (strippedKeywords || String(name || '').trim()) : (strippedName || String(name || '').trim());
+  const safetyQuery = limitWords(safetySource || 'wallpaper', 6);
+  const paletteEntries = Object.entries(palette || {})
+    .map(([key, value]) => [key, parseHex(value)])
+    .filter((entry) => entry[1]);
+  const dominant = (
+    paletteEntries.find(([key, color]) => key === '--pm-hue1' && color.chroma >= 0.08)
+    || paletteEntries.find(([key, color]) => key.startsWith('--pm-hue') && color.chroma >= 0.08)
+    || paletteEntries.find(([, color]) => color.chroma >= 0.08)
+    || paletteEntries[0]
+  )?.[1];
+  const surfaceColors = paletteEntries.filter(([key]) => key.startsWith('--pm-surface')).map(([, color]) => color);
+  const moodColors = surfaceColors.length ? surfaceColors : paletteEntries.map(([, color]) => color);
+  const averageLightness = moodColors.length
+    ? moodColors.reduce((sum, color) => sum + color.lightness, 0) / moodColors.length
+    : 0.5;
+  const colorWord = dominant ? hueWord(dominant) : '';
+  const moodWords = averageLightness < 0.45 ? 'dark moody' : 'bright airy';
+  const subjectWords = subjectSource.split(/\s+/).filter((word) => word && word.toLowerCase() !== colorWord);
+  const primarySubject = subjectWords.slice(0, 1).join(' ') || limitWords(subjectSource, 1);
+  const secondarySubject = subjectWords.slice(0, 5 - (colorWord ? 1 : 0)).join(' ') || limitWords(subjectSource, 4);
+  const candidates = [
+    [primarySubject, colorWord, moodWords, 'abstract wallpaper'].filter(Boolean).join(' '),
+    [secondarySubject, colorWord].filter(Boolean).join(' '),
+    safetyQuery,
+  ].map((query) => limitWords(query, 6)).filter(Boolean);
+
+  return [...new Set(candidates)].slice(0, 3);
+}
+
 class PrintmonGenerator {
   /**
    * @param {Object} opts
@@ -475,54 +545,63 @@ class PrintmonGenerator {
   }
 
   async fetchWallpapers(count = 5, keywords) {
-    const searchTerms = keywords
-      ? keywords.replace(/\b(make|create|generate|design|build|me|a|an|theme|printmon|skin)\b/gi, '').replace(/\s+/g, ' ').trim()
-      : this.name.replace(/\b(theme|printmon|skin)\b/gi, '').trim();
-    const query = searchTerms || this.name;
-    const cached = wallpaperCache.get(query);
-    if (cached && Date.now() - cached.ts < 6 * 60 * 60 * 1000) {
-      return cached.urls.slice(0, count);
-    }
+    const queries = buildWallpaperQueries(this.name, this.tagline, this.palette, keywords);
+    const bestQuery = queries[0];
+    const query = queries[queries.length - 1];
+    const getCached = (candidate) => {
+      const cached = wallpaperCache.get(candidate);
+      return cached && Date.now() - cached.ts < 6 * 60 * 60 * 1000
+        ? cached.urls.slice(0, count)
+        : null;
+    };
 
     // Tier 1: Pexels API
     if (PEXELS_API_KEY) {
-      try {
-        const res = await fetch(
-          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape&size=large`,
-          {
-            headers: { Authorization: PEXELS_API_KEY },
-            signal: AbortSignal.timeout(8000),
+      for (const candidate of queries) {
+        const cached = getCached(candidate);
+        if (cached) return cached;
+        try {
+          const res = await fetch(
+            `https://api.pexels.com/v1/search?query=${encodeURIComponent(candidate)}&per_page=${count}&orientation=landscape&size=large`,
+            {
+              headers: { Authorization: PEXELS_API_KEY },
+              signal: AbortSignal.timeout(8000),
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const urls = (data.photos || []).map(p => p.src?.large2x || p.src?.large || p.src?.original);
+            if (urls.length > 0) {
+              wallpaperCache.set(candidate, { urls, ts: Date.now() });
+              return urls;
+            }
           }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const urls = (data.photos || []).map(p => p.src?.large2x || p.src?.large || p.src?.original);
-          if (urls.length > 0) {
-            wallpaperCache.set(query, { urls, ts: Date.now() });
-            return urls;
-          }
+        } catch (err) {
+          console.error('Pexels error:', err.message);
         }
-      } catch (err) {
-        console.error('Pexels error:', err.message);
       }
     }
 
     // Tier 2: Pixabay (free, no key needed for basic search)
-    try {
-      const pxRes = await fetch(
-        `https://pixabay.com/api/?key=25501287-bd54e2b21418e6c82bb6adb5b&q=${encodeURIComponent(query)}&per_page=${count}&orientation=horizontal&safesearch=true`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      if (pxRes.ok) {
-        const pxData = await pxRes.json();
-        const urls = (pxData.hits || []).map(h => h.largeImageURL || h.webformatURL);
-        if (urls.length > 0) {
-          wallpaperCache.set(query, { urls, ts: Date.now() });
-          return urls;
+    for (const candidate of [...new Set([bestQuery, query])]) {
+      const cached = getCached(candidate);
+      if (cached) return cached;
+      try {
+        const pxRes = await fetch(
+          `https://pixabay.com/api/?key=25501287-bd54e2b21418e6c82bb6adb5b&q=${encodeURIComponent(candidate)}&per_page=${count}&orientation=horizontal&safesearch=true`,
+          { signal: AbortSignal.timeout(8000) }
+        );
+        if (pxRes.ok) {
+          const pxData = await pxRes.json();
+          const urls = (pxData.hits || []).map(h => h.largeImageURL || h.webformatURL);
+          if (urls.length > 0) {
+            wallpaperCache.set(candidate, { urls, ts: Date.now() });
+            return urls;
+          }
         }
+      } catch (err) {
+        console.error('Pixabay error:', err.message);
       }
-    } catch (err) {
-      console.error('Pixabay error:', err.message);
     }
 
     // Tier 3: Lorem Picsum (free, no key — random by query doesn't exist, use random)
@@ -694,6 +773,6 @@ module.exports = {
   extractPalette, describePalette, hexToRgb,
   lightenHex, darkenHex, derivePalette, perceivedBrightness,
   remapPalette, buildRootBlock, buildRemapPrompt,
-  buildHTML,
+  buildWallpaperQueries, buildHTML,
   wallpaperCache,
 };
