@@ -121,6 +121,7 @@
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
             document.dispatchEvent(new CustomEvent('zp-chat-opened'));
+            if (navigator.vibrate) { try { navigator.vibrate(6); } catch (e) {} }
             orb.classList.remove('unread');
             /* checkOnlineStatus handled by Firebase realtime listener */
             /* Ensure name prompt shows even if loadMessages hasn't fired yet */

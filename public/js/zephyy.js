@@ -102,6 +102,7 @@
             wrap.classList.remove('zp-spring');
             void wrap.offsetWidth;
             wrap.classList.add('zp-spring');
+            if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
         });
     }
 

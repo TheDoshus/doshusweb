@@ -1,5 +1,57 @@
 [
   {
+    "name": "Celestial Archipelago",
+    "safeName": "celestial-archipelago",
+    "tagline": "Floating islands of code and crystal",
+    "fontTitle": "'Vivaldi', cursive",
+    "fontSubtitle": "'Edwardian Script ITC', cursive",
+    "palette": {
+      "--pm-hue1": "#7B2D8E",
+      "--pm-hue1-deep": "#3e1747",
+      "--pm-hue1-bright": "#ab73a7",
+      "--pm-hue2": "#9e5c96",
+      "--pm-hue2-bright": "#b685b0",
+      "--pm-hue2-deep": "#673c62",
+      "--pm-hue3": "#FFB347",
+      "--pm-hue3-light": "#ffce87",
+      "--pm-surface": "#0d060c",
+      "--pm-surface-alt": "#22121a",
+      "--pm-light": "#d8bfd9",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "153, 87, 153",
+      "--pm-glow-cool": "242, 180, 111"
+    },
+    "baseTheme": "GTA",
+    "wallpapers": [
+      "https://images.pexels.com/photos/33879244/pexels-photo-33879244.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/30018097/pexels-photo-30018097.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/25372910/pexels-photo-25372910.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/6984986/pexels-photo-6984986.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/6985190/pexels-photo-6985190.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/celestial-archipelago.css",
+    "createdAt": "2026-07-15T17:49:38.694Z",
+    "tags": [
+      "generated",
+      "gta",
+      "violet",
+      "amber"
+    ],
+    "swatches": [
+      "#7B2D8E",
+      "#9e5c96",
+      "#FFB347",
+      "#0d060c"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
     "name": "Berry Voltage",
     "safeName": "berry-voltage",
     "tagline": "Tart & punchy strawberry energy",
