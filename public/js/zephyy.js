@@ -97,6 +97,12 @@
             if (center) center.style.animationDuration = sp[3];
         }
         wrap.addEventListener('pointerdown', cycleGlyphState);
+        // Springy pop on mood cycle (class retrigger; CSS owns the physics)
+        wrap.addEventListener('pointerup', function () {
+            wrap.classList.remove('zp-spring');
+            void wrap.offsetWidth;
+            wrap.classList.add('zp-spring');
+        });
     }
 
     // ─── Intersection Observer for section reveals ───

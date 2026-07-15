@@ -2454,3 +2454,63 @@ body.zephyy-page summary {
     to { opacity: 1; transform: translateY(0); }
   }
 }
+
+
+/* -- Micro-interaction springs (haptics-style, CSS only) ---------------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* Her avatar glyph: squish + overshoot on mood-cycle press */
+  #zephyy-glyph {
+    transition: transform 0.18s cubic-bezier(0.34, 1.8, 0.4, 1);
+  }
+  #zephyy-glyph:active {
+    transform: scale(0.9) rotate(-3deg);
+    transition-duration: 0.06s;
+  }
+  #zephyy-glyph.zp-spring {
+    animation: zp-spring-pop 0.5s cubic-bezier(0.22, 1.6, 0.36, 1);
+  }
+  @keyframes zp-spring-pop {
+    0%   { transform: scale(0.9)  rotate(-3deg); }
+    45%  { transform: scale(1.08) rotate(2deg); }
+    70%  { transform: scale(0.97) rotate(-1deg); }
+    100% { transform: scale(1)    rotate(0deg); }
+  }
+
+  /* Chat orb launchers: springy press */
+  .zp-orb-demo { transition: transform 0.22s cubic-bezier(0.34, 1.9, 0.4, 1); }
+  .zp-orb-demo:active { transform: scale(0.85); transition-duration: 0.06s; }
+  .zp-orb-demo:hover { transform: scale(1.08); }
+
+  /* Nav + rail + buttons: subtle press-down */
+  .zp-sub-links a, .zp-sidebar-link, .footer-nav a, #zp-chat-send {
+    transition: transform 0.16s cubic-bezier(0.34, 1.6, 0.4, 1);
+  }
+  .zp-sub-links a:active, .zp-sidebar-link:active, .footer-nav a:active {
+    transform: scale(0.92) translateY(1px);
+  }
+  #zp-chat-send:active { transform: scale(0.9); }
+}
+
+/* -- Text motion: hero reveal + chat message entrances ------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .zp-hero h1 {
+    animation: zp-title-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .zp-hero h1 + p,
+  .zp-hero .zp-tagline {
+    animation: zp-title-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+  }
+  @keyframes zp-title-rise {
+    from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+    to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+  }
+
+  /* Chat: each message eases in as it lands */
+  .zp-chat-msg {
+    animation: zp-msg-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes zp-msg-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.985); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+  }
+}
