@@ -27,6 +27,8 @@ external-side change and mark the link caveat.
 | 2026-07-12 | Missing theme dropdown entries added (Butterfly self-link; Butterfly on Strawberry; Halloween, Melody, One Piece, Solo Leveling, and Toki Doki on legacy Doshus pages) | `TheDoshusPrintmon2Butterfly.html`, `TheDoshusPrintmon2Strawberry.html`, all 14 `Printmon2Doshus*.html` pages with swap dropdowns | Apply the same ctrl+H anchor additions to the internal copies; preserve each dropdown's existing ordering and internal-only link variants. |
 | 2026-07-13 | Link repairs: Kuromi's Printmon2LATEST href was a mangled double-URL (two URLs concatenated) — fixed; Butterfly + Strawberry Printmon2LATEST normalized from `drive.corp` to canonical `drive-render.corp` | `TheDoshusPrintmon2Kuromi.html`, `TheDoshusPrintmon2Butterfly.html`, `TheDoshusPrintmon2Strawberry.html` | **Check the internal copies for the same defects** — the Kuromi double-URL bug likely exists there too. Host normalization: Doshus decides whether internal copies follow (their link variants may differ intentionally). |
 
+| 2026-07-15 | **Orb relocated**: dock above the Doshus.NET scroll button (18 strip pages); classics keep orb beside Swap Themes externally, SKIP orb internally (no strip); tooltip now position:fixed via swap-img.js; `?v=orb3` external-only | all strip pages, `css/swapbtn.css` (dock block), `js/swap-img.js` (positioning) | **INTERNAL-SYNC-PROMPT.md fully rewritten 2026-07-15 against real internal copies** — use it as-is in Quick Suite; it embeds both payloads |
+
 ## Synced history
 
 _(move rows here once applied internally, with sync date)_
