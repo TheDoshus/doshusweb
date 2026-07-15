@@ -81,4 +81,19 @@ function downloadAllArcs() {
 		'I recolor this whole page on request, you know'
 	];
 	tip.textContent = quips[Math.floor(Math.random() * quips.length)];
+
+	// Docked orb (inside the horizontal scroll strip): the strip's scroller
+	// clips the tip, so lift it out with position:fixed while shown.
+	var orb = tip.parentElement;
+	if (orb && orb.closest && orb.closest('.zephyy-orb-dock')) {
+		var place = function() {
+			var r = orb.getBoundingClientRect();
+			tip.style.position = 'fixed';
+			tip.style.top = 'auto';
+			tip.style.bottom = (window.innerHeight - r.top + 8) + 'px';
+			tip.style.left = Math.max(8, r.left + r.width / 2 - 105) + 'px';
+		};
+		orb.addEventListener('mouseenter', place);
+		orb.addEventListener('focus', place);
+	}
 })();
