@@ -417,6 +417,7 @@
     tab.addEventListener('click', toggleSidebar);
     if (overlay) overlay.addEventListener('click', closeSidebar);
     nav.querySelectorAll('.zp-sidebar-link').forEach(link => link.addEventListener('click', closeSidebar));
+    document.addEventListener('zp-chat-opened', closeSidebar);
 
     let swX = 0, swY = 0, swTime = 0;
     window.addEventListener('touchstart', (e) => { swX = e.touches[0].clientX; swY = e.touches[0].clientY; swTime = Date.now(); }, { passive: true });
