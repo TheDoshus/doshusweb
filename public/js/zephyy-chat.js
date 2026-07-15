@@ -38,17 +38,17 @@
             </linearGradient>
         </defs>
         <circle cx="32" cy="32" r="29" stroke="#ffffff" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>
-        <g class="whorl-outer" style="transform-origin: 32px 32px">
+        <g class="whorl-outer">
             <path d="M 32 9 A 23 23 0 1 1 12 44"
                 stroke="url(#orbGlyphGrad)" stroke-width="3.2" stroke-linecap="round" opacity="0.85"/>
             <circle cx="32" cy="9" r="2.0" fill="#ffffff" opacity="0.9"/>
         </g>
-        <g class="whorl-mid" style="transform-origin: 32px 32px">
+        <g class="whorl-mid">
             <path d="M 45 40 A 15 15 0 1 1 32 17"
                 stroke="url(#orbGlyphGrad)" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/>
             <circle cx="45" cy="40" r="1.8" fill="#ffffff" opacity="0.95"/>
         </g>
-        <g class="whorl-inner" style="transform-origin: 32px 32px">
+        <g class="whorl-inner">
             <path d="M 25 36 A 8 8 0 1 1 39 36"
                 stroke="url(#orbGlyphGrad)" stroke-width="3.8" stroke-linecap="round" opacity="0.98"/>
             <circle cx="25" cy="36" r="1.6" fill="#ffffff" opacity="0.98"/>

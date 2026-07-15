@@ -42,17 +42,17 @@
             </linearGradient>
         </defs>
         <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.1)" stroke-width="0.4" fill="none"/>
-        <g class="whorl-outer" style="transform-origin: 32px 32px">
+        <g class="whorl-outer">
             <path d="M 32 9 A 23 23 0 1 1 12 44"
                 stroke="url(#glyphGrad)" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>
             <circle cx="32" cy="9" r="1.0" fill="oklch(var(--brand-teal))" opacity="0.6"/>
         </g>
-        <g class="whorl-mid" style="transform-origin: 32px 32px">
+        <g class="whorl-mid">
             <path d="M 45 40 A 15 15 0 1 1 32 17"
                 stroke="url(#glyphGrad)" stroke-width="1.0" stroke-linecap="round" opacity="0.65"/>
             <circle cx="45" cy="40" r="0.8" fill="oklch(var(--brand-purple))" opacity="0.7"/>
         </g>
-        <g class="whorl-inner" style="transform-origin: 32px 32px">
+        <g class="whorl-inner">
             <path d="M 25 36 A 8 8 0 1 1 39 36"
                 stroke="url(#glyphGrad)" stroke-width="1.1" stroke-linecap="round" opacity="0.9"/>
             <circle cx="25" cy="36" r="0.7" fill="oklch(var(--brand-teal))" opacity="0.8"/>
@@ -97,26 +97,6 @@
             if (center) center.style.animationDuration = sp[3];
         }
         wrap.addEventListener('pointerdown', cycleGlyphState);
-    }
-
-    // ─── Inject keyframe styles ───
-    function addDynamicStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
-            .whorl-outer { animation: whorlSpin 16s linear infinite; }
-            .whorl-mid   { animation: whorlSpin 11s linear infinite; }
-            .whorl-inner { animation: whorlSpin 7s  linear infinite; }
-            .whorl-center { animation: whorlPulse 2.5s ease-in-out infinite; }
-            @keyframes whorlSpin {
-                from { transform: rotate(0deg); }
-                to   { transform: rotate(360deg); }
-            }
-            @keyframes whorlPulse {
-                0%, 100% { opacity: 0.5; transform: scale(0.85); }
-                50%       { opacity: 1;   transform: scale(1.15); }
-            }
-        `;
-        document.head.appendChild(style);
     }
 
     // ─── Intersection Observer for section reveals ───
@@ -192,7 +172,6 @@
     // ─── Init main IIFE ───
     function init() {
         renderGlyph();
-        addDynamicStyles();
         setupGlyphInteractivity();
         setupScrollReveal();
         setupEasterEgg();
@@ -432,4 +411,3 @@
 // ─── Live status → migrated to zephyy-realtime.js (Firebase onValue)
 
 // ─── Realm → migrated to zephyy-realtime.js (Firebase onValue)
-

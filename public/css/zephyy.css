@@ -446,8 +446,26 @@
   height: 100%;
 }
 
-/* whorlSpin / whorlPulse keyframes + .whorl-* animation rules are injected
-   globally by zephyy.js addDynamicStyles() — reused here, no redeclaration. */
+.whorl-outer,
+.whorl-mid,
+.whorl-inner {
+  transform-origin: 32px 32px;
+}
+
+.whorl-outer { animation: whorlSpin 16s linear infinite; }
+.whorl-mid   { animation: whorlSpin 11s linear infinite; }
+.whorl-inner { animation: whorlSpin 7s linear infinite; }
+.whorl-center { animation: whorlPulse 2.5s ease-in-out infinite; }
+
+@keyframes whorlSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes whorlPulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); }
+  50%       { opacity: 1;   transform: scale(1.15); }
+}
 
 /* Unread notification dot — top left, slightly bigger */
 .zp-orb-demo.unread::after {

@@ -29,17 +29,17 @@
         </linearGradient>
       </defs>
       <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.1)" stroke-width="0.5" fill="none"/>
-      <g class="glyph-outer" style="transform-origin:32px 32px">
+      <g class="glyph-outer">
         <path d="M 32 9 A 23 23 0 1 1 12 44"
           stroke="url(#zg)" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>
         <circle cx="32" cy="9" r="1.0" fill="oklch(var(--brand-teal))" opacity="0.6"/>
       </g>
-      <g class="glyph-mid" style="transform-origin:32px 32px">
+      <g class="glyph-mid">
         <path d="M 45 40 A 15 15 0 1 1 32 17"
           stroke="url(#zg)" stroke-width="1.0" stroke-linecap="round" opacity="0.65"/>
         <circle cx="45" cy="40" r="0.8" fill="oklch(var(--brand-purple))" opacity="0.7"/>
       </g>
-      <g class="glyph-inner" style="transform-origin:32px 32px">
+      <g class="glyph-inner">
         <path d="M 25 36 A 8 8 0 1 1 39 36"
           stroke="url(#zg)" stroke-width="1.1" stroke-linecap="round" opacity="0.9"/>
         <circle cx="25" cy="36" r="0.7" fill="oklch(var(--brand-teal))" opacity="0.8"/>
@@ -142,20 +142,6 @@
     var containers = document.querySelectorAll('.zephyy-badge-embed');
     if (!containers.length) return;
     var fallbackPoll = null;
-
-    // Inject keyframes
-    if (!document.getElementById('zephyy-keyframes')) {
-      var style = document.createElement('style');
-      style.id = 'zephyy-keyframes';
-      style.textContent = `
-        @keyframes glyphSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes glyphPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
-        .glyph-left { transform-origin: 11px 16px; animation: glyphSpin 12s linear infinite; }
-        .glyph-right { transform-origin: 21px 16px; animation: glyphSpin 12s linear infinite reverse; }
-        .glyph-pulse { animation: glyphPulse 2s ease-in-out infinite; }
-      `;
-      document.head.appendChild(style);
-    }
 
     // Try realtime listener first (dispatched by zephyy-realtime.js)
     var realtimeActive = false;
