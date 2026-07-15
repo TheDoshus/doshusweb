@@ -1340,7 +1340,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  z-index: 100;
+  z-index: 1000; /* .sticky-footer is 999 — rail must ride above it */
   padding: 0.5rem;
   background: oklch(var(--space-oled) / 0.8);
   border: 1px solid oklch(var(--brand-teal) / 0.2);
@@ -1400,10 +1400,12 @@
   color: oklch(var(--brand-teal));
 }
 
-.zp-sidebar-link::after {
-  content: attr(data-label);
-  position: absolute;
-  left: calc(100% + 8px);
+/* Rail tooltips live in a single fixed-position element managed by
+   zephyy.js — the rail is a scroll container (overflow-y:auto), so an
+   ::after tooltip can never escape its clip box. */
+.zp-rail-tip {
+  position: fixed;
+  transform: translateY(-50%);
   background: oklch(var(--space-oled));
   color: var(--text-main);
   padding: 0.3rem 0.6rem;
@@ -1417,10 +1419,9 @@
   pointer-events: none;
   transition: opacity 0.2s ease;
   border: 1px solid oklch(var(--brand-teal) / 0.2);
-  z-index: 101;
+  z-index: 1001;
 }
-
-.zp-sidebar-link:hover::after {
+.zp-rail-tip.show {
   opacity: 1;
 }
 

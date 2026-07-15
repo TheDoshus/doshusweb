@@ -170,6 +170,31 @@
     }
 
     // ─── Init main IIFE ───
+    // ─── Sidebar rail tooltips (fixed-position: the rail scroll box clips ::after) ───
+    function setupRailTooltips() {
+        const links = document.querySelectorAll('.zp-sidebar-link[data-label]');
+        if (!links.length) return;
+        const tip = document.createElement('div');
+        tip.className = 'zp-rail-tip';
+        document.body.appendChild(tip);
+        const desktop = window.matchMedia('(min-width: 901px)');
+        links.forEach((link) => {
+            const show = () => {
+                if (!desktop.matches) return;
+                const r = link.getBoundingClientRect();
+                tip.textContent = link.getAttribute('data-label') || '';
+                tip.style.left = Math.round(r.right + 8) + 'px';
+                tip.style.top = Math.round(r.top + r.height / 2) + 'px';
+                tip.classList.add('show');
+            };
+            const hide = () => tip.classList.remove('show');
+            link.addEventListener('mouseenter', show);
+            link.addEventListener('focus', show);
+            link.addEventListener('mouseleave', hide);
+            link.addEventListener('blur', hide);
+        });
+    }
+
     function init() {
         renderGlyph();
         setupGlyphInteractivity();
@@ -177,6 +202,7 @@
         setupEasterEgg();
         setupMoodSwitch();
         setupLiveFeed();
+        setupRailTooltips();
         regVisibilityCleanup();
     }
 
