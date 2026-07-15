@@ -44,6 +44,10 @@
                 ".write": "newData.isString()",
                 ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
               },
+              "visitor": {
+                ".write": "newData.isString()",
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
               "$other": {
                 ".validate": false
               }

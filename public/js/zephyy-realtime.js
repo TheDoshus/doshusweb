@@ -293,6 +293,15 @@
           .set(String(window.location.pathname).slice(0, 64))
           .catch(function () {});
       } catch (e) { /* no-op */ }
+      // Link a previously claimed visitor identity to the new session.
+      try {
+        const visitorId = localStorage.getItem('zp-visitor-id');
+        if (visitorId) {
+          db.ref('zephyy/chat/sessions/' + id + '/meta/visitor')
+            .set(visitorId)
+            .catch(function () {});
+        }
+      } catch (e) { /* no-op */ }
       if (window.__zpRealtime) {
         window.__zpRealtime.sessionId = sessionId;
         window.__zpRealtime.msgsRef = msgsRef;

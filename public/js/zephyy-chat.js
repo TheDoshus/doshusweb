@@ -671,6 +671,12 @@
     }
     window.addEventListener('zephyy-ctrl', function(e) {
         var ctrl = e.detail || {};
+        if (typeof ctrl.visitorId === 'string') {
+            try { localStorage.setItem('zp-visitor-id', ctrl.visitorId); } catch (err) { /* no-op */ }
+        }
+        if (ctrl.visitorForget === true) {
+            try { localStorage.removeItem('zp-visitor-id'); } catch (err) { /* no-op */ }
+        }
         if (ctrl.typing) {
             if (panel.classList.contains('open')) addThinkingBubble('typing');
             /* Stale guard: if the orb crashes mid-typing, don't spin forever */
