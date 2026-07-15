@@ -1,5 +1,56 @@
 [
   {
+    "name": "Berry Voltage",
+    "safeName": "berry-voltage",
+    "tagline": "Tart & punchy strawberry energy",
+    "fontTitle": "'Jokerman', fantasy",
+    "fontSubtitle": "'Snap ITC', fantasy",
+    "palette": {
+      "--pm-hue1": "#E32636",
+      "--pm-hue1-deep": "#72131b",
+      "--pm-hue1-bright": "#ed6975",
+      "--pm-hue2": "#eb4e5d",
+      "--pm-hue2-bright": "#f07a86",
+      "--pm-hue2-deep": "#99333c",
+      "--pm-hue3": "#FF6B8A",
+      "--pm-hue3-light": "#ff9eb2",
+      "--pm-surface": "#150506",
+      "--pm-surface-alt": "#330c11",
+      "--pm-light": "#f7bbc1",
+      "--pm-neutral": "#e3e3e3",
+      "--pm-text": "#ffffff",
+      "--pm-text-dark": "#000000"
+    },
+    "glow": {
+      "--pm-glow-warm": "234, 75, 90",
+      "--pm-glow-cool": "253, 127, 151"
+    },
+    "baseTheme": "GTA",
+    "wallpapers": [
+      "https://images.pexels.com/photos/3207527/pexels-photo-3207527.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/18431316/pexels-photo-18431316.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/37936858/pexels-photo-37936858.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/6985268/pexels-photo-6985268.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "https://images.pexels.com/photos/1379630/pexels-photo-1379630.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "cssFile": "css/generated/berry-voltage.css",
+    "createdAt": "2026-07-15T14:07:12.339Z",
+    "tags": [
+      "generated",
+      "gta",
+      "rose"
+    ],
+    "swatches": [
+      "#E32636",
+      "#eb4e5d",
+      "#FF6B8A",
+      "#150506"
+    ],
+    "wallpaperCount": 5,
+    "deduplicated": false,
+    "status": "ok"
+  },
+  {
     "name": "Pumpkin Static",
     "safeName": "pumpkin-static",
     "tagline": "the signal is coming from inside the patch",

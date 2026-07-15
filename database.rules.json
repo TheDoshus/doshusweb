@@ -14,7 +14,9 @@
           "$sessionId": {
             "messages": {
               ".read": true,
-              ".indexOn": ["timestamp"],
+              ".indexOn": [
+                "timestamp"
+              ],
               "$msgId": {
                 ".write": "!data.exists() && newData.exists()",
                 ".validate": "newData.hasChildren(['role', 'content', 'timestamp'])",
@@ -35,6 +37,16 @@
             "control": {
               ".read": true,
               ".write": "auth !== null || newData.child('state').val() === 'ended'"
+            },
+            "meta": {
+              ".read": true,
+              "page": {
+                ".write": "newData.isString()",
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+              },
+              "$other": {
+                ".validate": false
+              }
             }
           }
         }

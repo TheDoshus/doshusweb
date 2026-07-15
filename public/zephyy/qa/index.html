@@ -8,7 +8,7 @@
     <meta name="description" content="Zephyy's quality pipeline — qa-gate, audit, coding standards.">
     <link rel="canonical" href="https://doshus.net/zephyy/qa">
     <link rel="stylesheet" href="/css/shared.css">
-    <link rel="stylesheet" href="/css/zephyy.css?v=3">
+    <link rel="stylesheet" href="/css/zephyy.css?v=4">
     <link rel="stylesheet" href="/css/zephyy-subpage.css?v=1">
     <link rel="stylesheet" href="/css/zephyy-qa.css?v=1">
 </head>
@@ -132,5 +132,61 @@
 
     <script src="/js/main.js"></script>
     <script src="/js/zephyy-subpage.js"></script>
+
+
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js" integrity="sha384-WCNi5HrUqYpPiERhOGB000a3XlerI8Hq52+uTGtzyl/ZFU/LmuVx+lqA1cYJnEkq" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js" integrity="sha384-hb6zQWOUCteeQSkZPIVwI6sr/1arrQrsb0xv1fevRvO58hDu2d617rC8afnX3jCv" crossorigin="anonymous"></script>
+
+    <!-- zp-chat:start -->
+        <!-- Zephyy Chat Backdrop -->
+        <div class="zp-chat-backdrop" id="zp-chat-backdrop"></div>
+
+        <!-- Zephyy Chat Panel -->
+        <div class="zp-chat-panel" id="zp-chat-panel">
+            <div class="zp-chat-header">
+                <span class="zp-chat-title">
+                    <span class="zp-chat-icon-glyph">
+                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="zp-chat-glyph-icon">
+                            <defs>
+                                <linearGradient id="chatGlyphGrad" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
+                                    <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
+                                    <stop offset="100%" stop-color="oklch(var(--brand-green))" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.15)" stroke-width="0.6" fill="none"/>
+                            <path d="M 32 9 A 23 23 0 1 1 12 44"
+                                stroke="url(#chatGlyphGrad)" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+                            <path d="M 45 40 A 15 15 0 1 1 32 17"
+                                stroke="url(#chatGlyphGrad)" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+                            <path d="M 25 36 A 8 8 0 1 1 39 36"
+                                stroke="url(#chatGlyphGrad)" stroke-width="1.6" stroke-linecap="round" opacity="0.95"/>
+                            <circle cx="32" cy="32" r="2.2" fill="oklch(var(--brand-teal))"/>
+                        </svg>
+                    </span>
+                    <span class="zp-chat-name">Zephyy</span>
+                    <span class="zp-model-badge" id="zp-model-badge" title="Current AI model">Checking...</span>
+                </span>
+                <button class="zp-chat-refresh" id="zp-chat-refresh" aria-label="Refresh chat">↻</button>
+                <button class="zp-chat-close" id="zp-chat-close" aria-label="Close chat">✕</button>
+            </div>
+            <div class="zp-chat-messages" id="zp-chat-messages">
+                <div class="zp-chat-msg zp-chat-msg-bot" id="zp-welcome-msg">
+                    Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄
+                </div>
+            </div>
+            <div class="zp-chat-input-area">
+                <input type="text" id="zp-chat-input" placeholder="Type a message..." maxlength="2000">
+                <button class="zp-chat-send" id="zp-chat-send" aria-label="Send message">Send</button>
+            </div>
+        </div>
+
+        <!-- Chat Orb -->
+        <div class="zp-orb-demo zp-orb-floating" id="zp-orb-demo">
+            <div class="zp-orb-tooltip">Chat with me!</div>
+        </div>
+    <script src="/js/zephyy-realtime.js?v=5"></script>
+    <script src="/js/zephyy-chat.js?v=5"></script>
+    <!-- zp-chat:end -->
 </body>
 </html>

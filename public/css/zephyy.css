@@ -422,6 +422,12 @@
               0 0 50px oklch(var(--brand-purple) / 0.3);
 }
 
+.zp-orb-demo.zp-orb-floating {
+  bottom: 18px;
+  right: 18px;
+  z-index: 1001;
+}
+
 .zp-orb-demo::before {
   content: "💬";
   font-size: 1.2rem;
@@ -2291,6 +2297,12 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .zp-orb-demo,
+  .zp-orb-demo.unread::after,
+  .whorl-outer,
+  .whorl-mid,
+  .whorl-inner,
+  .whorl-center,
   .zp-live-text.scrolling,
   .zp-scroll-indicator span,
   .zp-status,
@@ -2390,4 +2402,55 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
   .zp-chat-panel { transition: opacity 0.2s ease; }
   .zp-chat-panel::before { animation: none; }
   .zp-tick { transition: none; }
+}
+
+
+/* -- App-feel selection + cursor (Doshus 2026-07-15): no accidental text
+   highlight on taps/drags; cursor stays default on non-interactive UI.
+   Selection re-enabled only where copying genuinely matters. -- */
+body.zephyy-page {
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+body.zephyy-page .zp-chat-msg,
+body.zephyy-page .zp-chat-msg * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+body.zephyy-page input,
+body.zephyy-page textarea,
+body.zephyy-page [contenteditable],
+body.zephyy-page code,
+body.zephyy-page pre {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+body.zephyy-page a,
+body.zephyy-page button,
+body.zephyy-page [role="button"],
+body.zephyy-page summary {
+  cursor: pointer;
+}
+
+/* -- Cross-page view transitions (progressive enhancement, Chromium) -- */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root) {
+    animation: zp-vt-out 0.16s ease both;
+  }
+  ::view-transition-new(root) {
+    animation: zp-vt-in 0.2s ease both;
+  }
+  @keyframes zp-vt-out {
+    to { opacity: 0; }
+  }
+  @keyframes zp-vt-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }

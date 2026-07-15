@@ -287,6 +287,12 @@
       _sessionEnded = false;
       attachControlWatcher();
       startMessageListener();
+      // Tell the orb which page the visitor is on (fail-silent; rules cap 64 chars)
+      try {
+        db.ref('zephyy/chat/sessions/' + id + '/meta/page')
+          .set(String(window.location.pathname).slice(0, 64))
+          .catch(function () {});
+      } catch (e) { /* no-op */ }
       if (window.__zpRealtime) {
         window.__zpRealtime.sessionId = sessionId;
         window.__zpRealtime.msgsRef = msgsRef;
