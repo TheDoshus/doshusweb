@@ -35,6 +35,10 @@ doshus.net — personal site. Vanilla HTML/CSS/JS on Firebase Hosting. No framew
 ```bash
 find public -name '*.js' -exec node -c {} \;   # JS syntax
 python3 -c "import json; json.load(open('firebase.json'))"
+# CSS brace balance (browsers won't error on this — a missed } silently eats rules)
+for f in public/css/*.css; do python3 -c "
+c=open('$f').read(); d=c.count('{')-c.count('}')
+print('UNBALANCED: $f depth', d) if d else None"; done
 python3 -m http.server 8080 -d public          # eyeball locally
 ```
 
