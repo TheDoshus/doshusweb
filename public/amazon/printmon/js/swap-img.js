@@ -79,22 +79,36 @@ function downloadAllArcs() {
 		'fresh palette drops in the gallery',
 		'your coworkers keep requesting skins. peek the results',
 		'tap the orb. cosmic printmons await',
-		'I recolor this whole page on request, you know'
+		'I recolor this whole page on request, you know',
+		'need a new vibe for the barcode chaos?',
+		'my gallery is stocked and ready to go',
+		'feeling this base? there\'s plenty more',
+		'want to see what else I can generate?',
+		'grab a new skin. on the house 😉'
 	];
-	tip.textContent = quips[Math.floor(Math.random() * quips.length)];
+	tip.textContent = "Zephyy: " + quips[Math.floor(Math.random() * quips.length)];
 
 	// Docked orb (inside the horizontal scroll strip): the strip's scroller
 	// clips the tip, so lift it out with position:fixed while shown.
-	var orb = tip.parentElement;
-	if (orb && orb.closest && orb.closest('.zephyy-orb-dock')) {
+	var orb = tip.closest('.zephyy-orb-sitewide-wrapper');
+	if (orb && orb.closest('.zephyy-orb-dock')) {
 		var place = function() {
 			var r = orb.getBoundingClientRect();
 			tip.style.position = 'fixed';
 			tip.style.bottom = 'auto';
 			tip.style.top = (r.bottom + 8) + 'px';
 			tip.style.left = Math.max(8, r.left + r.width / 2 - 105) + 'px';
+			tip.style.transform = 'none'; // Clear the CSS transform
+		};
+		var reset = function() {
+			tip.style.position = '';
+			tip.style.top = '';
+			tip.style.left = '';
+			tip.style.transform = '';
 		};
 		orb.addEventListener('mouseenter', place);
 		orb.addEventListener('focus', place);
+		orb.addEventListener('mouseleave', reset);
+		orb.addEventListener('blur', reset);
 	}
 })();
