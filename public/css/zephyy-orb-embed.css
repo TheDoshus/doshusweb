@@ -58,7 +58,7 @@
     padding: 6px 12px;
     border-radius: 12px;
     font-size: 13px;
-    font-family: "Amazon Ember", sans-serif;
+    font-family: 'Nata Sans', system-ui, sans-serif;
     font-weight: 600;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     border: 1px solid oklch(42% 0.20 304 / 0.4);
@@ -173,6 +173,7 @@
     transform: translateX(-50%) translateY(-5px);
     white-space: normal;
     text-align: center;
+    font-family: "Amazon Ember", sans-serif;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:hover .sitewide-orb-preview,
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:focus-visible .sitewide-orb-preview {

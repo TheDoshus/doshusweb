@@ -25,36 +25,7 @@
         }
     }, true);
 
-    // Scroll-aware hide logic
-    let lastScrollY = window.scrollY;
-    let scrollTimeout;
-
-    window.addEventListener('scroll', function() {
-        const currentScrollY = window.scrollY;
-        
-        // Hide on scroll down (if scrolled past top 100px)
-        // Note: We don't hide it on mobile if it's collapsed at the top.
-        // If it's expanded at the bottom, we DO hide it.
-        const isMobileTop = window.innerWidth <= 768 && !wrapper.classList.contains('expanded');
-        
-        if (!isMobileTop) {
-            if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                wrapper.classList.add('orb-hidden');
-            } else {
-                wrapper.classList.remove('orb-hidden');
-            }
-        }
-        
-        lastScrollY = currentScrollY;
-
-        // Restore after scrolling stops
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            wrapper.classList.remove('orb-hidden');
-        }, 150);
-    });
-
-    // Sticky-footer harmony (Desktop/Tablet bottom positioning)
+    // Sticky-footer harmony & scroll-aware hide
     if (stickyFooter) {
         // Initial check
         updateFooterHarmony();
@@ -64,7 +35,14 @@
         observer.observe(stickyFooter, { attributes: true, attributeFilter: ['class'] });
 
         function updateFooterHarmony() {
-            // Only adjust if the orb is at the bottom (Desktop, or Mobile Expanded)
+            // Scroll-hide: sync orb visibility with footer visibility
+            if (stickyFooter.classList.contains('footer-hidden')) {
+                wrapper.classList.add('orb-hidden');
+            } else {
+                wrapper.classList.remove('orb-hidden');
+            }
+
+            // Harmony positioning: only adjust if orb is at bottom
             const isBottom = window.innerWidth > 768 || wrapper.classList.contains('expanded');
             if (!isBottom) {
                 wrapper.style.transform = '';
@@ -72,8 +50,9 @@
             }
 
             if (!stickyFooter.classList.contains('footer-hidden')) {
-                // Shift UP by the footer's height (approx 60px)
-                wrapper.style.transform = 'translateY(-60px)';
+                // Shift UP by the footer's actual height
+                const footerHeight = stickyFooter.getBoundingClientRect().height;
+                wrapper.style.transform = `translateY(-${footerHeight}px)`;
             } else {
                 // Footer is hidden, drop back down
                 wrapper.style.transform = 'translateY(0)';
