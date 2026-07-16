@@ -3,8 +3,9 @@
 Copy everything below the line into Amazon Quick Suite with the internal Printmon files
 available. This batch REPLACES the 2026-07-15 orb entirely: the orb is rebuilt as the
 shared "sitewide" component doshus.net now uses (whorl avatar, darker palette), and it
-now sits INLINE BESIDE the Doshus.NET button (above collided with the buttons' upward
-tooltips; below overlapped the button and gave the strip a vertical scrollbar). The
+now sits UNDER the Doshus.NET button, in normal flow (the dock span is a small
+column: button on top, orb centered beneath — absolute placements either collided
+with tooltips, overlapped the button, or gave the strip a vertical scrollbar). The
 tooltip drops below the strip via position:fixed.
 
 ---
@@ -35,17 +36,18 @@ file (as CRLF):
 ```css
 /* ── Zephyy orb (shared-component port, 2026-07-16) ─────────────────
    Same orb doshus.net uses sitewide: whorl avatar core + quip tooltip.
-   Sits inline beside the Doshus.NET button; the tooltip drops below
-   the strip (the buttons' own tooltips pop upward — this clears them). */
+   Sits centered under the Doshus.NET button, in normal flow; the tooltip
+   drops below the strip (the buttons' own tooltips pop upward). */
 .zephyy-orb-dock {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock {
     position: relative;
     display: inline-flex;
-    vertical-align: middle;
-    margin-left: 8px;
 }
 .zephyy-orb-sitewide {
     position: relative;
@@ -229,9 +231,9 @@ No dropdown, link, or layout changes on printmon pages this batch beyond the orb
 not touch anything outside Tasks 1–3.
 
 ## Verify before finishing
-1. Open a TheDoshus page → scroll the strip right → orb sits inline right of
-   Doshus.NET with a slowly spinning white whorl inside a purple core; the strip has
-   NO vertical scrollbar.
+1. Open a TheDoshus page → scroll the strip right → orb sits centered UNDER
+   Doshus.NET with a slowly spinning white whorl inside a purple core; the strip is
+   slightly taller but has NO vertical scrollbar.
 2. Hover the orb → core glows brighter purple; "Zephyy:" tooltip appears BELOW the
    strip, fully readable, one of 19 rotating quips per page load.
 3. Hover the Doshus.NET button itself → only ITS tooltip shows (orb no longer overlaps
