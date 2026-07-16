@@ -10,6 +10,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         const href = this.getAttribute('href');
         if (href.length < 2) return; // bare "#" — nothing to scroll to
         e.preventDefault();
+        haptic();
         const target = document.getElementById(href.slice(1));
         if (target) {
             target.scrollIntoView({ behavior: 'smooth' });
@@ -19,6 +20,13 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // Respect the user's OS-level motion preference
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ─── HAPTICS ───
+// Shared short-tap helper for click feedback sitewide. Silent no-op on
+// browsers/devices without vibration support (desktop, iOS Safari).
+function haptic(ms = 8) {
+    if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
+}
 
 // Deep Space Stars
 const starsContainer = document.getElementById('stars');
@@ -261,6 +269,7 @@ function createMemeVideoControls(player) {
 
     playbackButton.addEventListener('click', event => {
         event.stopPropagation();
+        haptic();
         if (player.paused()) {
             const playAttempt = player.play();
             if (playAttempt) playAttempt.catch(syncPlaybackButton);
@@ -271,6 +280,7 @@ function createMemeVideoControls(player) {
 
     soundButton.addEventListener('click', event => {
         event.stopPropagation();
+        haptic();
         player.muted(!player.muted());
     });
 
@@ -404,6 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Handle all Collapsible Sections (Accordions)
     document.querySelectorAll('.collapseBtn').forEach(btn => {
         btn.addEventListener('click', function() {
+            haptic();
             this.parentElement.classList.toggle('open');
             
             // If we are inside the Finance Hub slider, tell the slider to resize
@@ -416,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Handle opening Modals via data-target
     document.querySelectorAll('.srcBtn').forEach(btn => {
         btn.addEventListener('click', function() {
+            haptic();
             const targetId = this.getAttribute('data-target');
             const targetModal = document.getElementById(targetId);
             if (targetModal) targetModal.classList.add('open');
@@ -425,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Handle closing Modals (Clicking the X)
     document.querySelectorAll('.srcClose').forEach(btn => {
         btn.addEventListener('click', function() {
+            haptic();
             this.closest('.srcOverlay').classList.remove('open');
         });
     });
@@ -442,6 +455,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
 let lastScrollY = window.scrollY;
 const stickyFooter = document.getElementById('sticky-footer');
+if (stickyFooter) {
+    stickyFooter.querySelectorAll('.footer-nav a').forEach(link => {
+        link.addEventListener('click', () => haptic());
+    });
+}
 if (stickyFooter) window.addEventListener('scroll', () => {
     const currentScrollY = window.scrollY;
     const scrollPosition = window.scrollY + window.innerHeight;

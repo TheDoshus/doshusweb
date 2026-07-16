@@ -37,6 +37,7 @@ function loadWorkLinks() {
                 link.dataset.internalText = pill.internalText;
                 link.dataset.externalText = pill.externalText;
                 link.target = '_blank';
+                link.addEventListener('click', () => haptic());
                 container.appendChild(link);
             });
             initAmazonLinkToggle(); // sets href/text on the fresh pills
@@ -66,12 +67,16 @@ function initDiscordModal() {
     }
 
     openBtn.addEventListener('click', function() {
+        haptic();
         window.populateDiscordWidget(modal.querySelector('.discord-widget'));
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     });
 
-    closeBtn.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', function() {
+        haptic();
+        closeModal();
+    });
     modal.addEventListener('click', function(e) {
         if (e.target === modal) closeModal();
     });
@@ -86,6 +91,7 @@ function initDiscordModal() {
         let resetTimer = null;
 
         copyBtn.addEventListener('click', async function() {
+            haptic();
             try {
                 await navigator.clipboard.writeText(username);
                 copyBtn.classList.add('copied');
@@ -129,12 +135,14 @@ function initCTApop() {
 
     // Open modal
     openBtn.addEventListener('click', function() {
+        haptic();
         modal.classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent scrolling
     });
-    
+
     // Close modal
     closeBtn.addEventListener('click', function() {
+        haptic();
         modal.classList.remove('active');
         document.body.style.overflow = ''; // Re-enable scrolling
     });
@@ -150,6 +158,7 @@ function initCTApop() {
     // Navigation buttons - smooth scroll to sections
     navButtons.forEach(button => {
         button.addEventListener('click', function() {
+            haptic();
             const targetId = this.getAttribute('data-target');
             const targetSection = document.getElementById(targetId);
 
@@ -171,6 +180,7 @@ function initCTApop() {
 // Reveal Slack Handle / Launch Slack
 let slackRevealed = false;
 function handleSlackClick() {
+    haptic();
     const slackText = document.getElementById('slackText');
     if (!workConfig || !workConfig.email) return; // config not loaded — stay blurred
 
@@ -232,6 +242,7 @@ function initAmazonLinkToggle() {
   
     // Toggle function
     toggle.addEventListener('change', function() {
+        haptic();
         updateLinks();
   
         // Save preference to localStorage
