@@ -1,0 +1,79 @@
+/* Minimal controls for the sitewide Video.js meme loops. */
+.meme-video-active {
+    position: relative;
+}
+
+.meme-video-active .video-js {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    background: oklch(var(--space-oled));
+}
+
+.meme-video-active .video-js .vjs-tech,
+.meme-video-active .video-js .vjs-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+}
+
+.meme-video-controls {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+    z-index: 4;
+    display: flex;
+    gap: 0.35rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-0.25rem);
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.meme-video-active:hover .meme-video-controls,
+.meme-video-active:focus-within .meme-video-controls {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.meme-video-control {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    place-items: center;
+    border: 1px solid oklch(var(--star-white) / 0.3);
+    border-radius: 50%;
+    color: oklch(var(--star-white));
+    background: oklch(var(--space-oled) / 0.72);
+    box-shadow: 0 0.2rem 0.8rem oklch(var(--space-oled) / 0.45);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+}
+
+.meme-video-control:hover {
+    border-color: oklch(var(--star-white) / 0.65);
+    background: oklch(var(--space-oled) / 0.9);
+}
+
+.meme-video-control svg {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+.meme-video-control[data-state="playing"] .meme-icon-play,
+.meme-video-control[data-state="paused"] .meme-icon-pause,
+.meme-video-control[data-state="muted"] .meme-icon-volume,
+.meme-video-control[data-state="audible"] .meme-icon-muted {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .meme-video-controls {
+        transform: none;
+        transition: none;
+    }
+}

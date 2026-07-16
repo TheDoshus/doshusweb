@@ -168,6 +168,174 @@ if (starsContainer) {
     }
 }
 
+let videoJsLoadPromise;
+
+function loadVideoJs() {
+    if (window.videojs) return Promise.resolve(window.videojs);
+
+    if (!videoJsLoadPromise) {
+        videoJsLoadPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/assets/vendor/videojs/video.min.js?v=8.23.9';
+            script.async = true;
+            script.onload = () => {
+                if (window.videojs) {
+                    resolve(window.videojs);
+                } else {
+                    reject(new Error('Video.js loaded without exposing videojs'));
+                }
+            };
+            script.onerror = () => reject(new Error('Video.js failed to load'));
+            document.head.appendChild(script);
+        });
+    }
+
+    return videoJsLoadPromise;
+}
+
+function createMemeIcon(className, paths) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add(className);
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('aria-hidden', 'true');
+
+    paths.forEach(pathData => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathData);
+        svg.appendChild(path);
+    });
+
+    return svg;
+}
+
+function createMemeVideoControls(player) {
+    const controls = document.createElement('div');
+    controls.className = 'meme-video-controls';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', 'Meme video controls');
+
+    const playbackButton = document.createElement('button');
+    playbackButton.type = 'button';
+    playbackButton.className = 'meme-video-control';
+    playbackButton.appendChild(createMemeIcon('meme-icon-play', ['M8 5v14l11-7z']));
+    playbackButton.appendChild(createMemeIcon('meme-icon-pause', ['M8 5v14', 'M16 5v14']));
+
+    const soundButton = document.createElement('button');
+    soundButton.type = 'button';
+    soundButton.className = 'meme-video-control';
+    soundButton.appendChild(createMemeIcon('meme-icon-muted', [
+        'M11 5 6 9H3v6h3l5 4V5Z',
+        'm16 9 6 6',
+        'm22 9-6 6',
+    ]));
+    soundButton.appendChild(createMemeIcon('meme-icon-volume', [
+        'M11 5 6 9H3v6h3l5 4V5Z',
+        'M15.5 8.5a5 5 0 0 1 0 7',
+        'M19 5a10 10 0 0 1 0 14',
+    ]));
+
+    const syncPlaybackButton = () => {
+        const isPaused = player.paused();
+        const label = isPaused ? 'Play meme video' : 'Pause meme video';
+        playbackButton.dataset.state = isPaused ? 'paused' : 'playing';
+        playbackButton.setAttribute('aria-label', label);
+        playbackButton.title = label;
+    };
+
+    const syncSoundButton = () => {
+        const isMuted = player.muted();
+        const label = isMuted ? 'Unmute meme video' : 'Mute meme video';
+        soundButton.dataset.state = isMuted ? 'muted' : 'audible';
+        soundButton.setAttribute('aria-label', label);
+        soundButton.title = label;
+    };
+
+    playbackButton.addEventListener('click', event => {
+        event.stopPropagation();
+        if (player.paused()) {
+            const playAttempt = player.play();
+            if (playAttempt) playAttempt.catch(syncPlaybackButton);
+        } else {
+            player.pause();
+        }
+    });
+
+    soundButton.addEventListener('click', event => {
+        event.stopPropagation();
+        player.muted(!player.muted());
+    });
+
+    player.on('play', syncPlaybackButton);
+    player.on('pause', syncPlaybackButton);
+    player.on('volumechange', syncSoundButton);
+    syncPlaybackButton();
+    syncSoundButton();
+
+    controls.appendChild(playbackButton);
+    controls.appendChild(soundButton);
+    return controls;
+}
+
+async function renderVideoMeme(container, randomFile) {
+    let player;
+    let hasFailed = false;
+
+    const showFallback = () => {
+        if (hasFailed) return;
+        hasFailed = true;
+        if (player && !player.isDisposed()) player.dispose();
+        container.classList.remove('meme-video-active');
+        const fallbackImage = document.createElement('img');
+        fallbackImage.src = '/assets/images/Image_not_available.webp';
+        fallbackImage.alt = 'Error';
+        container.replaceChildren(fallbackImage);
+    };
+
+    const video = document.createElement('video');
+    video.className = 'video-js';
+    video.src = randomFile;
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.addEventListener('error', showFallback, { once: true });
+
+    container.classList.add('meme-video-active');
+    container.appendChild(video);
+
+    try {
+        const videojs = await loadVideoJs();
+        if (!video.isConnected || hasFailed) return;
+
+        player = videojs(video, {
+            autoplay: 'muted',
+            loop: true,
+            muted: true,
+            playsinline: true,
+            preload: 'auto',
+            controls: false,
+            bigPlayButton: false,
+            controlBar: false,
+        });
+        player.one('error', showFallback);
+        container.appendChild(createMemeVideoControls(player));
+        player.ready(() => {
+            player.muted(true);
+            player.loop(true);
+            const playAttempt = player.play();
+            if (playAttempt) playAttempt.catch(() => {});
+        });
+    } catch {
+        showFallback();
+    }
+}
+
 // Universal meme/video loader - Auto-loads from JSON on ANY page
 async function loadUniversalMemes() {
     try {
@@ -198,22 +366,7 @@ async function loadUniversalMemes() {
             container.innerHTML = ''; // Clear any existing content
 
             if (isVideo) {
-                const video = document.createElement('video');
-                video.src = randomFile;
-                video.autoplay = true;
-                video.loop = true;
-                video.muted = true;
-                video.playsInline = true;
-                video.style.width = '100%';
-                video.style.height = '100%';
-                video.style.objectFit = 'cover';
-                video.style.borderRadius = '10px';
-
-                video.onerror = function() {
-                    container.innerHTML = '<img src="/assets/images/Image_not_available.webp" alt="Error">';
-                };
-
-                container.appendChild(video);
+                renderVideoMeme(container, randomFile);
             } else {
                 const img = document.createElement('img');
                 img.src = randomFile;
