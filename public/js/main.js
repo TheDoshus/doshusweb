@@ -188,7 +188,7 @@ function loadVideoJs() {
     if (!videoJsLoadPromise) {
         videoJsLoadPromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = '/assets/vendor/videojs/video.min.js?v=8.23.9';
+            script.src = '/assets/vendor/videojs/video.min.js';
             script.async = true;
             script.onload = () => {
                 if (window.videojs) {
