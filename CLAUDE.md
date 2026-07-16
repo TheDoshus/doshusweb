@@ -27,6 +27,7 @@ doshus.net — personal site. Vanilla HTML/CSS/JS on Firebase Hosting. No framew
 ## Conventions
 
 - JS is vanilla: guard for missing DOM elements (scripts are shared across pages), build user-facing strings with `createElement`/`textContent` (not innerHTML), keep console quiet in production paths.
+- **No `?v=` cache-busters** on css/js references (Doshus's call 2026-07-16: low traffic, 7-day `max-age` self-heals). Don't reintroduce them; changed assets just take up to a week to propagate.
 - Respect `prefers-reduced-motion` for any new animation (CSS override exists in shared.css; JS checks `prefersReducedMotion` in main.js).
 - Random meme containers: any `.random-meme` / `.random-meme-fixed` div gets auto-filled by main.js from `meme-list.json`.
 

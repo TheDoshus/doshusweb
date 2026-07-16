@@ -22,7 +22,7 @@ are canonical for links. Apply each task **surgically**.
    like Eraserhead/Aizawa — internal can be ahead of external).
 4. If a task's target text is missing on a page (already applied / never had it), skip
    that page and note it. Do not improvise.
-5. Internal css/js references stay **bare** (no `?v=` cache-busters) — that is external-only.
+5. Internal css/js references stay **bare** (no `?v=` cache-busters) — external dropped them too (2026-07-16), so both sides are bare now.
 
 ## Task 1 — swapbtn.css: replace the old orb styles with the new component
 In the internal `css/swapbtn.css`: delete the ENTIRE old Zephyy orb section from the
