@@ -90,8 +90,8 @@ function downloadAllArcs() {
 		var place = function() {
 			var r = orb.getBoundingClientRect();
 			tip.style.position = 'fixed';
-			tip.style.top = 'auto';
-			tip.style.bottom = (window.innerHeight - r.top + 8) + 'px';
+			tip.style.bottom = 'auto';
+			tip.style.top = (r.bottom + 8) + 'px';
 			tip.style.left = Math.max(8, r.left + r.width / 2 - 105) + 'px';
 		};
 		orb.addEventListener('mouseenter', place);

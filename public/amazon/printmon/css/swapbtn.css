@@ -174,17 +174,18 @@
     .zephyy-orb:focus-visible .zephyy-orb-tip { animation: none; }
 }
 
-/* -- orb dock: orb floats above the Doshus.NET scroll button ------------
-   2026-07-15 relocation (Doshus): lowkey placement in the horizontal
-   scroll strip instead of beside Swap Themes. Wrapper spans the button;
-   orb hovers above it with a gentle bob. */
+/* -- orb dock: orb floats under the Doshus.NET scroll button ------------
+   2026-07-16 relocation (Doshus): the row's other buttons all pop their
+   data-tooltip bubble upward, and the orb's own tip was colliding with
+   that whole strip. Anchoring below the button (tip pointing further
+   down from there) clears every other tooltip in the row entirely. */
 .zephyy-orb-dock {
     position: relative;
     display: inline-block;
 }
 .zephyy-orb-dock .zephyy-orb {
     position: absolute;
-    bottom: calc(100% + 3px);
+    top: calc(100% + 3px);
     left: 50%;
     width: 18px;
     height: 18px;
@@ -197,15 +198,15 @@
     animation: none;  /* transformed ancestor would re-anchor the fixed tip */
 }
 /* The strip's scroller (overflow-x) must clip vertically, so the tip cannot
-   escape upward via absolute positioning; swap-img.js promotes it to
+   escape downward via absolute positioning; swap-img.js promotes it to
    position:fixed on hover/focus instead. These rules cover the rest. */
 .zephyy-orb-dock .zephyy-orb-tip {
     white-space: normal;  /* strip sets nowrap; restore bubble wrap */
-    transform-origin: bottom center;
+    transform-origin: top center;
 }
 @keyframes zephyy-orb-bob {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
+    50% { transform: translateY(3px); }
 }
 @media (prefers-reduced-motion: reduce) {
     .zephyy-orb-dock .zephyy-orb { animation: none; }
