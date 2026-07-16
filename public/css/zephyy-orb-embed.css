@@ -211,14 +211,18 @@
 }
 
 /* Printmon Refresh Styles */
+/* Under-the-button dock, IN FLOW: the dock is a small column (button on
+   top, orb centered beneath). Earlier absolute placements either overlapped
+   the button, double-fired its tooltip, or hung overflow below the row —
+   which makes the strip's overflow-x scroller grow a vertical scrollbar.
+   In-flow content can't do any of that; the strip just sits a bit taller. */
 .zephyy-orb-dock {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
-/* Inline beside the Doshus.NET button: absolute placement (above OR below)
-   overlapped the button, double-fired its tooltip on hover, and grew a
-   vertical scrollbar on the strip's overflow-x scroller. Inline adds no
-   vertical overflow and hovers cleanly. */
 .zephyy-orb-sitewide-wrapper.printmon-dock {
     position: relative;
     display: inline-flex;
@@ -229,6 +233,11 @@
     left: auto;
     right: auto;
     transform: none;
+}
+/* Inside the dock column the orb centers under the button — no side nudge
+   (the margin-left is for the classics, where the orb sits beside a button) */
+.zephyy-orb-dock .zephyy-orb-sitewide-wrapper.printmon-dock {
+    margin-left: 0;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide {
     opacity: 1;
