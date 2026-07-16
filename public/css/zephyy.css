@@ -1820,8 +1820,6 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
 .zp-crew-mona:hover { border-color: oklch(65% 0.25 280 / 0.35); box-shadow: 0 4px 20px oklch(65% 0.25 280 / 0.08); }
 .zp-crew-wick:hover { border-color: oklch(78% 0.2 80 / 0.35); box-shadow: 0 4px 20px oklch(78% 0.2 80 / 0.08); }
 
-}
-
 
 /* -- App-feel selection + cursor (Doshus 2026-07-15): no accidental text
    highlight on taps/drags; cursor stays default on non-interactive UI.
