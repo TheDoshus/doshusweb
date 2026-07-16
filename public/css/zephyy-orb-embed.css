@@ -2,6 +2,10 @@
 :root {
     --zp-embed-base: oklch(38% 0.17 300);
     --zp-embed-glow: oklch(52% 0.21 302);
+    /* Captured here so the chat-panel recolor override (scoped to
+       #zp-orb-demo) can't darken the status dot; fallback covers printmon,
+       which doesn't load shared.css */
+    --zp-status-teal: oklch(var(--brand-teal, 78% 0.23 185));
 }
 
 .zephyy-orb-sitewide-wrapper {
@@ -31,7 +35,8 @@
 
 .zephyy-orb-sitewide:hover,
 .zephyy-orb-sitewide:focus-visible,
-.zephyy-orb-sitewide-wrapper.expanded .zephyy-orb-sitewide {
+.zephyy-orb-sitewide-wrapper.expanded .zephyy-orb-sitewide,
+.zephyy-orb-sitewide-wrapper.has-session .zephyy-orb-sitewide {
     opacity: 1;
     transform: scale(1.12);
 }
@@ -69,7 +74,7 @@
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: oklch(var(--brand-teal));
+    background: var(--zp-status-teal);
     pointer-events: none;
 }
 
@@ -111,24 +116,24 @@
     }
 
     /* Collapsed status dot: teal, tiny, whorl hidden until expanded */
-    .zephyy-orb-sitewide-wrapper:not(.expanded) .sitewide-orb-core {
+    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock) .sitewide-orb-core {
         width: 12px;
         height: 12px;
-        box-shadow: 0 0 6px oklch(var(--brand-teal) / 0.5);
-        background: oklch(var(--brand-teal));
+        box-shadow: 0 0 6px var(--zp-status-teal);
+        background: var(--zp-status-teal);
     }
-    .zephyy-orb-sitewide-wrapper:not(.expanded) .sitewide-orb-core .zp-orb-glyph {
+    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock) .sitewide-orb-core .zp-orb-glyph {
         display: none;
     }
 
-    .zephyy-orb-sitewide-wrapper:not(.expanded) .sitewide-orb-ping {
+    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock) .sitewide-orb-ping {
         display: block;
         animation: orb-ping 4s infinite cubic-bezier(0.1, 0.8, 0.3, 1);
     }
 
     /* Collapsed dot drifts up into the starfield when scroll-hidden,
        instead of the bottom-orb's downward tuck */
-    .zephyy-orb-sitewide-wrapper:not(.expanded).orb-hidden {
+    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock).orb-hidden {
         transform: translate(14px, -42px) scale(0.4);
         opacity: 0;
     }
@@ -149,6 +154,13 @@
         height: 34px;
         box-shadow: 0 0 15px var(--zp-embed-glow);
         animation: orb-flare 0.9s ease-out both;
+    }
+
+    /* Auto-expanded on page load (ongoing conversation carried over):
+       arrive quietly, no pop or flare — those are for the real tap */
+    .zephyy-orb-sitewide-wrapper.expanded.auto .zephyy-orb-sitewide,
+    .zephyy-orb-sitewide-wrapper.expanded.auto .sitewide-orb-core {
+        animation: none;
     }
 
     .zephyy-orb-sitewide-wrapper.expanded .sitewide-orb-preview {
@@ -172,7 +184,7 @@
 
 @keyframes orb-flare {
     0% { box-shadow: 0 0 0 0 var(--zp-embed-glow); }
-    35% { box-shadow: 0 0 26px 10px var(--zp-embed-glow), 0 0 50px oklch(var(--brand-teal) / 0.35); }
+    35% { box-shadow: 0 0 26px 10px var(--zp-embed-glow), 0 0 50px var(--zp-status-teal); }
     100% { box-shadow: 0 0 15px var(--zp-embed-glow); }
 }
 
@@ -215,8 +227,8 @@
     opacity: 1;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .sitewide-orb-core {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .sitewide-orb-preview {
     position: absolute;

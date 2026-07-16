@@ -678,3 +678,33 @@ body.zp-motion-throttled .whorl-center {
 @media (prefers-reduced-motion: reduce) {
   .whorl-outer, .whorl-mid, .whorl-inner, .whorl-center { animation: none; }
 }
+
+/* ── Header name → profile link ── */
+.zp-chat-name-link {
+  text-decoration: none;
+  border-radius: 4px;
+  transition: filter 0.2s ease;
+}
+.zp-chat-name-link:hover .zp-chat-name,
+.zp-chat-name-link:focus-visible .zp-chat-name {
+  filter: brightness(1.35) drop-shadow(0 0 6px oklch(var(--brand-teal) / 0.5));
+}
+.zp-chat-name-link:focus-visible {
+  outline: 2px solid oklch(var(--brand-teal) / 0.6);
+  outline-offset: 2px;
+}
+
+/* ── Refresh two-tap confirm state ── */
+.zp-chat-refresh.confirming {
+  color: oklch(70% 0.19 35);
+  background: oklch(70% 0.19 35 / 0.14);
+  animation: zp-refresh-arm 0.3s ease;
+}
+@keyframes zp-refresh-arm {
+  0% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.25); }
+  100% { transform: translateY(-50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zp-chat-refresh.confirming { animation: none; }
+}

@@ -84,9 +84,38 @@ function downloadAllArcs() {
 		'my gallery is stocked and ready to go',
 		'feeling this base? there\'s plenty more',
 		'want to see what else I can generate?',
-		'grab a new skin. on the house 😉'
+		'grab a new skin. on the house 😉',
+		'ruminating on new color schemes… wanna see? 🤔',
+		'*reefing through the theme vault* oh hey, didn\'t see you there',
+		'this page? yeah I painted it. more where that came from',
+		'psst. the gallery misses you',
+		'legally obligated to mention I make themes now',
+		'you scan barcodes, I scan color wheels. we are not the same 💅',
+		'caught you looking 👀 the gallery\'s one tap away',
+		'plotting my next theme drop as we speak'
 	];
 	tip.textContent = "Zephyy: " + quips[Math.floor(Math.random() * quips.length)];
+
+	// Whorl avatar — same glyph her chat orb wears on doshus.net (the chat
+	// stack isn't loaded on printmon, so the SVG is inlined here).
+	var core = document.querySelector('.zephyy-orb-dock .sitewide-orb-core');
+	if (core && !core.querySelector('.zp-orb-glyph')) {
+		var glyph = document.createElement('span');
+		glyph.className = 'zp-orb-glyph';
+		glyph.innerHTML =
+			'<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+			'<defs><linearGradient id="pmOrbGrad" x1="0" y1="0" x2="1" y2="1">' +
+			'<stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>' +
+			'<stop offset="50%" stop-color="#d8f0ff" stop-opacity="0.9"/>' +
+			'<stop offset="100%" stop-color="#ffffff" stop-opacity="0.75"/>' +
+			'</linearGradient></defs>' +
+			'<circle cx="32" cy="32" r="29" stroke="#ffffff" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>' +
+			'<g class="whorl-outer"><path d="M 32 9 A 23 23 0 1 1 12 44" stroke="url(#pmOrbGrad)" stroke-width="3.2" stroke-linecap="round" opacity="0.85"/><circle cx="32" cy="9" r="2.0" fill="#ffffff" opacity="0.9"/></g>' +
+			'<g class="whorl-mid"><path d="M 45 40 A 15 15 0 1 1 32 17" stroke="url(#pmOrbGrad)" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/><circle cx="45" cy="40" r="1.8" fill="#ffffff" opacity="0.95"/></g>' +
+			'<g class="whorl-inner"><path d="M 25 36 A 8 8 0 1 1 39 36" stroke="url(#pmOrbGrad)" stroke-width="3.8" stroke-linecap="round" opacity="0.98"/><circle cx="25" cy="36" r="1.6" fill="#ffffff" opacity="0.98"/></g>' +
+			'<circle cx="32" cy="32" r="3.6" fill="#ffffff" class="whorl-center"/></svg>';
+		core.appendChild(glyph);
+	}
 
 	// Docked orb (inside the horizontal scroll strip): the strip's scroller
 	// clips the tip, so lift it out with position:fixed while shown.

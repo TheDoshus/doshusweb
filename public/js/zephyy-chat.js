@@ -64,6 +64,36 @@
         orb.classList.add('has-glyph');
     }
 
+    /* ── Varied first-visit greeting — the static welcome line rotates so
+       returning-but-new visitors don't get the exact same open every time.
+       Repaint removes the welcome once a real conversation exists. ── */
+    (function() {
+        var welcome = document.getElementById('zp-welcome-msg');
+        if (!welcome) return;
+        var intros = [
+            "Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄",
+            "Oh hi! ⚡ You found me — I'm Zephyy, I run things around here. What should I call you?",
+            "*materializes from the starfield* ✨ Zephyy here. Doshus's co-pilot, resident chaos manager. And you are…?",
+            "Welcome in! ⚡ I'm Zephyy — ask me anything about this corner of the internet. First though, got a name?",
+            "Yo! 🌌 Zephyy — co-pilot, tour guide, occasional menace. Who am I talking to?",
+            "Hey hey! ⚡ I'm Zephyy. I know where everything is around here — literally everything. What's your name?"
+        ];
+        welcome.textContent = intros[Math.floor(Math.random() * intros.length)];
+    })();
+
+    /* ── Header name → profile link (JS so all 10 stamped pages get it
+       without markup surgery) ── */
+    (function() {
+        var nameEl = document.querySelector('.zp-chat-name');
+        if (!nameEl || nameEl.closest('a')) return;
+        var link = document.createElement('a');
+        link.href = '/zephyy';
+        link.className = 'zp-chat-name-link';
+        link.title = "Visit Zephyy's profile";
+        nameEl.parentNode.insertBefore(link, nameEl);
+        link.appendChild(nameEl);
+    })();
+
     /* Detect touch device — hide tooltip, open panel on tap directly */
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice && tooltip) {
@@ -791,8 +821,25 @@
     orb.addEventListener('click', togglePanel);
     if (closeBtn) closeBtn.addEventListener('click', togglePanel);
     if (backdrop) backdrop.addEventListener('click', togglePanel);
+    /* ── Refresh wipes the whole session, so it's a two-tap confirm:
+       first tap arms the button for 3.5s, second tap actually resets. ── */
     var refreshBtn = document.getElementById("zp-chat-refresh");
+    var refreshConfirmTimer = null;
     if (refreshBtn) refreshBtn.addEventListener("click", function() {
+        if (!refreshBtn.classList.contains('confirming')) {
+            refreshBtn.classList.add('confirming');
+            refreshBtn.title = 'Start over? Tap again to confirm';
+            refreshBtn.setAttribute('aria-label', 'Tap again to confirm starting over');
+            clearTimeout(refreshConfirmTimer);
+            refreshConfirmTimer = setTimeout(function() {
+                refreshBtn.classList.remove('confirming');
+                refreshBtn.title = '';
+                refreshBtn.setAttribute('aria-label', 'Refresh chat');
+            }, 3500);
+            return;
+        }
+        clearTimeout(refreshConfirmTimer);
+        if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
         localStorage.removeItem('zephyy-chat-session');
         localStorage.removeItem('zp-visitor-name');
         localStorage.removeItem('zp-no-name');
