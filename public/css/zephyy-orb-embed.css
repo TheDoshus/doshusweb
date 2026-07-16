@@ -215,13 +215,20 @@
     position: relative;
     display: inline-block;
 }
+/* Inline beside the Doshus.NET button: absolute placement (above OR below)
+   overlapped the button, double-fired its tooltip on hover, and grew a
+   vertical scrollbar on the strip's overflow-x scroller. Inline adds no
+   vertical overflow and hovers cleanly. */
 .zephyy-orb-sitewide-wrapper.printmon-dock {
-    position: absolute;
-    bottom: -18px;
-    left: 50%;
-    right: auto;
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 8px;
     top: auto;
-    transform: translateX(-50%);
+    bottom: auto;
+    left: auto;
+    right: auto;
+    transform: none;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide {
     opacity: 1;
@@ -231,17 +238,24 @@
     height: 24px;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .sitewide-orb-preview {
+    /* display-gated: even an invisible absolute box below the row makes the
+       strip's overflow-x scroller grow a vertical scrollbar. On strip pages
+       swap-img.js lifts the tip to position:fixed on hover (fixed boxes never
+       create scroll overflow); classics show it absolutely, un-clipped. */
+    display: none;
     position: absolute;
     top: calc(100% + 8px);
     left: 50%;
-    transform: translateX(-50%) translateY(-5px);
+    transform: translateX(-50%);
     white-space: normal;
+    width: max-content;
+    max-width: 210px;
     text-align: center;
     font-family: "Amazon Ember", sans-serif;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:hover .sitewide-orb-preview,
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:focus-visible .sitewide-orb-preview {
-    transform: translateX(-50%) translateY(0);
+    display: block;
     opacity: 1;
     visibility: visible;
 }

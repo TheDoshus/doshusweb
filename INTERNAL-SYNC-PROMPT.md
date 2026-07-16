@@ -3,8 +3,9 @@
 Copy everything below the line into Amazon Quick Suite with the internal Printmon files
 available. This batch REPLACES the 2026-07-15 orb entirely: the orb is rebuilt as the
 shared "sitewide" component doshus.net now uses (whorl avatar, darker palette), and it
-moved from ABOVE the Doshus.NET button to BELOW it (its tooltip was colliding with the
-other buttons' tooltips, which pop upward).
+now sits INLINE BESIDE the Doshus.NET button (above collided with the buttons' upward
+tooltips; below overlapped the button and gave the strip a vertical scrollbar). The
+tooltip drops below the strip via position:fixed.
 
 ---
 
@@ -34,20 +35,17 @@ file (as CRLF):
 ```css
 /* ── Zephyy orb (shared-component port, 2026-07-16) ─────────────────
    Same orb doshus.net uses sitewide: whorl avatar core + quip tooltip.
-   Docked BELOW the Doshus.NET button; tooltip points further down
-   (the strip buttons' own tooltips pop upward — this clears them). */
+   Sits inline beside the Doshus.NET button; the tooltip drops below
+   the strip (the buttons' own tooltips pop upward — this clears them). */
 .zephyy-orb-dock {
     position: relative;
     display: inline-block;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock {
-    position: absolute;
-    top: calc(100% + 3px);
-    bottom: auto;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    z-index: 1001;
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 8px;
 }
 .zephyy-orb-sitewide {
     position: relative;
@@ -100,13 +98,13 @@ file (as CRLF):
     font-weight: 600;
     box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3);
     border: 1px solid oklch(52% 0.21 302 / 0.4);
+    display: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
     position: absolute;
     top: calc(100% + 8px);
     left: 50%;
-    transform: translateX(-50%) translateY(-5px);
+    transform: translateX(-50%);
     white-space: normal;
     width: max-content;
     max-width: 210px;
@@ -117,7 +115,7 @@ file (as CRLF):
 }
 .zephyy-orb-sitewide:hover .sitewide-orb-preview,
 .zephyy-orb-sitewide:focus-visible .sitewide-orb-preview {
-    transform: translateX(-50%) translateY(0);
+    display: block;
     opacity: 1;
     visibility: visible;
 }
@@ -231,11 +229,12 @@ No dropdown, link, or layout changes on printmon pages this batch beyond the orb
 not touch anything outside Tasks 1–3.
 
 ## Verify before finishing
-1. Open a TheDoshus page → scroll the strip right → orb sits BELOW Doshus.NET with a
-   slowly spinning white whorl inside a purple core.
-2. Hover the orb → core glows brighter purple; "Zephyy:" tooltip appears BELOW the orb,
-   fully visible, one of 19 rotating quips per page load.
-3. Hover the neighboring strip buttons → their upward tooltips no longer collide with
-   the orb or its tooltip.
+1. Open a TheDoshus page → scroll the strip right → orb sits inline right of
+   Doshus.NET with a slowly spinning white whorl inside a purple core; the strip has
+   NO vertical scrollbar.
+2. Hover the orb → core glows brighter purple; "Zephyy:" tooltip appears BELOW the
+   strip, fully readable, one of 19 rotating quips per page load.
+3. Hover the Doshus.NET button itself → only ITS tooltip shows (orb no longer overlaps
+   it); neighboring tooltips clear the orb.
 4. Click the orb → external theme gallery opens.
 5. Browser console: no new errors on any edited page.
