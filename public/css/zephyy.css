@@ -1737,6 +1737,29 @@ body .star {
   will-change: opacity;
 }
 
+/* ── Performance safety valve: main.js's FPS monitor already pauses the star
+   drift when frames drop; it also flips this class so the same signal eases
+   off every other ambient/decorative infinite animation on the page. Presence
+   dots, the typing indicator, and the status pulse are left untouched — they're
+   cheap and carry real meaning, not just atmosphere. ── */
+body.zp-motion-throttled .zp-glyph-ring,
+body.zp-motion-throttled .zp-orb-demo,
+body.zp-motion-throttled .whorl-outer,
+body.zp-motion-throttled .whorl-mid,
+body.zp-motion-throttled .whorl-inner,
+body.zp-motion-throttled .whorl-center,
+body.zp-motion-throttled .zp-hero-bg::before,
+body.zp-motion-throttled .zp-scroll-indicator,
+body.zp-motion-throttled .zp-timeline-dot.active,
+body.zp-motion-throttled .zp-chat-panel::before {
+  animation-play-state: paused;
+}
+
+body.zephyy-page.zp-motion-throttled .cosmic-bg::before,
+body.zephyy-page.zp-motion-throttled .cosmic-bg::after {
+  animation-play-state: paused;
+}
+
 
 /* ── Zephyy custom cosmic background — animated drift ── */
 body.zephyy-page .cosmic-bg {

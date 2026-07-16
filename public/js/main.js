@@ -98,11 +98,15 @@ if (starsContainer) {
             } else if (isPaused && fps >= 30) {
                 consecutiveGoodSeconds++;
                 // Require 5 straight seconds of clean performance to unlock the engine
-                if (consecutiveGoodSeconds >= 5) { 
+                if (consecutiveGoodSeconds >= 5) {
                     isPaused = false;
                     consecutiveGoodSeconds = 0;
                 }
             }
+
+            // Same low-FPS signal also eases off other ambient decorative CSS
+            // animations (glows, spins, drifts) sitewide — not just the stars.
+            document.body.classList.toggle('zp-motion-throttled', isPaused);
 
             frameCount = 0;
             lastFpsCheck = now;
