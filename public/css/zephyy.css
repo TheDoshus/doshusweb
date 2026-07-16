@@ -2493,6 +2493,20 @@ body.zephyy-page summary {
 
 /* -- Text motion: hero reveal + chat message entrances ------------------ */
 @media (prefers-reduced-motion: no-preference) {
+  .zp-text-motion .zp-motion-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(0.6em);
+    transition:
+      opacity 0.35s ease-out,
+      transform 0.35s ease-out;
+    transition-delay: calc(var(--zp-word-index) * 50ms);
+  }
+  .zp-text-motion.zp-text-motion--visible .zp-motion-word {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .zp-hero h1 {
     animation: zp-title-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }

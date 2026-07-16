@@ -342,7 +342,10 @@
         var item = imgUrlMap[button.dataset.zpli];
         if (!item || !item.alt) return;
         copyText(item.alt)
-            .then(function() { setCopyButtonState(button, 'Copied'); })
+            .then(function() {
+                if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
+                setCopyButtonState(button, 'Copied');
+            })
             .catch(function() { setCopyButtonState(button, 'Failed'); });
     });
 
@@ -796,7 +799,12 @@
         localStorage.removeItem(CACHE_KEY);
         location.reload();
     });
-    sendBtn.addEventListener('click', sendMessage);
+    sendBtn.addEventListener('click', function(e) {
+        if (e.isTrusted && !sendBtn.disabled && !sessionEnded && inputEl.value.trim()) {
+            if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+        }
+        sendMessage();
+    });
     inputEl.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();

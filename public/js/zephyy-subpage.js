@@ -12,4 +12,10 @@
             a.style.fontWeight = '600';
         }
     });
+
+    document.querySelectorAll('.zp-sub-nav a').forEach(a => {
+        a.addEventListener('click', () => {
+            if (navigator.vibrate) { try { navigator.vibrate(6); } catch (e) {} }
+        });
+    });
 })();

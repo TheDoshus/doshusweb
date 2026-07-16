@@ -186,6 +186,9 @@
         document.body.appendChild(tip);
         const desktop = window.matchMedia('(min-width: 901px)');
         links.forEach((link) => {
+            link.addEventListener('click', () => {
+                if (navigator.vibrate) { try { navigator.vibrate(6); } catch (e) {} }
+            });
             const show = () => {
                 if (!desktop.matches) return;
                 const r = link.getBoundingClientRect();
@@ -421,7 +424,10 @@
     function closeSidebar() { nav.classList.remove('open'); tab.classList.remove('open'); if (overlay) overlay.classList.remove('open'); }
     function toggleSidebar() { nav.classList.contains('open') ? closeSidebar() : openSidebar(); }
 
-    tab.addEventListener('click', toggleSidebar);
+    tab.addEventListener('click', function () {
+        if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+        toggleSidebar();
+    });
     if (overlay) overlay.addEventListener('click', closeSidebar);
     nav.querySelectorAll('.zp-sidebar-link').forEach(link => link.addEventListener('click', closeSidebar));
     document.addEventListener('zp-chat-opened', closeSidebar);

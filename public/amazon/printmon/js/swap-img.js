@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function toggleDropdown() {
+	if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
 	var dd = document.getElementById("myDropdown");
 	if (dd) dd.classList.toggle("show");
 }
