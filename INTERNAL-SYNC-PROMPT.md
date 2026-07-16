@@ -107,9 +107,11 @@ file (as CRLF):
     top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
-    white-space: normal;
+    white-space: nowrap;
     width: max-content;
-    max-width: 210px;
+    max-width: calc(100vw - 16px);
+    overflow: hidden;
+    text-overflow: ellipsis;
     text-align: center;
     line-height: 1.35;
     pointer-events: none;
@@ -188,13 +190,18 @@ anything else already in the file.
 	if (orb && orb.closest('.zephyy-orb-dock')) {
 		var place = function() {
 			var r = orb.getBoundingClientRect();
+			tip.style.display = 'block';
 			tip.style.position = 'fixed';
 			tip.style.bottom = 'auto';
 			tip.style.top = (r.bottom + 8) + 'px';
-			tip.style.left = Math.max(8, r.left + r.width / 2 - 105) + 'px';
 			tip.style.transform = 'none';
+			var w = tip.getBoundingClientRect().width;
+			var left = r.left + r.width / 2 - w / 2;
+			left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+			tip.style.left = left + 'px';
 		};
 		var reset = function() {
+			tip.style.display = '';
 			tip.style.position = '';
 			tip.style.top = '';
 			tip.style.left = '';
@@ -202,6 +209,7 @@ anything else already in the file.
 		};
 		orb.addEventListener('mouseenter', place);
 		orb.addEventListener('focus', place);
+		orb.addEventListener('touchstart', place, { passive: true });
 		orb.addEventListener('mouseleave', reset);
 		orb.addEventListener('blur', reset);
 	}
@@ -234,8 +242,9 @@ not touch anything outside Tasks 1–3.
 1. Open a TheDoshus page → scroll the strip right → orb sits centered UNDER
    Doshus.NET with a slowly spinning white whorl inside a purple core; the strip is
    slightly taller but has NO vertical scrollbar.
-2. Hover the orb → core glows brighter purple; "Zephyy:" tooltip appears BELOW the
-   strip, fully readable, one of 19 rotating quips per page load.
+2. Hover (or tap-and-hold on touch) the orb → core glows brighter purple; "Zephyy:"
+   tooltip appears BELOW the strip on ONE line, fully readable and never clipped,
+   one of 19 rotating quips per page load.
 3. Hover the Doshus.NET button itself → only ITS tooltip shows (orb no longer overlaps
    it); neighboring tooltips clear the orb.
 4. Click the orb → external theme gallery opens.
