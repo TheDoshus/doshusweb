@@ -609,7 +609,7 @@ body.zp-motion-throttled .zp-chat-panel::before {
   .zp-chat-panel { transition: opacity 0.2s ease; }
   .zp-chat-panel::before { animation: none; }
   .zp-tick { transition: none; }
-
+}
 
 @media (prefers-reduced-motion: no-preference) {
   #zp-chat-send {
