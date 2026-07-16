@@ -1,7 +1,7 @@
 /* Zephyy Sitewide Orb Embed */
 :root {
-    --zp-embed-base: oklch(30% 0.15 300);
-    --zp-embed-glow: oklch(42% 0.20 304);
+    --zp-embed-base: oklch(38% 0.17 300);
+    --zp-embed-glow: oklch(52% 0.21 302);
 }
 
 .zephyy-orb-sitewide-wrapper {
@@ -19,6 +19,7 @@
 }
 
 .zephyy-orb-sitewide {
+    position: relative;
     display: flex;
     flex-direction: row-reverse;
     align-items: center;
@@ -36,20 +37,40 @@
 }
 
 .sitewide-orb-core {
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, oklch(50% 0.1 300), var(--zp-embed-base) 70%);
-    box-shadow: none;
+    background: radial-gradient(circle at 30% 30%, oklch(58% 0.12 300), var(--zp-embed-base) 70%);
+    box-shadow: 0 0 8px oklch(38% 0.17 300 / 0.35);
     transition: box-shadow 0.3s ease, transform 0.3s ease, width 0.3s ease, height 0.3s ease;
     position: relative;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Whorl glyph (zephyy-chat.js injects it; embed JS adopts it into the core) */
+.sitewide-orb-core .zp-orb-glyph {
+    width: 82%;
+    height: 82%;
+    pointer-events: none;
 }
 
 .zephyy-orb-sitewide:hover .sitewide-orb-core,
 .zephyy-orb-sitewide:focus-visible .sitewide-orb-core,
 .zephyy-orb-sitewide-wrapper.expanded .sitewide-orb-core {
-    box-shadow: 0 0 15px var(--zp-embed-glow), 0 0 30px oklch(30% 0.20 304 / 0.4);
+    box-shadow: 0 0 15px var(--zp-embed-glow), 0 0 30px oklch(38% 0.20 304 / 0.4);
+}
+
+/* Ping lives inside the core so it always rings the actual dot */
+.sitewide-orb-ping {
+    display: none;
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: oklch(var(--brand-teal));
+    pointer-events: none;
 }
 
 .sitewide-orb-preview {
@@ -60,8 +81,8 @@
     font-size: 13px;
     font-family: 'Nata Sans', system-ui, sans-serif;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    border: 1px solid oklch(42% 0.20 304 / 0.4);
+    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3);
+    border: 1px solid oklch(52% 0.21 302 / 0.4);
     opacity: 0;
     transform: translateX(10px);
     visibility: hidden;
@@ -78,40 +99,38 @@
     }
 }
 
-/* Fix mobile ping positioning */
-.sitewide-orb-ping-container {
-    position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 @media (max-width: 768px) {
     .zephyy-orb-sitewide-wrapper {
         bottom: auto;
         top: 1.5rem;
     }
-    
+
     .zephyy-orb-sitewide {
         opacity: 1;
         transform: none;
     }
-    
+
+    /* Collapsed status dot: teal, tiny, whorl hidden until expanded */
     .zephyy-orb-sitewide-wrapper:not(.expanded) .sitewide-orb-core {
         width: 12px;
         height: 12px;
-        box-shadow: none;
-        background: var(--zp-embed-glow);
+        box-shadow: 0 0 6px oklch(var(--brand-teal) / 0.5);
+        background: oklch(var(--brand-teal));
+    }
+    .zephyy-orb-sitewide-wrapper:not(.expanded) .sitewide-orb-core .zp-orb-glyph {
+        display: none;
     }
 
     .zephyy-orb-sitewide-wrapper:not(.expanded) .sitewide-orb-ping {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--zp-embed-glow);
+        display: block;
         animation: orb-ping 4s infinite cubic-bezier(0.1, 0.8, 0.3, 1);
+    }
+
+    /* Collapsed dot drifts up into the starfield when scroll-hidden,
+       instead of the bottom-orb's downward tuck */
+    .zephyy-orb-sitewide-wrapper:not(.expanded).orb-hidden {
+        transform: translate(14px, -42px) scale(0.4);
+        opacity: 0;
     }
 
     .zephyy-orb-sitewide-wrapper.expanded {
@@ -119,20 +138,23 @@
         bottom: 1.5rem;
     }
 
+    /* Arrival: pop in at the bottom-right with an overshoot + glow flare
+       so the dot→orb move is impossible to miss */
     .zephyy-orb-sitewide-wrapper.expanded .zephyy-orb-sitewide {
         transform: scale(1.05);
+        animation: orb-arrive 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .zephyy-orb-sitewide-wrapper.expanded .sitewide-orb-core {
+        width: 34px;
+        height: 34px;
+        box-shadow: 0 0 15px var(--zp-embed-glow);
+        animation: orb-flare 0.9s ease-out both;
     }
 
     .zephyy-orb-sitewide-wrapper.expanded .sitewide-orb-preview {
         opacity: 1;
         visibility: visible;
         transform: translateX(0);
-    }
-    
-    .zephyy-orb-sitewide-wrapper.expanded .sitewide-orb-core {
-        width: 22px;
-        height: 22px;
-        box-shadow: 0 0 15px var(--zp-embed-glow);
     }
 }
 
@@ -142,12 +164,38 @@
     100% { transform: scale(3.5); opacity: 0; }
 }
 
+@keyframes orb-arrive {
+    0% { transform: scale(0.3) translateY(24px); opacity: 0.3; }
+    65% { transform: scale(1.15) translateY(-3px); opacity: 1; }
+    100% { transform: scale(1.05) translateY(0); }
+}
+
+@keyframes orb-flare {
+    0% { box-shadow: 0 0 0 0 var(--zp-embed-glow); }
+    35% { box-shadow: 0 0 26px 10px var(--zp-embed-glow), 0 0 50px oklch(var(--brand-teal) / 0.35); }
+    100% { box-shadow: 0 0 15px var(--zp-embed-glow); }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .sitewide-orb-ping { animation: none !important; display: none !important; }
     .zephyy-orb-sitewide-wrapper,
     .zephyy-orb-sitewide,
     .sitewide-orb-core,
-    .sitewide-orb-preview { transition: none !important; }
+    .sitewide-orb-preview {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* ── Chat panel recolor (embed pages only — profile never loads this file):
+   shift the panel accents into the same darker family as the orb, so her
+   chat matches the embed aesthetic instead of the profile's brights ── */
+.zp-chat-panel,
+.zp-chat-backdrop,
+#zp-orb-demo {
+    --brand-teal: 62% 0.14 296;
+    --brand-purple: 40% 0.18 300;
+    --brand-green: 50% 0.11 320;
 }
 
 /* Printmon Refresh Styles */
@@ -165,6 +213,10 @@
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide {
     opacity: 1;
+}
+.zephyy-orb-sitewide-wrapper.printmon-dock .sitewide-orb-core {
+    width: 18px;
+    height: 18px;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .sitewide-orb-preview {
     position: absolute;

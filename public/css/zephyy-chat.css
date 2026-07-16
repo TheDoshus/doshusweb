@@ -629,3 +629,52 @@ body.zp-motion-throttled .zp-chat-panel::before {
   }
 
 }
+
+/* ── Orb whorl glyph (injected by zephyy-chat.js into #zp-orb-demo on every
+   chat page — moved here from zephyy.css so the sitewide embed gets it too) ── */
+.zp-orb-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px oklch(var(--space-oled) / 0.35));
+}
+
+.zp-orb-glyph svg {
+  width: 100%;
+  height: 100%;
+}
+
+.whorl-outer,
+.whorl-mid,
+.whorl-inner {
+  transform-origin: 32px 32px;
+}
+
+.whorl-outer { animation: whorlSpin 16s linear infinite; }
+.whorl-mid   { animation: whorlSpin 11s linear infinite; }
+.whorl-inner { animation: whorlSpin 7s linear infinite; }
+.whorl-center { animation: whorlPulse 2.5s ease-in-out infinite; }
+
+@keyframes whorlSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes whorlPulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); }
+  50%       { opacity: 1;   transform: scale(1.15); }
+}
+
+body.zp-motion-throttled .whorl-outer,
+body.zp-motion-throttled .whorl-mid,
+body.zp-motion-throttled .whorl-inner,
+body.zp-motion-throttled .whorl-center {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whorl-outer, .whorl-mid, .whorl-inner, .whorl-center { animation: none; }
+}
