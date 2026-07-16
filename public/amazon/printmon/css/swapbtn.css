@@ -85,128 +85,26 @@
 .dropdown2-content::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
-/* ── Zephyy gallery orb ─────────────────────────────────────
-   Sits beside the Swap Themes button on every printmon page.
-   Links to the theme gallery; quip text is rotated by swap-img.js. */
-.zephyy-orb {
-    position: relative;
-    display: inline-block;
-    width: 22px;
-    height: 22px;
-    margin-left: 8px;
-    vertical-align: middle;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 32% 30%, oklch(92% 0.05 300 / 0.9), transparent 42%),
-        radial-gradient(circle at 68% 72%, oklch(75% 0.22 330 / 0.55), transparent 55%),
-        radial-gradient(circle at 50% 50%, oklch(62% 0.26 295), oklch(30% 0.17 285) 78%);
-    box-shadow: 0 0 10px oklch(62% 0.26 295 / 0.55), 0 0 22px oklch(62% 0.26 295 / 0.25);
-    animation: zephyy-orb-pulse 3.2s ease-in-out infinite;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
 
-.zephyy-orb:hover,
-.zephyy-orb:focus-visible {
-    transform: scale(1.18);
-    box-shadow: 0 0 14px oklch(70% 0.26 300 / 0.8), 0 0 30px oklch(62% 0.26 295 / 0.4);
-    animation-play-state: paused;
-}
-
-.zephyy-orb-tip {
-    position: absolute;
-    top: calc(100% + 9px);
-    left: -4px;
-    width: max-content;
-    max-width: 210px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: oklch(20% 0.06 290 / 0.96);
-    background: linear-gradient(135deg, oklch(25% 0.08 292 / 0.86), oklch(18% 0.06 320 / 0.9));
-    border: 1px solid oklch(72% 0.2 315 / 0.52);
-    color: oklch(96% 0.015 300);
-    font-family: 'Amazon Ember', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.35;
-    -webkit-backdrop-filter: blur(12px) saturate(1.2);
-    backdrop-filter: blur(12px) saturate(1.2);
-    box-shadow:
-        0 10px 28px oklch(8% 0.04 290 / 0.5),
-        0 0 18px oklch(68% 0.24 305 / 0.24),
-        inset 0 1px 0 oklch(94% 0.04 320 / 0.14);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-6px) scale(0.96);
-    transform-origin: top left;
-    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+/* ── Whorl avatar inside the dock orb (glyph injected by swap-img.js;
+   animation rules local since printmon doesn't load zephyy-chat.css) ── */
+.sitewide-orb-core .zp-orb-glyph {
+    display: block;
+    width: 82%;
+    height: 82%;
     pointer-events: none;
-    z-index: 1001;
 }
-
-.zephyy-orb-tip::before {
-    content: "Zephyy: ";
-    color: oklch(80% 0.2 330);
-    text-shadow: 0 0 10px oklch(72% 0.24 315 / 0.58);
-}
-
-.zephyy-orb:hover .zephyy-orb-tip,
-.zephyy-orb:focus-visible .zephyy-orb-tip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    animation: zephyy-tip-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-@keyframes zephyy-tip-in {
-    from { opacity: 0; transform: translateY(-6px) scale(0.96); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes zephyy-orb-pulse {
-    0%, 100% { box-shadow: 0 0 10px oklch(62% 0.26 295 / 0.55), 0 0 22px oklch(62% 0.26 295 / 0.25); }
-    50% { box-shadow: 0 0 13px oklch(70% 0.26 300 / 0.7), 0 0 28px oklch(62% 0.26 295 / 0.35); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .zephyy-orb { animation: none; }
-    .zephyy-orb, .zephyy-orb-tip { transition: none; }
-    .zephyy-orb:hover .zephyy-orb-tip,
-    .zephyy-orb:focus-visible .zephyy-orb-tip { animation: none; }
-}
-
-/* -- orb dock: orb floats above the Doshus.NET scroll button ------------
-   2026-07-15 relocation (Doshus): lowkey placement in the horizontal
-   scroll strip instead of beside Swap Themes. Wrapper spans the button;
-   orb hovers above it with a gentle bob. */
-.zephyy-orb-dock {
-    position: relative;
-    display: inline-block;
-}
-.zephyy-orb-dock .zephyy-orb {
-    position: absolute;
-    bottom: calc(100% + 3px);
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    margin-left: -9px;
-    animation: zephyy-orb-pulse 3.2s ease-in-out infinite, zephyy-orb-bob 4.6s ease-in-out infinite;
-}
-.zephyy-orb-dock .zephyy-orb:hover,
-.zephyy-orb-dock .zephyy-orb:focus-visible {
-    transform: none;
-    animation: none;  /* transformed ancestor would re-anchor the fixed tip */
-}
-/* The strip's scroller (overflow-x) must clip vertically, so the tip cannot
-   escape upward via absolute positioning; swap-img.js promotes it to
-   position:fixed on hover/focus instead. These rules cover the rest. */
-.zephyy-orb-dock .zephyy-orb-tip {
-    white-space: normal;  /* strip sets nowrap; restore bubble wrap */
-    transform-origin: bottom center;
-}
-@keyframes zephyy-orb-bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
+.sitewide-orb-core .zp-orb-glyph svg { width: 100%; height: 100%; display: block; }
+.whorl-outer, .whorl-mid, .whorl-inner { transform-origin: 32px 32px; }
+.whorl-outer { animation: whorlSpin 16s linear infinite; }
+.whorl-mid   { animation: whorlSpin 11s linear infinite; }
+.whorl-inner { animation: whorlSpin 7s linear infinite; }
+.whorl-center { animation: whorlPulse 2.5s ease-in-out infinite; }
+@keyframes whorlSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes whorlPulse {
+    0%, 100% { opacity: 0.5; transform: scale(0.85); }
+    50%      { opacity: 1;   transform: scale(1.15); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .zephyy-orb-dock .zephyy-orb { animation: none; }
+    .whorl-outer, .whorl-mid, .whorl-inner, .whorl-center { animation: none; }
 }

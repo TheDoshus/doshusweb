@@ -1,8 +1,10 @@
-# Quick Suite Prompt — Sync internal Printmon mirror with doshus.net (2026-07-15 batch)
+# Quick Suite Prompt — Sync internal Printmon mirror with doshus.net (2026-07-16 batch)
 
 Copy everything below the line into Amazon Quick Suite with the internal Printmon files
-available. This version was written against real internal copies (VI/Easter/Kuromi
-classics + TheDoshus GTA/Halloween), so the link rules below are exact.
+available. This batch REPLACES the 2026-07-15 orb entirely: the orb is rebuilt as the
+shared "sitewide" component doshus.net now uses (whorl avatar, darker palette), and it
+moved from ABOVE the Doshus.NET button to BELOW it (its tooltip was colliding with the
+other buttons' tooltips, which pop upward).
 
 ---
 
@@ -21,143 +23,115 @@ are canonical for links. Apply each task **surgically**.
    that page and note it. Do not improvise.
 5. Internal css/js references stay **bare** (no `?v=` cache-busters) — that is external-only.
 
-## Task 1 — swapbtn.css: replace/append the Zephyy orb styles
-In the internal `css/swapbtn.css`: if a `.zephyy-orb` block exists from an earlier sync,
-delete it entirely (from the `Zephyy gallery orb` comment to the end of its
-reduced-motion block). Then append this whole payload to the end of the file (as CRLF):
+## Task 1 — swapbtn.css: replace the old orb styles with the new component
+In the internal `css/swapbtn.css`: delete the ENTIRE old Zephyy orb section from the
+`/* ── Zephyy gallery orb ──` comment down through the last orb-related
+reduced-motion block (everything the 2026-07-15 sync appended — `.zephyy-orb`,
+`.zephyy-orb-tip`, `.zephyy-orb-dock`, their keyframes and media queries). Leave the
+dropdown styles above it untouched. Then append this whole payload to the end of the
+file (as CRLF):
 
 ```css
-/* ── Zephyy gallery orb ─────────────────────────────────────
-   Sits beside the Swap Themes button on every printmon page.
-   Links to the theme gallery; quip text is rotated by swap-img.js. */
-.zephyy-orb {
-    position: relative;
-    display: inline-block;
-    width: 22px;
-    height: 22px;
-    margin-left: 8px;
-    vertical-align: middle;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 32% 30%, oklch(92% 0.05 300 / 0.9), transparent 42%),
-        radial-gradient(circle at 68% 72%, oklch(75% 0.22 330 / 0.55), transparent 55%),
-        radial-gradient(circle at 50% 50%, oklch(62% 0.26 295), oklch(30% 0.17 285) 78%);
-    box-shadow: 0 0 10px oklch(62% 0.26 295 / 0.55), 0 0 22px oklch(62% 0.26 295 / 0.25);
-    animation: zephyy-orb-pulse 3.2s ease-in-out infinite;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.zephyy-orb:hover,
-.zephyy-orb:focus-visible {
-    transform: scale(1.18);
-    box-shadow: 0 0 14px oklch(70% 0.26 300 / 0.8), 0 0 30px oklch(62% 0.26 295 / 0.4);
-    animation-play-state: paused;
-}
-
-.zephyy-orb-tip {
-    position: absolute;
-    top: calc(100% + 9px);
-    left: -4px;
-    width: max-content;
-    max-width: 210px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: oklch(20% 0.06 290 / 0.96);
-    background: linear-gradient(135deg, oklch(25% 0.08 292 / 0.86), oklch(18% 0.06 320 / 0.9));
-    border: 1px solid oklch(72% 0.2 315 / 0.52);
-    color: oklch(96% 0.015 300);
-    font-family: 'Amazon Ember', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.35;
-    -webkit-backdrop-filter: blur(12px) saturate(1.2);
-    backdrop-filter: blur(12px) saturate(1.2);
-    box-shadow:
-        0 10px 28px oklch(8% 0.04 290 / 0.5),
-        0 0 18px oklch(68% 0.24 305 / 0.24),
-        inset 0 1px 0 oklch(94% 0.04 320 / 0.14);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-6px) scale(0.96);
-    transform-origin: top left;
-    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
-    pointer-events: none;
-    z-index: 1001;
-}
-
-.zephyy-orb-tip::before {
-    content: "Zephyy: ";
-    color: oklch(80% 0.2 330);
-    text-shadow: 0 0 10px oklch(72% 0.24 315 / 0.58);
-}
-
-.zephyy-orb:hover .zephyy-orb-tip,
-.zephyy-orb:focus-visible .zephyy-orb-tip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    animation: zephyy-tip-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-@keyframes zephyy-tip-in {
-    from { opacity: 0; transform: translateY(-6px) scale(0.96); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes zephyy-orb-pulse {
-    0%, 100% { box-shadow: 0 0 10px oklch(62% 0.26 295 / 0.55), 0 0 22px oklch(62% 0.26 295 / 0.25); }
-    50% { box-shadow: 0 0 13px oklch(70% 0.26 300 / 0.7), 0 0 28px oklch(62% 0.26 295 / 0.35); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .zephyy-orb { animation: none; }
-    .zephyy-orb, .zephyy-orb-tip { transition: none; }
-    .zephyy-orb:hover .zephyy-orb-tip,
-    .zephyy-orb:focus-visible .zephyy-orb-tip { animation: none; }
-}
-
-/* -- orb dock: orb floats above the Doshus.NET scroll button ------------
-   2026-07-15 relocation (Doshus): lowkey placement in the horizontal
-   scroll strip instead of beside Swap Themes. Wrapper spans the button;
-   orb hovers above it with a gentle bob. */
+/* ── Zephyy orb (shared-component port, 2026-07-16) ─────────────────
+   Same orb doshus.net uses sitewide: whorl avatar core + quip tooltip.
+   Docked BELOW the Doshus.NET button; tooltip points further down
+   (the strip buttons' own tooltips pop upward — this clears them). */
 .zephyy-orb-dock {
     position: relative;
     display: inline-block;
 }
-.zephyy-orb-dock .zephyy-orb {
+.zephyy-orb-sitewide-wrapper.printmon-dock {
     position: absolute;
-    bottom: calc(100% + 3px);
+    top: calc(100% + 3px);
+    bottom: auto;
     left: 50%;
-    width: 18px;
-    height: 18px;
-    margin-left: -9px;
-    animation: zephyy-orb-pulse 3.2s ease-in-out infinite, zephyy-orb-bob 4.6s ease-in-out infinite;
+    right: auto;
+    transform: translateX(-50%);
+    z-index: 1001;
 }
-.zephyy-orb-dock .zephyy-orb:hover,
-.zephyy-orb-dock .zephyy-orb:focus-visible {
-    transform: none;
-    animation: none;  /* transformed ancestor would re-anchor the fixed tip */
+.zephyy-orb-sitewide {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    opacity: 1;
 }
-/* The strip's scroller (overflow-x) must clip vertically, so the tip cannot
-   escape upward via absolute positioning; swap-img.js promotes it to
-   position:fixed on hover/focus instead. These rules cover the rest. */
-.zephyy-orb-dock .zephyy-orb-tip {
-    white-space: normal;  /* strip sets nowrap; restore bubble wrap */
-    transform-origin: bottom center;
+.sitewide-orb-core {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, oklch(58% 0.12 300), oklch(38% 0.17 300) 70%);
+    box-shadow: 0 0 8px oklch(38% 0.17 300 / 0.35);
+    transition: box-shadow 0.3s ease;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-@keyframes zephyy-orb-bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
+.zephyy-orb-sitewide:hover .sitewide-orb-core,
+.zephyy-orb-sitewide:focus-visible .sitewide-orb-core {
+    box-shadow: 0 0 15px oklch(52% 0.21 302), 0 0 30px oklch(38% 0.20 304 / 0.4);
+}
+.sitewide-orb-core .zp-orb-glyph {
+    display: block;
+    width: 82%;
+    height: 82%;
+    pointer-events: none;
+}
+.sitewide-orb-core .zp-orb-glyph svg { width: 100%; height: 100%; display: block; }
+.whorl-outer, .whorl-mid, .whorl-inner { transform-origin: 32px 32px; }
+.whorl-outer { animation: whorlSpin 16s linear infinite; }
+.whorl-mid   { animation: whorlSpin 11s linear infinite; }
+.whorl-inner { animation: whorlSpin 7s linear infinite; }
+.whorl-center { animation: whorlPulse 2.5s ease-in-out infinite; }
+@keyframes whorlSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes whorlPulse {
+    0%, 100% { opacity: 0.5; transform: scale(0.85); }
+    50%      { opacity: 1;   transform: scale(1.15); }
+}
+.sitewide-orb-preview {
+    background: oklch(38% 0.17 300);
+    color: oklch(95% 0.02 300);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-family: "Amazon Ember", sans-serif;
+    font-weight: 600;
+    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3);
+    border: 1px solid oklch(52% 0.21 302 / 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    white-space: normal;
+    width: max-content;
+    max-width: 210px;
+    text-align: center;
+    line-height: 1.35;
+    pointer-events: none;
+    z-index: 1001;
+}
+.zephyy-orb-sitewide:hover .sitewide-orb-preview,
+.zephyy-orb-sitewide:focus-visible .sitewide-orb-preview {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    visibility: visible;
 }
 @media (prefers-reduced-motion: reduce) {
-    .zephyy-orb-dock .zephyy-orb { animation: none; }
+    .whorl-outer, .whorl-mid, .whorl-inner, .whorl-center { animation: none; }
+    .zephyy-orb-sitewide-wrapper, .zephyy-orb-sitewide,
+    .sitewide-orb-core, .sitewide-orb-preview { transition: none; }
 }
 ```
 
-## Task 2 — swap-img.js: append the quip + tooltip-positioning block
-In the internal `js/swap-img.js`: if a `ZEPHYY GALLERY ORB` block exists, replace it with
-the payload below; otherwise append it at the end of the file. Do not touch
-`toggleDropdown` or anything else already in the file.
+## Task 2 — swap-img.js: replace the orb block with the new one
+In the internal `js/swap-img.js`: replace the entire `ZEPHYY GALLERY ORB` IIFE (from its
+comment to its closing `})();`) with the payload below. Do not touch `toggleDropdown` or
+anything else already in the file.
 
 ```js
 // ZEPHYY GALLERY ORB — rotate the tooltip quip each page load
@@ -170,77 +144,98 @@ the payload below; otherwise append it at the end of the file. Do not touch
 		'fresh palette drops in the gallery',
 		'your coworkers keep requesting skins. peek the results',
 		'tap the orb. cosmic printmons await',
-		'I recolor this whole page on request, you know'
+		'I recolor this whole page on request, you know',
+		'need a new vibe for the barcode chaos?',
+		'my gallery is stocked and ready to go',
+		'feeling this base? there\'s plenty more',
+		'want to see what else I can generate?',
+		'grab a new skin. on the house 😉',
+		'ruminating on new color schemes… wanna see? 🤔',
+		'*reefing through the theme vault* oh hey, didn\'t see you there',
+		'this page? yeah I painted it. more where that came from',
+		'psst. the gallery misses you',
+		'legally obligated to mention I make themes now',
+		'you scan barcodes, I scan color wheels. we are not the same 💅',
+		'caught you looking 👀 the gallery\'s one tap away',
+		'plotting my next theme drop as we speak'
 	];
-	tip.textContent = quips[Math.floor(Math.random() * quips.length)];
+	tip.textContent = "Zephyy: " + quips[Math.floor(Math.random() * quips.length)];
+
+	// Whorl avatar — same glyph her chat orb wears on doshus.net (the chat
+	// stack isn't loaded on printmon, so the SVG is inlined here).
+	var core = document.querySelector('.zephyy-orb-dock .sitewide-orb-core');
+	if (core && !core.querySelector('.zp-orb-glyph')) {
+		var glyph = document.createElement('span');
+		glyph.className = 'zp-orb-glyph';
+		glyph.innerHTML =
+			'<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+			'<defs><linearGradient id="pmOrbGrad" x1="0" y1="0" x2="1" y2="1">' +
+			'<stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>' +
+			'<stop offset="50%" stop-color="#d8f0ff" stop-opacity="0.9"/>' +
+			'<stop offset="100%" stop-color="#ffffff" stop-opacity="0.75"/>' +
+			'</linearGradient></defs>' +
+			'<circle cx="32" cy="32" r="29" stroke="#ffffff" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>' +
+			'<g class="whorl-outer"><path d="M 32 9 A 23 23 0 1 1 12 44" stroke="url(#pmOrbGrad)" stroke-width="3.2" stroke-linecap="round" opacity="0.85"/><circle cx="32" cy="9" r="2.0" fill="#ffffff" opacity="0.9"/></g>' +
+			'<g class="whorl-mid"><path d="M 45 40 A 15 15 0 1 1 32 17" stroke="url(#pmOrbGrad)" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/><circle cx="45" cy="40" r="1.8" fill="#ffffff" opacity="0.95"/></g>' +
+			'<g class="whorl-inner"><path d="M 25 36 A 8 8 0 1 1 39 36" stroke="url(#pmOrbGrad)" stroke-width="3.8" stroke-linecap="round" opacity="0.98"/><circle cx="25" cy="36" r="1.6" fill="#ffffff" opacity="0.98"/></g>' +
+			'<circle cx="32" cy="32" r="3.6" fill="#ffffff" class="whorl-center"/></svg>';
+		core.appendChild(glyph);
+	}
 
 	// Docked orb (inside the horizontal scroll strip): the strip's scroller
 	// clips the tip, so lift it out with position:fixed while shown.
-	var orb = tip.parentElement;
-	if (orb && orb.closest && orb.closest('.zephyy-orb-dock')) {
+	var orb = tip.closest('.zephyy-orb-sitewide-wrapper');
+	if (orb && orb.closest('.zephyy-orb-dock')) {
 		var place = function() {
 			var r = orb.getBoundingClientRect();
 			tip.style.position = 'fixed';
-			tip.style.top = 'auto';
-			tip.style.bottom = (window.innerHeight - r.top + 8) + 'px';
+			tip.style.bottom = 'auto';
+			tip.style.top = (r.bottom + 8) + 'px';
 			tip.style.left = Math.max(8, r.left + r.width / 2 - 105) + 'px';
+			tip.style.transform = 'none';
+		};
+		var reset = function() {
+			tip.style.position = '';
+			tip.style.top = '';
+			tip.style.left = '';
+			tip.style.transform = '';
 		};
 		orb.addEventListener('mouseenter', place);
 		orb.addEventListener('focus', place);
+		orb.addEventListener('mouseleave', reset);
+		orb.addEventListener('blur', reset);
 	}
 })();
 ```
 
-## Task 3 — dock the orb above the Doshus.NET button (strip pages only)
+## Task 3 — strip pages: replace the old dock markup with the new component
 On **every page whose scroll strip has the Doshus.NET button** (the TheDoshusPrintmon2*
-family — e.g. GTA line: `<button onclick="window.open('https://doshus.net')"
-class="scroll-button" ...>Doshus.NET</button>`):
-
-Wrap that button and add the orb anchor immediately after it, inside a dock span:
-
-```html
-<span class="zephyy-orb-dock"><button onclick="window.open('https://doshus.net')" class="scroll-button" data-tooltip="My lil webpage (check out The Lounge)">Doshus.NET</button><a class="zephyy-orb" href="https://doshus.net/amazon/printmon/gallery.html" aria-label="Zephyy's Theme Gallery"><span class="zephyy-orb-tip" role="tooltip">skins I cooked up — come see ✨</span></a></span>
-```
-
-⚠ Keep each page's existing button attributes exactly as found (tooltips may vary) —
-only wrap and append. The orb href is the **absolute external gallery URL** (the gallery
-only exists on doshus.net; it is reachable from work machines).
-
-If a page still has an old orb anchor beside its Swap Themes button from an earlier sync,
-delete that one — the dock replaces it.
-
-Classic pages (Printmon2Doshus*) have no scroll strip — **skip them** for the orb.
-
-## Task 4 — classic pages: backfill missing dropdown entries
-The internal classics' "Printmon 2" dropdown section is stale (9 entries). Bring each
-classic page's list up to the internal GTA page's full set by inserting the missing
-anchors in alphabetical position (formatting matched to the surrounding lines):
+family): find the 2026-07-15 dock span
+(`<span class="zephyy-orb-dock">…<a class="zephyy-orb" …>…</a></span>`) and replace the
+old `<a class="zephyy-orb" …>…</a>` anchor inside it with:
 
 ```html
-<a href="TheDoshusPrintmon2Butterfly.html">Butterfly</a>
-<a href="TheDoshusPrintmon2Aizawa.html">Eraserhead</a>
-<a href="TheDoshusPrintmon2Glass.html">Glass</a>
-<a href="TheDoshusPrintmon2Halloween.html">Halloween</a>
-<a href="TheDoshusPrintmon2Melody.html">Melody</a>
-<a href="TheDoshusPrintmon2OP.html">One Piece</a>
-<a href="TheDoshusPrintmon2Solo.html">Solo Leveling</a>
-<a href="TheDoshusPrintmon2Strawberry.html">StrawberryShortcake</a>
-<a href="TheDoshusPrintmon2Toki.html">Toki Doki</a>
+<a class="zephyy-orb-sitewide-wrapper printmon-dock" href="https://doshus.net/amazon/printmon/gallery.html" aria-label="Zephyy's Theme Gallery"><div class="zephyy-orb-sitewide"><div class="sitewide-orb-core"></div><div class="sitewide-orb-preview zephyy-orb-tip" role="tooltip">skins I cooked up — come see ✨</div></div></a>
 ```
 
-Only add entries whose target page actually exists on the internal mirror — if one
-doesn't, skip that anchor and note it. Do the same check on the TheDoshus family pages'
-dropdowns (the GTA copy is complete; others may lag).
+⚠ Keep each page's existing Doshus.NET button attributes exactly as found — only the
+orb anchor inside the dock span changes. The orb href stays the **absolute external
+gallery URL**.
 
-## Task 5 — link sanity pass
-Search every page for `.html?version=` — each Printmon2LATEST link must contain exactly
-ONE URL (the external site had a page with two URLs concatenated in one href; verify the
-internal copies don't). Report anything odd; fix only obvious duplications.
+Classic pages (Printmon2Doshus*): same as 07-15 — **skip them** for the orb (external
+classics carry it beside Swap Themes, but the internal decision was to leave classics
+orb-free; unchanged this batch).
+
+## Task 4 — nothing else changed
+No dropdown, link, or layout changes on printmon pages this batch beyond the orb. Do
+not touch anything outside Tasks 1–3.
 
 ## Verify before finishing
-1. Open a TheDoshus page → scroll the strip right → orb floats above Doshus.NET, bobbing.
-2. Hover the orb → glassy "Zephyy:" tooltip appears ABOVE it, fully visible (not clipped
-   by the strip), with one of six rotating quips per page load.
-3. Click the orb → external theme gallery opens.
-4. Open a classic page → dropdown shows the new Printmon 2 entries; every link resolves.
+1. Open a TheDoshus page → scroll the strip right → orb sits BELOW Doshus.NET with a
+   slowly spinning white whorl inside a purple core.
+2. Hover the orb → core glows brighter purple; "Zephyy:" tooltip appears BELOW the orb,
+   fully visible, one of 19 rotating quips per page load.
+3. Hover the neighboring strip buttons → their upward tooltips no longer collide with
+   the orb or its tooltip.
+4. Click the orb → external theme gallery opens.
 5. Browser console: no new errors on any edited page.

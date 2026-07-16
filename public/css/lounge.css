@@ -114,7 +114,11 @@
     border-radius: 50px;
     font-size: 0.95rem;
 }
-.filter-btn:hover { border-color: oklch(var(--accent-crypto)); background: oklch(var(--accent-crypto) / 0.1); }
+/* hover-capable devices only — on touch, :hover sticks after a tap and
+   reads as a stuck highlight */
+@media (hover: hover) {
+    .filter-btn:hover { border-color: oklch(var(--accent-crypto)); background: oklch(var(--accent-crypto) / 0.1); }
+}
 .filter-btn.active { background: linear-gradient(45deg, oklch(var(--accent-crypto)), oklch(var(--accent-taxes))); border-color: transparent; color: oklch(var(--star-white));
     font-weight: 600;
 }
