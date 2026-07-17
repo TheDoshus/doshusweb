@@ -3,11 +3,11 @@
 Copy everything below the line into Amazon Quick Suite with the internal Printmon files
 available. This batch REPLACES the 2026-07-15 orb entirely: the orb is rebuilt as the
 shared "sitewide" component doshus.net now uses (whorl avatar, darker palette), and it
-now sits ABOVE the Doshus.NET button, in normal flow (the dock span is a small
-reversed column: orb on top, button beneath — absolute placements either collided
-with tooltips, overlapped the button, or gave the strip a vertical scrollbar; the
-under-button spot hid the tooltip inside the strip). The tooltip pops up above the
-strip via position:fixed; the CSS hover fallback is mouse-only so touch devices
+now floats ABOVE the Doshus.NET button (the dock span wraps the button in flow so
+the button stays aligned with its siblings; the orb is absolutely positioned above
+it — absolute overflow ABOVE a scroller is clipped, never scrolled, so no vertical
+scrollbar; below-the-row placements are what grew one). The tooltip pops up above
+the strip via position:fixed; the CSS hover fallback is mouse-only so touch devices
 can't re-trigger the clipped absolute version.
 
 ---
@@ -38,18 +38,21 @@ file (as CRLF):
 ```css
 /* ── Zephyy orb (shared-component port, 2026-07-16) ─────────────────
    Same orb doshus.net uses sitewide: whorl avatar core + quip tooltip.
-   Sits centered ABOVE the Doshus.NET button, in normal flow (reversed
-   column); the tooltip pops up above the strip. The button's own tooltip
-   may overlap the orb on hover — accepted. */
+   The dock wraps the button in flow (button stays aligned with its
+   siblings); the orb floats absolutely above it — absolute overflow ABOVE
+   a scroller is clipped, never scrolled, so no vertical scrollbar. The
+   button's own tooltip may overlap the orb on hover — accepted. Centering
+   uses a margin, not translateX: a transform on the wrapper would become
+   the containing block for the tip's position:fixed lift and break it. */
 .zephyy-orb-dock {
     position: relative;
-    display: inline-flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    gap: 4px;
+    display: inline-block;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock {
-    position: relative;
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    margin-left: -12px; /* half the 24px core */
     display: inline-flex;
 }
 .zephyy-orb-sitewide {
@@ -208,6 +211,7 @@ anything else already in the file.
 			tip.style.visibility = 'visible';
 			tip.style.position = 'fixed';
 			tip.style.bottom = 'auto';
+			tip.style.transition = 'none';
 			tip.style.transform = 'none';
 			var tr = tip.getBoundingClientRect();
 			tip.style.top = Math.max(8, r.top - tr.height - 8) + 'px';
@@ -220,8 +224,10 @@ anything else already in the file.
 			tip.style.opacity = '';
 			tip.style.visibility = '';
 			tip.style.position = '';
+			tip.style.bottom = '';
 			tip.style.top = '';
 			tip.style.left = '';
+			tip.style.transition = '';
 			tip.style.transform = '';
 		};
 		orb.addEventListener('mouseenter', place);
@@ -265,10 +271,11 @@ No dropdown, link, or layout changes on printmon pages this batch beyond the orb
 not touch anything outside Tasks 1–3.
 
 ## Verify before finishing
-1. Open a TheDoshus page → scroll the strip right → orb sits centered ABOVE
-   Doshus.NET with a slowly spinning white whorl inside a purple core; the strip is
-   slightly taller but has NO vertical scrollbar (including after tapping the orb
-   on a touch device).
+1. Open a TheDoshus page → scroll the strip right → orb floats centered ABOVE
+   Doshus.NET with a slowly spinning white whorl inside a purple core; the
+   Doshus.NET button lines up EXACTLY with its neighbor buttons (same top edge);
+   NO vertical scrollbar, including while hovering the orb or after tapping it
+   on a touch device.
 2. Hover (or tap on touch) the orb → core glows brighter purple; "Zephyy:" tooltip
    pops up ABOVE the strip on ONE line, fully readable and never clipped, one of
    19 rotating quips per page load; on touch it clears itself ~1.6s after the
