@@ -28,6 +28,7 @@ PrintmonGenerator.js prompt-cleanup regex keeps `skin` as a stopword (users stil
 | Date | Change | Files touched (external) | Notes for internal edit |
 |---|---|---|---|
 | 2026-07-17 | External skin→theme wording sweep (orb tooltip default on all 31 pages + template, 3 swap-img.js quips, gallery copy, gallery stat label) — **no sync needed**, internal already renamed (listed for awareness) | 31 printmon pages, `template.html`, `js/swap-img.js`, `gallery.html`, `js/PrintmonGallery.js` | — |
+| 2026-07-17 | GTA wallpaper pool ported FROM internal (Doshus's array: 49 rockstargames.com GTA VI stills/videos added to both GTA pages; VI page keeps its rockstarintel webp too) — **no sync needed**, internal is the source (local paths differ: internal `media/printmonWallpapers/GTA/`, external `/amazon/printmon/media/wallpapers/GTA/`) | `TheDoshusPrintmon2GTA.html`, `Printmon2DoshusVI.html` | — |
 
 ## Synced history
 
