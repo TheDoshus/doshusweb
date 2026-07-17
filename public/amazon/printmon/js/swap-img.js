@@ -74,17 +74,17 @@ function downloadAllArcs() {
 	var tip = document.querySelector('.zephyy-orb-tip');
 	if (!tip) return;
 	var quips = [
-		'skins I cooked up — come see ✨',
+		'themes I cooked up — come see ✨',
 		'psst… the theme vault is this way 🌌',
 		'fresh palette drops in the gallery',
-		'your coworkers keep requesting skins. peek the results',
+		'your coworkers keep requesting themes. peek the results',
 		'tap the orb. cosmic printmons await',
 		'I recolor this whole page on request, you know',
 		'need a new vibe for the barcode chaos?',
 		'my gallery is stocked and ready to go',
 		'feeling this base? there\'s plenty more',
 		'want to see what else I can generate?',
-		'grab a new skin. on the house 😉',
+		'grab a new theme. on the house 😉',
 		'ruminating on new color schemes… wanna see? 🤔',
 		'*reefing through the theme vault* oh hey, didn\'t see you there',
 		'this page? yeah I painted it. more where that came from',

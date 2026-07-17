@@ -260,7 +260,7 @@
       : 'n/a';
     statsEl.innerHTML = [
       `<div class="gallery-stat"><span class="stat-value">${themes.length}</span><span class="stat-label">themes archived</span></div>`,
-      `<div class="gallery-stat"><span class="stat-value">${baseCount}</span><span class="stat-label">base skins in play</span></div>`,
+      `<div class="gallery-stat"><span class="stat-value">${baseCount}</span><span class="stat-label">base themes in play</span></div>`,
       `<div class="gallery-stat"><span class="stat-value">${newest}</span><span class="stat-label">freshest drop</span></div>`,
     ].join('');
   }

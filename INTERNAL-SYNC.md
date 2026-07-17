@@ -18,17 +18,16 @@ Note: many links differ on the internal copies (different hosts/paths). Doshus w
 an example internal page so agents can flag exact strings to ctrl+H — until then, list the
 external-side change and mark the link caveat.
 
-**Wording divergence (2026-07-17):** the internal copies say **theme/themes** everywhere the
-external pages say **skin/skins** (Doshus ctrl+H'd `skins→themes` / `skin→theme` across the
-internal printmon set after the 07-16 sync). Any future payload carrying user-facing "skin"
-strings (orb quips, tooltip default, button/link labels) must swap to "theme" wording for the
-internal side — or flag the strings so Doshus re-runs the ctrl+H.
+**Wording rule (2026-07-17):** user-facing copy says **theme/themes**, never skin/skins, on
+BOTH sides (Doshus ctrl+H'd the internal set post-sync; external swept to match same day).
+Write new quips/tooltips/labels with "theme" wording from the start. Exception: the
+PrintmonGenerator.js prompt-cleanup regex keeps `skin` as a stopword (users still type it).
 
 ## Pending sync items
 
 | Date | Change | Files touched (external) | Notes for internal edit |
 |---|---|---|---|
-| _(none)_ | | | |
+| 2026-07-17 | External skin→theme wording sweep (orb tooltip default on all 31 pages + template, 3 swap-img.js quips, gallery copy, gallery stat label) — **no sync needed**, internal already renamed (listed for awareness) | 31 printmon pages, `template.html`, `js/swap-img.js`, `gallery.html`, `js/PrintmonGallery.js` | — |
 
 ## Synced history
 
