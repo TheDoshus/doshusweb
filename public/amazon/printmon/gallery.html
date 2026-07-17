@@ -370,24 +370,6 @@
     }
 
     .card-meta,
-    .preview-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .theme-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--muted);
-      font-size: 0.78rem;
-      line-height: 1;
-    }
-
     .preview-modal {
       display: none;
       position: fixed;
@@ -414,23 +396,33 @@
     .modal-top {
       display: flex;
       gap: 16px;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
-      padding: 18px 20px;
+      padding: 8px 16px;
       background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
 
+    /* One slim row: title, tagline beside it — max screen for the iframe */
+    .modal-copy {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
     .modal-copy h2 {
       margin: 0;
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-weight: 800;
+      white-space: nowrap;
     }
 
     .modal-copy p {
-      margin: 8px 0 0;
+      margin: 0;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     .modal-actions {
@@ -447,7 +439,7 @@
       background: rgba(255,255,255,0.06);
       color: var(--text);
       border-radius: 14px;
-      padding: 11px 14px;
+      padding: 7px 12px;
       font: inherit;
       cursor: pointer;
       transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
@@ -537,6 +529,45 @@
             <div class="sitewide-orb-core"><span class="sitewide-orb-ping"></span></div>
             <div class="sitewide-orb-preview">toss me a vibe ⚡</div>
           </div>
+          <!-- Zephyy Chat Panel — expands in-flow right here under the orb -->
+          <div class="zp-chat-panel" id="zp-chat-panel">
+            <div class="zp-chat-header">
+              <span class="zp-chat-title">
+                <span class="zp-chat-icon-glyph">
+                  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="zp-chat-glyph-icon">
+                    <defs>
+                      <linearGradient id="chatGlyphGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
+                        <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
+                        <stop offset="100%" stop-color="oklch(var(--brand-green))" />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.15)" stroke-width="0.6" fill="none"/>
+                    <path d="M 32 9 A 23 23 0 1 1 12 44"
+                      stroke="url(#chatGlyphGrad)" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+                    <path d="M 45 40 A 15 15 0 1 1 32 17"
+                      stroke="url(#chatGlyphGrad)" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+                    <path d="M 25 36 A 8 8 0 1 1 39 36"
+                      stroke="url(#chatGlyphGrad)" stroke-width="1.6" stroke-linecap="round" opacity="0.95"/>
+                    <circle cx="32" cy="32" r="2.2" fill="oklch(var(--brand-teal))"/>
+                  </svg>
+                </span>
+                <span class="zp-chat-name">Zephyy</span>
+                <span class="zp-model-badge" id="zp-model-badge" title="Current AI model">Checking...</span>
+              </span>
+              <button class="zp-chat-refresh" id="zp-chat-refresh" aria-label="Refresh chat">↻</button>
+              <button class="zp-chat-close" id="zp-chat-close" aria-label="Close chat">✕</button>
+            </div>
+            <div class="zp-chat-messages" id="zp-chat-messages">
+              <div class="zp-chat-msg zp-chat-msg-bot" id="zp-welcome-msg">
+                Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄
+              </div>
+            </div>
+            <div class="zp-chat-input-area">
+              <input type="text" id="zp-chat-input" placeholder="Type a message..." maxlength="2000">
+              <button class="zp-chat-send" id="zp-chat-send" aria-label="Send message">Send</button>
+            </div>
+          </div>
         </div>
         <div class="gallery-stats" id="themeStats">
           <div class="gallery-stat"><span class="stat-value">...</span><span class="stat-label">loading</span></div>
@@ -577,12 +608,10 @@
         <div class="modal-copy">
           <h2 id="previewName">Theme Name</h2>
           <p id="previewTagline">Generated theme preview</p>
-          <div class="preview-meta" id="previewMeta"></div>
         </div>
         <div class="modal-actions">
           <button class="modal-btn" id="previewLink" type="button">Open full page ↗</button>
           <button class="modal-btn" id="copyThemeLink" type="button">Copy link</button>
-          <button class="modal-btn" id="viewSourceBtn" type="button">View source</button>
           <button class="modal-close" id="modalClose" type="button">Close</button>
         </div>
       </div>
@@ -594,52 +623,10 @@
 
   <script src="js/PrintmonGallery.js"></script>
 
-  <!-- zp-chat:start (orb wrapper lives up in the hero — gallery-dock) -->
+  <!-- zp-chat:start (orb wrapper + inline chat panel live up in the hero —
+       gallery-dock; no backdrop: the chat expands in-flow, not as an overlay) -->
   <link rel="stylesheet" href="../../css/zephyy-chat.css">
   <link rel="stylesheet" href="../../css/zephyy-orb-embed.css">
-
-  <!-- Zephyy Chat Backdrop -->
-  <div class="zp-chat-backdrop" id="zp-chat-backdrop"></div>
-
-  <!-- Zephyy Chat Panel -->
-  <div class="zp-chat-panel" id="zp-chat-panel">
-    <div class="zp-chat-header">
-      <span class="zp-chat-title">
-        <span class="zp-chat-icon-glyph">
-          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="zp-chat-glyph-icon">
-            <defs>
-              <linearGradient id="chatGlyphGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
-                <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
-                <stop offset="100%" stop-color="oklch(var(--brand-green))" />
-              </linearGradient>
-            </defs>
-            <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.15)" stroke-width="0.6" fill="none"/>
-            <path d="M 32 9 A 23 23 0 1 1 12 44"
-              stroke="url(#chatGlyphGrad)" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
-            <path d="M 45 40 A 15 15 0 1 1 32 17"
-              stroke="url(#chatGlyphGrad)" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
-            <path d="M 25 36 A 8 8 0 1 1 39 36"
-              stroke="url(#chatGlyphGrad)" stroke-width="1.6" stroke-linecap="round" opacity="0.95"/>
-            <circle cx="32" cy="32" r="2.2" fill="oklch(var(--brand-teal))"/>
-          </svg>
-        </span>
-        <span class="zp-chat-name">Zephyy</span>
-        <span class="zp-model-badge" id="zp-model-badge" title="Current AI model">Checking...</span>
-      </span>
-      <button class="zp-chat-refresh" id="zp-chat-refresh" aria-label="Refresh chat">↻</button>
-      <button class="zp-chat-close" id="zp-chat-close" aria-label="Close chat">✕</button>
-    </div>
-    <div class="zp-chat-messages" id="zp-chat-messages">
-      <div class="zp-chat-msg zp-chat-msg-bot" id="zp-welcome-msg">
-        Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄
-      </div>
-    </div>
-    <div class="zp-chat-input-area">
-      <input type="text" id="zp-chat-input" placeholder="Type a message..." maxlength="2000">
-      <button class="zp-chat-send" id="zp-chat-send" aria-label="Send message">Send</button>
-    </div>
-  </div>
 
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js" integrity="sha384-WCNi5HrUqYpPiERhOGB000a3XlerI8Hq52+uTGtzyl/ZFU/LmuVx+lqA1cYJnEkq" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js" integrity="sha384-hb6zQWOUCteeQSkZPIVwI6sr/1arrQrsb0xv1fevRvO58hDu2d617rC8afnX3jCv" crossorigin="anonymous"></script>

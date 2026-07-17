@@ -55,10 +55,8 @@
   const previewFrame = document.getElementById('previewFrame');
   const previewName = document.getElementById('previewName');
   const previewTagline = document.getElementById('previewTagline');
-  const previewMeta = document.getElementById('previewMeta');
   const previewLink = document.getElementById('previewLink');
   const copyThemeLink = document.getElementById('copyThemeLink');
-  const viewSourceBtn = document.getElementById('viewSourceBtn');
   let activeThemeSafeName = '';
   let copyResetTimer = null;
 
@@ -351,7 +349,10 @@
 
   async function copyShareLink(safeName) {
     if (!safeName || !copyThemeLink) return;
-    const value = themeShareUrl(safeName).toString();
+    // Share the full-page view, not the gallery-with-modal
+    const url = themeShareUrl(safeName);
+    url.searchParams.set('view', 'full');
+    const value = url.toString();
     let copied = false;
 
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
@@ -409,23 +410,6 @@
     window.open(url, '_blank');
   };
 
-  window.viewThemeSource = function (safeName) {
-    const theme = themes.find((item) => item.safeName === safeName);
-    if (!theme) return;
-    const source = `<!DOCTYPE html>
-<html><head><title>Source: ${escapeHtml(theme.name)}</title>
-<style>body{background:#07111e;color:#d9ecff;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;padding:2rem;max-width:1100px;margin:0 auto}h1,h2{color:#7dd3fc}pre{background:#020817;padding:1rem;border-radius:14px;overflow-x:auto;white-space:pre-wrap}a{color:#a5f3fc}</style></head>
-<body>
-<h1>${escapeHtml(theme.name)}</h1>
-<p>${escapeHtml(theme.tagline || '')}</p>
-<h2>CSS</h2><pre>${escapeHtml(theme.css || '')}</pre>
-<h2>HTML</h2><pre>${escapeHtml(theme.html || buildStandalonePage(theme))}</pre>
-</body></html>`;
-    const blob = new Blob([source], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-  };
-
   window.openTheme = function (safeName) {
     const theme = themes.find((item) => item.safeName === safeName);
     if (!theme || !modal || !previewFrame) return;
@@ -435,13 +419,6 @@
 
     if (previewName) previewName.textContent = theme.name;
     if (previewTagline) previewTagline.textContent = theme.tagline || 'Generated theme preview';
-    if (previewMeta) {
-      const metaBits = [
-        `${baseDisplayName(theme.baseTheme)} base`,
-        theme.wallpaperCount > 0 ? `${theme.wallpaperCount} wallpapers` : 'CSS only',
-      ];
-      previewMeta.innerHTML = metaBits.map((bit) => `<span class="theme-chip">${escapeHtml(bit)}</span>`).join('');
-    }
 
     if (previewLink) {
       previewLink.onclick = function () { window.openThemePage(safeName); };
@@ -449,9 +426,6 @@
     if (copyThemeLink) {
       copyThemeLink.textContent = 'Copy link';
       copyThemeLink.onclick = function () { copyShareLink(safeName); };
-    }
-    if (viewSourceBtn) {
-      viewSourceBtn.onclick = function () { window.viewThemeSource(safeName); };
     }
 
     previewFrame.srcdoc = theme.html || buildStandalonePage(theme);
@@ -491,7 +465,20 @@
       renderFilters();
       render();
 
-      const requestedTheme = new URL(window.location.href).searchParams.get('theme');
+      const bootParams = new URL(window.location.href).searchParams;
+      const requestedTheme = bootParams.get('theme');
+      if (requestedTheme && bootParams.get('view') === 'full') {
+        // Copied links land here: swap in the standalone theme page, keeping
+        // the shareable URL in the address bar (the full page itself is
+        // built client-side — there's no static file to link to).
+        const theme = themes.find((item) => item.safeName === requestedTheme);
+        if (theme) {
+          document.open();
+          document.write(theme.html || buildStandalonePage(theme));
+          document.close();
+          return;
+        }
+      }
       if (requestedTheme) window.openTheme(requestedTheme);
     } catch (error) {
       console.error('Failed to load themes:', error);
