@@ -1,5 +1,11 @@
 # Quick Suite Prompt — Sync internal Printmon mirror with doshus.net (2026-07-16 batch)
 
+> **✅ APPLIED internally 2026-07-17** (Quick Suite run + Doshus's manual pass). Kept as the
+> template for the next batch. ⚠ Wording: both sides now use **theme/themes** (internal
+> ctrl+H'd post-sync, external swept to match same day) — the frozen payloads below predate
+> that and still say "skin" in 3 quips + the tooltip default, so do NOT re-run them as-is;
+> next batch's payloads use "theme" wording. See INTERNAL-SYNC.md § Wording rule.
+
 Copy everything below the line into Amazon Quick Suite with the internal Printmon files
 available. This batch REPLACES the 2026-07-15 orb entirely: the orb is rebuilt as the
 shared "sitewide" component doshus.net now uses (whorl avatar, darker palette), and it

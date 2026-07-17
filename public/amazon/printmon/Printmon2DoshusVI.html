@@ -14,7 +14,7 @@
         <button onclick="toggleDropdown()" class="dropbtn2">Swap Themes</button><a class="zephyy-orb-sitewide-wrapper printmon-dock" href="gallery.html" aria-label="Zephyy's Theme Gallery">
 							<div class="zephyy-orb-sitewide">
 								<div class="sitewide-orb-core"></div>
-								<div class="sitewide-orb-preview zephyy-orb-tip" role="tooltip">skins I cooked up — come see ✨</div>
+								<div class="sitewide-orb-preview zephyy-orb-tip" role="tooltip">themes I cooked up — come see ✨</div>
 							</div>
 						</a>
         <div id="myDropdown" class="dropdown2-content">
@@ -133,8 +133,67 @@
 	<script>
 		// Array of wallpaper URLs (photos and vids)
 		const wallpapers = [
-			'https://rockstarintel.com/wp-content/uploads/2023/12/gta-6-trailer-1-featured-1.webp'
-        ];
+			'https://rockstarintel.com/wp-content/uploads/2023/12/gta-6-trailer-1-featured-1.webp',
+			'/amazon/printmon/media/wallpapers/GTA/1000028200.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028201.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028202.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028203.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028204.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028205.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028206.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028207.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028208.jpg',
+			'/amazon/printmon/media/wallpapers/GTA/1000028209.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Jason_Lucia_03_With_Logos_landscape.0-pt.f1zv6g5j.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Official_Cover_Art_landscape.12.uu2irr.2_a.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/DreQuan_Priest_landscape.0_b7hszyze6cy.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Boobie_Ike_landscape.0ldnbn87k-8mq.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Vice_City_Postcard_landscape.0v2njmlk2n-qm.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_Postcard_landscape.05oezf2h--~ed.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Ambrosia_Postcard_landscape.0gd~9a41ia-rt.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/VINTAGE_VICE_CITY_PACK_VAPID_STANIER_04.0n002i9p87b~q.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/VINTAGE_VICE_CITY_PACK_VAPID_STANIER_01.004m_8d1~qngy.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Cal_Hampton_03.0.q68~pt1to9z.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_06.0fxbjfk0jakb3.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Vice_City_01.135x56yoeu.6t.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Lucia_Caminos_Video_Clip.0g8.3fx84ixw..mp4',
+			'https://media.rockstargames.com/VI/downloads/videos/GTAVI_Official_Cover_Art_Landscape/GTAVI_Official_Cover_Art_Landscape.mp4',
+			'https://www.rockstargames.com/VI/_next/static/media/Cal_Hampton_02.05r2t_mck65fe.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Cal_Hampton_01.0xlil231_osh4.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Boobie_Ike_01.0-wji2pg5anfs.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Boobie_Ike_03.0neka36~z25b5.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/DreQuan_Priest_01.0_0~wi-ipdj35.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/DreQuan_Priest_02.02u69e~nkk3eo.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Real_Dimez_02.1366u9.x.yp0_.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Vice_City_04.06evqutgh7624.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Vice_City_06.0_tdmr3u9w84x.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Vice_City_03.0nqz~lrqdmlze.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Vice_City_08.0bbg_xp4hqdvz.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Vice_City_09.0~ng.c8ack3fp.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_01.0zgz7tveur6y8.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_03.0v_3~-9ceyixc.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Leonida_Keys_05.0yerhvjhto-h..jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Port_Gellhorn_01.0fmisvza-5-cq.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Ambrosia_01.0rqphs0gazkm..jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Ambrosia_02.0wtqs05ozl.ym.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Ambrosia_05.0olhvjqff0o4b.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Ambrosia_04.0.2cefoguu-tt.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Grassrivers_04.01ckpqbhxyz76.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_02.0f24dhopdprvx.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_05.0_~vto-o2zxok.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_04.0e1sxnp1mln2u.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_03.037k2s87rwuxc.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/Mount_Kalaga_National_Park_06.166ouq5pjd7h0.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_GROTTI_CHEETAH_04.0caq_y0_f1rvt.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_RIDEOUT_CUSTOMS_01.065-ms8~k8vbq.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_SAFEHOUSE_VEHICLES_01.0wv6pw3t-mky3.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_VICE_CITY_STYLE_01.0.u1gt~99yzks.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_RIDEOUT_CUSTOMS_02.0u9jg4xxbm_yd.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_SQUALO_03.0quncwrsw97j1.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_SQUALO_01.0cim7hj58ypb1.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_WYMAN_CAR_COLLECTION_01.0swhrm__iu~6b.jpg',
+			'https://www.rockstargames.com/VI/_next/static/media/ULTIMATE_EDITION_ELECTRIC_FANG_04.0p0qga4w7y5yl.jpg'
+		];
 	</script>
 	<script src="js/PrintmonWallpaperContain.js"></script>
 	<div class="btcwdgt-price"; bw-cash="false"></div>

@@ -74,17 +74,17 @@ function downloadAllArcs() {
 	var tip = document.querySelector('.zephyy-orb-tip');
 	if (!tip) return;
 	var quips = [
-		'skins I cooked up — come see ✨',
+		'themes I cooked up — come see ✨',
 		'psst… the theme vault is this way 🌌',
 		'fresh palette drops in the gallery',
-		'your coworkers keep requesting skins. peek the results',
+		'your coworkers keep requesting themes. peek the results',
 		'tap the orb. cosmic printmons await',
 		'I recolor this whole page on request, you know',
 		'need a new vibe for the barcode chaos?',
 		'my gallery is stocked and ready to go',
 		'feeling this base? there\'s plenty more',
 		'want to see what else I can generate?',
-		'grab a new skin. on the house 😉',
+		'grab a new theme. on the house 😉',
 		'ruminating on new color schemes… wanna see? 🤔',
 		'*reefing through the theme vault* oh hey, didn\'t see you there',
 		'this page? yeah I painted it. more where that came from',
@@ -92,7 +92,12 @@ function downloadAllArcs() {
 		'legally obligated to mention I make themes now',
 		'you scan barcodes, I scan color wheels. we are not the same 💅',
 		'caught you looking 👀 the gallery\'s one tap away',
-		'plotting my next theme drop as we speak'
+		'plotting my next theme drop as we speak',
+		'got feedback on a theme? bring it — I can take it 📝',
+		'theme requests, printmon gripes, tampermonkey ideas — I take it all 📬',
+		'want a tampermonkey script for your workflow? ask away',
+		'a generation looking off? tell me and I\'ll take another swing',
+		'requests + roasts welcome. the orb hears everything 👂'
 	];
 	tip.textContent = "Zephyy: " + quips[Math.floor(Math.random() * quips.length)];
 
