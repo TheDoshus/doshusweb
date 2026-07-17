@@ -92,7 +92,12 @@ function downloadAllArcs() {
 		'legally obligated to mention I make themes now',
 		'you scan barcodes, I scan color wheels. we are not the same 💅',
 		'caught you looking 👀 the gallery\'s one tap away',
-		'plotting my next theme drop as we speak'
+		'plotting my next theme drop as we speak',
+		'got feedback on a theme? bring it — I can take it 📝',
+		'theme requests, printmon gripes, tampermonkey ideas — I take it all 📬',
+		'want a tampermonkey script for your workflow? ask away',
+		'a generation looking off? tell me and I\'ll take another swing',
+		'requests + roasts welcome. the orb hears everything 👂'
 	];
 	tip.textContent = "Zephyy: " + quips[Math.floor(Math.random() * quips.length)];
 
