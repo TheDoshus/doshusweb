@@ -1,3 +1,9 @@
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(61.2% 0.200 15.7);
+    --swap-glow: oklch(86.3% 0.090 154.9);
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap');
 
 /* ─── STRAWBERRY SHORTCAKE THEME ─── */

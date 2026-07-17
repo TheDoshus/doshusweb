@@ -1,3 +1,9 @@
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(54.5% 0.226 315.1);
+    --swap-glow: oklch(71.2% 0.110 190.4);
+}
+
 @font-face {
   font-family: 'Pricedown';
   src: url("https://drive.corp.amazon.com/view/aaustinp@/Printmon%20Archive/Printmon%20Page%20Resources/Page%20Pieces/Fonts/Pricedown%20Bl.otf") format('opentype');

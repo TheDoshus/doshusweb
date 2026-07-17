@@ -27,11 +27,15 @@ PrintmonGenerator.js prompt-cleanup regex keeps `skin` as a stopword (users stil
 
 | Date | Change | Files touched (external) | Notes for internal edit |
 |---|---|---|---|
-| 2026-07-17 | External skin→theme wording sweep (orb tooltip default on all 31 pages + template, 3 swap-img.js quips, gallery copy, gallery stat label) — **no sync needed**, internal already renamed (listed for awareness) | 31 printmon pages, `template.html`, `js/swap-img.js`, `gallery.html`, `js/PrintmonGallery.js` | — |
-| 2026-07-17 | **5 feedback quips appended** to the orb tooltip pool (24 total now): Zephyy takes theme feedback/requests + tampermonkey script ideas | `js/swap-img.js` (quips array only) | ctrl+H: paste the 5 new quip lines before the array's closing `];` in internal swap-img.js — wording is already theme-based, no rename needed. Lines: `'got feedback on a theme? bring it — I can take it 📝',` / `'theme requests, printmon gripes, tampermonkey ideas — I take it all 📬',` / `'want a tampermonkey script for your workflow? ask away',` / `'a generation looking off? tell me and I\'ll take another swing',` / `'requests + roasts welcome. the orb hears everything 👂'` (last one no trailing comma) |
-| 2026-07-17 | Wallpaper pools ported FROM internal (Doshus's arrays) — **no sync needed**, internal is the source. GTA: 49 rockstargames.com GTA VI stills/videos added to both GTA pages (VI keeps its rockstarintel webp; local paths differ — internal `media/printmonWallpapers/GTA/`, external `/amazon/printmon/media/wallpapers/GTA/`). Glass: 12 pixabay `_large.mp4` videos appended to the existing 19 | `TheDoshusPrintmon2GTA.html`, `Printmon2DoshusVI.html`, `TheDoshusPrintmon2Glass.html` | — |
+| 2026-07-17 | **Swap Themes button now matches each theme page**: swapbtn.css routes the button through `--swap-accent`/`--swap-glow`/`--swap-ink` (gold fallback; generated pages auto-match via their `--pm-hue1` token); every theme css got an accent block prepended (picked from each theme's h1 palette) | `css/swapbtn.css` (.dropbtn2 + :hover blocks), all 14 `css/older/*.css` + all 17 `css/newer/2*.css` | **INTERNAL-SYNC-PROMPT.md rewritten 2026-07-17 for this batch** — Task 1 replaces the button rules, Task 2 lists all 31 prepend blocks verbatim. Use as-is in Quick Suite |
 
 ## Synced history
+
+| Date | Change | Files touched (external) | Notes | Synced |
+|---|---|---|---|---|
+| 2026-07-17 | 5 feedback quips appended to the orb tooltip pool (24 total): theme feedback/requests + tampermonkey script ideas | `js/swap-img.js` | Doshus pasted the quips internally same day | 2026-07-17 |
+| 2026-07-17 | skin→theme wording sweep external-side (awareness only — internal already renamed) | 31 pages, `template.html`, `js/swap-img.js`, `gallery.html`, `js/PrintmonGallery.js` | no sync needed | n/a |
+| 2026-07-17 | Wallpaper pools ported FROM internal: GTA 49 rockstargames stills/videos (both GTA pages; VI keeps rockstarintel webp; internal path `media/printmonWallpapers/GTA/` vs external `/amazon/printmon/media/wallpapers/GTA/`), Glass +12 pixabay `_large.mp4` | `TheDoshusPrintmon2GTA.html`, `Printmon2DoshusVI.html`, `TheDoshusPrintmon2Glass.html` | internal was the source | n/a |
 
 _(rows move here once applied internally, with sync date)_
 

@@ -1,3 +1,9 @@
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(100% 0 0 / 0.3);
+    --swap-glow: oklch(100.0% 0.000 89.9);
+}
+
 /* ─── LIQUID GLASS THEME ─── */
 
 .printbox {
