@@ -27,12 +27,13 @@ PrintmonGenerator.js prompt-cleanup regex keeps `skin` as a stopword (users stil
 
 | Date | Change | Files touched (external) | Notes for internal edit |
 |---|---|---|---|
-| 2026-07-17 | **Swap Themes button now matches each theme page**: swapbtn.css routes the button through `--swap-accent`/`--swap-glow`/`--swap-ink` (gold fallback; generated pages auto-match via their `--pm-hue1` token); every theme css got an accent block prepended (picked from each theme's h1 palette) | `css/swapbtn.css` (.dropbtn2 + :hover blocks), all 14 `css/older/*.css` + all 17 `css/newer/2*.css` | **INTERNAL-SYNC-PROMPT.md rewritten 2026-07-17 for this batch** — Task 1 replaces the button rules, Task 2 lists all 31 prepend blocks verbatim. Use as-is in Quick Suite |
+| 2026-07-17 | **Swap dropdown now matches the theme too**: accent-tinted glass panel, pastel links from the glow companion, themed border/glow/scrollbar, slide-down overshoot animation (replaces flat gray + green links + fadeIn); `--_swap` moved from `.dropbtn2` up to `.dropdown2` so the menu inherits it | `css/swapbtn.css` only (button+dropdown section) | **INTERNAL-SYNC-PROMPT.md rewritten 2026-07-17 (batch 2)** — single replace of the pre-orb section, payload verbatim. Use as-is in Quick Suite |
 
 ## Synced history
 
 | Date | Change | Files touched (external) | Notes | Synced |
 |---|---|---|---|---|
+| 2026-07-17 | Swap Themes button matches each theme page: swapbtn.css routes through `--swap-accent`/`--swap-glow`/`--swap-ink` (gold fallback; generated pages via `--pm-hue1`); accent blocks prepended to all 31 theme css files | `css/swapbtn.css`, 14 `css/older/*.css`, 17 `css/newer/2*.css` | synced via Quick Suite prompt (batch 1) | 2026-07-17 |
 | 2026-07-17 | 5 feedback quips appended to the orb tooltip pool (24 total): theme feedback/requests + tampermonkey script ideas | `js/swap-img.js` | Doshus pasted the quips internally same day | 2026-07-17 |
 | 2026-07-17 | skin→theme wording sweep external-side (awareness only — internal already renamed) | 31 pages, `template.html`, `js/swap-img.js`, `gallery.html`, `js/PrintmonGallery.js` | no sync needed | n/a |
 | 2026-07-17 | Wallpaper pools ported FROM internal: GTA 49 rockstargames stills/videos (both GTA pages; VI keeps rockstarintel webp; internal path `media/printmonWallpapers/GTA/` vs external `/amazon/printmon/media/wallpapers/GTA/`), Glass +12 pixabay `_large.mp4` | `TheDoshusPrintmon2GTA.html`, `Printmon2DoshusVI.html`, `TheDoshusPrintmon2Glass.html` | internal was the source | n/a |

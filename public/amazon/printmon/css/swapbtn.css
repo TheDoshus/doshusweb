@@ -2,14 +2,15 @@
     position: fixed;
     left: 0px;
     z-index: 1000;
+    /* Theme-routed accent, inherited by the button AND its dropdown:
+       handcrafted pages set --swap-accent in their theme css (loaded after
+       this file); generated pages already expose --pm-hue1 via the token
+       contract; fallback = the classic gold. Alpha is applied at each use
+       so the per-page vars stay plain colors. */
+    --_swap: var(--swap-accent, var(--pm-hue1, oklch(74.4% 0.121 95.0)));
 }
 
 .dropbtn2 {
-    /* Theme-routed accent: handcrafted pages set --swap-accent in their
-       theme css (loaded after this file); generated pages already expose
-       --pm-hue1 via the token contract; fallback = the classic gold.
-       Alpha is applied here so the per-page vars stay plain colors. */
-    --_swap: var(--swap-accent, var(--pm-hue1, oklch(74.4% 0.121 95.0)));
     background-color: color-mix(in oklab, var(--_swap) 92%, transparent);
     color: var(--swap-ink, oklch(100% 0 0));
     padding: 5px 10px;
@@ -30,47 +31,53 @@
 .dropdown2-content {
     display: none;
     position: absolute;
-    background-color: #3F3F3F91;
+    /* Dark glass tinted with the page accent (was flat #3F3F3F91) */
+    background-color: color-mix(in oklab, var(--_swap) 20%, oklch(24% 0 0 / 0.55));
     min-width: 225px;
     max-height: 400px;
     overflow-y: auto;
-    box-shadow: 0px 4px 12px 0px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3),
+                0 0 18px color-mix(in oklab, var(--swap-glow, var(--_swap)) 25%, transparent);
+    border: 1px solid color-mix(in oklab, var(--_swap) 45%, transparent);
     border-radius: 6px;
     z-index: 1;
     font-family: 'Amazon Ember', sans-serif;
-    color: white;
+    color: oklch(100% 0 0);
     backdrop-filter: blur(5px);
     text-align: center;
 }
 .dropdown2-content h2 {
-    border-bottom: 1.5px solid #f9f2f2c4;
+    border-bottom: 1.5px solid color-mix(in oklab, var(--_swap) 60%, oklch(97% 0 0 / 0.75));
     margin: 20px 10px;
 }
 
 .dropdown2-content a {
-    color: #74EB12;
+    /* Pastel of the theme's glow companion — always readable on the glass */
+    color: color-mix(in oklab, var(--swap-glow, var(--_swap)) 55%, oklch(96% 0.005 95));
     padding: 10px 15px;
     text-decoration: none;
     display: block;
     font-size: 17.5px;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     text-align: center;
     font-family: Imprint MT Shadow;
     font-weight: 600;
 }
 
 .dropdown2-content a:hover {
-    background-color: #3F832C;
+    background-color: color-mix(in oklab, var(--_swap) 45%, transparent);
+    color: oklch(98% 0 0);
 }
 
 .show {
     display: block;
-    animation: fadeIn 0.3s ease;
+    transform-origin: top left;
+    animation: swapMenuIn 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+@keyframes swapMenuIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+    to   { opacity: 1; transform: none; }
 }
 
 /* Scrollbar styles for webkit browsers */
@@ -79,16 +86,16 @@
 }
 
 .dropdown2-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: oklch(20% 0 0 / 0.35);
 }
 
 .dropdown2-content::-webkit-scrollbar-thumb {
-    background: #888;
+    background: color-mix(in oklab, var(--_swap) 65%, oklch(55% 0 0));
     border-radius: 3px;
 }
 
 .dropdown2-content::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: color-mix(in oklab, var(--_swap) 80%, oklch(75% 0 0));
 }
 
 /* ── Whorl avatar inside the dock orb (glyph injected by swap-img.js;
@@ -112,4 +119,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .whorl-outer, .whorl-mid, .whorl-inner, .whorl-center { animation: none; }
+    .show { animation: none; }
 }
