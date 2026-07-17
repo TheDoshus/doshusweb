@@ -45,8 +45,19 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, oklch(58% 0.12 300), var(--zp-embed-base) 70%);
-    box-shadow: 0 0 8px oklch(38% 0.17 300 / 0.35);
+    /* Glass orb: translucent purple depth + top-left sheen, page shows
+       through via backdrop blur; the whorl glyph floats inside */
+    background: radial-gradient(circle at 32% 28%,
+        oklch(95% 0.03 300 / 0.5),
+        oklch(62% 0.15 300 / 0.32) 42%,
+        oklch(38% 0.17 300 / 0.5) 72%,
+        oklch(28% 0.15 300 / 0.68));
+    border: 1px solid oklch(85% 0.06 300 / 0.4);
+    backdrop-filter: blur(6px) saturate(140%);
+    -webkit-backdrop-filter: blur(6px) saturate(140%);
+    box-shadow: 0 0 10px oklch(52% 0.21 302 / 0.35),
+        inset 0 1px 6px oklch(100% 0 0 / 0.45),
+        inset 0 -4px 10px oklch(30% 0.2 300 / 0.45);
     transition: box-shadow 0.3s ease, transform 0.3s ease, width 0.3s ease, height 0.3s ease;
     position: relative;
     flex-shrink: 0;
@@ -65,7 +76,10 @@
 .zephyy-orb-sitewide:hover .sitewide-orb-core,
 .zephyy-orb-sitewide:focus-visible .sitewide-orb-core,
 .zephyy-orb-sitewide-wrapper.expanded .sitewide-orb-core {
-    box-shadow: 0 0 15px var(--zp-embed-glow), 0 0 30px oklch(38% 0.20 304 / 0.4);
+    /* Keep the glass insets alongside the hover glow */
+    box-shadow: 0 0 15px var(--zp-embed-glow), 0 0 30px oklch(38% 0.20 304 / 0.4),
+        inset 0 1px 6px oklch(100% 0 0 / 0.45),
+        inset 0 -4px 10px oklch(30% 0.2 300 / 0.45);
 }
 
 /* Ping lives inside the core so it always rings the actual dot */
@@ -115,12 +129,16 @@
         transform: none;
     }
 
-    /* Collapsed status dot: teal, tiny, whorl hidden until expanded */
+    /* Collapsed status dot: teal, tiny, whorl hidden until expanded —
+       solid on purpose, so no glass border/blur here */
     .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock):not(.gallery-dock) .sitewide-orb-core {
         width: 12px;
         height: 12px;
         box-shadow: 0 0 6px var(--zp-status-teal);
         background: var(--zp-status-teal);
+        border: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     }
     .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock):not(.gallery-dock) .sitewide-orb-core .zp-orb-glyph {
         display: none;
@@ -152,7 +170,9 @@
     .zephyy-orb-sitewide-wrapper.expanded .sitewide-orb-core {
         width: 34px;
         height: 34px;
-        box-shadow: 0 0 15px var(--zp-embed-glow);
+        box-shadow: 0 0 15px var(--zp-embed-glow),
+            inset 0 1px 6px oklch(100% 0 0 / 0.45),
+            inset 0 -4px 10px oklch(30% 0.2 300 / 0.45);
         animation: orb-flare 0.9s ease-out both;
     }
 

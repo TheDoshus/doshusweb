@@ -456,13 +456,18 @@
     .modal-frame-wrap {
       min-height: 0;
       background: #020617;
+      overflow: hidden;
     }
 
+    /* Preview at 80% zoom by default — more of the theme page in frame.
+       Oversize + scale down so the scaled frame still fills the wrap. */
     .modal-frame-wrap iframe {
-      width: 100%;
-      height: 100%;
+      width: 125%;
+      height: 125%;
       border: 0;
       background: #020617;
+      transform: scale(0.8);
+      transform-origin: 0 0;
     }
 
     #loading,
