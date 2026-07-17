@@ -132,6 +132,7 @@ function downloadAllArcs() {
 			tip.style.visibility = 'visible';
 			tip.style.position = 'fixed';
 			tip.style.bottom = 'auto';
+			tip.style.transition = 'none'; // else transform animates from the CSS fallback, sliding the tip sideways
 			tip.style.transform = 'none'; // Clear the CSS transform
 			// Above the orb, centered and clamped fully on-screen at real size
 			var tr = tip.getBoundingClientRect();
@@ -145,8 +146,10 @@ function downloadAllArcs() {
 			tip.style.opacity = '';
 			tip.style.visibility = '';
 			tip.style.position = '';
+			tip.style.bottom = '';
 			tip.style.top = '';
 			tip.style.left = '';
+			tip.style.transition = '';
 			tip.style.transform = '';
 		};
 		orb.addEventListener('mouseenter', place);

@@ -211,17 +211,15 @@
 }
 
 /* Printmon Refresh Styles */
-/* Orb-over-button dock, IN FLOW: a small column with the orb riding on top
-   (Doshus's call 2026-07-16 — under-button hid the tooltip in the strip).
-   The button's own tooltip may pop over the orb; that's accepted. In-flow
-   content can't overlap siblings or grow the strip's overflow-x scroller
-   a vertical scrollbar the way the earlier absolute placements did. */
+/* Orb-over-button dock (CDP-verified on the live page 2026-07-16): the dock
+   wraps the button in flow — so the button stays baseline-aligned with its
+   siblings — and the orb floats ABSOLUTELY above it. Absolute overflow above
+   a scroller is clipped, never scrolled (the buttons' own tooltips already
+   live in that padding zone); only below-the-row boxes grow a scrollbar,
+   which is why every under-button attempt failed. */
 .zephyy-orb-dock {
     position: relative;
-    display: inline-flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    gap: 4px;
+    display: inline-block;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock {
     position: relative;
@@ -234,13 +232,29 @@
     right: auto;
     transform: none;
 }
-/* Inside the dock column the orb centers under the button — no side nudge
-   (the margin-left is for the classics, where the orb sits beside a button) */
+/* Strip pages: orb centered above the button. Centering uses a margin, not
+   translateX — any transform here becomes the containing block for the
+   tip's position:fixed lift and rebreaks it. */
 .zephyy-orb-dock .zephyy-orb-sitewide-wrapper.printmon-dock {
-    margin-left: 0;
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    margin-left: -12px; /* half the 24px core */
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide {
     opacity: 1;
+}
+/* Hover growth moves to the core: the shared :hover scale on
+   .zephyy-orb-sitewide (the tip's parent) made it the tip's fixed-position
+   containing block — the "fixed" tip then rendered inside the strip
+   scroller: off-screen AND growing a phantom vertical scrollbar. */
+.zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:hover,
+.zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:focus-visible {
+    transform: none;
+}
+.zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:hover .sitewide-orb-core,
+.zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:focus-visible .sitewide-orb-core {
+    transform: scale(1.12);
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .sitewide-orb-core {
     width: 24px;
