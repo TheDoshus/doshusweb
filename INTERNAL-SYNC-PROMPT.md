@@ -3,10 +3,12 @@
 Copy everything below the line into Amazon Quick Suite with the internal Printmon files
 available. This batch REPLACES the 2026-07-15 orb entirely: the orb is rebuilt as the
 shared "sitewide" component doshus.net now uses (whorl avatar, darker palette), and it
-now sits UNDER the Doshus.NET button, in normal flow (the dock span is a small
-column: button on top, orb centered beneath — absolute placements either collided
-with tooltips, overlapped the button, or gave the strip a vertical scrollbar). The
-tooltip drops below the strip via position:fixed.
+now sits ABOVE the Doshus.NET button, in normal flow (the dock span is a small
+reversed column: orb on top, button beneath — absolute placements either collided
+with tooltips, overlapped the button, or gave the strip a vertical scrollbar; the
+under-button spot hid the tooltip inside the strip). The tooltip pops up above the
+strip via position:fixed; the CSS hover fallback is mouse-only so touch devices
+can't re-trigger the clipped absolute version.
 
 ---
 
@@ -36,12 +38,13 @@ file (as CRLF):
 ```css
 /* ── Zephyy orb (shared-component port, 2026-07-16) ─────────────────
    Same orb doshus.net uses sitewide: whorl avatar core + quip tooltip.
-   Sits centered under the Doshus.NET button, in normal flow; the tooltip
-   drops below the strip (the buttons' own tooltips pop upward). */
+   Sits centered ABOVE the Doshus.NET button, in normal flow (reversed
+   column); the tooltip pops up above the strip. The button's own tooltip
+   may overlap the orb on hover — accepted. */
 .zephyy-orb-dock {
     position: relative;
     display: inline-flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: center;
     gap: 4px;
 }
@@ -104,7 +107,7 @@ file (as CRLF):
     opacity: 0;
     visibility: hidden;
     position: absolute;
-    top: calc(100% + 8px);
+    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
@@ -117,11 +120,20 @@ file (as CRLF):
     pointer-events: none;
     z-index: 1001;
 }
-.zephyy-orb-sitewide:hover .sitewide-orb-preview,
 .zephyy-orb-sitewide:focus-visible .sitewide-orb-preview {
     display: block;
     opacity: 1;
     visibility: visible;
+}
+/* Mouse-only: on touch, sticky :hover would re-show this absolute
+   (strip-clipped) fallback after the JS reset — touch devices get the
+   tip solely via the JS fixed lift in swap-img.js. */
+@media (hover: hover) {
+    .zephyy-orb-sitewide:hover .sitewide-orb-preview {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
 }
 @media (prefers-reduced-motion: reduce) {
     .whorl-outer, .whorl-mid, .whorl-inner, .whorl-center { animation: none; }
@@ -188,20 +200,25 @@ anything else already in the file.
 	// clips the tip, so lift it out with position:fixed while shown.
 	var orb = tip.closest('.zephyy-orb-sitewide-wrapper');
 	if (orb && orb.closest('.zephyy-orb-dock')) {
+		var touchTimer;
 		var place = function() {
 			var r = orb.getBoundingClientRect();
 			tip.style.display = 'block';
+			tip.style.opacity = '1';
+			tip.style.visibility = 'visible';
 			tip.style.position = 'fixed';
 			tip.style.bottom = 'auto';
-			tip.style.top = (r.bottom + 8) + 'px';
 			tip.style.transform = 'none';
-			var w = tip.getBoundingClientRect().width;
-			var left = r.left + r.width / 2 - w / 2;
-			left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+			var tr = tip.getBoundingClientRect();
+			tip.style.top = Math.max(8, r.top - tr.height - 8) + 'px';
+			var left = r.left + r.width / 2 - tr.width / 2;
+			left = Math.max(8, Math.min(left, window.innerWidth - tr.width - 8));
 			tip.style.left = left + 'px';
 		};
 		var reset = function() {
 			tip.style.display = '';
+			tip.style.opacity = '';
+			tip.style.visibility = '';
 			tip.style.position = '';
 			tip.style.top = '';
 			tip.style.left = '';
@@ -209,7 +226,16 @@ anything else already in the file.
 		};
 		orb.addEventListener('mouseenter', place);
 		orb.addEventListener('focus', place);
-		orb.addEventListener('touchstart', place, { passive: true });
+		orb.addEventListener('touchstart', function() {
+			clearTimeout(touchTimer);
+			place();
+		}, { passive: true });
+		var touchEnd = function() {
+			clearTimeout(touchTimer);
+			touchTimer = setTimeout(reset, 1600);
+		};
+		orb.addEventListener('touchend', touchEnd, { passive: true });
+		orb.addEventListener('touchcancel', touchEnd, { passive: true });
 		orb.addEventListener('mouseleave', reset);
 		orb.addEventListener('blur', reset);
 	}
@@ -239,13 +265,15 @@ No dropdown, link, or layout changes on printmon pages this batch beyond the orb
 not touch anything outside Tasks 1–3.
 
 ## Verify before finishing
-1. Open a TheDoshus page → scroll the strip right → orb sits centered UNDER
+1. Open a TheDoshus page → scroll the strip right → orb sits centered ABOVE
    Doshus.NET with a slowly spinning white whorl inside a purple core; the strip is
-   slightly taller but has NO vertical scrollbar.
-2. Hover (or tap-and-hold on touch) the orb → core glows brighter purple; "Zephyy:"
-   tooltip appears BELOW the strip on ONE line, fully readable and never clipped,
-   one of 19 rotating quips per page load.
-3. Hover the Doshus.NET button itself → only ITS tooltip shows (orb no longer overlaps
-   it); neighboring tooltips clear the orb.
+   slightly taller but has NO vertical scrollbar (including after tapping the orb
+   on a touch device).
+2. Hover (or tap on touch) the orb → core glows brighter purple; "Zephyy:" tooltip
+   pops up ABOVE the strip on ONE line, fully readable and never clipped, one of
+   19 rotating quips per page load; on touch it clears itself ~1.6s after the
+   finger lifts.
+3. Hover the Doshus.NET button itself → its tooltip may overlap the orb — that's
+   accepted; neighboring buttons' tooltips are unaffected.
 4. Click the orb → external theme gallery opens.
 5. Browser console: no new errors on any edited page.

@@ -121,23 +121,29 @@ function downloadAllArcs() {
 	// clips the tip, so lift it out with position:fixed while shown.
 	var orb = tip.closest('.zephyy-orb-sitewide-wrapper');
 	if (orb && orb.closest('.zephyy-orb-dock')) {
+		var touchTimer;
 		var place = function() {
 			var r = orb.getBoundingClientRect();
 			// Show + fix BEFORE measuring: the tip is display-gated in CSS and
-			// a hidden box measures 0 wide.
+			// a hidden box measures 0 wide. Opacity/visibility are set here too —
+			// the CSS hover fallback is mouse-only now, so touch relies on this.
 			tip.style.display = 'block';
+			tip.style.opacity = '1';
+			tip.style.visibility = 'visible';
 			tip.style.position = 'fixed';
 			tip.style.bottom = 'auto';
-			tip.style.top = (r.bottom + 8) + 'px';
 			tip.style.transform = 'none'; // Clear the CSS transform
-			// Center on the orb, clamped fully on-screen at its real width
-			var w = tip.getBoundingClientRect().width;
-			var left = r.left + r.width / 2 - w / 2;
-			left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+			// Above the orb, centered and clamped fully on-screen at real size
+			var tr = tip.getBoundingClientRect();
+			tip.style.top = Math.max(8, r.top - tr.height - 8) + 'px';
+			var left = r.left + r.width / 2 - tr.width / 2;
+			left = Math.max(8, Math.min(left, window.innerWidth - tr.width - 8));
 			tip.style.left = left + 'px';
 		};
 		var reset = function() {
 			tip.style.display = '';
+			tip.style.opacity = '';
+			tip.style.visibility = '';
 			tip.style.position = '';
 			tip.style.top = '';
 			tip.style.left = '';
@@ -145,10 +151,19 @@ function downloadAllArcs() {
 		};
 		orb.addEventListener('mouseenter', place);
 		orb.addEventListener('focus', place);
-		// Touch: mouseenter is unreliable across mobile browsers — the sticky
-		// :hover can show the tip without the lift ever running, leaving it
-		// clipped inside the strip scroller (2026-07-16 screenshot).
-		orb.addEventListener('touchstart', place, { passive: true });
+		// Touch: mouseenter/mouseleave are unreliable on mobile, so show on
+		// touchstart and clear on a short timer after the finger lifts
+		// (a tap navigates to the gallery anyway; this covers scroll-touches).
+		orb.addEventListener('touchstart', function() {
+			clearTimeout(touchTimer);
+			place();
+		}, { passive: true });
+		var touchEnd = function() {
+			clearTimeout(touchTimer);
+			touchTimer = setTimeout(reset, 1600);
+		};
+		orb.addEventListener('touchend', touchEnd, { passive: true });
+		orb.addEventListener('touchcancel', touchEnd, { passive: true });
 		orb.addEventListener('mouseleave', reset);
 		orb.addEventListener('blur', reset);
 	}
