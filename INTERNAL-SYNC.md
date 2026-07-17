@@ -27,12 +27,13 @@ PrintmonGenerator.js prompt-cleanup regex keeps `skin` as a stopword (users stil
 
 | Date | Change | Files touched (external) | Notes for internal edit |
 |---|---|---|---|
-| 2026-07-17 | **Swap dropdown now matches the theme too**: accent-tinted glass panel, pastel links from the glow companion, themed border/glow/scrollbar, slide-down overshoot animation (replaces flat gray + green links + fadeIn); `--_swap` moved from `.dropbtn2` up to `.dropdown2` so the menu inherits it | `css/swapbtn.css` only (button+dropdown section) | **INTERNAL-SYNC-PROMPT.md rewritten 2026-07-17 (batch 2)** — single replace of the pre-orb section, payload verbatim. Use as-is in Quick Suite |
+| 2026-07-17 | **Glassy orb core**: Zephyy's orb is now translucent glass (see-through gradient + sheen + backdrop blur + inset shadows) instead of the solid purple ball; hover glow keeps the insets. Gallery iframe 80% zoom is external-only (gallery never mirrors) | `css/zephyy-orb-embed.css` (core + hover + mobile-dot/expanded blocks) → internal equivalent lives in swapbtn.css orb section | **INTERNAL-SYNC-PROMPT.md rewritten 2026-07-17 (batch 3)** — two block replacements in swapbtn.css. Use as-is in Quick Suite |
 
 ## Synced history
 
 | Date | Change | Files touched (external) | Notes | Synced |
 |---|---|---|---|---|
+| 2026-07-17 | Swap dropdown matches the theme: accent-tinted glass panel, pastel links, themed border/glow/scrollbar, slide-down overshoot animation; `--_swap` moved up to `.dropdown2` | `css/swapbtn.css` | synced via Quick Suite prompt (batch 2) | 2026-07-17 |
 | 2026-07-17 | Swap Themes button matches each theme page: swapbtn.css routes through `--swap-accent`/`--swap-glow`/`--swap-ink` (gold fallback; generated pages via `--pm-hue1`); accent blocks prepended to all 31 theme css files | `css/swapbtn.css`, 14 `css/older/*.css`, 17 `css/newer/2*.css` | synced via Quick Suite prompt (batch 1) | 2026-07-17 |
 | 2026-07-17 | 5 feedback quips appended to the orb tooltip pool (24 total): theme feedback/requests + tampermonkey script ideas | `js/swap-img.js` | Doshus pasted the quips internally same day | 2026-07-17 |
 | 2026-07-17 | skin→theme wording sweep external-side (awareness only — internal already renamed) | 31 pages, `template.html`, `js/swap-img.js`, `gallery.html`, `js/PrintmonGallery.js` | no sync needed | n/a |
