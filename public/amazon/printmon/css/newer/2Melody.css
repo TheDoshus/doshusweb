@@ -1,3 +1,9 @@
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(66.2% 0.273 336.0);
+    --swap-glow: oklch(82.2% 0.166 329.1);
+}
+
 .printbox {
     background-color: #60004f80;
     border: 5px double #FFA1F0B2;

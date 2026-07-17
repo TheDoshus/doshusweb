@@ -1,3 +1,9 @@
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(46.7% 0.091 232.0);
+    --swap-glow: oklch(60.2% 0.179 24.3);
+}
+
 body {
 	color: #000000;
 	font-family: "Amazon Ember", "Arial", sans-serif;

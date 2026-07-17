@@ -1,20 +1,10 @@
-# Quick Suite Prompt — Sync internal Printmon mirror with doshus.net (2026-07-16 batch)
-
-> **✅ APPLIED internally 2026-07-17** (Quick Suite run + Doshus's manual pass). Kept as the
-> template for the next batch. ⚠ Wording: both sides now use **theme/themes** (internal
-> ctrl+H'd post-sync, external swept to match same day) — the frozen payloads below predate
-> that and still say "skin" in 3 quips + the tooltip default, so do NOT re-run them as-is;
-> next batch's payloads use "theme" wording. See INTERNAL-SYNC.md § Wording rule.
+# Quick Suite Prompt — Sync internal Printmon mirror with doshus.net (2026-07-17 batch: theme-matched Swap button)
 
 Copy everything below the line into Amazon Quick Suite with the internal Printmon files
-available. This batch REPLACES the 2026-07-15 orb entirely: the orb is rebuilt as the
-shared "sitewide" component doshus.net now uses (whorl avatar, darker palette), and it
-now floats ABOVE the Doshus.NET button (the dock span wraps the button in flow so
-the button stays aligned with its siblings; the orb is absolutely positioned above
-it — absolute overflow ABOVE a scroller is clipped, never scrolled, so no vertical
-scrollbar; below-the-row placements are what grew one). The tooltip pops up above
-the strip via position:fixed; the CSS hover fallback is mouse-only so touch devices
-can't re-trigger the clipped absolute version.
+available. This batch makes the **Swap Themes button match each theme page**: swapbtn.css
+now routes the button's colors through `--swap-accent` / `--swap-glow` / `--swap-ink`
+custom properties (fallback = the classic gold), and every theme css file declares its
+own accent block at the top. Colors are `oklch()` — all modern browsers support it.
 
 ---
 
@@ -27,266 +17,332 @@ are canonical for links. Apply each task **surgically**.
 1. **Preserve CRLF line endings**; never reformat, re-indent, or rewrap untouched lines.
 2. **Never rewrite internal link forms** (`/view/aaustinp@/...`, `/view/swlls@/...`,
    `localhost:5965`, `axzile.corp`, `drive.corp`) and never add a `<base>` tag.
-3. **Never remove internal-only content** (e.g. a dropdown entry the external site lacks,
-   like Eraserhead/Aizawa — internal can be ahead of external).
+3. **Never remove internal-only content** (dropdown entries the external site lacks, etc.).
 4. If a task's target text is missing on a page (already applied / never had it), skip
    that page and note it. Do not improvise.
-5. Internal css/js references stay **bare** (no `?v=` cache-busters) — external dropped them too (2026-07-16), so both sides are bare now.
+5. User-facing wording is **theme/themes**, never skin/skins (both sides renamed 2026-07-17).
 
-## Task 1 — swapbtn.css: replace the old orb styles with the new component
-In the internal `css/swapbtn.css`: delete the ENTIRE old Zephyy orb section from the
-`/* ── Zephyy gallery orb ──` comment down through the last orb-related
-reduced-motion block (everything the 2026-07-15 sync appended — `.zephyy-orb`,
-`.zephyy-orb-tip`, `.zephyy-orb-dock`, their keyframes and media queries). Leave the
-dropdown styles above it untouched. Then append this whole payload to the end of the
-file (as CRLF):
+## Task 1 — swapbtn.css: replace the button rules with the theme-routed version
+In the internal `css/swapbtn.css`, replace the ENTIRE `.dropbtn2 { ... }` block and the
+`.dropbtn2:hover { ... }` block (currently hardcoded gold `#c4ab49f2` / purple hover)
+with this payload (as CRLF). Leave `.dropdown2`, `.dropdown2-content`, and everything
+else in the file untouched:
 
 ```css
-/* ── Zephyy orb (shared-component port, 2026-07-16) ─────────────────
-   Same orb doshus.net uses sitewide: whorl avatar core + quip tooltip.
-   The dock wraps the button in flow (button stays aligned with its
-   siblings); the orb floats absolutely above it — absolute overflow ABOVE
-   a scroller is clipped, never scrolled, so no vertical scrollbar. The
-   button's own tooltip may overlap the orb on hover — accepted. Centering
-   uses a margin, not translateX: a transform on the wrapper would become
-   the containing block for the tip's position:fixed lift and break it. */
-.zephyy-orb-dock {
-    position: relative;
-    display: inline-block;
-}
-.zephyy-orb-sitewide-wrapper.printmon-dock {
-    position: absolute;
-    bottom: calc(100% + 2px);
-    left: 50%;
-    margin-left: -12px; /* half the 24px core */
-    display: inline-flex;
-}
-.zephyy-orb-sitewide {
-    position: relative;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    opacity: 1;
-}
-.sitewide-orb-core {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, oklch(58% 0.12 300), oklch(38% 0.17 300) 70%);
-    box-shadow: 0 0 8px oklch(38% 0.17 300 / 0.35);
-    transition: box-shadow 0.3s ease;
-    position: relative;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.zephyy-orb-sitewide:hover .sitewide-orb-core,
-.zephyy-orb-sitewide:focus-visible .sitewide-orb-core {
-    box-shadow: 0 0 15px oklch(52% 0.21 302), 0 0 30px oklch(38% 0.20 304 / 0.4);
-}
-.sitewide-orb-core .zp-orb-glyph {
-    display: block;
-    width: 82%;
-    height: 82%;
-    pointer-events: none;
-}
-.sitewide-orb-core .zp-orb-glyph svg { width: 100%; height: 100%; display: block; }
-.whorl-outer, .whorl-mid, .whorl-inner { transform-origin: 32px 32px; }
-.whorl-outer { animation: whorlSpin 16s linear infinite; }
-.whorl-mid   { animation: whorlSpin 11s linear infinite; }
-.whorl-inner { animation: whorlSpin 7s linear infinite; }
-.whorl-center { animation: whorlPulse 2.5s ease-in-out infinite; }
-@keyframes whorlSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes whorlPulse {
-    0%, 100% { opacity: 0.5; transform: scale(0.85); }
-    50%      { opacity: 1;   transform: scale(1.15); }
-}
-.sitewide-orb-preview {
-    background: oklch(38% 0.17 300);
-    color: oklch(95% 0.02 300);
-    padding: 6px 12px;
-    border-radius: 12px;
+.dropbtn2 {
+    /* Theme-routed accent: handcrafted pages set --swap-accent in their
+       theme css (loaded after this file); generated pages already expose
+       --pm-hue1 via the token contract; fallback = the classic gold.
+       Alpha is applied here so the per-page vars stay plain colors. */
+    --_swap: var(--swap-accent, var(--pm-hue1, oklch(74.4% 0.121 95.0)));
+    background-color: color-mix(in oklab, var(--_swap) 92%, transparent);
+    color: var(--swap-ink, oklch(100% 0 0));
+    padding: 5px 10px;
     font-size: 12px;
-    font-family: "Amazon Ember", sans-serif;
-    font-weight: 600;
-    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3);
-    border: 1px solid oklch(52% 0.21 302 / 0.4);
-    display: none;
-    opacity: 0;
-    visibility: hidden;
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    width: max-content;
-    max-width: calc(100vw - 16px);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-    line-height: 1.35;
-    pointer-events: none;
-    z-index: 1001;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 0 10px color-mix(in oklab, var(--swap-glow, var(--_swap)) 50%, transparent);
+    transition: all 0.3s ease;
 }
-.zephyy-orb-sitewide:focus-visible .sitewide-orb-preview {
-    display: block;
-    opacity: 1;
-    visibility: visible;
-}
-/* Mouse-only: on touch, sticky :hover would re-show this absolute
-   (strip-clipped) fallback after the JS reset — touch devices get the
-   tip solely via the JS fixed lift in swap-img.js. */
-@media (hover: hover) {
-    .zephyy-orb-sitewide:hover .sitewide-orb-preview {
-        display: block;
-        opacity: 1;
-        visibility: visible;
-    }
-}
-@media (prefers-reduced-motion: reduce) {
-    .whorl-outer, .whorl-mid, .whorl-inner, .whorl-center { animation: none; }
-    .zephyy-orb-sitewide-wrapper, .zephyy-orb-sitewide,
-    .sitewide-orb-core, .sitewide-orb-preview { transition: none; }
+
+.dropbtn2:hover {
+    background-color: color-mix(in oklab, var(--_swap) 74%, oklch(98% 0.01 95));
+    transform: scale(1.05);
 }
 ```
 
-## Task 2 — swap-img.js: replace the orb block with the new one
-In the internal `js/swap-img.js`: replace the entire `ZEPHYY GALLERY ORB` IIFE (from its
-comment to its closing `})();`) with the payload below. Do not touch `toggleDropdown` or
-anything else already in the file.
+(`--pm-hue1` only exists on external generated pages — harmless internally.)
 
-```js
-// ZEPHYY GALLERY ORB — rotate the tooltip quip each page load
-(function() {
-	var tip = document.querySelector('.zephyy-orb-tip');
-	if (!tip) return;
-	var quips = [
-		'skins I cooked up — come see ✨',
-		'psst… the theme vault is this way 🌌',
-		'fresh palette drops in the gallery',
-		'your coworkers keep requesting skins. peek the results',
-		'tap the orb. cosmic printmons await',
-		'I recolor this whole page on request, you know',
-		'need a new vibe for the barcode chaos?',
-		'my gallery is stocked and ready to go',
-		'feeling this base? there\'s plenty more',
-		'want to see what else I can generate?',
-		'grab a new skin. on the house 😉',
-		'ruminating on new color schemes… wanna see? 🤔',
-		'*reefing through the theme vault* oh hey, didn\'t see you there',
-		'this page? yeah I painted it. more where that came from',
-		'psst. the gallery misses you',
-		'legally obligated to mention I make themes now',
-		'you scan barcodes, I scan color wheels. we are not the same 💅',
-		'caught you looking 👀 the gallery\'s one tap away',
-		'plotting my next theme drop as we speak'
-	];
-	tip.textContent = "Zephyy: " + quips[Math.floor(Math.random() * quips.length)];
+## Task 2 — theme css files: prepend each file's accent block
+Prepend the matching block below to the **very top** of each internal theme css file
+(before any existing content, then a blank line). If an internal theme css has a
+different filename, match by theme. If a file already contains `--swap-accent`, skip it.
 
-	// Whorl avatar — same glyph her chat orb wears on doshus.net (the chat
-	// stack isn't loaded on printmon, so the SVG is inlined here).
-	var core = document.querySelector('.zephyy-orb-dock .sitewide-orb-core');
-	if (core && !core.querySelector('.zp-orb-glyph')) {
-		var glyph = document.createElement('span');
-		glyph.className = 'zp-orb-glyph';
-		glyph.innerHTML =
-			'<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-			'<defs><linearGradient id="pmOrbGrad" x1="0" y1="0" x2="1" y2="1">' +
-			'<stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>' +
-			'<stop offset="50%" stop-color="#d8f0ff" stop-opacity="0.9"/>' +
-			'<stop offset="100%" stop-color="#ffffff" stop-opacity="0.75"/>' +
-			'</linearGradient></defs>' +
-			'<circle cx="32" cy="32" r="29" stroke="#ffffff" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>' +
-			'<g class="whorl-outer"><path d="M 32 9 A 23 23 0 1 1 12 44" stroke="url(#pmOrbGrad)" stroke-width="3.2" stroke-linecap="round" opacity="0.85"/><circle cx="32" cy="9" r="2.0" fill="#ffffff" opacity="0.9"/></g>' +
-			'<g class="whorl-mid"><path d="M 45 40 A 15 15 0 1 1 32 17" stroke="url(#pmOrbGrad)" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/><circle cx="45" cy="40" r="1.8" fill="#ffffff" opacity="0.95"/></g>' +
-			'<g class="whorl-inner"><path d="M 25 36 A 8 8 0 1 1 39 36" stroke="url(#pmOrbGrad)" stroke-width="3.8" stroke-linecap="round" opacity="0.98"/><circle cx="25" cy="36" r="1.6" fill="#ffffff" opacity="0.98"/></g>' +
-			'<circle cx="32" cy="32" r="3.6" fill="#ffffff" class="whorl-center"/></svg>';
-		core.appendChild(glyph);
-	}
-
-	// Docked orb (inside the horizontal scroll strip): the strip's scroller
-	// clips the tip, so lift it out with position:fixed while shown.
-	var orb = tip.closest('.zephyy-orb-sitewide-wrapper');
-	if (orb && orb.closest('.zephyy-orb-dock')) {
-		var touchTimer;
-		var place = function() {
-			var r = orb.getBoundingClientRect();
-			tip.style.display = 'block';
-			tip.style.opacity = '1';
-			tip.style.visibility = 'visible';
-			tip.style.position = 'fixed';
-			tip.style.bottom = 'auto';
-			tip.style.transition = 'none';
-			tip.style.transform = 'none';
-			var tr = tip.getBoundingClientRect();
-			tip.style.top = Math.max(8, r.top - tr.height - 8) + 'px';
-			var left = r.left + r.width / 2 - tr.width / 2;
-			left = Math.max(8, Math.min(left, window.innerWidth - tr.width - 8));
-			tip.style.left = left + 'px';
-		};
-		var reset = function() {
-			tip.style.display = '';
-			tip.style.opacity = '';
-			tip.style.visibility = '';
-			tip.style.position = '';
-			tip.style.bottom = '';
-			tip.style.top = '';
-			tip.style.left = '';
-			tip.style.transition = '';
-			tip.style.transform = '';
-		};
-		orb.addEventListener('mouseenter', place);
-		orb.addEventListener('focus', place);
-		orb.addEventListener('touchstart', function() {
-			clearTimeout(touchTimer);
-			place();
-		}, { passive: true });
-		var touchEnd = function() {
-			clearTimeout(touchTimer);
-			touchTimer = setTimeout(reset, 1600);
-		};
-		orb.addEventListener('touchend', touchEnd, { passive: true });
-		orb.addEventListener('touchcancel', touchEnd, { passive: true });
-		orb.addEventListener('mouseleave', reset);
-		orb.addEventListener('blur', reset);
-	}
-})();
+**`css/older/2024.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(56.1% 0.145 302.6);
+    --swap-glow: oklch(74.2% 0.172 359.9);
+}
 ```
 
-## Task 3 — strip pages: replace the old dock markup with the new component
-On **every page whose scroll strip has the Doshus.NET button** (the TheDoshusPrintmon2*
-family): find the 2026-07-15 dock span
-(`<span class="zephyy-orb-dock">…<a class="zephyy-orb" …>…</a></span>`) and replace the
-old `<a class="zephyy-orb" …>…</a>` anchor inside it with:
-
-```html
-<a class="zephyy-orb-sitewide-wrapper printmon-dock" href="https://doshus.net/amazon/printmon/gallery.html" aria-label="Zephyy's Theme Gallery"><div class="zephyy-orb-sitewide"><div class="sitewide-orb-core"></div><div class="sitewide-orb-preview zephyy-orb-tip" role="tooltip">skins I cooked up — come see ✨</div></div></a>
+**`css/older/Bitcoin.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(85.5% 0.156 93.2);
+    --swap-ink: oklch(25% 0 0);
+}
 ```
 
-⚠ Keep each page's existing Doshus.NET button attributes exactly as found — only the
-orb anchor inside the dock span changes. The orb href stays the **absolute external
-gallery URL**.
+**`css/older/Christmas.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(46.7% 0.091 232.0);
+    --swap-glow: oklch(60.2% 0.179 24.3);
+}
+```
 
-Classic pages (Printmon2Doshus*): same as 07-15 — **skip them** for the orb (external
-classics carry it beside Swap Themes, but the internal decision was to leave classics
-orb-free; unchanged this batch).
+**`css/older/Christmas2.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(58.5% 0.181 259.4);
+    --swap-glow: oklch(81.0% 0.213 149.3);
+}
+```
 
-## Task 4 — nothing else changed
-No dropdown, link, or layout changes on printmon pages this batch beyond the orb. Do
-not touch anything outside Tasks 1–3.
+**`css/older/Easter.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(55.0% 0.211 346.5);
+}
+```
+
+**`css/older/GTA6.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(56.1% 0.145 302.6);
+    --swap-glow: oklch(74.2% 0.172 359.9);
+}
+```
+
+**`css/older/Halloween.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(72.7% 0.152 74.3);
+    --swap-glow: oklch(44.3% 0.195 314.6);
+}
+```
+
+**`css/older/HarryPotter.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(74.6% 0.143 87.5);
+}
+```
+
+**`css/older/HelloKitty.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(65.2% 0.265 357.0);
+    --swap-glow: oklch(100.0% 0.000 89.9);
+}
+```
+
+**`css/older/Kuromi.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(50.6% 0.129 332.1);
+    --swap-glow: oklch(73.1% 0.210 345.7);
+}
+```
+
+**`css/older/OG.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(62.8% 0.258 29.2);
+    --swap-glow: oklch(30.1% 0.032 254.3);
+}
+```
+
+**`css/older/Summer.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(70.1% 0.231 141.5);
+    --swap-glow: oklch(46.1% 0.131 259.0);
+}
+```
+
+**`css/older/Thanksgiving.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(53.5% 0.160 145.8);
+    --swap-glow: oklch(38.7% 0.087 41.3);
+}
+```
+
+**`css/older/Thanksgiving2.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(75.1% 0.179 58.3);
+    --swap-glow: oklch(45.9% 0.183 15.4);
+}
+```
+
+**`css/newer/2AD.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(46.3% 0.137 140.1);
+    --swap-glow: oklch(88.4% 0.124 84.4);
+}
+```
+
+**`css/newer/2Aizawa.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(30.1% 0.000 89.9);
+    --swap-glow: oklch(83.0% 0.145 94.1);
+}
+```
+
+**`css/newer/2Butterfly.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(90.6% 0.032 314.7);
+    --swap-glow: oklch(45.1% 0.161 320.4);
+    --swap-ink: oklch(25% 0 0);
+}
+```
+
+**`css/newer/2DemonSlayer.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(59.2% 0.243 29.2);
+}
+```
+
+**`css/newer/2Forest.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(57.7% 0.188 143.1);
+    --swap-glow: oklch(83.8% 0.179 111.8);
+}
+```
+
+**`css/newer/2GTA.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(54.5% 0.226 315.1);
+    --swap-glow: oklch(71.2% 0.110 190.4);
+}
+```
+
+**`css/newer/2Glass.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(100% 0 0 / 0.3);
+    --swap-glow: oklch(100.0% 0.000 89.9);
+}
+```
+
+**`css/newer/2HMC.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(59.3% 0.031 248.3);
+    --swap-glow: oklch(81.5% 0.082 225.8);
+}
+```
+
+**`css/newer/2Hallo.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(47.9% 0.197 29.2);
+    --swap-glow: oklch(73.3% 0.181 50.3);
+}
+```
+
+**`css/newer/2Kuromi.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(50.6% 0.129 332.1);
+    --swap-glow: oklch(73.1% 0.210 345.7);
+}
+```
+
+**`css/newer/2Melody.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(66.2% 0.273 336.0);
+    --swap-glow: oklch(82.2% 0.166 329.1);
+}
+```
+
+**`css/newer/2OP.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(64.6% 0.194 41.1);
+    --swap-glow: oklch(62.3% 0.188 259.8);
+}
+```
+
+**`css/newer/2Solo.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(54.1% 0.247 293.0);
+}
+```
+
+**`css/newer/2Spongebob.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(90.3% 0.187 98.7);
+    --swap-glow: oklch(48.4% 0.189 263.6);
+    --swap-ink: oklch(25% 0 0);
+}
+```
+
+**`css/newer/2Strawberry.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(61.2% 0.200 15.7);
+    --swap-glow: oklch(86.3% 0.090 154.9);
+}
+```
+
+**`css/newer/2Toki.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(41.1% 0.063 138.5);
+    --swap-glow: oklch(88.4% 0.184 136.6);
+}
+```
+
+**`css/newer/2Witch.css`**
+```css
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(30.1% 0.121 325.3);
+    --swap-glow: oklch(65.8% 0.088 120.5);
+}
+```
+## Task 3 — nothing else changed
+No markup, layout, or link changes this batch. Do not touch anything outside Tasks 1–2.
 
 ## Verify before finishing
-1. Open a TheDoshus page → scroll the strip right → orb floats centered ABOVE
-   Doshus.NET with a slowly spinning white whorl inside a purple core; the
-   Doshus.NET button lines up EXACTLY with its neighbor buttons (same top edge);
-   NO vertical scrollbar, including while hovering the orb or after tapping it
-   on a touch device.
-2. Hover (or tap on touch) the orb → core glows brighter purple; "Zephyy:" tooltip
-   pops up ABOVE the strip on ONE line, fully readable and never clipped, one of
-   19 rotating quips per page load; on touch it clears itself ~1.6s after the
-   finger lifts.
-3. Hover the Doshus.NET button itself → its tooltip may overlap the orb — that's
-   accepted; neighboring buttons' tooltips are unaffected.
-4. Click the orb → external theme gallery opens.
-5. Browser console: no new errors on any edited page.
+1. Open several theme pages → the Swap Themes button now wears that page's accent color
+   (e.g. Melody = hot pink, Spongebob = yellow with dark text, Kuromi = plum) instead of
+   the old gold-on-everything.
+2. Hover the button → it brightens toward white and scales slightly (no more purple jump).
+3. Pages whose css was skipped still show the classic gold button (the fallback).
+4. Browser console: no CSS errors on any edited page.

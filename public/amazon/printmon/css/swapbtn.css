@@ -5,20 +5,25 @@
 }
 
 .dropbtn2 {
-    background-color: #c4ab49f2;
-    color: #FFFFFF;
+    /* Theme-routed accent: handcrafted pages set --swap-accent in their
+       theme css (loaded after this file); generated pages already expose
+       --pm-hue1 via the token contract; fallback = the classic gold.
+       Alpha is applied here so the per-page vars stay plain colors. */
+    --_swap: var(--swap-accent, var(--pm-hue1, oklch(74.4% 0.121 95.0)));
+    background-color: color-mix(in oklab, var(--_swap) 92%, transparent);
+    color: var(--swap-ink, oklch(100% 0 0));
     padding: 5px 10px;
     font-size: 12px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
-    box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    box-shadow: 0 0 10px color-mix(in oklab, var(--swap-glow, var(--_swap)) 50%, transparent);
     transition: all 0.3s ease;
 }
 
 .dropbtn2:hover {
-    background-color: #a912fdcf;
+    background-color: color-mix(in oklab, var(--_swap) 74%, oklch(98% 0.01 95));
     transform: scale(1.05);
 }
 

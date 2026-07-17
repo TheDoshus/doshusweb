@@ -1,3 +1,10 @@
+/* Swap Themes button — page accent (consumed by css/swapbtn.css) */
+:root {
+    --swap-accent: oklch(90.6% 0.032 314.7);
+    --swap-glow: oklch(45.1% 0.161 320.4);
+    --swap-ink: oklch(25% 0 0);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    🦋 PURPLE BUTTERFLY THEME — "Spread your wings"
    ═══════════════════════════════════════════════════════════════════════
