@@ -116,24 +116,24 @@
     }
 
     /* Collapsed status dot: teal, tiny, whorl hidden until expanded */
-    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock) .sitewide-orb-core {
+    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock):not(.gallery-dock) .sitewide-orb-core {
         width: 12px;
         height: 12px;
         box-shadow: 0 0 6px var(--zp-status-teal);
         background: var(--zp-status-teal);
     }
-    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock) .sitewide-orb-core .zp-orb-glyph {
+    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock):not(.gallery-dock) .sitewide-orb-core .zp-orb-glyph {
         display: none;
     }
 
-    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock) .sitewide-orb-ping {
+    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock):not(.gallery-dock) .sitewide-orb-ping {
         display: block;
         animation: orb-ping 4s infinite cubic-bezier(0.1, 0.8, 0.3, 1);
     }
 
     /* Collapsed dot drifts up into the starfield when scroll-hidden,
        instead of the bottom-orb's downward tuck */
-    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock).orb-hidden {
+    .zephyy-orb-sitewide-wrapper:not(.expanded):not(.printmon-dock):not(.gallery-dock).orb-hidden {
         transform: translate(14px, -42px) scale(0.4);
         opacity: 0;
     }
@@ -293,5 +293,38 @@
         display: block;
         opacity: 1;
         visibility: visible;
+    }
+}
+
+/* ── Gallery hero dock (gallery.html only): big in-flow orb beside the
+   headline that opens the chat panel. Static — none of the fixed/collapsed
+   orbit states apply — with the caption always visible as the invite. ── */
+.zephyy-orb-sitewide-wrapper.gallery-dock {
+    position: static;
+    align-self: center;
+    flex: 1 1 140px;
+    display: flex;
+    justify-content: center;
+    z-index: 1;
+}
+.zephyy-orb-sitewide-wrapper.gallery-dock .zephyy-orb-sitewide {
+    flex-direction: column;
+    gap: 0.7rem;
+    opacity: 1;
+}
+.zephyy-orb-sitewide-wrapper.gallery-dock .sitewide-orb-core {
+    width: 96px;
+    height: 96px;
+    box-shadow: 0 0 26px oklch(38% 0.17 300 / 0.55);
+}
+.zephyy-orb-sitewide-wrapper.gallery-dock .sitewide-orb-preview {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+}
+@media (max-width: 768px) {
+    .zephyy-orb-sitewide-wrapper.gallery-dock .sitewide-orb-core {
+        width: 72px;
+        height: 72px;
     }
 }

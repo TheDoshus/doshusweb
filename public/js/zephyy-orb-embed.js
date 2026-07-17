@@ -47,8 +47,10 @@
     }
 
     // Mobile tap-to-expand logic using capture phase to intercept zephyy-chat.js
+    // (gallery-dock is always full-size — its first tap should open the chat)
     wrapper.addEventListener('click', function(e) {
-        if (window.innerWidth <= 768 && !wrapper.classList.contains('expanded')) {
+        if (window.innerWidth <= 768 && !wrapper.classList.contains('expanded') &&
+            !wrapper.classList.contains('gallery-dock')) {
             e.preventDefault();
             e.stopPropagation();
             if (navigator.vibrate) { try { navigator.vibrate(8); } catch (err) {} }

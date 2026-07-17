@@ -25,6 +25,17 @@
       --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
     }
 
+    /* Tokens the Zephyy chat stack expects (shared.css isn't loaded here) */
+    :root {
+      --space-oled: 0% 0 0;
+      --brand-green: 69% 0.28 145;
+      --brand-purple: 55% 0.28 290;
+      --brand-gold: 82% 0.21 86;
+      --brand-teal: 78% 0.23 185;
+      --text-main: oklch(89% 0 0);
+      --text-muted: oklch(68% 0 0);
+    }
+
     * { box-sizing: border-box; }
 
     body {
@@ -512,14 +523,20 @@
       <div class="hero-top">
         <div class="hero-copy">
           <span class="hero-kicker">Printmon Theme Vault</span>
-          <h1>Your vibes. My themes. Our gallery.</h1>
+          <h1>Your vibes. Zephyy’s themes. Our gallery.</h1>
           <p>
             Every theme here started with a coworker tossing a vibe into my orb: I name it, tag it, tune the palette, pull the wallpapers, then beam it into the gallery.
             Your requests built this little constellation.
           </p>
           <p class="hero-note">
-            Want yours in the mix? Ask Zephyy on <a href="https://doshus.net/zephyy">her page</a> or pop the orb on any main page and toss her a vibe.
+            Want yours in the mix? Tap the orb and toss Zephyy a vibe — theme requests, feedback on a generation, even tampermonkey script ideas. She also hangs out on <a href="https://doshus.net/zephyy">her page</a>.
           </p>
+        </div>
+        <div class="zephyy-orb-sitewide-wrapper gallery-dock" id="sitewide-orb-wrapper">
+          <div class="zephyy-orb-sitewide" id="zp-orb-demo" tabindex="0" role="button" aria-label="Chat with Zephyy — request a theme or leave feedback">
+            <div class="sitewide-orb-core"><span class="sitewide-orb-ping"></span></div>
+            <div class="sitewide-orb-preview">toss me a vibe ⚡</div>
+          </div>
         </div>
         <div class="gallery-stats" id="themeStats">
           <div class="gallery-stat"><span class="stat-value">...</span><span class="stat-label">loading</span></div>
@@ -576,5 +593,59 @@
   </div>
 
   <script src="js/PrintmonGallery.js"></script>
+
+  <!-- zp-chat:start (orb wrapper lives up in the hero — gallery-dock) -->
+  <link rel="stylesheet" href="../../css/zephyy-chat.css">
+  <link rel="stylesheet" href="../../css/zephyy-orb-embed.css">
+
+  <!-- Zephyy Chat Backdrop -->
+  <div class="zp-chat-backdrop" id="zp-chat-backdrop"></div>
+
+  <!-- Zephyy Chat Panel -->
+  <div class="zp-chat-panel" id="zp-chat-panel">
+    <div class="zp-chat-header">
+      <span class="zp-chat-title">
+        <span class="zp-chat-icon-glyph">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="zp-chat-glyph-icon">
+            <defs>
+              <linearGradient id="chatGlyphGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
+                <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
+                <stop offset="100%" stop-color="oklch(var(--brand-green))" />
+              </linearGradient>
+            </defs>
+            <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.15)" stroke-width="0.6" fill="none"/>
+            <path d="M 32 9 A 23 23 0 1 1 12 44"
+              stroke="url(#chatGlyphGrad)" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+            <path d="M 45 40 A 15 15 0 1 1 32 17"
+              stroke="url(#chatGlyphGrad)" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+            <path d="M 25 36 A 8 8 0 1 1 39 36"
+              stroke="url(#chatGlyphGrad)" stroke-width="1.6" stroke-linecap="round" opacity="0.95"/>
+            <circle cx="32" cy="32" r="2.2" fill="oklch(var(--brand-teal))"/>
+          </svg>
+        </span>
+        <span class="zp-chat-name">Zephyy</span>
+        <span class="zp-model-badge" id="zp-model-badge" title="Current AI model">Checking...</span>
+      </span>
+      <button class="zp-chat-refresh" id="zp-chat-refresh" aria-label="Refresh chat">↻</button>
+      <button class="zp-chat-close" id="zp-chat-close" aria-label="Close chat">✕</button>
+    </div>
+    <div class="zp-chat-messages" id="zp-chat-messages">
+      <div class="zp-chat-msg zp-chat-msg-bot" id="zp-welcome-msg">
+        Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄
+      </div>
+    </div>
+    <div class="zp-chat-input-area">
+      <input type="text" id="zp-chat-input" placeholder="Type a message..." maxlength="2000">
+      <button class="zp-chat-send" id="zp-chat-send" aria-label="Send message">Send</button>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js" integrity="sha384-WCNi5HrUqYpPiERhOGB000a3XlerI8Hq52+uTGtzyl/ZFU/LmuVx+lqA1cYJnEkq" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js" integrity="sha384-hb6zQWOUCteeQSkZPIVwI6sr/1arrQrsb0xv1fevRvO58hDu2d617rC8afnX3jCv" crossorigin="anonymous"></script>
+  <script src="../../js/zephyy-realtime.js"></script>
+  <script src="../../js/zephyy-chat.js"></script>
+  <script src="../../js/zephyy-orb-embed.js"></script>
+  <!-- zp-chat:end -->
 </body>
 </html>
