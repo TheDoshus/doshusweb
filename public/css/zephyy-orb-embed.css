@@ -211,15 +211,15 @@
 }
 
 /* Printmon Refresh Styles */
-/* Under-the-button dock, IN FLOW: the dock is a small column (button on
-   top, orb centered beneath). Earlier absolute placements either overlapped
-   the button, double-fired its tooltip, or hung overflow below the row —
-   which makes the strip's overflow-x scroller grow a vertical scrollbar.
-   In-flow content can't do any of that; the strip just sits a bit taller. */
+/* Orb-over-button dock, IN FLOW: a small column with the orb riding on top
+   (Doshus's call 2026-07-16 — under-button hid the tooltip in the strip).
+   The button's own tooltip may pop over the orb; that's accepted. In-flow
+   content can't overlap siblings or grow the strip's overflow-x scroller
+   a vertical scrollbar the way the earlier absolute placements did. */
 .zephyy-orb-dock {
     position: relative;
     display: inline-flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: center;
     gap: 4px;
 }
@@ -247,13 +247,13 @@
     height: 24px;
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .sitewide-orb-preview {
-    /* display-gated: even an invisible absolute box below the row makes the
-       strip's overflow-x scroller grow a vertical scrollbar. On strip pages
-       swap-img.js lifts the tip to position:fixed on hover (fixed boxes never
-       create scroll overflow); classics show it absolutely, un-clipped. */
+    /* display-gated: even an invisible absolute box makes the strip's
+       overflow-x scroller misbehave. On strip pages swap-img.js lifts the
+       tip to position:fixed (fixed boxes never create scroll overflow);
+       classics show it absolutely above the orb, un-clipped. */
     display: none;
     position: absolute;
-    top: calc(100% + 8px);
+    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     /* One line, always: sized to the quip, capped at the viewport, ellipsis
@@ -266,9 +266,18 @@
     text-align: center;
     font-family: "Amazon Ember", sans-serif;
 }
-.zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:hover .sitewide-orb-preview,
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:focus-visible .sitewide-orb-preview {
     display: block;
     opacity: 1;
     visibility: visible;
+}
+/* Mouse-only: on touch, sticky :hover kept re-showing this absolute
+   fallback after the JS lift reset — clipped tip + phantom vertical
+   scrollbar. Touch devices get the tip solely via swap-img.js. */
+@media (hover: hover) {
+    .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:hover .sitewide-orb-preview {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
 }
