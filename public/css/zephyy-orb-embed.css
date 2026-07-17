@@ -304,8 +304,26 @@
     align-self: center;
     flex: 1 1 140px;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     z-index: 1;
+}
+/* Chat expands in-flow right under the orb — not the floating overlay.
+   display-gated so the closed panel takes no hero space (the base panel
+   is position:fixed and hides via opacity/pointer-events alone). */
+.zephyy-orb-sitewide-wrapper.gallery-dock .zp-chat-panel {
+    display: none;
+    position: static;
+    width: min(480px, 100%);
+    height: 420px;
+    max-height: 65vh;
+    transform: none;
+    margin-top: 0.9rem;
+}
+.zephyy-orb-sitewide-wrapper.gallery-dock .zp-chat-panel.open {
+    display: flex;
+    transform: none;
 }
 .zephyy-orb-sitewide-wrapper.gallery-dock .zephyy-orb-sitewide {
     flex-direction: column;
