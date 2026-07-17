@@ -256,9 +256,13 @@
     top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
-    white-space: normal;
+    /* One line, always: sized to the quip, capped at the viewport, ellipsis
+       if a quip ever outgrows a narrow phone */
+    white-space: nowrap;
     width: max-content;
-    max-width: 210px;
+    max-width: calc(100vw - 16px);
+    overflow: hidden;
+    text-overflow: ellipsis;
     text-align: center;
     font-family: "Amazon Ember", sans-serif;
 }
