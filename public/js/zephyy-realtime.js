@@ -57,7 +57,6 @@
         projectId: 'doshusweb'
       });
       db = firebase.database();
-      console.log('[zephyy-rt] Firebase connected');
 
       setupConnectionMonitor();
       watchStatus();
