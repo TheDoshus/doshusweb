@@ -18,6 +18,8 @@
   const STALE_SEC = 120; // seconds before heartbeat considered stale
   const HEARTBEAT_MS = STALE_SEC * 1000;
   const CHAT_BUFFER_MS = 15000; // 15s lookback for new messages
+  const DAILY_FALLBACK = 'Quiet orbit. Keeping the signal clean.';
+  const PRIVATE_DAILY_PATTERN = /\b(?:doshus|armand|austin|school|class|course|canvas|assignment|exam|shift|amazon|message|texted|health|medication|doctor|finance|bank|schedule|relationship|partner|girlfriend|boyfriend|family|address|location|phoenix)\b/i;
 
   let db = null;
   let ready = false;
@@ -27,6 +29,25 @@
 
   function dispose(fn) {
     disposers.push(fn);
+  }
+
+  function isPublicDaily(data) {
+    const publicText = data ? [data.mood, data.quote].join(' ') : '';
+    return Boolean(
+      data &&
+      data.publicSafe === true &&
+      typeof data.quote === 'string' &&
+      data.quote.trim() &&
+      !Object.prototype.hasOwnProperty.call(data, 'source') &&
+      !PRIVATE_DAILY_PATTERN.test(publicText)
+    );
+  }
+
+  function renderDailyFallback(moodEl, quoteEl, sourceEl, card) {
+    if (moodEl) moodEl.textContent = '🌙';
+    if (quoteEl) quoteEl.textContent = DAILY_FALLBACK;
+    if (sourceEl) sourceEl.textContent = '';
+    if (card) card.classList.add('loaded');
   }
 
   // ──────────────────────────────────────────────
@@ -163,14 +184,8 @@
 
     dailyRef.on('value', function (snap) {
       const data = snap.val();
-      if (!data || !data.quote) {
-        // Fallback
-        if (quoteEl && quoteEl.textContent === 'Loading...') {
-          quoteEl.textContent = '"The stars are always there. Sometimes we just need to look up."';
-          if (sourceEl) sourceEl.textContent = '';
-          if (moodEl) moodEl.textContent = '🌙';
-          if (card) card.classList.add('loaded');
-        }
+      if (!isPublicDaily(data)) {
+        renderDailyFallback(moodEl, quoteEl, sourceEl, card);
         return;
       }
 
@@ -403,7 +418,7 @@
         var sourceEl = document.getElementById('daily-source');
         var moodEl = document.getElementById('daily-mood');
         var card = document.getElementById('zephyy-daily');
-        if (quoteEl && data && data.quote) {
+        if (quoteEl && isPublicDaily(data)) {
           if (moodEl) moodEl.textContent = data.mood || '🌌';
           quoteEl.textContent = data.quote;
           if (sourceEl) {
@@ -411,6 +426,8 @@
             sourceEl.textContent = date ? '· ' + date : '';
           }
           if (card) card.classList.add('loaded');
+        } else {
+          renderDailyFallback(moodEl, quoteEl, sourceEl, card);
         }
       }).catch(function(){});
 
