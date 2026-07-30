@@ -173,15 +173,37 @@
 
     function setupSignalDeck() {
         const tabs = Array.from(document.querySelectorAll('.zp-deck-tab'));
+        function activateTab(tab) {
+            tabs.forEach(function (candidate) {
+                const active = candidate === tab;
+                candidate.classList.toggle('active', active);
+                candidate.setAttribute('aria-selected', String(active));
+                candidate.tabIndex = active ? 0 : -1;
+            });
+        }
+
         tabs.forEach(function (tab) {
             tab.addEventListener('click', function () {
-                tabs.forEach(function (candidate) {
-                    const active = candidate === tab;
-                    candidate.classList.toggle('active', active);
-                    candidate.setAttribute('aria-selected', String(active));
-                });
+                activateTab(tab);
+            });
+            tab.addEventListener('keydown', function (event) {
+                const current = tabs.indexOf(tab);
+                let next = null;
+                if (event.key === 'ArrowRight') next = (current + 1) % tabs.length;
+                if (event.key === 'ArrowLeft') next = (current - 1 + tabs.length) % tabs.length;
+                if (event.key === 'Home') next = 0;
+                if (event.key === 'End') next = tabs.length - 1;
+                if (next === null) return;
+
+                event.preventDefault();
+                tabs[next].focus();
+                tabs[next].click();
             });
         });
+        const initialTab = tabs.find(function (tab) {
+            return tab.getAttribute('aria-selected') === 'true';
+        });
+        if (initialTab) activateTab(initialTab);
 
         document.body.addEventListener('htmx:afterSwap', function (event) {
             if (event.detail.target && event.detail.target.id === 'zp-signal-panel') {
