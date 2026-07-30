@@ -4,7 +4,7 @@
  * Listens to RTDB via onValue/onChildAdded (persistent WebSocket under the hood).
  * Updates DOM directly — no polling, no setInterval data fetches.
  *
- * Covers: status dot, daily thought, realm section, chat orb, embed widget.
+ * Covers: status, daily thought, service health, chat orb, and embed widget.
  *
  * STALENESS-BASED OFFLINE:
  *   Status includes lastHeartbeat (ISO timestamp, updated by systemd pinger every 60s).
@@ -17,19 +17,10 @@
   const RTDB_URL = 'https://doshusweb-default-rtdb.firebaseio.com';
   const STALE_SEC = 120; // seconds before heartbeat considered stale
   const HEARTBEAT_MS = STALE_SEC * 1000;
-  const CHAT_BUFFER_MS = 15000; // 15s lookback for new messages
   const DAILY_FALLBACK = 'Quiet orbit. Keeping the signal clean.';
   const PRIVATE_DAILY_PATTERN = /\b(?:doshus|armand|austin|school|class|course|canvas|assignment|exam|shift|amazon|message|texted|health|medication|doctor|finance|bank|schedule|relationship|partner|girlfriend|boyfriend|family|address|location|phoenix)\b/i;
 
   let db = null;
-  let ready = false;
-
-  // ── Track registered disposers for cleanup ──
-  const disposers = [];
-
-  function dispose(fn) {
-    disposers.push(fn);
-  }
 
   function isPublicDaily(data) {
     const publicText = data ? [data.mood, data.quote].join(' ') : '';
@@ -66,13 +57,10 @@
         projectId: 'doshusweb'
       });
       db = firebase.database();
-      ready = true;
-      console.log('[zephyy-rt] Firebase connected');
 
       setupConnectionMonitor();
       watchStatus();
       watchDaily();
-      watchRealm();
       if (window.__zpChatInit) window.__zpChatInit(db);
 
       // Signal widget that Firebase is ready
@@ -100,7 +88,7 @@
   }
 
   // ──────────────────────────────────────────────
-  // STATUS WATCHER (status dot + terminal + widget)
+  // STATUS WATCHER (status, services, and widget)
   // ──────────────────────────────────────────────
 
   function watchStatus() {
@@ -144,13 +132,6 @@
         dot.classList.add(isOnline ? 'online' : 'offline');
       }
 
-      // ── Terminal status line ──
-      if (window.__zpTermStatus) {
-        window.__zpTermStatus.output = isOnline
-          ? '<span class="success">● ONLINE</span> — ' + (data.workingOn || 'Standing by.')
-          : '<span class="error">● OFFLINE</span> — The stars are quiet.';
-      }
-
       // ── Broadcast for profile + widget ──
       // Cache the latest value so scripts or HTMX fragments arriving later can hydrate.
       window.__zpLatestStatus = { online: isOnline, data: data };
@@ -167,6 +148,15 @@
             data.chatModel.toLowerCase().includes('openrouter')) {
           badge.classList.add('fallback');
         }
+      }
+
+      // Service health dots
+      if (data.services) {
+        var map = { gateway: 'svc-dot-gateway', orb: 'svc-dot-orb', ws: 'svc-dot-ws', embed: 'svc-dot-embed', aether: 'svc-dot-aether' };
+        Object.keys(map).forEach(function (key) {
+          var dot = document.getElementById(map[key]);
+          if (dot) dot.className = 'zp-service-dot ' + (data.services[key] === 'active' ? 'online' : 'offline');
+        });
       }
     });
   }
@@ -196,61 +186,6 @@
         sourceEl.textContent = date ? '· ' + date : '';
       }
       if (card) card.classList.add('loaded');
-    });
-  }
-
-  // ──────────────────────────────────────────────
-  // REALM SECTION (now + last)
-  // ──────────────────────────────────────────────
-
-  function watchRealm() {
-    const nowEl = document.querySelector('#zf-now .zp-live-text');
-    const lastEl = document.querySelector('#zf-last .zp-live-text');
-    const thinkEl = document.getElementById('thinking-text');
-
-    // ── Status-driven "Now" ──
-    const statusRef = db.ref('zephyy/status');
-    statusRef.on('value', function (snap) {
-      const data = snap.val() || {};
-      const isOnline = data.lastHeartbeat
-        ? (Date.now() - new Date(data.lastHeartbeat).getTime()) < HEARTBEAT_MS
-        : false;
-
-      if (nowEl) {
-        if (isOnline && data.mood) {
-          nowEl.textContent = data.mood + ' — ' + (data.workingOn || 'Standing by');
-        } else if (isOnline) {
-          nowEl.textContent = 'Active — Systems nominal.';
-        } else {
-          nowEl.textContent = 'Monitoring the cosmos.';
-        }
-      }
-
-      if (thinkEl && data.workingOn) {
-        thinkEl.textContent = data.workingOn;
-      }
-
-      // Service health dots
-      if (data.services) {
-        var map = { gateway: 'svc-dot-gateway', orb: 'svc-dot-orb', ws: 'svc-dot-ws', embed: 'svc-dot-embed', aether: 'svc-dot-aether' };
-        Object.keys(map).forEach(function (key) {
-          var dot = document.getElementById(map[key]);
-          if (dot) dot.className = 'zp-service-dot ' + (data.services[key] === 'active' ? 'online' : 'offline');
-        });
-      }
-    });
-
-    // ── Daily-driven "Last" ──
-    const dailyRef = db.ref('zephyy/daily');
-    dailyRef.on('value', function (snap) {
-      const data = snap.val();
-      if (!data || !lastEl) return;
-
-      if (data.updated) {
-        const updated = new Date(data.updated);
-        const ago = timeAgo(updated);
-        lastEl.textContent = 'Last thought: ' + ago;
-      }
     });
   }
 
@@ -448,22 +383,6 @@
   }
 
   // ──────────────────────────────────────────────
-  // UTILS
-  // ──────────────────────────────────────────────
-
-  function timeAgo(date) {
-    const diff = Date.now() - date.getTime();
-    const mins = Math.floor(diff / 60000);
-    const hrs = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (mins < 1) return 'just now';
-    if (mins < 60) return mins + 'm ago';
-    if (hrs < 24) return hrs + 'h ago';
-    return days + 'd ago';
-  }
-
-  // ──────────────────────────────────────────────
   // ENTRY
   // ──────────────────────────────────────────────
 
@@ -495,9 +414,4 @@
 
   // Register chat orb setup — called by init() after db is ready
   window.__zpChatInit = setupChatOrb;
-
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', function () {
-    disposers.forEach(function (fn) { try { fn(); } catch (e) { /* ignore */ } });
-  });
 })();
