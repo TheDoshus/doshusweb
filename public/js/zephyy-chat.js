@@ -32,28 +32,28 @@
     <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="orbGlyphGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.98" />
-                <stop offset="50%" stop-color="#d8f0ff" stop-opacity="0.9" />
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.75" />
+                <stop offset="0%" stop-color="oklch(100% 0 0)" stop-opacity="0.98" />
+                <stop offset="50%" stop-color="oklch(94% 0.035 240)" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="oklch(100% 0 0)" stop-opacity="0.75" />
             </linearGradient>
         </defs>
-        <circle cx="32" cy="32" r="29" stroke="#ffffff" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>
+        <circle cx="32" cy="32" r="29" stroke="oklch(100% 0 0)" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>
         <g class="whorl-outer">
             <path d="M 32 9 A 23 23 0 1 1 12 44"
                 stroke="url(#orbGlyphGrad)" stroke-width="3.2" stroke-linecap="round" opacity="0.85"/>
-            <circle cx="32" cy="9" r="2.0" fill="#ffffff" opacity="0.9"/>
+            <circle cx="32" cy="9" r="2.0" fill="oklch(100% 0 0)" opacity="0.9"/>
         </g>
         <g class="whorl-mid">
             <path d="M 45 40 A 15 15 0 1 1 32 17"
                 stroke="url(#orbGlyphGrad)" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/>
-            <circle cx="45" cy="40" r="1.8" fill="#ffffff" opacity="0.95"/>
+            <circle cx="45" cy="40" r="1.8" fill="oklch(100% 0 0)" opacity="0.95"/>
         </g>
         <g class="whorl-inner">
             <path d="M 25 36 A 8 8 0 1 1 39 36"
                 stroke="url(#orbGlyphGrad)" stroke-width="3.8" stroke-linecap="round" opacity="0.98"/>
-            <circle cx="25" cy="36" r="1.6" fill="#ffffff" opacity="0.98"/>
+            <circle cx="25" cy="36" r="1.6" fill="oklch(100% 0 0)" opacity="0.98"/>
         </g>
-        <circle cx="32" cy="32" r="3.6" fill="#ffffff" class="whorl-center"/>
+        <circle cx="32" cy="32" r="3.6" fill="oklch(100% 0 0)" class="whorl-center"/>
     </svg>
     `;
     if (orb && !orb.querySelector('.zp-orb-glyph')) {
@@ -147,6 +147,9 @@
     function togglePanel() {
         isOpen = !isOpen;
         panel.classList.toggle('open', isOpen);
+        panel.setAttribute('aria-hidden', String(!isOpen));
+        panel.inert = !isOpen;
+        orb.setAttribute('aria-expanded', String(isOpen));
         var bd = document.getElementById('zp-chat-backdrop');
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
@@ -160,6 +163,8 @@
             setTimeout(function() {
                 if (inputEl && !inputEl.disabled) inputEl.focus();
             }, 350);
+        } else {
+            orb.focus();
         }
     }
 
@@ -743,9 +748,16 @@
     messagesEl.setAttribute('role', 'log');
     messagesEl.setAttribute('aria-live', 'polite');
     messagesEl.setAttribute('aria-relevant', 'additions');
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Chat with Zephyy');
+    panel.setAttribute('aria-hidden', 'true');
+    panel.inert = true;
     orb.setAttribute('role', 'button');
     orb.setAttribute('tabindex', '0');
     orb.setAttribute('aria-label', 'Chat with Zephyy');
+    orb.setAttribute('aria-controls', 'zp-chat-panel');
+    orb.setAttribute('aria-expanded', 'false');
     orb.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePanel(); }
     });
