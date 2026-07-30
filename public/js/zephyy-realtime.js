@@ -130,9 +130,11 @@
           : '<span class="error">● OFFLINE</span> — The stars are quiet.';
       }
 
-      // ── Broadcast for widget ──
+      // ── Broadcast for profile + widget ──
+      // Cache the latest value so scripts or HTMX fragments arriving later can hydrate.
+      window.__zpLatestStatus = { online: isOnline, data: data };
       window.dispatchEvent(new CustomEvent('zephyy-status', {
-        detail: { online: isOnline, data: data }
+        detail: window.__zpLatestStatus
       }));
 
       // ── Model badge ──
@@ -173,7 +175,7 @@
       }
 
       if (moodEl) moodEl.textContent = data.mood || '🌌';
-      quoteEl.textContent = data.quote;
+      if (quoteEl) quoteEl.textContent = data.quote;
       if (sourceEl) {
         const date = data.updated ? new Date(data.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
         sourceEl.textContent = date ? '· ' + date : '';
