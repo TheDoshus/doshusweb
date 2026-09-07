@@ -56,7 +56,24 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 **Deferred security work (don't lose these):**
 - **Chat orb XSS** — `renderContent()` in `zephyy.js` injects link labels/URLs/img alts unescaped into `innerHTML`. Display-only fix, safe anytime.
-- **RTDB chat rules** — `zephyy/chat/sessions` world-readable, `messages` world-writable. Coordinate with **agents-oc + Aether** before changing.
+- **Chatorb release gate** — this branch proposes private `zephyy/chat/ownedSessions`, anonymous-auth owners and admin-only writes elsewhere. Production cutover is NOT approved or tested; see below.
+
+## Chatorb development checkpoint
+
+The companion backend is `scripts/bridges/chatorb.py` in the OpenClaw repo, branch
+`feat/chatorb`. Its `scripts/bridges/orb/README.md` owns the full contract, remaining
+work and coordinated cutover checklist. Both repositories must be reviewed together.
+
+Run `node tests/chatorb-client.cjs` for the hermetic client test. This does not run
+Firebase rules or prove a real browser can connect. Rules-emulator tests and a real
+preview remain required before deployment. Firebase rule inheritance/validation
+semantics: [official rules guide](https://firebase.google.com/docs/database/security/rules-conditions).
+
+The new rules close old chat sessions and require admin claims for feedback reads
+and non-chat writes. Enabling anonymous auth without those rules would broaden the
+old authentication gates. Do not enable it as an isolated change. Likewise, old
+widgets cached for seven days will fail against the new rules; settle the asset
+cutover sequence before deploying. No query-string cache-busters are introduced.
 
 ## Quick Commands for You
 

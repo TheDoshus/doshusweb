@@ -3,23 +3,49 @@
     "zephyy": {
       "status": {
         ".read": true,
-        ".write": "auth !== null"
+        ".write": "auth !== null && auth.token.admin === true"
       },
       "daily": {
         ".read": true,
-        ".write": "auth !== null"
+        ".write": "auth !== null && auth.token.admin === true"
       },
       "chat": {
         "sessions": {
+          ".read": false,
+          ".write": false
+        },
+        "ownedSessions": {
+          ".indexOn": [
+            "updatedAt"
+          ],
           "$sessionId": {
+            ".read": "auth !== null && (!data.exists() || data.child('owner').val() === auth.uid)",
+            ".write": "auth !== null && !data.exists() && newData.child('owner').val() === auth.uid && !newData.hasChild('messages') && !newData.hasChild('control')",
+            ".validate": "newData.hasChildren(['owner', 'updatedAt', 'meta'])",
+            "owner": {
+              ".validate": "newData.isString() && newData.val() === auth.uid && (!data.exists() || newData.val() === data.val())"
+            },
+            "updatedAt": {
+              ".write": "auth !== null && data.parent().child('owner').val() === auth.uid",
+              ".validate": "newData.isNumber() && newData.val() <= now + 5000 && newData.val() >= now - 60000"
+            },
+            "meta": {
+              ".validate": "newData.hasChildren(['page'])",
+              "page": {
+                ".write": "auth !== null && data.parent().parent().child('owner').val() === auth.uid",
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+              },
+              "$other": {
+                ".validate": false
+              }
+            },
             "messages": {
-              ".read": true,
               ".indexOn": [
                 "timestamp"
               ],
               "$msgId": {
-                ".write": "!data.exists() && newData.exists()",
-                ".validate": "newData.hasChildren(['role', 'content', 'timestamp'])",
+                ".write": "auth !== null && data.parent().parent().child('owner').val() === auth.uid && !data.exists() && newData.exists() && data.parent().parent().child('control/state').val() !== 'ended'",
+                ".validate": "newData.hasChildren(['role','content','timestamp'])",
                 "role": {
                   ".validate": "newData.val() === 'user'"
                 },
@@ -27,7 +53,7 @@
                   ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 2000"
                 },
                 "timestamp": {
-                  ".validate": "newData.isNumber()"
+                  ".validate": "newData.isNumber() && newData.val() <= now + 5000 && newData.val() >= now - 60000"
                 },
                 "$other": {
                   ".validate": false
@@ -35,41 +61,35 @@
               }
             },
             "control": {
-              ".read": true,
-              ".write": "auth !== null || newData.child('state').val() === 'ended'"
-            },
-            "meta": {
-              ".read": true,
-              "page": {
-                ".write": "newData.isString()",
-                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
-              },
-              "visitor": {
-                ".write": "newData.isString()",
-                ".validate": "newData.isString() && newData.val().length <= 40"
+              "state": {
+                ".write": "auth !== null && data.parent().parent().child('owner').val() === auth.uid && newData.val() === 'ended'",
+                ".validate": "newData.val() === 'ended'"
               },
               "$other": {
                 ".validate": false
               }
+            },
+            "$other": {
+              ".validate": false
             }
           }
         }
       },
       "feedback": {
-        ".read": "auth !== null",
-        ".write": "auth !== null"
+        ".read": "auth !== null && auth.token.admin === true",
+        ".write": "auth !== null && auth.token.admin === true"
       }
     },
     "printmon": {
       "themes": {
         ".read": true,
-        ".write": "auth !== null"
+        ".write": "auth !== null && auth.token.admin === true"
       }
     },
     "config": {
       "worklinks": {
         ".read": true,
-        ".write": "auth !== null"
+        ".write": "auth !== null && auth.token.admin === true"
       }
     }
   }
