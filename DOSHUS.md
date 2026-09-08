@@ -56,24 +56,29 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 **Deferred security work (don't lose these):**
 - **Chat orb XSS** — `renderContent()` in `zephyy.js` injects link labels/URLs/img alts unescaped into `innerHTML`. Display-only fix, safe anytime.
-- **Chatorb release gate** — this branch proposes private `zephyy/chat/ownedSessions`, anonymous-auth owners and admin-only writes elsewhere. Production cutover is NOT approved or tested; see below.
+- **Chatorb follow-through** — abuse admission, retention, processing health and browser/action verification remain in the backend contract below.
 
-## Chatorb development checkpoint
+## Chatorb
 
-The companion backend is `scripts/bridges/chatorb.py` in the OpenClaw repo, branch
-`feat/chatorb`. Its `scripts/bridges/orb/README.md` owns the full contract, remaining
-work and coordinated cutover checklist. Both repositories must be reviewed together.
+The live client uses private `zephyy/chat/ownedSessions` with anonymous-auth owners.
+`database.rules.json` rejects priority metadata on client-writable nodes and requires
+admin claims for non-chat writes. Keep matching client, rules and backend revisions
+in the normal main branches before deploying; deploying an older branch can undo
+these protections. The backend contract and remaining work live in
+`~/.openclaw/scripts/bridges/orb/README.md`.
 
-Run `node tests/chatorb-client.cjs` for the hermetic client test. This does not run
-Firebase rules or prove a real browser can connect. Rules-emulator tests and a real
-preview remain required before deployment. Firebase rule inheritance/validation
-semantics: [official rules guide](https://firebase.google.com/docs/database/security/rules-conditions).
+Run these from this repository:
 
-The new rules close old chat sessions and require admin claims for feedback reads
-and non-chat writes. Enabling anonymous auth without those rules would broaden the
-old authentication gates. Do not enable it as an isolated change. Likewise, old
-widgets cached for seven days will fail against the new rules; settle the asset
-cutover sequence before deploying. No query-string cache-busters are introduced.
+```bash
+node tests/chatorb-client.cjs
+firebase emulators:exec --only database --project doshusweb "python3 tests/rules-emulator.py"
+```
+
+The client VM checks wiring; the real local emulator checks ownership, validation,
+priority metadata and atomic writes. Neither proves production token verification,
+browser CSP or persisted anonymous identity. The backend uses an administrative
+Firebase credential: its assistant replies and journal writes depend on rules bypass.
+A scoped credential migration requires a matching backend/rules design.
 
 ## Quick Commands for You
 

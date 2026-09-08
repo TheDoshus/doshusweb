@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Firebase RTDB security-rule tests against the local emulator.
 
-⛔ This is the gate nothing else covers. Unit tests and the client VM test exercise our
-CODE; they cannot establish what the RULES allow, because the rules only run inside
-Firebase. Every statement anyone has made about database.rules.json so far — Astra's,
-mine — is read from source, not exercised.
+Unit tests and the client VM test do not execute Firebase rules. This suite sends
+real REST requests to the local Firebase emulator, including priority metadata.
+It proves rule enforcement there, not production token verification or browser behavior.
 
 No npm dependency on purpose: @firebase/rules-unit-testing would pull a node_modules tree
 into the website repo for a check that is a handful of authenticated HTTP calls. The
@@ -20,11 +19,15 @@ import json
 import os
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 
 HOST = os.environ.get("FIREBASE_DATABASE_EMULATOR_HOST", "127.0.0.1:9000")
 NS = os.environ.get("RULES_TEST_NS", "doshusweb-default-rtdb")
 PROJECT = os.environ.get("GCLOUD_PROJECT", "doshusweb")
+# This suite writes test data and accepts unsigned test identities: loopback only.
+if urllib.parse.urlsplit(f"http://{HOST}").hostname not in {"127.0.0.1", "localhost", "::1"}:
+    raise SystemExit("Refusing rules tests against a non-loopback emulator host")
 BASE = f"http://{HOST}"
 
 results = []
@@ -186,8 +189,8 @@ denied("no client may list ownedSessions", "GET", SESS, as_uid="alice")
 # and the 2000-char cap while Y rides along unbounded — Astra measured 1,048,576
 # characters persisted. `$other: {".validate": false}` does NOT catch it: priority is
 # metadata, not a child. The guard is `newData.getPriority() === null` on every node a
-# client can write; RTDB evaluates .validate on the written node and its DESCENDANTS,
-# never its ancestors, so one guard on the session would not cover its messages.
+# client can write. getPriority() inspects only that node, not priorities stored on
+# children; a session guard alone cannot constrain message or field metadata.
 print("\npriority metadata cannot smuggle bulk data past the payload bounds")
 
 BULK = "X" * 5000          # 2.5x the 2000-char content cap; size is not the point, presence is
@@ -214,6 +217,41 @@ denied("priority on meta/page is rejected", "PUT", f"{SESS}/p1/meta/page",
        as_uid="alice", body={".value": "/", ".priority": BULK})
 denied("priority on control/state is rejected", "PUT", f"{SESS}/p1/control/state",
        as_uid="alice", body={".value": "ended", ".priority": BULK})
+
+
+# Cover the five other guarded nodes independently; each matching guard mutation
+# must fail its own test while ordinary writes keep working.
+for field, value in (("owner", "alice"), ("updatedAt", {".sv": "timestamp"})):
+    payload = {"owner": "alice", "updatedAt": {".sv": "timestamp"},
+               "meta": {"page": "/"}}
+    payload[field] = {".value": value, ".priority": BULK}
+    denied(f"priority on session {field} is rejected", "PUT",
+           f"{SESS}/priority-{field}", as_uid="alice", body=payload)
+denied("priority on meta object is rejected", "PUT", f"{SESS}/priority-meta",
+       as_uid="alice", body={"owner": "alice", "updatedAt": {".sv": "timestamp"},
+                             "meta": {"page": "/", ".priority": BULK}})
+for field, value in (("role", "user"), ("timestamp", {".sv": "timestamp"})):
+    payload = dict(now_ok)
+    payload[field] = {".value": value, ".priority": BULK}
+    denied(f"priority on message {field} is rejected", "PUT",
+           f"{SESS}/p1/messages/priority-{field}", as_uid="alice", body=payload)
+
+allowed("atomic client input and activity timestamp update", "PATCH", f"{SESS}/p1",
+        as_uid="alice", body={"messages/atomic": dict(now_ok),
+                              "updatedAt": {".sv": "timestamp"}})
+allowed("owner can update page without priority", "PUT", f"{SESS}/p1/meta/page",
+        as_uid="alice", body="/zephyy")
+denied("priority-only update on mutable page is rejected", "PUT",
+       f"{SESS}/p1/meta/page/.priority", as_uid="alice", body=BULK)
+denied("priority-only update on mutable activity timestamp is rejected", "PUT",
+       f"{SESS}/p1/updatedAt/.priority", as_uid="alice", body=BULK)
+for suffix in (".priority", "messages/.priority", "control/.priority"):
+    denied(f"priority-only update on container {suffix} is rejected", "PUT",
+           f"{SESS}/p1/{suffix}", as_uid="alice", body=BULK)
+denied("atomic root PATCH cannot smuggle field priority", "PATCH", "",
+       as_uid="alice", body={f"{SESS}/p1/messages/atomic-bad": {
+           **now_ok, "content": {".value": "hi", ".priority": BULK}},
+           f"{SESS}/p1/updatedAt": {".sv": "timestamp"}})
 
 print(f"\n{sum(results)}/{len(results)} passed")
 sys.exit(0 if all(results) else 1)
