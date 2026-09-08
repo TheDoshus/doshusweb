@@ -21,19 +21,19 @@
           "$sessionId": {
             ".read": "auth !== null && (!data.exists() || data.child('owner').val() === auth.uid)",
             ".write": "auth !== null && !data.exists() && newData.child('owner').val() === auth.uid && !newData.hasChild('messages') && !newData.hasChild('control')",
-            ".validate": "newData.hasChildren(['owner', 'updatedAt', 'meta'])",
+            ".validate": "(newData.hasChildren(['owner', 'updatedAt', 'meta'])) && newData.getPriority() === null",
             "owner": {
-              ".validate": "newData.isString() && newData.val() === auth.uid && (!data.exists() || newData.val() === data.val())"
+              ".validate": "(newData.isString() && newData.val() === auth.uid && (!data.exists() || newData.val() === data.val())) && newData.getPriority() === null"
             },
             "updatedAt": {
               ".write": "auth !== null && data.parent().child('owner').val() === auth.uid",
-              ".validate": "newData.isNumber() && newData.val() <= now + 5000 && newData.val() >= now - 60000"
+              ".validate": "(newData.isNumber() && newData.val() <= now + 5000 && newData.val() >= now - 60000) && newData.getPriority() === null"
             },
             "meta": {
-              ".validate": "newData.hasChildren(['page'])",
+              ".validate": "(newData.hasChildren(['page'])) && newData.getPriority() === null",
               "page": {
                 ".write": "auth !== null && data.parent().parent().child('owner').val() === auth.uid",
-                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+                ".validate": "(newData.isString() && newData.val().length > 0 && newData.val().length <= 64) && newData.getPriority() === null"
               },
               "$other": {
                 ".validate": false
@@ -45,15 +45,15 @@
               ],
               "$msgId": {
                 ".write": "auth !== null && data.parent().parent().child('owner').val() === auth.uid && !data.exists() && newData.exists() && data.parent().parent().child('control/state').val() !== 'ended'",
-                ".validate": "newData.hasChildren(['role','content','timestamp'])",
+                ".validate": "(newData.hasChildren(['role','content','timestamp'])) && newData.getPriority() === null",
                 "role": {
-                  ".validate": "newData.val() === 'user'"
+                  ".validate": "(newData.val() === 'user') && newData.getPriority() === null"
                 },
                 "content": {
-                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 2000"
+                  ".validate": "(newData.isString() && newData.val().length > 0 && newData.val().length <= 2000) && newData.getPriority() === null"
                 },
                 "timestamp": {
-                  ".validate": "newData.isNumber() && newData.val() <= now + 5000 && newData.val() >= now - 60000"
+                  ".validate": "(newData.isNumber() && newData.val() <= now + 5000 && newData.val() >= now - 60000) && newData.getPriority() === null"
                 },
                 "$other": {
                   ".validate": false
@@ -63,7 +63,7 @@
             "control": {
               "state": {
                 ".write": "auth !== null && data.parent().parent().child('owner').val() === auth.uid && newData.val() === 'ended'",
-                ".validate": "newData.val() === 'ended'"
+                ".validate": "(newData.val() === 'ended') && newData.getPriority() === null"
               },
               "$other": {
                 ".validate": false

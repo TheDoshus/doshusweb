@@ -180,5 +180,40 @@ denied("an ordinary user cannot read feedback", "GET", "zephyy/feedback", as_uid
 print("\nenumeration")
 denied("no client may list ownedSessions", "GET", SESS, as_uid="alice")
 
+# ── priority metadata ────────────────────────────────────────────────────────────
+# ⛔ Found by Astra 2026-09-08, on rules already serving production. A value written as
+# {".value": X, ".priority": Y} shows the RULES only X. So `content` passes isString()
+# and the 2000-char cap while Y rides along unbounded — Astra measured 1,048,576
+# characters persisted. `$other: {".validate": false}` does NOT catch it: priority is
+# metadata, not a child. The guard is `newData.getPriority() === null` on every node a
+# client can write; RTDB evaluates .validate on the written node and its DESCENDANTS,
+# never its ancestors, so one guard on the session would not cover its messages.
+print("\npriority metadata cannot smuggle bulk data past the payload bounds")
+
+BULK = "X" * 5000          # 2.5x the 2000-char content cap; size is not the point, presence is
+allowed("CONTROL — an ordinary message with no priority is still accepted", "PUT",
+        f"{SESS}/p1", as_uid="alice",
+        body={"owner": "alice", "updatedAt": {".sv": "timestamp"},
+              "meta": {"page": "/"}})
+allowed("CONTROL — and its messages still write", "PUT", f"{SESS}/p1/messages/m1",
+        as_uid="alice", body=dict(now_ok))
+
+denied("priority on message content is rejected", "PUT", f"{SESS}/p1/messages/m2",
+       as_uid="alice",
+       body={"role": "user", "content": {".value": "hi", ".priority": BULK},
+             "timestamp": {".sv": "timestamp"}})
+denied("priority on the message node itself is rejected", "PUT",
+       f"{SESS}/p1/messages/m3", as_uid="alice",
+       body={"role": "user", "content": "hi", "timestamp": {".sv": "timestamp"},
+             ".priority": BULK})
+denied("priority on the session payload is rejected", "PUT", f"{SESS}/p2",
+       as_uid="alice",
+       body={"owner": "alice", "updatedAt": {".sv": "timestamp"},
+             "meta": {"page": "/"}, ".priority": BULK})
+denied("priority on meta/page is rejected", "PUT", f"{SESS}/p1/meta/page",
+       as_uid="alice", body={".value": "/", ".priority": BULK})
+denied("priority on control/state is rejected", "PUT", f"{SESS}/p1/control/state",
+       as_uid="alice", body={".value": "ended", ".priority": BULK})
+
 print(f"\n{sum(results)}/{len(results)} passed")
 sys.exit(0 if all(results) else 1)
