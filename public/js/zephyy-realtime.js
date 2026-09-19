@@ -45,23 +45,38 @@
   // INIT
   // ──────────────────────────────────────────────
 
-  function init() {
+  async function init() {
     if (typeof firebase === 'undefined') {
       console.warn('[zephyy-rt] Firebase SDK not loaded — falling back to fetch');
       initFallbacks();
       return;
     }
     try {
-      firebase.initializeApp({
-        databaseURL: RTDB_URL,
-        projectId: 'doshusweb'
-      });
+      const response = await fetch('/__/firebase/init.json');
+      if (!response.ok) throw new Error('Firebase configuration unavailable');
+      firebase.initializeApp(await response.json());
       db = firebase.database();
 
       setupConnectionMonitor();
       watchStatus();
       watchDaily();
-      if (window.__zpChatInit) window.__zpChatInit(db);
+      try {
+        if (!firebase.auth) {
+          await new Promise(function (resolve, reject) {
+            const script = document.createElement('script');
+            script.src = 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+        const credential = await firebase.auth().signInAnonymously();
+        if (window.__zpChatInit) window.__zpChatInit(db, credential.user.uid);
+      } catch (error) {
+        window.dispatchEvent(new CustomEvent('zephyy-chat-error', {
+          detail: {message: 'Private chat could not connect. Please refresh or try again later.'}
+        }));
+      }
 
       // Signal widget that Firebase is ready
       window.dispatchEvent(new CustomEvent('zephyy-rt-ready', { detail: { db } }));
@@ -141,8 +156,8 @@
 
       // ── Model badge ──
       var badge = document.getElementById('zp-model-badge');
-      if (badge && data.chatModel) {
-        badge.textContent = data.chatModel;
+      if (badge && (window.__zpLastReplyModel || data.chatModel)) {
+        badge.textContent = window.__zpLastReplyModel || data.chatModel;
         badge.className = 'zp-model-badge';
         if (data.chatModel.toLowerCase().includes('fallback') ||
             data.chatModel.toLowerCase().includes('openrouter')) {
@@ -193,134 +208,106 @@
   // CHAT ORB (replaces pollAndDetect + checkControl)
   // ──────────────────────────────────────────────
 
-  function setupChatOrb(db) {
-    const SESSION_KEY = 'zephyy-chat-session';
-
-    function newSessionId() {
-      // Unguessable UUID — the session ID doubles as the read capability
-      // under the RTDB rules, so entropy matters.
-      return crypto.randomUUID ? crypto.randomUUID() :
-        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-          var r = Math.random() * 16 | 0;
-          return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-        });
-    }
-
-    let sessionId = localStorage.getItem(SESSION_KEY) || newSessionId();
-    let msgsRef = null;
-    let controlRef = null;
-    let _sessionEnded = false;
-
-    // ── Control watcher (session end, etc.) ──
-    function attachControlWatcher() {
-      controlRef.on('value', function (snap) {
-        const ctrl = snap.val() || {};
-        if (ctrl.state === 'ended') {
-          _sessionEnded = true;
-          window.dispatchEvent(new CustomEvent('zephyy-session-ended', { detail: ctrl }));
-          return;
-        }
-        // Forward full control state (typing, lastSeen, …) — widget features
-        // no-op gracefully until the orb starts writing these fields.
-        window.dispatchEvent(new CustomEvent('zephyy-ctrl', { detail: ctrl }));
-      });
-    }
-
-    // ── Session (re)bind — the single owner of session lifecycle.
-    //    Detaches old listeners, swaps refs, reattaches. Restart flows call
-    //    resetSession() below instead of doing localStorage surgery. ──
-    function bindSession(id) {
-      if (msgsRef) msgsRef.off();
-      if (controlRef) controlRef.off();
-      sessionId = id;
-      localStorage.setItem(SESSION_KEY, id);
-      msgsRef = db.ref('zephyy/chat/sessions/' + id + '/messages');
-      controlRef = db.ref('zephyy/chat/sessions/' + id + '/control');
-      _sessionEnded = false;
-      attachControlWatcher();
-      startMessageListener();
-      // Tell the orb which page the visitor is on (fail-silent; rules cap 64 chars)
-      try {
-        db.ref('zephyy/chat/sessions/' + id + '/meta/page')
-          .set(String(window.location.pathname).slice(0, 64))
-          .catch(function () {});
-      } catch (e) { /* no-op */ }
-      // Link a previously claimed visitor identity to the new session.
-      try {
-        const visitorId = localStorage.getItem('zp-visitor-id');
-        if (visitorId) {
-          db.ref('zephyy/chat/sessions/' + id + '/meta/visitor')
-            .set(visitorId)
-            .catch(function () {});
-        }
-      } catch (e) { /* no-op */ }
-      if (window.__zpRealtime) {
-        window.__zpRealtime.sessionId = sessionId;
-        window.__zpRealtime.msgsRef = msgsRef;
-        window.__zpRealtime.controlRef = controlRef;
-      }
-    }
-
-    // ── Status watcher (online/offline for chat input) ──
-    const statusRef = db.ref('zephyy/status');
-    statusRef.on('value', function (snap) {
-      const data = snap.val() || {};
-      const isOnline = data.lastHeartbeat
-        ? (Date.now() - new Date(data.lastHeartbeat).getTime()) < HEARTBEAT_MS
-        : false;
-      window.dispatchEvent(new CustomEvent('zephyy-online-change', {
-        detail: { online: isOnline }
+  function setupChatOrb(db, owner) {
+    const root = 'zephyy/chat/ownedSessions/';
+    const storageKey = 'zephyy-owned-session-' + owner;
+    let id = localStorage.getItem(storageKey) || crypto.randomUUID();
+    let messages = null;
+    let control = null;
+    let messageQuery = null;
+    let ready = Promise.resolve();
+    let ended = false;
+    let generation = 0;
+    const stamp = firebase.database.ServerValue.TIMESTAMP;
+    function problem() {
+      window.dispatchEvent(new CustomEvent('zephyy-chat-error', {
+        detail: {message: 'Private chat could not connect. Please refresh.'}
       }));
-    });
-
-    // ── Message watcher (replaces polling) ──
-    function startMessageListener() {
-      var lastKey = null;
-
-      // Use on('value') instead of child_added — more reliable for deeply nested paths
-      msgsRef.on('value', function (snap) {
-        if (!snap.exists()) return;
-        var data = snap.val();
-        var keys = Object.keys(data).sort();
-        if (!keys.length) return;
-
-        // Only process the last message if it's new
-        var newestKey = keys[keys.length - 1];
-        if (newestKey === lastKey) return; // already processed
-        lastKey = newestKey;
-
-        var msg = data[newestKey];
-        if (!msg || !msg.content) return;
-
-        // Only forward assistant/bot/doshus messages
-        if (msg.role === 'assistant' || msg.role === 'bot' || msg.role === 'doshus') {
-          window.dispatchEvent(new CustomEvent('zephyy-msg', {
-            detail: { key: newestKey, role: msg.role, content: msg.content, timestamp: msg.timestamp }
-          }));
-        }
+    }
+    function bind(next) {
+      if (messageQuery) messageQuery.off();
+      if (control) control.off();
+      const current = ++generation;
+      id = next;
+      localStorage.setItem(storageKey, id);
+      messages = db.ref(root + id + '/messages');
+      control = db.ref(root + id + '/control');
+      const ownMessages = messages;
+      const ownControl = control;
+      ended = false;
+      ready = db.ref(root + id).once('value').then(function (snap) {
+        if (!snap.exists()) return db.ref(root + next).set({owner: owner,
+          updatedAt: stamp, meta: {page: String(window.location.pathname).slice(0, 64)}});
+        if (snap.val().owner !== owner) throw new Error('Owner mismatch');
+        return db.ref(root + next + '/meta/page').set(String(window.location.pathname).slice(0, 64));
+      }).then(function () {
+        if (current !== generation) return;
+        ownControl.on('value', function (snap) {
+          if (current !== generation) return;
+          const value = snap.val() || {};
+          if (value.state === 'ended') {
+            ended = true;
+            window.dispatchEvent(new CustomEvent('zephyy-session-ended', {detail: value}));
+          } else {
+            window.dispatchEvent(new CustomEvent('zephyy-ctrl', {detail: value}));
+          }
+        }, problem);
+        const seen = new Set();
+        messageQuery = ownMessages.orderByChild('timestamp').limitToLast(50);
+        messageQuery.on('value', function (snap) {
+          if (current !== generation) return;
+          const data = snap.val() || {};
+          for (const key of seen) if (!Object.prototype.hasOwnProperty.call(data, key)) seen.delete(key);
+          Object.keys(data).sort(function (a, b) {
+            return (data[a].timestamp - data[b].timestamp) || a.localeCompare(b);
+          }).forEach(function (key) {
+            if (seen.has(key)) return;
+            seen.add(key);
+            const message = data[key];
+            if (message && message.role === 'assistant' && message.content) {
+              if (message.model) window.__zpLastReplyModel = message.model;
+              window.dispatchEvent(new CustomEvent('zephyy-msg', {
+                detail: Object.assign({key: key}, message)
+              }));
+            }
+          });
+        }, problem);
       });
+      ready.catch(problem);
     }
-
-    // ── Expose for initial history load ──
-    function loadHistory(limit) {
-      return msgsRef.limitToLast(limit || 50).once('value');
-    }
-
-    // Expose API for zephyy.js chat orb (sessionId/refs kept live by bindSession)
     window.__zpRealtime = {
-      sessionId: null,
-      msgsRef: null,
-      controlRef: null,
-      loadHistory: loadHistory,
-      resetSession: function () {
-        bindSession(newSessionId());
-        return sessionId;
+      get sessionId() { return id; },
+      get msgsRef() { return messages; },
+      get controlRef() { return control; },
+      get sessionEnded() { return ended; },
+      set sessionEnded(value) { ended = value; },
+      loadHistory: function (limit) {
+        const current = generation;
+        return ready.then(function () {
+          if (current !== generation) throw new Error('Session changed');
+          return messages.orderByChild('timestamp').limitToLast(limit || 50).once('value');
+        });
       },
-      get sessionEnded() { return _sessionEnded; },
-      set sessionEnded(v) { _sessionEnded = v; },
+      sendMessage: function (text) {
+        if (!text.trim() || text.length > 2000) return Promise.reject(new Error('Message must be 1–2000 characters'));
+        const target = id;
+        return ready.then(function () {
+          if (target !== id || ended) throw new Error('Session changed');
+          const key = messages.push().key;
+          const updates = {updatedAt: stamp};
+          updates['messages/' + key] = {role: 'user', content: text, timestamp: stamp};
+          return db.ref(root + target).update(updates);
+        });
+      },
+      resetSession: function () { bind(crypto.randomUUID()); return id; }
     };
-
-    bindSession(sessionId);
+    db.ref('zephyy/status').on('value', function (snap) {
+      const data = snap.val() || {};
+      window.dispatchEvent(new CustomEvent('zephyy-online-change', {detail: {
+        online: Boolean(data.lastHeartbeat && Date.now() - Date.parse(data.lastHeartbeat) < HEARTBEAT_MS)
+      }}));
+    });
+    bind(id);
   }
 
   // ──────────────────────────────────────────────

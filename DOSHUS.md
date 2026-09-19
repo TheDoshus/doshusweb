@@ -56,7 +56,29 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 **Deferred security work (don't lose these):**
 - **Chat orb XSS** — `renderContent()` in `zephyy.js` injects link labels/URLs/img alts unescaped into `innerHTML`. Display-only fix, safe anytime.
-- **RTDB chat rules** — `zephyy/chat/sessions` world-readable, `messages` world-writable. Coordinate with **agents-oc + Aether** before changing.
+- **Chatorb follow-through** — abuse admission, retention, processing health and browser/action verification remain in the backend contract below.
+
+## Chatorb
+
+The live client uses private `zephyy/chat/ownedSessions` with anonymous-auth owners.
+`database.rules.json` rejects priority metadata on client-writable nodes and requires
+admin claims for non-chat writes. Keep matching client, rules and backend revisions
+in the normal main branches before deploying; deploying an older branch can undo
+these protections. The backend contract and remaining work live in
+`~/.openclaw/scripts/bridges/orb/README.md`.
+
+Run these from this repository:
+
+```bash
+node tests/chatorb-client.cjs
+firebase emulators:exec --only database --project doshusweb "python3 tests/rules-emulator.py"
+```
+
+The client VM checks wiring; the real local emulator checks ownership, validation,
+priority metadata and atomic writes. Neither proves production token verification,
+browser CSP or persisted anonymous identity. The backend uses an administrative
+Firebase credential: its assistant replies and journal writes depend on rules bypass.
+A scoped credential migration requires a matching backend/rules design.
 
 ## Quick Commands for You
 

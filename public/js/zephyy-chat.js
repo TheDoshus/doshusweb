@@ -541,9 +541,10 @@
                 if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
             }, 15000);
             if (window.__zpRealtime) {
-                window.__zpRealtime.msgsRef.push({
-                    role: 'user', content: userMsg, timestamp: Date.now()
-                }).catch(function() {});
+                window.__zpRealtime.sendMessage(userMsg).catch(function() {
+                    removeThinkingBubble();
+                    addMessage('bot', 'That message could not be sent. Please try again.', Date.now());
+                });
             }
         } else {
             sendText("I don't have a name");
@@ -580,7 +581,9 @@
         window.__zpRealtime.loadHistory(50).then(function(snap) {
             if (!snap.exists()) { showNamePrompt(); return; }
             var data = snap.val();
-            var keys = Object.keys(data);
+            var keys = Object.keys(data).sort(function (a, b) {
+                return (data[a].timestamp - data[b].timestamp) || a.localeCompare(b);
+            });
             if (keys.length === 0) { showNamePrompt(); return; }
 
             while (messagesEl.firstChild) {
@@ -608,6 +611,10 @@
 
     function sendMessage() {
         if (sendBtn.disabled || sessionEnded) return;
+        if (!window.__zpRealtime) {
+            addMessage('bot', 'Private chat is not connected yet. Please refresh or try again later.', Date.now());
+            return;
+        }
         var text = inputEl.value.trim();
         if (!text) return;
 
@@ -649,9 +656,7 @@
         }
 
         if (window.__zpRealtime) {
-            window.__zpRealtime.msgsRef.push({
-                role: 'user', content: text, timestamp: userTs
-            }).then(function() {
+            window.__zpRealtime.sendMessage(text).then(function() {
                 tick.textContent = '✓';
                 tick.title = 'Delivered';
                 tick.classList.add('zp-delivered');
@@ -680,8 +685,15 @@
      * ================================================ */
 
     /* ── Listen for new messages from Firebase realtime listener ── */
+    window.addEventListener('zephyy-chat-error', function(e) {
+        removeThinkingBubble();
+        addMessage('bot', e.detail.message, Date.now());
+    });
+
     window.addEventListener('zephyy-msg', function(e) {
         var msg = e.detail;
+        var badge = document.getElementById('zp-model-badge');
+        if (badge && msg.model) badge.textContent = msg.model;
         var panelOpen = panel.classList.contains('open');
         if (!panelOpen) {
             orb.classList.add('unread');
@@ -881,9 +893,9 @@
     setInterval(function() {
         if (panel.classList.contains('open') && Date.now() - lastActivity > 30 * 60 * 1000) {
             if (window.__zpRealtime && window.__zpRealtime.controlRef) {
-                window.__zpRealtime.controlRef.update({
-                    state: 'ended', reason: 'idle_timeout', timestamp: Date.now()
-                }).catch(function(){});
+                window.__zpRealtime.controlRef.child('state').set('ended').catch(function() {
+                    addMessage('bot', 'Could not confirm session closure.', Date.now());
+                });
                 /* safety net in case the local event doesn't echo */
                 setTimeout(function() { startFreshSession(); }, 1500);
             } else {
