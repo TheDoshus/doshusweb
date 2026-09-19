@@ -179,7 +179,6 @@ input[type="text"] {
     overflow: visible;
     white-space: nowrap;
     padding: 10px 0;
-    margin: 20px 80px;
     scrollbar-width: thin;
 }
 .scrollbutton-container {
