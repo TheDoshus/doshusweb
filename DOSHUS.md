@@ -43,9 +43,13 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 ## Security / CSP Playbook
 
-**`Content-Security-Policy`** is strict (Observatory A+ 105/100, 2026-07-10): script-src has no `unsafe-inline`/`unsafe-eval`; inline scripts run via sha256 hashes only.
+**`Content-Security-Policy`** is strict: script-src has no `unsafe-inline`/`unsafe-eval`; inline scripts run via sha256 hashes only.
 
-**Testing a stricter policy later** (e.g. dropping `unsafe-inline` from style-src): temporarily add a `Content-Security-Policy-Report-Only` header with the candidate policy to both targets, browse with DevTools open (`[Report Only]` lines = would-be blocks; ignore ones from `content.js` — that's browser extensions), promote when quiet, remove the RO header.
+**Grades (2026-09-26):** MDN Observatory **A+ 110** (11/12 tests; was 105 on 07-10), securityheaders.com **A+** (all six headers green; XFO satisfied by `frame-ancestors`). The one failed Observatory test is SRI (−5): `gtag/js` and the CoinGecko widget load without `integrity`, and both are unversioned vendor URLs whose content changes under you, so pinning a hash would break them the day the vendor ships. The Firebase SDKs are pinned and carry SRI.
+
+**`style-src 'unsafe-inline'` stays** (Doshus, tested with Claude: the embedded widgets break without it; Observatory scores it 0, not a penalty). Don't retry it.
+
+**Testing a stricter policy later:** temporarily add a `Content-Security-Policy-Report-Only` header with the candidate policy to both targets, browse with DevTools open (`[Report Only]` lines = would-be blocks; ignore ones from `content.js` — that's browser extensions), promote when quiet, remove the RO header.
 
 **Edited an inline `<script>`?** → `npm run csp:hashes` (rewrites the hash tokens in firebase.json; idempotent, good predeploy habit).
 
