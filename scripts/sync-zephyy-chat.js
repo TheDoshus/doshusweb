@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const writeIfChanged = require('./lib/write-if-changed');
 
 const ROOT = path.join(__dirname, '..');
 const PROFILE_PATH = path.join(ROOT, 'public', 'zephyy.html');
@@ -65,12 +66,7 @@ function stampPage(filePath, markup, requiredScripts) {
         throw new Error(`Could not find </body> in ${path.relative(ROOT, filePath)}`);
     }
     const updated = withoutStamp.replace(/\n?<\/body>/, `\n\n${stamp}\n</body>`);
-    if (updated === source) {
-        console.log(`Already synced: ${path.relative(ROOT, filePath)}`);
-        return;
-    }
-    fs.writeFileSync(filePath, updated);
-    console.log(`Synced: ${path.relative(ROOT, filePath)}`);
+    writeIfChanged(filePath, source, updated);
 }
 
 const profile = fs.readFileSync(PROFILE_PATH, 'utf8');

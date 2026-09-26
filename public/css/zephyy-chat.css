@@ -453,12 +453,12 @@
 }
 .zp-lightbox-bg {
   position: absolute; inset: 0;
-  background: rgba(0,0,0,0.85);
+  background: oklch(var(--space-oled) / 0.85);
   cursor: pointer;
 }
 .zp-lightbox-close {
   position: absolute; top: 16px; right: 20px;
-  font-size: 2rem; color: #fff; cursor: pointer;
+  font-size: 2rem; color: oklch(var(--star-white)); cursor: pointer;
   z-index: 1; line-height: 1;
 }
 .zp-lightbox-close:hover { color: oklch(var(--brand-teal)); }
@@ -466,7 +466,7 @@
   position: absolute; top: 18px; right: 64px; z-index: 1;
   border: 1px solid oklch(var(--brand-teal) / 0.55);
   background: oklch(var(--space-oled) / 0.72);
-  color: #fff;
+  color: oklch(var(--star-white));
   border-radius: 8px;
   padding: 0.45rem 0.7rem;
   font: 600 0.78rem/1 'JetBrains Mono', 'Fira Code', monospace;

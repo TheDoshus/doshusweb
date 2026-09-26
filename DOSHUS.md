@@ -20,6 +20,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `scripts/sync-zephyy-{nav,chat}.js` | `npm run sync:zephyy` — re-stamps the Zephyy subpages' nav bar and chat orb from `public/zephyy.html` |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
+| `scripts/check.js` | `npm run check` — every pre-commit check, read-only (see AGENTS.md § Verify) |
 | `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`npm run csp:hashes`) |
 
 ## Key Folders
@@ -89,8 +90,8 @@ cd ~/.openclaw/projects/doshusweb && python3 -m http.server 8080 -d public
 # Check what's changed in public/
 ls -lt ~/.openclaw/projects/doshusweb/public/ | head -15
 
-# Syntax-check JS files before committing
-find ~/.openclaw/projects/doshusweb/public -name '*.js' -exec node -c {} \;
+# Run every pre-commit check (syntax, JSON, CSS braces, oklch, CSP-hash + stamp drift)
+cd ~/.openclaw/projects/doshusweb && npm run check
 
 # Check RTDB rules
 cat ~/.openclaw/projects/doshusweb/database.rules.json

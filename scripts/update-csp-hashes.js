@@ -2,6 +2,7 @@
 // Syncs CSP sha256 hashes for inline <script> blocks into firebase.json.
 //
 // Usage: npm run csp:hashes   (run after editing any inline <script> in public/)
+//        --check: report drift instead of writing (npm run check)
 //
 // Scans public/**/*.html (skipping public/amazon/ — quarantine zone with its
 // own permissive CSP), hashes every executable inline script, and rewrites the
@@ -13,6 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const writeIfChanged = require('./lib/write-if-changed');
 
 const ROOT = path.join(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT, 'public');
@@ -68,9 +70,9 @@ function main() {
     console.log(`Found ${found.length} inline script(s):`);
     for (const f of found) console.log(`  ${f.file}  ${f.hash}`);
 
-    let raw = fs.readFileSync(FIREBASE_JSON, 'utf8');
+    const source = fs.readFileSync(FIREBASE_JSON, 'utf8');
     let updated = 0;
-    raw = raw.replace(
+    const raw = source.replace(
         /("key":\s*"(Content-Security-Policy(?:-Report-Only)?)",\s*"value":\s*")([^"]+)(")/g,
         (m, pre, key, value, post) => {
             const isReportOnly = key.endsWith('Report-Only');
@@ -83,9 +85,9 @@ function main() {
             return pre + syncScriptSrc(value, tokens) + post;
         }
     );
-    fs.writeFileSync(FIREBASE_JSON, raw);
-    JSON.parse(fs.readFileSync(FIREBASE_JSON, 'utf8')); // sanity: still valid JSON
-    console.log(`Updated ${updated} CSP header(s) in firebase.json`);
+    JSON.parse(raw); // sanity: still valid JSON before anything is written
+    console.log(`Checked ${updated} CSP header(s) in firebase.json`);
+    writeIfChanged(FIREBASE_JSON, source, raw);
 }
 
 main();
