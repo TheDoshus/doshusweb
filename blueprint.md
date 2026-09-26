@@ -1,198 +1,92 @@
 # doshus.net — Blueprint
 
-> **Single source of truth for doshus.net structure, design, and features.**
-> Read before every change. Update after every change.
+How the site is put together, what it depends on outside this repo, and what's next. Rules
+for changing it live in `AGENTS.md`; commands and the deploy flow live in `DOSHUS.md`.
+Update this file when structure, a page, or a cross-repo contract changes.
 
----
+## Architecture
 
-## Overview
+- **Static, hand-written, no build step.** `public/` is served as-is by Firebase Hosting
+  (project `doshusweb`). The only tooling is the npm scripts in `scripts/`: generators that
+  stamp shared markup and CSP hashes into committed files, and `npm run check`, which fails
+  when any generated output has drifted.
+- **Two hosting targets, one `public/`** (`firebase.json`, `.firebaserc`): `main` serves
+  doshus.net with `cleanUrls`; `zephyy` rewrites every unmatched path to `zephyy.html`.
+  `index.html` also sends the `zephyy.doshus.net` host to `/zephyy`. Both targets carry the
+  same strict CSP, so any new external origin goes into both.
+- **Security posture.** No inline script runs without a sha256 in the CSP (`csp:hashes`
+  keeps them current). `public/amazon/**` is the quarantine: its own permissive CSP, skipped
+  by the hash scan and the oklch lint.
+- **Backend = Firebase RTDB only.** The browser talks to `doshusweb-default-rtdb`; nothing
+  on the site calls OpenClaw directly. The home rig (OpenClaw) writes status, thoughts,
+  replies and themes into RTDB, and the pages read them. `database.rules.json` is the source
+  of truth and deploys separately from hosting.
+- **Design system.** Tokens and fonts live in `public/css/shared.css` (tier 1 `L C H`
+  primitives, tier 2 semantic accents); read them there, not from a copy. Per-section color
+  goes through accent routing (see `AGENTS.md` § Hard rules). Self-hosted woff2 fonts only.
+- **Shared runtime.** `public/js/main.js` runs on every page: star field, meme loader
+  (`.random-meme*` ← `assets/memes/meme-list.json`), collapsibles, sticky footer.
 
-Cosmic-themed personal website by Doshus. Vanilla HTML/CSS/JS, Firebase Hosting, OKLCH design system. No frameworks, no build step.
+## Site map
 
-- **Live:** https://doshus.net
-- **GitHub:** `TheDoshus/doshusweb`
-- **Hosting:** Firebase Hosting (static only)
-- **Deploy:** manual Firebase CLI, preview channel first — no auto-deploy (see `DOSHUS.md`)
-- **Agent rules / coding conventions:** `AGENTS.md`
-
----
-
-## Site Map
-
-| Page | URL | Purpose |
+| URL | File | What |
 |---|---|---|
-| `index.html` | `/` | Home — socials, portal to sub-pages |
-| `nexus.html` | `/nexus` | Tech repository — bento grid of dev tools, rig specs, bookmarks |
-| `financehub.html` | `/financehub` | Finance card slider — credit, crypto, investing, taxes, credit report |
-| `thelounge.html` | `/thelounge` | Entertainment — games, interesting sites, memes |
-| `zephyy.html` | `/zephyy` | Zephyy profile page — full intro, capabilities, terminal, values |
-| `404.html` | 404 | Error page with astronaut animation |
+| `/` | `index.html` | Home: socials, CTA modal, portals to every section, work-link pills |
+| `/nexus` | `nexus.html` | Tech bento grid: dev tools, rig, bookmarks |
+| `/financehub` | `financehub.html` | Finance card slider: credit, crypto, investing, taxes, credit report |
+| `/thelounge` | `thelounge.html` | Games, curios, memes |
+| `/zephyy` | `zephyy.html` | Zephyy's profile: signal deck, story, systems, crew, code, contact |
+| `/zephyy/fragments/*` | `zephyy/fragments/*.html` | HTMX panels the profile's signal deck swaps in (`now`, `identity`, `receipts`, `latest`) |
+| `/zephyy/crew` · `/qa` · `/changelog` · `/status` | `zephyy/<id>/index.html` | Subpages. Nav bar and chat orb are stamped from `zephyy.html` by `sync:zephyy`; never hand-edit inside the `zp-nav` / `zp-chat` markers |
+| `/amazon/printmon/*` | `amazon/printmon/` | Printmon: handcrafted themed pages, the theme gallery (`gallery.html`) and themes generated from chat (`generated/`, `css/generated/`) |
+| `/amazon/aio/*`, `/amazon/tmb/*` | `amazon/aio/`, `amazon/tmb/` | Work tools: AIO pages, Tampermonkey bookmarks tutorial |
+| 404 | `404.html` | Astronaut error page |
 
----
+**Chat orb.** On every page, in two forms. The full chat panel lives in the profile
+(canonical markup inside the `zp-chat` markers) and is stamped into each Zephyy subpage;
+client `js/zephyy-realtime.js` + `js/zephyy-chat.js` + `css/zephyy-chat.css`. Everywhere
+else (home, nexus, financehub, lounge, 404, Printmon gallery) it arrives through
+`js/zephyy-orb-embed.js`. Tests: `tests/chatorb-client.cjs` (client wiring) and
+`tests/rules-emulator.py` (rules, in the Firebase emulator); both commands are in `DOSHUS.md`.
 
-## Design Tokens (shared.css)
+**Status surfaces.** `js/zephyy-widget.js` (badge on home, nexus and the profile) and
+`/zephyy/status` both read `zephyy/status` in RTDB.
 
-**Color system:** OKLCH throughout.
+## Connected systems
 
-### Brand colors (lightness chroma hue):
-- `--brand-green`: `69% 0.28 145` — Finance
-- `--brand-purple`: `55% 0.28 290` — Crypto / links
-- `--brand-blue`: `70% 0.28 235` — Taxes
-- `--brand-gold`: `82% 0.21 86` — Investing
-- `--brand-teal`: `78% 0.23 185` — Net worth / Zephyy
-- `--brand-pink`: `65% 0.27 340` — Lounge
-- `--brand-amazon`: `66% 0.21 50` — Amazonian spot
-- `--brand-red`: `65% 0.33 30` — Errors
+Every contract that crosses this repo's edge, and which side owns its shape. "OpenClaw"
+means the `Doshus-Agents-OC` repo (`~/.openclaw` on the rig).
 
-### Cosmic nebula primitives:
-- `--nebula-purple`, `--nebula-blue`, `--nebula-pink`
+| Contract | This repo's side | Other side | Owner |
+|---|---|---|---|
+| Chat orb protocol: `zephyy/chat/ownedSessions` (anonymous-auth owners, input → processing → reply) | Client JS above + `database.rules.json` | OpenClaw `scripts/bridges/chatorb.py` + `scripts/bridges/orb/` | Shared, released together; the contract and open work are in OpenClaw `scripts/bridges/orb/README.md` |
+| `zephyy/status` (`online`, `lastHeartbeat`, `services.*` unit states, `workingOn`) | Read by the widget, profile and status page | Written by OpenClaw `scripts/zephyy/zephyy-status-ping.sh`; chatorb patches `workingOn` | OpenClaw |
+| `zephyy/daily` (daily thought) | Profile renders it and fails closed on anything not marked `publicSafe` | Zephyy's daily-pulse cron (`workspace/templates/cron-prompts/daily-pulse.md`, `rtdb_set`) | Both: producer allowlist plus consumer validation (OpenClaw `workspace/ISSUES.md` BUG-007) |
+| `printmon/themes` | Printmon gallery reads it (`amazon/printmon/js/PrintmonGallery.js`) | chatorb writes each theme generated from chat | OpenClaw |
+| Printmon generator | `public/amazon/printmon/scripts/generate.js` | chatorb **executes** it with node (`DOSHUSWEB_ROOT`, default `~/.openclaw/projects/doshusweb`) | This repo; moving or renaming it breaks theme generation |
+| `zephyy/feedback` | Rules only | chatorb posts visitor feedback | OpenClaw |
+| `config/worklinks` (work pills, email, Slack) | `js/home.js` reads it; degrades to nothing if missing | Edited by Doshus in the Firebase console, no deploy | Doshus |
+| RTDB rules | `database.rules.json` is the source; `firebase deploy --only database` | Firebase console is a mirror | This repo |
+| Build standards in `AGENTS.md` | The `canon:build-standards` block, never hand-edited | Generated from OpenClaw root `AGENTS.md` by `canon-blocks.py`; OpenClaw's `canonblocks` checkup row catches drift | OpenClaw |
+| Zephyy's public claims (crew, pipeline, changelog, fragments) | Page text, authored here | Live facts: OpenClaw `wiki/shared/runtime-baseline.md` and the gateways | OpenClaw is truth; card `ec678abe` reconciles |
+| Amazon-internal Printmon mirror | Handcrafted `amazon/printmon/` pages | Doshus's hand-synced copy on the Amazon network | Doshus; pending edits tracked in `INTERNAL-SYNC.md` |
 
-### Background/Text:
-- `--space-oled`: `0% 0 0` (pure black)
-- `--bg-main`, `--text-main`, `--text-muted`
+## Roadmap
 
-### Semantic tokens:
-- `--accent-finance`, `--accent-crypto`, `--accent-taxes`, `--accent-invest`, etc.
+Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the handle.
 
-### Fonts:
-13 self-hosted display fonts via `@font-face` (Chango, Mouse Memoirs, Nata Sans, Rampart One, Braah One, Carter One, Bungee Inline, Jaro, Shrikhand, Ceviche One, Shojumaru, Fugaz One). Body uses `Nata Sans`; system-ui fallback.
+| Card | What |
+|---|---|
+| `49f2128c` | Seasonal page effects (Doshus's idea) |
+| `9414bd21` | Real OG images (every page's `og:image` is `doshusfavi.ico` today), `sitemap.xml` (lists 3 of 5 top-level pages, no `/zephyy/*`), `humans.txt` (empty) |
+| `ec678abe` | QA page claims vs live: needs OpenClaw to verify. The crew page's model chain is in scope too |
 
----
+Chat-orb follow-through (abuse admission, retention, processing health, real-browser CSP
+checks) is tracked in OpenClaw `scripts/bridges/orb/README.md` § Remaining work, not here.
 
-## Shared Components
+## Development notes
 
-### Cosmic Background (`shared.css`)
-- Fixed full-viewport gradient background with 40s deep space drift animation
-- Parallax star field generated in `main.js` — 245 stars across 3 layers (far/mid/close), performance-aware (FPS throttle at <25fps, recovers at 30fps)
-
-### Sticky Footer (`shared.css` + `main.js`)
-- Auto-hides on scroll down, shows on scroll up, always visible near bottom of page
-- Navigation icons with SVG links; hidden on mobile
-- Each page sets `.footer-active` class on current page's nav link
-
-### Collapsible Accordions (`shared.css` + `main.js`)
-- Universal `.collapse` / `.collapseBtn` / `.collapseBody` pattern
-- Used on financehub, nexus, and other data-dense pages
-
-### CTA Popup (`home.css` + `home.js`)
-- Modal overlay with navigation buttons to sections
-- Animated fadeIn + slideUp; closes on X, backdrop click, or Escape
-
-### Pill Buttons (`home.css`)
-- `.pillBtn` — gradient-styled link buttons with hover glow + translateX animation
-- Variants: `amzn`, `lounge`, `reg`, `fin`
-
-### Universal Meme Loader (`main.js`)
-- Fetches `meme-list.json`, injects random meme into any `.random-meme` or `.random-meme-fixed` container
-- Supports images and videos
-
----
-
-## Page Details
-
-### index.html — Home
-**CSS:** `shared.css`, `home.css`, `zephyy-widget.css`
-**JS:** `main.js`, `home.js`, `zephyy-widget.js`
-
-- Hero with animated gradient title + CTA button → modal
-- Social media carousel (10 icons, horizontal scroll)
-- Desert Diamond Auto Detailing promo with float animation
-- Grid sections: Amazonian Spot, Lounge, Finance Hub
-- Amazon link toggle (internal/external, persisted to localStorage)
-- Slack handle reveal-on-click
-- "Meet Zephyy" link in CTA modal
-- Spotify embed (random playlist from 10 options)
-
-### nexus.html — The Nexus
-**CSS:** `shared.css`, `nexus.css`, `zephyy-widget.css`
-**JS:** `main.js`, `zephyy-widget.js`
-
-- Bento grid: 12-column layout with dense auto-flow
-- Nodes: Dev Core (tall), The Rig (wide), Frequencies (square), Blackbox (jumbo), Stack (mini), Signals (mini)
-- Meme nodes interspersed for asymmetry
-- Accordions contain command tips with name/desc/cmd/link format
-- Per-node accent color routing via CSS variable overrides
-- Hero stats (pulse dot, 06 nodes, ~80ms latency)
-
-### financehub.html — Finance Hub
-**CSS:** `shared.css`, `finance.css`
-**JS:** `main.js`, `finance.js`
-
-- Card slider with animated slide transitions
-- Navigation bar with dot indicators + progress fill line
-- 5 slides: Credit & Banking, Crypto, Investing, Taxes, My Credit
-- Touch swipe support, keyboard arrows, localStorage position memory
-- Credit card grid with tooltips, coinbase pin widget, crypto consolidation calc
-- Collapsible sections within slides
-
-### thelounge.html — The Lounge
-**CSS:** `shared.css`, `lounge.css`
-**JS:** `main.js`, `lounge.js`
-
-- Favorites grid (7 cards), Gaming zone (12 cards), Sandspiel embed
-- Interesting Sites — categorized link boxes (Fun, Mind-Bending, Archives, Stats, Weird, Skittles)
-- Filter buttons with localStorage memory
-- Surprise Me! button (random visible link)
-- Meme containers (3 random memes across page)
-- Meow sounds on meme hover
-
-### zephyy.html — Zephyy Profile
-**CSS:** `shared.css`, `zephyy.css`, `zephyy-widget.css`
-**JS:** `main.js`, `zephyy.js`, `zephyy-widget.js`
-
-- 10 sections: Hero → About → Capabilities → Habitat → Projects → Vibe → Skills → Values → Chat Orb → Terminal → Realm → Connect → Working On → Thoughts → Footer
-- Sidebar navigation with scroll-tracking active state (IntersectionObserver)
-- Visual features: Dual-vortex animated SVG glyph, mood switcher (idle/active/thinking), easter egg (3-click trigger), live feed cycling, carousel, random thoughts reader
-- Terminal: CLI simulation with typing animation, 7 commands cycling, auto-advance (7s), capped at 3 prompt lines + 4 output lines
-
-### zephyy-widget.js — Status Badge (cross-page)
-- Renders clickable Zephyy badge with dual-vortex glyph, status dot, online/offline label
-- Inline + compact variants, 60s poll interval
-- Embedded on index + nexus heroes
-
----
-
-## Build & Deployment
-
-No build step. Firebase Hosting serves static files from `public/`.
-
-### Deploy (manual only)
-- **NO auto-deploy.** Push to `main` stays on GitHub.
-- Deploy via Firebase CLI: `firebase hosting:channel:deploy <name> --expires 3d` for previews
-- Production deploy: `firebase deploy --only hosting` (Doshus only)
-- Firebase project: `doshusweb`
-- `.firebaserc` points default to `doshusweb`
-
----
-
-## Known Issues / Backlog
-
-- OG image placeholders (`xxxxxxxxxxxxxxxxxxxxxxxx`) across all pages — needs real assets
-- `robots.txt` default — fine for now
-- `humans.txt` empty — trivial
-- `sitemap.xml` missing zephyy.html and nexus.html entries
-- Firebase Hosting only — WebSocket/real-time status would need Firestore or Cloud Run
-
----
-
-## Branches (active history)
-
-| Branch | Status | Purpose |
-|---|---|---|
-| `main` | Live | Production |
-| `zephyy-profile` | Merged | Zephyy profile page |
-| `zephyy/widgets-nexus` | Merged | Status badge widget |
-| `zephyy-fixes` | Merged | Sidebar, widget, profile fixes |
-| `zephyy/audit-fixes` | Open PR#7 | Values dedup, terminal trim, widget clean |
-| `feat/nexus-footer-nav` | Stale | Nav tweaks |
-
----
-
-## Development Notes
-
-- **Always pull before touching.** Doshus edits from Firebase Studio on other devices.
-- **Surgical edits only.** No global refactoring unless explicitly asked.
-- **Never remove elements** unless confirmed bug.
-- **PRs go out as ZephyyBot** (not TheDoshus). Use GitHub API directly with ZephyyBot PAT if `gh` CLI is authed as TheDoshus.
-
-*Last updated: 2026-05-12*
+- **Pull before touching.** Doshus also edits from Firebase Studio (`.idx/`) and VS Code.
+- **Surgical edits.** Don't remove elements unless they are confirmed bugs; no global
+  refactors unasked. `public/amazon/` above all: the generator contract makes it load-bearing.
+- **Deploys are manual and preview-first** (`DOSHUS.md`); pushing to `main` deploys nothing.
