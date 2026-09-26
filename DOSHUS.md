@@ -12,7 +12,8 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 
 | File | What |
 |---|---|
-| `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy) |
+| `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy); VS Code reads it directly |
+| `CLAUDE.md`, `GEMINI.md` | One-line doorways that import `AGENTS.md` for Claude Code and Gemini CLI |
 | `blueprint.md` | Site architecture and roadmap |
 | `INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
 | `scripts/generate-meme-list.js` | `npm run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
