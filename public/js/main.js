@@ -546,3 +546,7 @@ window.populateDiscordWidget = async function(widget) {
 window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.discord-widget[data-autoload]').forEach(w => window.populateDiscordWidget(w));
 });
+
+// 404 "Go Back": the CSP refuses javascript: URLs; without history the link just goes home.
+const backLink = document.querySelector('[data-back]');
+if (backLink && history.length > 1) backLink.addEventListener('click', (e) => { e.preventDefault(); history.back(); });
