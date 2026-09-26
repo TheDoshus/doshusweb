@@ -12,11 +12,10 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 
 | File | What |
 |---|---|
+| `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy) |
 | `blueprint.md` | Site architecture and roadmap |
-| `GEMINI.md` | Gemini integration notes |
-| `PAGE-NOTES.md` | Per-page change log and notes |
-| `Github-Copilot-Doshusweb-Audit.md` | Copilot audit of the codebase |
-| `generate-meme-list.js` | Printmon meme template generator |
+| `INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
+| `generate-meme-list.js` | Rebuilds `public/assets/memes/meme-list.json` after adding memes |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
 | `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`npm run csp:hashes`) |
@@ -29,7 +28,6 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `public/zephyy/` | Zephyy profile page assets |
 | `public/amazon/` | Printmon gallery and related pages |
 | `public/assets/` | Shared assets (fonts, images, icons) |
-| `node_modules/` | Dependencies (npm, for build tools) |
 
 ## Quick Reference
 
@@ -55,7 +53,6 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 **Quarantine:** `public/amazon/**` keeps its own loose CSP — excluded from the strict policy and the hash scan.
 
 **Deferred security work (don't lose these):**
-- **Chat orb XSS** — `renderContent()` in `zephyy.js` injects link labels/URLs/img alts unescaped into `innerHTML`. Display-only fix, safe anytime.
 - **Chatorb follow-through** — abuse admission, retention, processing health and browser/action verification remain in the backend contract below.
 
 ## Chatorb

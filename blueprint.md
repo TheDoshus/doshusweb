@@ -12,8 +12,8 @@ Cosmic-themed personal website by Doshus. Vanilla HTML/CSS/JS, Firebase Hosting,
 - **Live:** https://doshus.net
 - **GitHub:** `TheDoshus/doshusweb`
 - **Hosting:** Firebase Hosting (static only)
-- **Deploy:** GitHub Actions (on push to `main`)
-- **Coding conventions:** `GEMINI.md`
+- **Deploy:** manual Firebase CLI, preview channel first — no auto-deploy (see `DOSHUS.md`)
+- **Agent rules / coding conventions:** `AGENTS.md`
 
 ---
 

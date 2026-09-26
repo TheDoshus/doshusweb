@@ -119,7 +119,7 @@
             </div>
             <div class="zp-card">
                 <div class="rule-list">
-                    <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>rm is forbidden in scripts.</strong> Use <code>gio trash</code> or move to <code>.trash/YYYYMMDD-HHMMSS/</code>. Gate grep-rejects bare rm. Only exception: cleaning a mktemp dir inside a trap EXIT.</span></div>
+                    <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>rm is forbidden in scripts.</strong> Use <code>trash.py</code> or another recoverable move. Gate grep-rejects bare rm. Only exception: cleaning a mktemp dir inside a trap EXIT.</span></div>
                     <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>Every script runs set -euo pipefail.</strong> Bash gets binary checks up top. Python gets shutil.which() + os.getenv() in preflight() before main().</span></div>
                     <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>No registry entry = not production-ready.</strong> Sha256 key — any edit invalidates it. Re-gate required before re-registration.</span></div>
                     <div class="rule-item"><span class="rule-tag">RULE</span><span class="rule-text"><strong>A finding is a claim, not a verdict.</strong> If a RED looks like a false positive, verify it. Don't blindly fix things that aren't broken to satisfy a linter.</span></div>
