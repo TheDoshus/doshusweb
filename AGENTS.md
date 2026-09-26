@@ -88,6 +88,7 @@ before you stop, ask what you left behind.
 
 ## Conventions
 
+- **Two kinds of code, two bars** (Doshus, 2026-09-26). Zephyy's surface is agent-written — `zephyy.html`, `public/zephyy/`, `public/css/zephyy-*.css`, `public/js/zephyy-*.js` — and agents may clean it up without line-by-line review. Everything else is Doshus's hand-crafted code: propose the smallest diff, explain it, and let him review before it lands. On both, fewer lines for the same behavior wins.
 - **Grep before you write.** Before adding a new function, CSS token, util, or component, search `public/` for one that already does the job (`grep -rn "formatDate\|--accent-" public/`) — reuse or extend it, never spawn a parallel. A second date-helper or a duplicate token is a bug. This site's token + accent-routing system exists to be *extended*, not copy-pasted.
 - JS is vanilla: guard for missing DOM elements (scripts are shared across pages), build user-facing strings with `createElement`/`textContent` (not innerHTML), keep console quiet in production paths.
 - **No `?v=` cache-busters** on css/js references (Doshus's call 2026-07-16: low traffic, 7-day `max-age` self-heals). Don't reintroduce them; changed assets just take up to a week to propagate.
