@@ -70,7 +70,7 @@ before you stop, ask what you left behind.
   - Tier 1 primitives hold raw `L C H` triples (e.g. `--brand-purple: 55% 0.28 290`) — always consumed as `oklch(var(--token))` or `oklch(var(--token) / alpha)`.
   - Tier 2 semantic tokens: `--accent-finance`, `--accent-crypto`, `--accent-taxes`, `--accent-invest`, `--accent-networth`, `--accent-lounge`, `--accent-amzn`, `--accent-myth`, `--accent-discord`. `--text-main` / `--text-muted` are **full colors** — use as `var(--text-muted)`, never re-wrapped in `oklch()`.
 - **Accent routing pattern** for per-section theming: one custom property set per scope, shared rules consume it. Existing examples: `--sec` (finance.css), `--node-accent` (nexus.css), `--pill-accent` (home.css), `--swap-accent` (printmon swapbtn.css — per-theme-page button, `--pm-hue1` fallback themes generated pages). Extend this pattern; don't copy-paste per-section rule blocks.
-- **CSP is strict** (chasing MDN Observatory 100). Adding any external fetch/iframe/script requires updating the CSP headers in `firebase.json` — in **both** hosting targets (`main` and `zephyy`). Scope to the tightest path that works (e.g. `https://discord.com/widget`, not `https://discord.com`).
+- **CSP is strict, and stays that way** (Doshus's standard for every agent; A+ 110 on Observatory, 2026-09-26). No `'unsafe-*'`, wildcard or bare-scheme sources unless absolutely necessary; the standing exceptions are named in `CSP_EXCEPTIONS` in `scripts/check.js` (`style-src 'unsafe-inline'` because the widgets need it, already tested). Inline scripts get a hash via `csp:hashes`, never a looser policy; no inline `on*=` handlers or `javascript:` URLs: the browser refuses them, so they are dead code. Adding any external fetch/iframe/script requires updating the CSP headers in `firebase.json` — in **both** hosting targets (`main` and `zephyy`). Scope to the tightest path that works (e.g. `https://discord.com/widget`, not `https://discord.com`).
 - Fonts are self-hosted woff2 in `public/assets/fonts/` — no Google Fonts requests.
 
 ## Layout
@@ -102,7 +102,7 @@ npm run check                                  # read-only; exits 1 on any failu
 python3 -m http.server 8080 -d public          # eyeball locally
 ```
 
-`npm run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result.
+`npm run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result.
 
 Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
 

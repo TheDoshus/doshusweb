@@ -20,6 +20,10 @@ const SVG_BASELINE = new Set([
     'slackcon', 'spotifycon', 'twitchcon', 'youtubecon'
 ].map((n) => `public/assets/icons/${n}.svg`).concat('public/assets/images/Equifax_Logo.svg'));
 
+// Broad CSP sources that stay on purpose: widgets need inline styles (Doshus
+// tested dropping it, DOSHUS.md); images load from any https host.
+const CSP_EXCEPTIONS = { 'style-src': ["'unsafe-inline'"], 'img-src': ['data:', 'https:'] };
+
 function walk(dir, out = []) {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
         if (e.name === 'node_modules' || e.name === '.git') continue;
@@ -119,6 +123,29 @@ const CHECKS = {
         const text = fs.readFileSync(f, 'utf8');
         return lint(text).map((h) => `${name}:${lineOf(text, h.index)}: ${h.value.trim()}`);
     }),
+    // Doshus's standard: no unsafe or wildcard sources unless absolutely necessary.
+    // Every standing exception is named in CSP_EXCEPTIONS.
+    'csp stays strict': () => {
+        const policies = JSON.parse(fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8')).hosting
+            .flatMap((t) => t.headers.flatMap((h) => h.headers))
+            .filter((h) => h.key === 'Content-Security-Policy' && h.value.includes("default-src 'none'"))
+            .map((h) => h.value);
+        const problems = new Set(policies).size > 1 ? ['firebase.json: main and zephyy strict CSPs differ'] : [];
+        for (const directive of (policies[0] || '').split(';')) {
+            const [name, ...sources] = directive.trim().split(/\s+/);
+            for (const s of sources) {
+                if (/^'unsafe-|^\*$|^(https?|data|blob):$/.test(s) && !(CSP_EXCEPTIONS[name] || []).includes(s)) {
+                    problems.push(`firebase.json: ${name} ${s}`);
+                }
+            }
+        }
+        // Inline handlers and javascript: URLs are dead under this CSP: the browser refuses them.
+        return problems.concat(byExt('.html').filter((f) => !NOT_OURS.test(rel(f))).flatMap((f) => {
+            const html = fs.readFileSync(f, 'utf8');
+            return [...html.matchAll(/<[^>]*?\s(on[a-z]+\s*=|(?:href|src|action)\s*=\s*["']\s*javascript:)/gi)]
+                .map((m) => `${rel(f)}:${lineOf(html, m.index)}: ${m[1].trim()}`);
+        }));
+    },
     'csp hashes current': () => runGenerator('update-csp-hashes.js'),
     'zephyy nav stamp': () => runGenerator('sync-zephyy-nav.js'),
     'zephyy chat stamp': () => runGenerator('sync-zephyy-chat.js')
