@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = __dirname;
+const ROOT = path.join(__dirname, '..');
 const PROFILE_PATH = path.join(ROOT, 'public', 'zephyy.html');
 const STAMP_PATTERN = /^[ \t]*<!-- zp-chat:start -->[\s\S]*?^[ \t]*<!-- zp-chat:end -->/m;
 const SCRIPT_KEYS = [

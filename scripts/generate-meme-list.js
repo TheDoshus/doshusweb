@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuration
-const memesDir = './public/assets/memes';
-const outputFile = './public/assets/memes/meme-list.json';
+const memesDir = path.join(__dirname, '..', 'public', 'assets', 'memes');
+const outputFile = path.join(memesDir, 'meme-list.json');
 
 // Read the memes directory
 fs.readdir(memesDir, (err, files) => {

@@ -15,7 +15,8 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy) |
 | `blueprint.md` | Site architecture and roadmap |
 | `INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
-| `generate-meme-list.js` | Rebuilds `public/assets/memes/meme-list.json` after adding memes |
+| `scripts/generate-meme-list.js` | `npm run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
+| `scripts/sync-zephyy-{nav,chat}.js` | `npm run sync:zephyy` — re-stamps the Zephyy subpages' nav bar and chat orb from `public/zephyy.html` |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
 | `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`npm run csp:hashes`) |
@@ -100,7 +101,10 @@ cd ~/.openclaw/projects/doshusweb && firebase hosting:channel:deploy preview
 cd ~/.openclaw/projects/doshusweb && npm run deploy
 
 # Regenerate the meme list after dropping new memes in assets/memes/
-cd ~/.openclaw/projects/doshusweb && node generate-meme-list.js
+cd ~/.openclaw/projects/doshusweb && npm run memes
+
+# Re-stamp the Zephyy subpages (nav bar + chat orb) after editing public/zephyy.html
+cd ~/.openclaw/projects/doshusweb && npm run sync:zephyy
 
 # Resync CSP hashes after editing any inline <script> in public/*.html
 cd ~/.openclaw/projects/doshusweb && npm run csp:hashes

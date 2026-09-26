@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = __dirname;
+const ROOT = path.join(__dirname, '..');
 const STAMP_START = '<!-- zp-nav:start -->';
 const STAMP_END = '<!-- zp-nav:end -->';
 
@@ -40,7 +40,7 @@ const NAV_CONFIG = {
         label: 'Doshus',
         href: '/',
         subpageIcon: '<img src="https://doshus.net/doshusfavi.ico" width="18" height="18" alt="Doshus">',
-        profileIcon: '<img src="https://doshus.net/doshusfavi.ico" width="25px" alt="Doshus logo" class="zp-logo-icon">'
+        profileIcon: '<img src="https://doshus.net/doshusfavi.ico" width="25" height="25" alt="Doshus logo" class="zp-logo-icon">'
     }
 };
 
@@ -127,7 +127,7 @@ for (const page of NAV_CONFIG.subpages) {
     if (!stylesheetPattern.test(updated)) {
         throw new Error(`Could not find Zephyy subpage stylesheet in ${path.relative(ROOT, filePath)}`);
     }
-    updated = updated.replace(stylesheetPattern, 'href="/css/zephyy-subpage.css?v=1"');
+    updated = updated.replace(stylesheetPattern, 'href="/css/zephyy-subpage.css"');  // no ?v= busters (AGENTS.md)
 
     writeIfChanged(filePath, source, updated);
 }

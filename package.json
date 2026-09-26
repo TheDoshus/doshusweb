@@ -8,6 +8,8 @@
   "scripts": {
     "deploy": "firebase deploy --only hosting",
     "deploy:full": "firebase deploy",
-    "csp:hashes": "node scripts/update-csp-hashes.js"
+    "csp:hashes": "node scripts/update-csp-hashes.js",
+    "memes": "node scripts/generate-meme-list.js",
+    "sync:zephyy": "node scripts/sync-zephyy-nav.js && node scripts/sync-zephyy-chat.js"
   }
 }
