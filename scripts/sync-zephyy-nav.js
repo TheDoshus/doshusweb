@@ -39,8 +39,8 @@ const NAV_CONFIG = {
     doshus: {
         label: 'Doshus',
         href: '/',
-        subpageIcon: '<img src="https://doshus.net/doshusfavi.ico" width="18" height="18" alt="Doshus">',
-        profileIcon: '<img src="https://doshus.net/doshusfavi.ico" width="25" height="25" alt="Doshus logo" class="zp-logo-icon">'
+        subpageIcon: '<img src="/doshusfavi.ico" width="18" height="18" alt="Doshus">',
+        profileIcon: '<img src="/doshusfavi.ico" width="25" height="25" alt="Doshus logo" class="zp-logo-icon">'
     }
 };
 
