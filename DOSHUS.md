@@ -78,6 +78,8 @@ node tests/chatorb-client.cjs
 firebase emulators:exec --only database --project doshusweb "python3 tests/rules-emulator.py"
 ```
 
+In a cloud session, prefix the emulator run with `env -u HTTPS_PROXY -u https_proxy`: firebase-tools sends even its localhost calls through `HTTPS_PROXY` and ignores `NO_PROXY` (`lib/apiv2.js`, 15.31.0), and the sandbox proxy refuses them. The environment setup script pre-downloads the emulator so that run needs no network.
+
 The client VM checks wiring; the real local emulator checks ownership, validation,
 priority metadata and atomic writes. Neither proves production token verification,
 browser CSP or persisted anonymous identity. The backend uses an administrative
