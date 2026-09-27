@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://doshus.net/</loc>
-    <lastmod>2026-04-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  
-  <url>
-    <loc>https://doshus.net/financehub</loc>
-    <lastmod>2026-04-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  
-  <url>
-    <loc>https://doshus.net/thelounge</loc>
-    <lastmod>2026-04-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+  <url><loc>https://doshus.net/</loc></url>
+  <url><loc>https://doshus.net/nexus</loc></url>
+  <url><loc>https://doshus.net/financehub</loc></url>
+  <url><loc>https://doshus.net/thelounge</loc></url>
+  <url><loc>https://doshus.net/zephyy</loc></url>
+  <url><loc>https://doshus.net/zephyy/crew</loc></url>
+  <url><loc>https://doshus.net/zephyy/qa</loc></url>
+  <url><loc>https://doshus.net/zephyy/changelog</loc></url>
+  <url><loc>https://doshus.net/zephyy/status</loc></url>
 </urlset>

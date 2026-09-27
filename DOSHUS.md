@@ -13,13 +13,14 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | File | What |
 |---|---|
 | `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy); VS Code reads it directly |
-| `CLAUDE.md`, `GEMINI.md` | One-line doorways that import `AGENTS.md` for Claude Code and Gemini CLI |
-| `blueprint.md` | Site architecture and roadmap |
-| `INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
+| `CLAUDE.md` | One-line doorway that imports `AGENTS.md` for Claude Code |
+| `BLUEPRINT.md` | Site architecture and roadmap |
+| `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
 | `scripts/generate-meme-list.js` | `npm run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
 | `scripts/sync-zephyy-{nav,chat}.js` | `npm run sync:zephyy` — re-stamps the Zephyy subpages' nav bar and chat orb from `public/zephyy.html` |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
+| `scripts/check.js` | `npm run check` — every pre-commit check, read-only (see AGENTS.md § Verify) |
 | `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`npm run csp:hashes`) |
 
 ## Key Folders
@@ -42,9 +43,13 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 ## Security / CSP Playbook
 
-**`Content-Security-Policy`** is strict (Observatory A+ 105/100, 2026-07-10): script-src has no `unsafe-inline`/`unsafe-eval`; inline scripts run via sha256 hashes only.
+**`Content-Security-Policy`** is strict: script-src has no `unsafe-inline`/`unsafe-eval`; inline scripts run via sha256 hashes only.
 
-**Testing a stricter policy later** (e.g. dropping `unsafe-inline` from style-src): temporarily add a `Content-Security-Policy-Report-Only` header with the candidate policy to both targets, browse with DevTools open (`[Report Only]` lines = would-be blocks; ignore ones from `content.js` — that's browser extensions), promote when quiet, remove the RO header.
+**Grades (2026-09-26):** MDN Observatory **A+ 110** (11/12 tests; was 105 on 07-10), securityheaders.com **A+** (all six headers green; XFO satisfied by `frame-ancestors`). The one failed Observatory test is SRI (−5): `gtag/js` and the CoinGecko widget load without `integrity`, and both are unversioned vendor URLs whose content changes under you, so pinning a hash would break them the day the vendor ships. The Firebase SDKs are pinned and carry SRI.
+
+**`style-src 'unsafe-inline'` stays** (Doshus, tested with Claude: the embedded widgets break without it; Observatory scores it 0, not a penalty). Don't retry it.
+
+**Testing a stricter policy later:** temporarily add a `Content-Security-Policy-Report-Only` header with the candidate policy to both targets, browse with DevTools open (`[Report Only]` lines = would-be blocks; ignore ones from `content.js` — that's browser extensions), promote when quiet, remove the RO header.
 
 **Edited an inline `<script>`?** → `npm run csp:hashes` (rewrites the hash tokens in firebase.json; idempotent, good predeploy habit).
 
@@ -73,6 +78,8 @@ node tests/chatorb-client.cjs
 firebase emulators:exec --only database --project doshusweb "python3 tests/rules-emulator.py"
 ```
 
+In a cloud session, prefix the emulator run with `env -u HTTPS_PROXY -u https_proxy`: firebase-tools sends even its localhost calls through `HTTPS_PROXY` and ignores `NO_PROXY` (`lib/apiv2.js`, 15.31.0), and the sandbox proxy refuses them. The environment setup script pre-downloads the emulator so that run needs no network.
+
 The client VM checks wiring; the real local emulator checks ownership, validation,
 priority metadata and atomic writes. Neither proves production token verification,
 browser CSP or persisted anonymous identity. The backend uses an administrative
@@ -89,8 +96,8 @@ cd ~/.openclaw/projects/doshusweb && python3 -m http.server 8080 -d public
 # Check what's changed in public/
 ls -lt ~/.openclaw/projects/doshusweb/public/ | head -15
 
-# Syntax-check JS files before committing
-find ~/.openclaw/projects/doshusweb/public -name '*.js' -exec node -c {} \;
+# Run every pre-commit check (syntax, JSON, CSS braces, oklch, CSP-hash + stamp drift)
+cd ~/.openclaw/projects/doshusweb && npm run check
 
 # Check RTDB rules
 cat ~/.openclaw/projects/doshusweb/database.rules.json

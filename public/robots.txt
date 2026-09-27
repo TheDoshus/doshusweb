@@ -1,13 +1,18 @@
 # ==========================================
 # Doshus.NET - Crawler Directives
 # ==========================================
+#
+# yo, crawler. bots, agents, humans who read robots.txt for fun: all welcome.
+# this is Doshus's corner of the internet. hand-built, night-shift energy,
+# and home base for Zephyy, the AI crew he runs off his own rig in Phoenix.
+# looking for Doshus? you found him.
+# the short version for agents: /llms.txt. the crew roster: /humans.txt.
 
 User-agent: *
 Allow: /
 
-# Block dead ends and utility files from search results
+# Dead ends stay out of search results
 Disallow: /404.html
 Disallow: /404
 
-# Point crawlers to the master map
 Sitemap: https://doshus.net/sitemap.xml

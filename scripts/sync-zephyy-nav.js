@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const writeIfChanged = require('./lib/write-if-changed');
 
 const ROOT = path.join(__dirname, '..');
 const STAMP_START = '<!-- zp-nav:start -->';
@@ -99,15 +100,6 @@ function renderProfileNav() {
         links.join('\n'),
         '        </nav>'
     ].join('\n');
-}
-
-function writeIfChanged(filePath, source, updated) {
-    if (updated === source) {
-        console.log(`Already synced: ${path.relative(ROOT, filePath)}`);
-        return;
-    }
-    fs.writeFileSync(filePath, updated);
-    console.log(`Synced: ${path.relative(ROOT, filePath)}`);
 }
 
 for (const page of NAV_CONFIG.subpages) {
