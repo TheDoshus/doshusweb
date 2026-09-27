@@ -69,7 +69,7 @@ means the `Doshus-Agents-OC` repo (`~/.openclaw` on the rig).
 | RTDB rules | `database.rules.json` is the source; `firebase deploy --only database` | Firebase console is a mirror | This repo |
 | Build standards in `AGENTS.md` | The `canon:build-standards` block, never hand-edited | Generated from OpenClaw root `AGENTS.md` by `canon-blocks.py`; OpenClaw's `canonblocks` checkup row catches drift | OpenClaw |
 | Zephyy's public claims (crew, pipeline, changelog, fragments) | Page text, authored here | Live facts: OpenClaw `wiki/shared/runtime-baseline.md` and the gateways | OpenClaw is truth; card `ec678abe` reconciles |
-| Amazon-internal Printmon mirror | Handcrafted `amazon/printmon/` pages | Doshus's hand-synced copy on the Amazon network | Doshus, synced by hand |
+| Amazon-internal Printmon mirror | Handcrafted `amazon/printmon/` pages | Doshus's hand-synced copy on the Amazon network | Doshus; pending edits tracked in `AMZN-INTERNAL-SYNC.md` |
 
 ## Roadmap
 
