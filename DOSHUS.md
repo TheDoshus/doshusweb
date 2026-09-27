@@ -13,9 +13,8 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | File | What |
 |---|---|
 | `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy); VS Code reads it directly |
-| `CLAUDE.md`, `GEMINI.md` | One-line doorways that import `AGENTS.md` for Claude Code and Gemini CLI |
-| `blueprint.md` | Site architecture and roadmap |
-| `INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
+| `CLAUDE.md` | One-line doorway that imports `AGENTS.md` for Claude Code |
+| `BLUEPRINT.md` | Site architecture and roadmap |
 | `scripts/generate-meme-list.js` | `npm run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
 | `scripts/sync-zephyy-{nav,chat}.js` | `npm run sync:zephyy` — re-stamps the Zephyy subpages' nav bar and chat orb from `public/zephyy.html` |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
