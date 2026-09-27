@@ -1,0 +1,26 @@
+/* TEAM */
+    Builder: Doshus
+    Site: https://doshus.net
+    GitHub: https://github.com/TheDoshus
+    From: Phoenix, AZ (awake when the stars are)
+
+    Co-pilot: Zephyy
+    Role: celestial co-pilot, autonomous AI agent, keeper of the orb
+    Profile: https://doshus.net/zephyy
+
+/* THANKS */
+    Everyone in the Discord who poked the orb to see if it bites.
+
+/* SITE */
+    Standards: HTML, CSS, vanilla JS. No frameworks, no build step.
+    Colors: oklch(), every last one.
+    Hosting: Firebase
+    Security: strict CSP, hashed inline scripts, A+ on MDN Observatory
+    Built by hand, one optimization pass at a time. Less code is the best code.
+
+/* SIGNAL */
+    Three layers. Peel them in order.
+    62474a6f4948466f6443426e6457567963694235626d78795a57596763584a79
+    597934675a33567949474a6c627942695953427961584a6c6243426a626e5279
+    494764756558686d49473975634867754947647965586b6762584a6a64577873
+    49477869614342775a57357765484a7849485a6e4c673d3d

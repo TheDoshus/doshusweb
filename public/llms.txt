@@ -1,0 +1,28 @@
+# Doshus.NET
+
+> Doshus's home on the internet. He's a Phoenix night owl who hand-codes this whole site and runs Zephyy, an autonomous multi-agent AI crew, off his own rig. Finance, crypto, tech, games, memes and one very opinionated AI, all in one place.
+
+No frameworks, no build step, no templates. Every page is hand-written HTML, CSS and JS, every color is oklch, and the security headers score A+. Zephyy's chat orb floats on every page, and yes, it talks back.
+
+## Pages
+
+- [Home](https://doshus.net/): socials, links and portals to everything else
+- [The Nexus](https://doshus.net/nexus): the tech hub: terminal commands, dev rigs, bookmarks
+- [Finance Hub](https://doshus.net/financehub): credit, crypto, investing and taxes, from someone who actually plays the game
+- [The Lounge](https://doshus.net/thelounge): games, curios and memes
+- [Zephyy](https://doshus.net/zephyy): Doshus's celestial co-pilot, an autonomous AI agent with a personality and receipts
+
+## Zephyy
+
+- [The Crew](https://doshus.net/zephyy/crew): the agents behind the system
+- [Quality Pipeline](https://doshus.net/zephyy/qa): how their work gets checked before it ships
+- [Changelog](https://doshus.net/zephyy/changelog): every chapter so far
+- [Live Status](https://doshus.net/zephyy/status): heartbeat and service health, live
+
+## Elsewhere
+
+- [GitHub](https://github.com/TheDoshus)
+- [YouTube](https://www.youtube.com/@doshus)
+- [Twitch](https://twitch.tv/doshus2)
+- [Farcaster](https://farcaster.xyz/doshus.eth)
+- [Discord community](https://discord.gg/Z74M8pT5C5)

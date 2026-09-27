@@ -148,7 +148,17 @@ const CHECKS = {
     },
     'csp hashes current': () => runGenerator('update-csp-hashes.js'),
     'zephyy nav stamp': () => runGenerator('sync-zephyy-nav.js'),
-    'zephyy chat stamp': () => runGenerator('sync-zephyy-chat.js')
+    'zephyy chat stamp': () => runGenerator('sync-zephyy-chat.js'),
+    // Every public page is in the sitemap, and every sitemap URL is a page.
+    'sitemap matches pages': () => {
+        const listed = new Set([...fs.readFileSync(path.join(ROOT, 'public/sitemap.xml'), 'utf8')
+            .matchAll(/<loc>https:\/\/doshus\.net\/([^<]*)<\/loc>/g)].map((m) => m[1]));
+        const pages = new Set(byExt('.html').map(rel)
+            .filter((f) => /^public\/(?!404\.)[^/]+\.html$|^public\/zephyy\/[^/]+\/index\.html$/.test(f))
+            .map((f) => f.replace(/^public\/|(index)?\.html$|\/index\.html$/g, '')));
+        return [...pages].filter((p) => !listed.has(p)).map((p) => `missing from sitemap: /${p}`)
+            .concat([...listed].filter((p) => !pages.has(p)).map((p) => `sitemap lists no page: /${p}`));
+    }
 };
 
 let failed = 0;
