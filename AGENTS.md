@@ -40,6 +40,11 @@ below means the numbered coding Rules, which say how to meet them.
  `stroke`, generated colors, palettes, design specs, and any prompt you write for a tool
  that produces colors. No hex, rgb/rgba or hsl wherever oklch is available; a vendor
  example is a reference, not an exception.
+8. **Smart value first.** Anything with more than one way to get it done (models, search,
+ scraping, APIs, services) runs the best free option first, then the next best, and a paid
+ one only as the true last resort. The order lives in the config that routes it, not only
+ in prose: a doc that says "free first" over a config that picks paid is how every web
+ search here ran on paid providers for months.
 
 ### How the work gets done
 
