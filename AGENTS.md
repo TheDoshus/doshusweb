@@ -65,8 +65,12 @@ below means the numbered coding Rules, which say how to meet them.
  and a manual the same session, or it rots unseen.
 - **Call out mess when you see it:** duplication, stale docs, dead files, and builds kept
  only because redoing them is work. Don't route around it.
-- **Answer every part.** Keep every field he asked for and never drop one for brevity. When
- he names a reviewer or collaborator, their review is part of done.
+- **Answer every part.** Keep every field he asked for and never drop one for brevity.
+- **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
+ different model where a free lane is available, and every finding is fixed or answered; a
+ reviewer he names is part of done. Short on review quota, routine work lands with its review
+ owed and sharp edges wait. Timing
+ and the kept verdict: Rule 7 § E.
 
 **The messy trail** is the failure to guard against: scratch files left behind, notes
 unfiled, board cards not moved, decisions not written down. Leave it clean and organized;
