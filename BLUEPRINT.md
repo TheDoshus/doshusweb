@@ -7,8 +7,8 @@ Update this file when structure, a page, or a cross-repo contract changes.
 ## Architecture
 
 - **Static, hand-written, no build step.** `public/` is served as-is by Firebase Hosting
-  (project `doshusweb`). The only tooling is the npm scripts in `scripts/`: generators that
-  stamp shared markup and CSP hashes into committed files, and `npm run check`, which fails
+  (project `doshusweb`). The only tooling is the bun scripts in `scripts/`: generators that
+  stamp shared markup and CSP hashes into committed files, and `bun run check`, which fails
   when any generated output has drifted.
 - **Two hosting targets, one `public/`** (`firebase.json`, `.firebaserc`): `main` serves
   doshus.net with `cleanUrls`; `zephyy` rewrites every unmatched path to `zephyy.html`.

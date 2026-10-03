@@ -1,8 +1,8 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 // Syncs CSP sha256 hashes for inline <script> blocks into firebase.json.
 //
-// Usage: npm run csp:hashes   (run after editing any inline <script> in public/)
-//        --check: report drift instead of writing (npm run check)
+// Usage: bun run csp:hashes   (run after editing any inline <script> in public/)
+//        --check: report drift instead of writing (bun run check)
 //
 // Scans public/**/*.html (skipping public/amazon/ — quarantine zone with its
 // own permissive CSP), hashes every executable inline script, and rewrites the
@@ -15,13 +15,14 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const writeIfChanged = require('./lib/write-if-changed');
+const readdirSorted = require('./lib/readdir-sorted');
 
 const ROOT = path.join(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const FIREBASE_JSON = path.join(ROOT, 'firebase.json');
 
 function walkHtml(dir, out) {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    for (const entry of readdirSorted(dir, { withFileTypes: true })) {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) {
             if (entry.name === 'amazon' || entry.name === 'node_modules') continue;

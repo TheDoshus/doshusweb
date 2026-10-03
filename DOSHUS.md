@@ -16,12 +16,12 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `CLAUDE.md` | One-line doorway that imports `AGENTS.md` for Claude Code |
 | `BLUEPRINT.md` | Site architecture and roadmap |
 | `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
-| `scripts/generate-meme-list.js` | `npm run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
-| `scripts/sync-zephyy-{nav,chat}.js` | `npm run sync:zephyy` — re-stamps the Zephyy subpages' nav bar and chat orb from `public/zephyy.html` |
+| `scripts/generate-meme-list.js` | `bun run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
+| `scripts/sync-zephyy-{nav,chat}.js` | `bun run sync:zephyy` — re-stamps the Zephyy subpages' nav bar and chat orb from `public/zephyy.html` |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
-| `scripts/check.js` | `npm run check` — every pre-commit check, read-only (see AGENTS.md § Verify) |
-| `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`npm run csp:hashes`) |
+| `scripts/check.js` | `bun run check` — every pre-commit check, read-only (see AGENTS.md § Verify) |
+| `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`bun run csp:hashes`) |
 
 ## Key Folders
 
@@ -51,9 +51,9 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 **Testing a stricter policy later:** temporarily add a `Content-Security-Policy-Report-Only` header with the candidate policy to both targets, browse with DevTools open (`[Report Only]` lines = would-be blocks; ignore ones from `content.js` — that's browser extensions), promote when quiet, remove the RO header.
 
-**Edited an inline `<script>`?** → `npm run csp:hashes` (rewrites the hash tokens in firebase.json; idempotent, good predeploy habit).
+**Edited an inline `<script>`?** → `bun run csp:hashes` (rewrites the hash tokens in firebase.json; idempotent, good predeploy habit).
 
-**RTDB rules:** edit `database.rules.json` → `firebase deploy --only database`. Repo is source of truth, console Rules tab is the mirror. `npm run deploy` does NOT push rules.
+**RTDB rules:** edit `database.rules.json` → `firebase deploy --only database`. Repo is source of truth, console Rules tab is the mirror. `bun run deploy` does NOT push rules.
 
 **Work links:** Amazonian Spot pills + work email live in RTDB `/config/worklinks`, not the repo. Edit in the Firebase console — live instantly, no deploy. Node missing/unreachable → section degrades gracefully (no pills, toggle hidden, email blurred).
 
@@ -97,7 +97,7 @@ cd ~/.openclaw/projects/doshusweb && python3 -m http.server 8080 -d public
 ls -lt ~/.openclaw/projects/doshusweb/public/ | head -15
 
 # Run every pre-commit check (syntax, JSON, CSS braces, oklch, CSP-hash + stamp drift)
-cd ~/.openclaw/projects/doshusweb && npm run check
+cd ~/.openclaw/projects/doshusweb && bun run check
 
 # Check RTDB rules
 cat ~/.openclaw/projects/doshusweb/database.rules.json
@@ -106,16 +106,16 @@ cat ~/.openclaw/projects/doshusweb/database.rules.json
 cd ~/.openclaw/projects/doshusweb && firebase hosting:channel:deploy preview
 
 # Deploy to production (manual only — no auto-deploy)
-cd ~/.openclaw/projects/doshusweb && npm run deploy
+cd ~/.openclaw/projects/doshusweb && bun run deploy
 
 # Regenerate the meme list after dropping new memes in assets/memes/
-cd ~/.openclaw/projects/doshusweb && npm run memes
+cd ~/.openclaw/projects/doshusweb && bun run memes
 
 # Re-stamp the Zephyy subpages (nav bar + chat orb) after editing public/zephyy.html
-cd ~/.openclaw/projects/doshusweb && npm run sync:zephyy
+cd ~/.openclaw/projects/doshusweb && bun run sync:zephyy
 
 # Resync CSP hashes after editing any inline <script> in public/*.html
-cd ~/.openclaw/projects/doshusweb && npm run csp:hashes
+cd ~/.openclaw/projects/doshusweb && bun run csp:hashes
 
 # See the live site (WSL2 → opens in Windows browser)
 explorer.exe "https://doshus.net"
