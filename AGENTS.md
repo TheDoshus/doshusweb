@@ -61,6 +61,8 @@ below means the numbered coding Rules, which say how to meet them.
 - **Build to the domain's published standard.** Where a spec or vendor best-practice guide
  exists (MCP, agent skills, hooks, an API), mirror it and build to it; our
  domain page holds only our deltas, each with its reason.
+- **Track what you install.** A new tool, CLI or package gets a line in the tooling inventory
+ and a manual the same session, or it rots unseen.
 - **Call out mess when you see it:** duplication, stale docs, dead files, and builds kept
  only because redoing them is work. Don't route around it.
 - **Answer every part.** Keep every field he asked for and never drop one for brevity. When
