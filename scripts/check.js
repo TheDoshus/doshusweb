@@ -90,19 +90,22 @@ function jsHits(js) {
     return hits;
 }
 
-// Parse without running. `bun --check` EXECUTES the file (bun 1.4.2: the flag is not a
-// syntax check there), so under bun the parse is Bun's own transpiler, in-process.
-const syntaxError = globalThis.Bun
-    ? ((t) => (f) => {
-        try { t.transformSync(fs.readFileSync(f, 'utf8')); return null; } catch (e) {
-            const first = e.errors?.[0] ?? e;
-            return `${first.position?.line ?? '?'}: ${first.message}`;
-        }
-    })(new Bun.Transpiler({ loader: 'js' }))
-    : (f) => {
-        const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8' });
-        return r.status ? r.stderr.split('\n').find((l) => /Error/.test(l)) || 'syntax error' : null;
-    };
+// Parse without running; `node --check` is the syntax oracle. It is called by name, not as
+// process.execPath: under bun that is bun, and `bun --check` EXECUTES the file (bun 1.4.2).
+// With no node on PATH, Bun's transpiler parses instead, and it misses module-goal errors
+// (`import` in a .cjs, top-level `return` in a .mjs), so its result says so.
+function syntaxError(f) {
+    const r = spawnSync('node', ['--check', f], { encoding: 'utf8' });
+    if (!r.error) return r.status ? r.stderr.split('\n').find((l) => /Error/.test(l)) || 'syntax error' : null;
+    if (!globalThis.Bun) throw r.error;
+    try {
+        new Bun.Transpiler({ loader: 'js' }).transformSync(fs.readFileSync(f, 'utf8'));
+        return null;
+    } catch (e) {
+        const first = e.errors?.[0] ?? e;
+        return `${first.position?.line ?? '?'}: ${first.message} (bun parse: node not on PATH)`;
+    }
+}
 
 // ── checks ──────────────────────────────────────────────────────────────
 function runGenerator(script) {
