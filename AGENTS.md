@@ -58,6 +58,9 @@ below means the numbered coding Rules, which say how to meet them.
  checks pass, the cleanup is done, the note is filed. Only then start the next thing.
 - **Latest and greatest, done properly.** Prefer the maintained successor and the native
  feature over a superseded or hand-rolled one.
+- **Build to the domain's published standard.** Where a spec or vendor best-practice guide
+ exists (MCP, agent skills, hooks, an API), mirror it and build to it; our
+ domain page holds only our deltas, each with its reason.
 - **Call out mess when you see it:** duplication, stale docs, dead files, and builds kept
  only because redoing them is work. Don't route around it.
 - **Answer every part.** Keep every field he asked for and never drop one for brevity. When
