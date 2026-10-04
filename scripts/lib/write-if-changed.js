@@ -1,5 +1,5 @@
 // Shared write step for the generators (csp:hashes, sync:zephyy).
-// With --check (what `npm run check` passes) a file that would change is
+// With --check (what `bun run check` passes) a file that would change is
 // reported as drift and fails the run instead of being written.
 const fs = require('fs');
 const path = require('path');

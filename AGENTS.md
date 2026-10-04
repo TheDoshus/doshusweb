@@ -96,9 +96,9 @@ before you stop, ask what you left behind.
 | `public/js/main.js` | Global: stars engine, meme loader, collapsibles, sticky footer |
 | `public/zephyy/` | Zephyy profile subpages |
 | `public/amazon/` | Printmon + work tools — legacy tree, don't refactor casually |
-| `public/assets/memes/` | Meme pool; regen index with `npm run memes` |
+| `public/assets/memes/` | Meme pool; regen index with `bun run memes` |
 | `firebase.json` | Hosting config + CSP/security headers (two targets) |
-| `scripts/` | Repo tooling, run through npm: `check`, `csp:hashes`, `memes`, `sync:zephyy` (re-stamp the Zephyy subpages after editing `public/zephyy.html`) |
+| `scripts/` | Repo tooling, run through bun (`bun run <name>`): `check`, `csp:hashes`, `memes`, `sync:zephyy` (re-stamp the Zephyy subpages after editing `public/zephyy.html`) |
 
 ## Conventions
 
@@ -112,11 +112,11 @@ before you stop, ask what you left behind.
 ## Verify before committing
 
 ```bash
-npm run check                                  # read-only; exits 1 on any failure
+bun run check                                  # read-only; exits 1 on any failure
 python3 -m http.server 8080 -d public          # eyeball locally
 ```
 
-`npm run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result.
+`bun run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result.
 
 Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
 

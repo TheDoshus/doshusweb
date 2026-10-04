@@ -1,11 +1,12 @@
-#!/usr/bin/env node
-// npm run check — the pre-commit checks from AGENTS.md § Verify, read-only.
+#!/usr/bin/env bun
+// bun run check — the pre-commit checks from AGENTS.md § Verify, read-only.
 // Prints one PASS/FAIL line per check and exits 1 if any fail. The
 // generators run with --check, so drift is reported, never written.
 
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const readdirSorted = require('./lib/readdir-sorted');
 
 const ROOT = path.join(__dirname, '..');
 const rel = (f) => path.relative(ROOT, f).split(path.sep).join('/');
@@ -25,7 +26,7 @@ const SVG_BASELINE = new Set([
 const CSP_EXCEPTIONS = { 'style-src': ["'unsafe-inline'"], 'img-src': ['data:', 'https:'] };
 
 function walk(dir, out = []) {
-    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    for (const e of readdirSorted(dir, { withFileTypes: true })) {
         if (e.name === 'node_modules' || e.name === '.git') continue;
         const full = path.join(dir, e.name);
         if (e.isDirectory()) walk(full, out);
@@ -89,6 +90,23 @@ function jsHits(js) {
     return hits;
 }
 
+// Parse without running; `node --check` is the syntax oracle. It is called by name, not as
+// process.execPath: under bun that is bun, and `bun --check` EXECUTES the file (bun 1.4.2).
+// With no node on PATH, Bun's transpiler parses instead, and it misses module-goal errors
+// (`import` in a .cjs, top-level `return` in a .mjs), so its result says so.
+function syntaxError(f) {
+    const r = spawnSync('node', ['--check', f], { encoding: 'utf8' });
+    if (!r.error) return r.status ? r.stderr.split('\n').find((l) => /Error/.test(l)) || 'syntax error' : null;
+    if (!globalThis.Bun) throw r.error;
+    try {
+        new Bun.Transpiler({ loader: 'js' }).transformSync(fs.readFileSync(f, 'utf8'));
+        return null;
+    } catch (e) {
+        const first = e.errors?.[0] ?? e;
+        return `${first.position?.line ?? '?'}: ${first.message} (bun parse: node not on PATH)`;
+    }
+}
+
 // ── checks ──────────────────────────────────────────────────────────────
 function runGenerator(script) {
     const r = spawnSync(process.execPath, [path.join(__dirname, script), '--check'], { encoding: 'utf8' });
@@ -99,8 +117,8 @@ function runGenerator(script) {
 
 const CHECKS = {
     'js syntax': () => byExt('.js', '.cjs', '.mjs').flatMap((f) => {
-        const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8' });
-        return r.status ? [`${rel(f)}: ${r.stderr.split('\n').find((l) => /Error/.test(l)) || 'syntax error'}`] : [];
+        const err = syntaxError(f);
+        return err ? [`${rel(f)}: ${err}`] : [];
     }),
     'json parses': () => byExt('.json').flatMap((f) => {
         try { JSON.parse(fs.readFileSync(f, 'utf8')); return []; } catch (e) { return [`${rel(f)}: ${e.message}`]; }

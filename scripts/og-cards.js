@@ -1,8 +1,9 @@
-#!/usr/bin/env node
-// npm run og — screenshots each sitemap page's hero at 1200×630 into
+#!/usr/bin/env bun
+// bun run og — screenshots each sitemap page's hero at 1200×630 into
 // public/assets/images/og/<slug>.jpg, for og:image / twitter:image.
 // The pages are the art: re-run after a hero changes. Needs Playwright
-// (npm i -g playwright, or npx) and a Chromium it can launch.
+// (bun auto-installs it on first run: this repo has no node_modules) and a
+// Chromium it can launch (`bunx playwright install chromium`).
 
 const fs = require('fs');
 const http = require('http');

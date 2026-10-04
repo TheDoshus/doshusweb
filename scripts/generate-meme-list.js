@@ -13,6 +13,8 @@ fs.readdir(memesDir, (err, files) => {
         return;
     }
 
+    files.sort(); // Node lists sorted, Bun in filesystem order: keep meme-list.json stable
+
     // Filter only image AND video files
     const imageFiles = files.filter(file =>
         /\.(jpg|jpeg|png|gif|webp|mp4|webm|mov)$/i.test(file)
