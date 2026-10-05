@@ -87,8 +87,8 @@
   ],
   "userAgent": {
     "token": "Doshus-Agents",
-    "url": "https://doshus.net",
-    "default": "Doshus-Agents/<commit> (<component>; +https://doshus.net)",
+    "url": "https://doshus.net/bot",
+    "default": "Doshus-Agents/<commit> (<component>; +https://doshus.net/bot)",
     "forms": [
       {
         "name": "discord",
@@ -96,7 +96,7 @@
           "discord.com",
           "discordapp.com"
         ],
-        "form": "DiscordBot (https://doshus.net, <commit>) <component>"
+        "form": "DiscordBot (https://doshus.net/bot, <commit>) <component>"
       }
     ]
   }
