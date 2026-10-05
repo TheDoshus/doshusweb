@@ -55,15 +55,11 @@
                         <dt>Models</dt>
                         <dd>openai/gpt-6.1-sol → xai/grok-4.7 → opencode/glm-5.3-flash → openrouter/auto</dd>
                         <dt>Schedule</dt>
-                        <dd>heartbeat · every 4 h</dd>
-                        <dd>daily pulse · daily</dd>
-                        <dd>memory steward · daily</dd>
-                        <dd>Email Check · every 4 days</dd>
-                        <dd>Weekly Gate Self Review · weekly</dd>
-                        <dd>Wiki Weekly Prune · weekly</dd>
-                        <dd>discord wiki drift check · monthly</dd>
-                        <dd>Monthly Profile + Backup · monthly</dd>
-                        <dd>Monthly Workspace Audit · monthly</dd>
+                        <dd>check-in · every 4 h</dd>
+                        <dd>2 routines · daily</dd>
+                        <dd>routine · every 4 days</dd>
+                        <dd>2 routines · weekly</dd>
+                        <dd>3 routines · monthly</dd>
                     </dl>
                     <!-- crew:facts:zephyy:end -->
                     <div class="crew-specs">
@@ -88,10 +84,10 @@
                         <dt>Models</dt>
                         <dd>openai/gpt-6.1-sol → xai/grok-4.7 → opencode/glm-5.3-flash → openrouter/auto</dd>
                         <dt>Schedule</dt>
-                        <dd>heartbeat · every 6 h</dd>
+                        <dd>routine · every 6 h</dd>
                         <dd>routine · every 12 h</dd>
-                        <dd>full audit · every 3 days</dd>
-                        <dd>AIDE monthly check · monthly</dd>
+                        <dd>routine · every 3 days</dd>
+                        <dd>routine · monthly</dd>
                     </dl>
                     <!-- crew:facts:torgent:end -->
                     <div class="crew-specs">
@@ -99,21 +95,6 @@
                         <span class="crew-spec-pill green">Vuln Monitoring</span>
                         <span class="crew-spec-pill green">Audit Enforcement</span>
                         <span class="crew-spec-pill green">Perimeter Defense</span>
-                    </div>
-                    <div class="crew-badge-wrap">
-                        <span class="zp-crew-badge operational">OPERATIONAL</span>
-                    </div>
-                </div>
-
-                <div class="crew-detail-card mona">
-                    <span class="crew-emoji">🌙</span>
-                    <h3 class="crew-name">Mona</h3>
-                    <span class="crew-role">Cross-Gateway Co-Pilot</span>
-                    <p class="crew-desc">Partner agent on Mayo's node. Memory-backed, integrated into Aether crew chat. Operates from a separate gateway on a different Linux user.</p>
-                    <div class="crew-specs">
-                        <span class="crew-spec-pill purple">Cross-Gateway</span>
-                        <span class="crew-spec-pill purple">Crew Chat</span>
-                        <span class="crew-spec-pill purple">Memory-Backed</span>
                     </div>
                     <div class="crew-badge-wrap">
                         <span class="zp-crew-badge operational">OPERATIONAL</span>
@@ -185,11 +166,6 @@
                             <div class="aether-node-dot">🛡️</div>
                             <span class="aether-node-label">Torgent</span>
                         </div>
-                        <div class="aether-agent-node">
-                            <div class="aether-connector-line"></div>
-                            <div class="aether-node-dot">🌙</div>
-                            <span class="aether-node-label">Mona</span>
-                        </div>
                         <div class="aether-agent-node aether-agent-node--pending">
                             <div class="aether-connector-line"></div>
                             <div class="aether-node-dot">🕯️</div>
@@ -214,17 +190,16 @@
                             <th>Domain</th>
                             <th>⚡ Zephyy</th>
                             <th>🛡️ Torgent</th>
-                            <th>🌙 Mona</th>
                             <th>🕯️ Wick</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>Verification & Quality</td><td><span class="resp-dot"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td></tr>
-                        <tr><td>Security & Audit</td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot green"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td></tr>
-                        <tr><td>Co-Pilot / Operations</td><td><span class="resp-dot"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot purple"></span></td><td><span class="resp-dot dim"></span></td></tr>
-                        <tr><td>Finance & Markets</td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot gold"></span></td></tr>
-                        <tr><td>User Interaction</td><td><span class="resp-dot"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot purple"></span></td><td><span class="resp-dot dim"></span></td></tr>
-                        <tr><td>Crew Coordination</td><td><span class="resp-dot"></span></td><td><span class="resp-dot green"></span></td><td><span class="resp-dot purple"></span></td><td><span class="resp-dot dim"></span></td></tr>
+                        <tr><td>Verification & Quality</td><td><span class="resp-dot"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td></tr>
+                        <tr><td>Security & Audit</td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot green"></span></td><td><span class="resp-dot dim"></span></td></tr>
+                        <tr><td>Co-Pilot / Operations</td><td><span class="resp-dot"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td></tr>
+                        <tr><td>Finance & Markets</td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot gold"></span></td></tr>
+                        <tr><td>User Interaction</td><td><span class="resp-dot"></span></td><td><span class="resp-dot dim"></span></td><td><span class="resp-dot dim"></span></td></tr>
+                        <tr><td>Crew Coordination</td><td><span class="resp-dot"></span></td><td><span class="resp-dot green"></span></td><td><span class="resp-dot dim"></span></td></tr>
                     </tbody>
                 </table>
             </div>

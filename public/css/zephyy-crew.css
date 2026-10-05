@@ -19,11 +19,9 @@
 }
 .crew-detail-card.zephyy { border-color: oklch(var(--brand-teal)   / 0.12); }
 .crew-detail-card.torgent{ border-color: oklch(var(--brand-green)  / 0.12); }
-.crew-detail-card.mona   { border-color: oklch(var(--brand-purple) / 0.12); }
 .crew-detail-card.wick   { border-color: oklch(var(--brand-gold)   / 0.12); }
 .crew-detail-card.zephyy:hover { border-color: oklch(var(--brand-teal)   / 0.4); box-shadow: 0 6px 28px oklch(var(--brand-teal)   / 0.08); }
 .crew-detail-card.torgent:hover{ border-color: oklch(var(--brand-green)  / 0.4); box-shadow: 0 6px 28px oklch(var(--brand-green)  / 0.08); }
-.crew-detail-card.mona:hover   { border-color: oklch(var(--brand-purple) / 0.4); box-shadow: 0 6px 28px oklch(var(--brand-purple) / 0.08); }
 .crew-detail-card.wick:hover   { border-color: oklch(var(--brand-gold)   / 0.4); box-shadow: 0 6px 28px oklch(var(--brand-gold)   / 0.08); }
 
 .crew-emoji { font-size: 2.5rem; text-align: center; }

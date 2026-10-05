@@ -13,39 +13,23 @@
       ],
       "schedule": [
         {
-          "job": "heartbeat",
+          "job": "check-in",
           "cadence": "every 4 h"
         },
         {
-          "job": "daily pulse",
+          "job": "2 routines",
           "cadence": "daily"
         },
         {
-          "job": "memory steward",
-          "cadence": "daily"
-        },
-        {
-          "job": "Email Check",
+          "job": "routine",
           "cadence": "every 4 days"
         },
         {
-          "job": "Weekly Gate Self Review",
+          "job": "2 routines",
           "cadence": "weekly"
         },
         {
-          "job": "Wiki Weekly Prune",
-          "cadence": "weekly"
-        },
-        {
-          "job": "discord wiki drift check",
-          "cadence": "monthly"
-        },
-        {
-          "job": "Monthly Profile + Backup",
-          "cadence": "monthly"
-        },
-        {
-          "job": "Monthly Workspace Audit",
+          "job": "3 routines",
           "cadence": "monthly"
         }
       ]
@@ -61,7 +45,7 @@
       ],
       "schedule": [
         {
-          "job": "heartbeat",
+          "job": "routine",
           "cadence": "every 6 h"
         },
         {
@@ -69,11 +53,11 @@
           "cadence": "every 12 h"
         },
         {
-          "job": "full audit",
+          "job": "routine",
           "cadence": "every 3 days"
         },
         {
-          "job": "AIDE monthly check",
+          "job": "routine",
           "cadence": "monthly"
         }
       ]

@@ -1989,7 +1989,6 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
 /* ── Per-agent crew card hover accents ── */
 .zp-crew-zephyy:hover { border-color: oklch(80% 0.25 185 / 0.35); box-shadow: 0 4px 20px oklch(80% 0.25 185 / 0.08); }
 .zp-crew-torgent:hover { border-color: oklch(70% 0.28 150 / 0.35); box-shadow: 0 4px 20px oklch(70% 0.28 150 / 0.08); }
-.zp-crew-mona:hover { border-color: oklch(65% 0.25 280 / 0.35); box-shadow: 0 4px 20px oklch(65% 0.25 280 / 0.08); }
 .zp-crew-wick:hover { border-color: oklch(78% 0.2 80 / 0.35); box-shadow: 0 4px 20px oklch(78% 0.2 80 / 0.08); }
 
 
