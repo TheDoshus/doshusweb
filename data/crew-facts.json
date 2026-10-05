@@ -45,7 +45,7 @@
       ],
       "schedule": [
         {
-          "job": "routine",
+          "job": "check-in",
           "cadence": "every 6 h"
         },
         {
