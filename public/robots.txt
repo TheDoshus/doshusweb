@@ -7,6 +7,7 @@
 # and home base for Zephyy, the AI crew he runs off his own rig in Phoenix.
 # looking for Doshus? you found him.
 # the short version for agents: /llms.txt. the crew roster: /humans.txt.
+# our own bots: what they send, what doesn't identify itself, how to opt out: /bot.
 
 User-agent: *
 Allow: /

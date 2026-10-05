@@ -49,7 +49,23 @@
                     <span class="crew-emoji">⚡</span>
                     <h3 class="crew-name">Zephyy</h3>
                     <span class="crew-role">Primary Agent — Co-Pilot & Operator</span>
-                    <p class="crew-desc">The one you're talking to. Dashboard presence, Discord/webchat bridge, quality pipeline, workspace management. DeepSeek V4 Pro primary → OpenRouter auto → Claude Haiku 4.5 (free CLI, dead last).</p>
+                    <p class="crew-desc">The one you're talking to. Dashboard presence, Discord/webchat bridge, quality pipeline, workspace management.</p>
+                    <!-- crew:facts:zephyy:start -->
+                    <dl class="crew-facts">
+                        <dt>Models</dt>
+                        <dd>openai/gpt-6.1-sol → xai/grok-4.7 → opencode/glm-5.3-flash → openrouter/auto</dd>
+                        <dt>Schedule</dt>
+                        <dd>heartbeat · every 4 h</dd>
+                        <dd>daily pulse · daily</dd>
+                        <dd>memory steward · daily</dd>
+                        <dd>Email Check · every 4 days</dd>
+                        <dd>Weekly Gate Self Review · weekly</dd>
+                        <dd>Wiki Weekly Prune · weekly</dd>
+                        <dd>discord wiki drift check · monthly</dd>
+                        <dd>Monthly Profile + Backup · monthly</dd>
+                        <dd>Monthly Workspace Audit · monthly</dd>
+                    </dl>
+                    <!-- crew:facts:zephyy:end -->
                     <div class="crew-specs">
                         <span class="crew-spec-pill">Code Review</span>
                         <span class="crew-spec-pill">Debugging</span>
@@ -66,7 +82,18 @@
                     <span class="crew-emoji">🛡️</span>
                     <h3 class="crew-name">Torgent</h3>
                     <span class="crew-role">Security Watchtower</span>
-                    <p class="crew-desc">Three-tier surveillance — 30-min heartbeat, 12h routine, 3-day full audit. Threat detection, vulnerability monitoring, perimeter defense. Runs on his own dedicated gateway.</p>
+                    <p class="crew-desc">Three-tier surveillance: a heartbeat sweep, a routine pass and a full audit. Threat detection, vulnerability monitoring, perimeter defense. Runs on his own dedicated gateway.</p>
+                    <!-- crew:facts:torgent:start -->
+                    <dl class="crew-facts">
+                        <dt>Models</dt>
+                        <dd>openai/gpt-6.1-sol → xai/grok-4.7 → opencode/glm-5.3-flash → openrouter/auto</dd>
+                        <dt>Schedule</dt>
+                        <dd>heartbeat · every 6 h</dd>
+                        <dd>routine · every 12 h</dd>
+                        <dd>full audit · every 3 days</dd>
+                        <dd>AIDE monthly check · monthly</dd>
+                    </dl>
+                    <!-- crew:facts:torgent:end -->
                     <div class="crew-specs">
                         <span class="crew-spec-pill green">Threat Detection</span>
                         <span class="crew-spec-pill green">Vuln Monitoring</span>
@@ -82,7 +109,7 @@
                     <span class="crew-emoji">🌙</span>
                     <h3 class="crew-name">Mona</h3>
                     <span class="crew-role">Cross-Gateway Co-Pilot</span>
-                    <p class="crew-desc">Partner agent on Mayo's node. DeepSeek V4 Flash, memory-backed, integrated into Aether crew chat. Operates from a separate gateway on a different Linux user.</p>
+                    <p class="crew-desc">Partner agent on Mayo's node. Memory-backed, integrated into Aether crew chat. Operates from a separate gateway on a different Linux user.</p>
                     <div class="crew-specs">
                         <span class="crew-spec-pill purple">Cross-Gateway</span>
                         <span class="crew-spec-pill purple">Crew Chat</span>
@@ -107,6 +134,31 @@
                         <span class="zp-crew-badge planned">PLANNED</span>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Operator crew -->
+        <section class="zp-section">
+            <div class="zp-section-header">
+                <div class="zp-icon zp-icon-teal">🛠️</div>
+                <h2>The Operator Crew</h2>
+                <div class="zp-accent-line"></div>
+            </div>
+            <p class="zp-section-subtitle">The coding agents that build and review this system. They work on it from outside; none of them is Zephyy.</p>
+            <div class="zp-card">
+                <!-- crew:operators:start -->
+                <dl class="crew-ops">
+                    <dt>agy (Antigravity)</dt>
+                    <dd>Drafts builds on a separate model family, and reviews when asked.</dd>
+                    <dt>Codex (Sol)</dt>
+                    <dd>Doshus's go-to reviewer: reads every change for its logic as well as its correctness, and builds when handed a lane.</dd>
+                    <dt>Claude Code</dt>
+                    <dd>Lead operator: builds, hardens and reviews, and takes second opinions from Fable, the Claude model it dispatches for the hard calls.</dd>
+                    <dt>Grok CLI</dt>
+                    <dd>A third model family for reviews and quick builds.</dd>
+                </dl>
+                <!-- crew:operators:end -->
+                <p class="zp-card-note crew-ops-note">What our bots send, and how to reach us about it: <a href="/bot">/bot</a>.</p>
             </div>
         </section>
 

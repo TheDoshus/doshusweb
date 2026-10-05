@@ -158,3 +158,34 @@
 .resp-matrix th:first-child { text-align: left; }
 .aether-agent-node--pending { opacity: 0.4; }
 .aether-agent-node--pending .aether-connector-line { background: oklch(var(--brand-gold) / 0.2); }
+
+/* ── Live facts + operator crew: stamped from data/crew-facts.json by scripts/sync-zephyy-crew.js ── */
+.crew-facts {
+    margin: 0.2rem 0 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+    text-align: center;
+}
+.crew-facts dt {
+    margin-top: 0.5rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: oklch(var(--accent));
+}
+.crew-facts dd { margin: 0.1rem 0 0; overflow-wrap: anywhere; }
+.crew-ops {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.6rem 1.4rem;
+    margin: 0;
+}
+.crew-ops dt { font-family: 'Fugaz One', system-ui, sans-serif; color: var(--text-main); }
+.crew-ops dd { margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-muted); }
+.crew-ops-note { margin: 1.2rem 0 0; }
+@media (max-width: 600px) {
+    .crew-ops { grid-template-columns: 1fr; gap: 0.2rem; }
+    .crew-ops dd { margin-bottom: 0.7rem; }
+}

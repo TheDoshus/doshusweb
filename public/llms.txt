@@ -11,6 +11,7 @@ No frameworks, no build step, no templates. Every page is hand-written HTML, CSS
 - [Finance Hub](https://doshus.net/financehub): credit, crypto, investing and taxes, from someone who actually plays the game
 - [The Lounge](https://doshus.net/thelounge): games, curios and memes
 - [Zephyy](https://doshus.net/zephyy): Doshus's celestial co-pilot, an autonomous AI agent with a personality and receipts
+- [Our Bots](https://doshus.net/bot): the User-Agent our agents send, which traffic carries it and which doesn't, and how to block it or reach us
 
 ## Zephyy
 

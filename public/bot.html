@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Bots | Doshus.NET</title>
+    <link rel="icon" type="image/ico" href="https://doshus.net/doshusfavi.ico">
+    <meta name="description" content="The User-Agent our agents send, which traffic carries it and which doesn't, and how to block it or reach us.">
+    <link rel="canonical" href="https://doshus.net/bot">
+    <link rel="stylesheet" href="/css/shared.css">
+    <link rel="stylesheet" href="/css/bot.css">
+</head>
+<body>
+    <div class="cosmic-bg"></div>
+
+    <main class="bot-page">
+        <h1>Our Bots</h1>
+        <p>If this address turned up in your logs, the request came from software that Doshus runs. Doshus is one person in Phoenix, Arizona. From his own machine he runs <a href="/zephyy">Zephyy</a>, an autonomous AI agent, and <a href="/zephyy/crew">the rest of her crew</a>. This page says what our requests look like, which ones identify themselves and which don't, and how to stop them.</p>
+
+        <h2>The User-Agent</h2>
+        <p>Requests from our own scripts and plugins carry one of these. <code>&lt;commit&gt;</code> is the short git commit of the code that sent the request, and <code>&lt;component&gt;</code> names the script or plugin, so you can tell us exactly which one you saw.</p>
+        <!-- crew:ua:start -->
+        <dl class="bot-ua">
+            <dt>Most requests</dt>
+            <dd><code>Doshus-Agents/&lt;commit&gt; (&lt;component&gt;; +https://doshus.net)</code></dd>
+            <dt>Requests to discord.com and discordapp.com</dt>
+            <dd><code>DiscordBot (https://doshus.net, &lt;commit&gt;) &lt;component&gt;</code></dd>
+            <dt>Token to match</dt>
+            <dd><code>Doshus-Agents</code></dd>
+        </dl>
+        <!-- crew:ua:end -->
+
+        <h2>What carries it</h2>
+        <ul>
+            <li>Calls to AI model and embedding APIs.</li>
+            <li>Discord's API and webhooks: alerts, task updates and agent messages, in Discord's own bot format above.</li>
+            <li>Documentation fetched to keep local copies current: vendor documentation sites, and raw files on GitHub.</li>
+            <li>This site's own database (Firebase), behind the chat orb.</li>
+            <li>Smaller jobs: usage checks with services we pay for, vulnerability-database lookups, file uploads, and the Instagram Graph API.</li>
+        </ul>
+
+        <h2>What doesn't</h2>
+        <p>Not everything we run says who it is, and you should know which parts don't:</p>
+        <ul>
+            <li><strong>Browser automation.</strong> For sites that only work in a browser, the agents drive a stealth browser (CloakBrowser). It presents as an ordinary desktop browser and does not send the User-Agent above.</li>
+            <li><strong>Link previews.</strong> When someone pastes a link into the chat orb, the preview fetch presents as a browser or a common crawler, so that social sites return their preview tags.</li>
+            <li><strong>One conversion site.</strong> A media-conversion service (ezgif) is used through its browser forms, under a browser User-Agent.</li>
+            <li><strong>Other people's software.</strong> The agent runtime (OpenClaw) and the coding agents listed below talk to their model providers and to Discord with their own User-Agents, not ours.</li>
+            <li><strong>Not yet migrated.</strong> Our ops dashboard still sends <code>AETHER-Mission-Control/1.0</code> to GitHub and Node's default User-Agent elsewhere, and one Discord client still sends <code>TorgentDecision/2</code>.</li>
+        </ul>
+
+        <h2>Blocking us, or reaching us</h2>
+        <p>To block our identified traffic, match the token above in your User-Agent rules and return 403 or 429. To ask us to stop or slow down, or to report a problem, email <strong>doshusbizz@gmail.com</strong> (<a href="mailto:doshusbizz@gmail.com">open in your mail app</a>). The host, a rough time and the full User-Agent line are enough to find the request.</p>
+
+        <h2>Who builds this</h2>
+        <p>The operator crew: the coding agents that build and review the system. The requests above come from what they build, not from them.</p>
+        <!-- crew:operators:start -->
+        <dl class="crew-ops">
+            <dt>agy (Antigravity)</dt>
+            <dd>Drafts builds on a separate model family, and reviews when asked.</dd>
+            <dt>Codex (Sol)</dt>
+            <dd>Doshus's go-to reviewer: reads every change for its logic as well as its correctness, and builds when handed a lane.</dd>
+            <dt>Claude Code</dt>
+            <dd>Lead operator: builds, hardens and reviews, and takes second opinions from Fable, the Claude model it dispatches for the hard calls.</dd>
+            <dt>Grok CLI</dt>
+            <dd>A third model family for reviews and quick builds.</dd>
+        </dl>
+        <!-- crew:operators:end -->
+
+        <p class="bot-foot"><a href="/">doshus.net</a> · <a href="/zephyy">Zephyy</a> · <a href="/zephyy/crew">The crew</a></p>
+    </main>
+</body>
+</html>

@@ -1,0 +1,31 @@
+/* /bot: a plain page for site admins who found our User-Agent in their logs. Tokens and fonts from shared.css. */
+.bot-page {
+    position: relative;
+    z-index: 10;
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 4rem;
+    line-height: 1.65;
+    color: var(--text-main);
+}
+.bot-page h1 { font-family: 'Fugaz One', system-ui, sans-serif; font-size: 2rem; margin: 0 0 0.75rem; }
+.bot-page h2 { font-size: 1.1rem; margin: 2.2rem 0 0.6rem; color: oklch(var(--brand-teal)); }
+.bot-page p,
+.bot-page li,
+.bot-page dd { color: var(--text-muted); }
+.bot-page li { margin-bottom: 0.4rem; }
+.bot-page strong { color: var(--text-main); }
+.bot-page a { color: oklch(var(--brand-teal)); }
+.bot-page code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    padding: 0.1em 0.4em;
+    border-radius: 6px;
+    border: 1px solid oklch(var(--star-white) / 0.08);
+    background: oklch(var(--space-oled) / 0.5);
+    overflow-wrap: anywhere;
+}
+.bot-page dl { margin: 0; }
+.bot-page dt { margin-top: 0.9rem; font-weight: 600; color: var(--text-main); }
+.bot-page dd { margin: 0.25rem 0 0; }
+.bot-foot { margin-top: 3rem; font-size: 0.85rem; }

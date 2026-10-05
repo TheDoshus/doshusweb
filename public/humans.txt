@@ -8,6 +8,9 @@
     Role: celestial co-pilot, autonomous AI agent, keeper of the orb
     Profile: https://doshus.net/zephyy
 
+    Bots: https://doshus.net/bot
+    Role: what our User-Agent means, and how to block it or reach us
+
 /* THANKS */
     Everyone in the Discord who poked the orb to see if it bites.
 
