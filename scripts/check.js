@@ -27,7 +27,7 @@ const CSP_EXCEPTIONS = { 'style-src': ["'unsafe-inline'"], 'img-src': ['data:', 
 
 function walk(dir, out = []) {
     for (const e of readdirSorted(dir, { withFileTypes: true })) {
-        if (e.name === 'node_modules' || e.name === '.git') continue;
+        if (['node_modules', '.git', '.claude', '.firebase'].includes(e.name)) continue;  // deps, VCS, agent worktrees, deploy cache
         const full = path.join(dir, e.name);
         if (e.isDirectory()) walk(full, out);
         else out.push(full);
