@@ -17,7 +17,7 @@
           "cadence": "every 4 h"
         },
         {
-          "job": "2 routines",
+          "job": "3 routines",
           "cadence": "daily"
         },
         {
@@ -46,7 +46,7 @@
       "schedule": [
         {
           "job": "check-in",
-          "cadence": "every 6 h"
+          "cadence": "every 4 h"
         },
         {
           "job": "routine",
