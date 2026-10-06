@@ -56,6 +56,8 @@ below means the numbered coding Rules, which say how to meet them.
  the wider audit when real dependencies or he calls for it.
 - **Gold-star it before moving on.** Research it and think it through, then finish: the
  checks pass, the cleanup is done, the note is filed. Only then start the next thing.
+- **Read the manual before you touch a part of the system.** Each part has a page: find it by the part's name and config keys and read it before the
+ change, not after; a part with no page gets one in the same change.
 - **Latest and greatest, done properly.** Prefer the maintained successor and the native
  feature over a superseded or hand-rolled one.
 - **Build to the domain's published standard.** Where a spec or vendor best-practice guide
@@ -68,12 +70,14 @@ below means the numbered coding Rules, which say how to meet them.
 - **Answer every part.** Keep every field he asked for and never drop one for brevity.
 - **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
  different model where a free lane is available, and every finding is fixed or answered; a
- reviewer he names is part of done. Short on review quota, routine work lands with its review
+ reviewer he names is part of done, and a command he runs as root is reviewed before he
+ gets it. Short on review quota, routine work lands with its review
  owed and sharp edges wait. Timing
  and the kept verdict: Rule 7 § E.
 
-**The messy trail** is the failure to guard against: scratch files left behind, notes
-unfiled, board cards not moved, decisions not written down. Leave it clean and organized;
+**The messy trail** is the failure to guard against: scratch files left behind, a run-once
+script left in the script store (Rule 18), notes unfiled, board cards not moved, decisions
+not written down. Leave it clean and organized;
 before you stop, ask what you left behind.
 <!-- /canon -->
 
