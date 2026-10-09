@@ -5,7 +5,7 @@
 document.querySelectorAll('.board[data-board]').forEach((board) => {
     const KEY = `board:${board.dataset.board}`;
     const VERSION = 2; // bump when the saved shape changes; older saves are ignored
-    const MIN = { w: 3, h: 3 };
+    const MIN = { w: 4, h: 3 };
     const EDGES = ['n', 'e', 's', 'w', 'ne', 'se', 'sw', 'nw'];
     const css = getComputedStyle(board);
     const cols = () => +css.getPropertyValue('--cols') || 1;
@@ -48,19 +48,33 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     function render(map) {
         map.forEach((r, p) => { p.hidden = r.hidden; setCell(p, r); });
     }
-    // FLIP: measure, change, then slide every panel from where it was
+    // FLIP: measure, change, then glide every panel (and the ghost) from where it was, size included.
+    // Measuring mid-flight picks up the running animation, so rapid changes chain without a jump.
     function flip(change, skip) {
-        const first = new Map(panels.filter((p) => !p.hidden && p !== skip).map((p) => [p, p.getBoundingClientRect()]));
+        const nodes = [...panels.filter((p) => !p.hidden && p !== skip), ...(ghost.hidden ? [] : [ghost])];
+        const first = new Map(nodes.map((n) => [n, n.getBoundingClientRect()]));
         change();
         if (prefersReducedMotion) return;
-        first.forEach((a, p) => {
-            p.getAnimations().forEach((anim) => anim.cancel());
-            const b = p.getBoundingClientRect();
-            if (!p.hidden && (a.left !== b.left || a.top !== b.top)) {
-                p.animate({ translate: [`${a.left - b.left}px ${a.top - b.top}px`, '0 0'] },
-                    { duration: 220, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
-            }
+        first.forEach((a, n) => {
+            if (n.hidden) return;
+            n.getAnimations().forEach((anim) => anim.cancel());
+            const b = n.getBoundingClientRect();
+            if (a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height) return;
+            n.animate({
+                translate: [`${a.left - b.left}px ${a.top - b.top}px`, '0 0'],
+                width: [`${a.width}px`, `${b.width}px`],
+                height: [`${a.height}px`, `${b.height}px`],
+            }, { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
         });
+    }
+    // Snap with hysteresis: the target only changes once the pointer is well into the next cell,
+    // so hovering on a cell boundary doesn't flicker
+    const snap = (raw, current) => (Math.abs(raw - current) > 0.6 ? Math.round(raw) : current);
+    // The shortest a panel can get: its head and foot plus a few lines of body (or MIN.h)
+    function minH(p) {
+        const fixed = [...p.children].filter((n) => n.matches('.panel-head, .panel-foot')).reduce((s, n) => s + n.offsetHeight, 0);
+        const gutter = 2 * (parseFloat(getComputedStyle(p).marginTop) || 0);
+        return Math.max(MIN.h, Math.ceil((fixed + gutter + (fixed ? 48 : 0)) / cell().y));
     }
     // Reading order becomes DOM order, so tab order and the phone stack follow the layout
     function settle(next) {
@@ -135,30 +149,39 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const r0 = p.getBoundingClientRect();
         const gutter = parseFloat(getComputedStyle(p).marginTop) || 0;
         const off = { x: e.clientX - r0.left + gutter, y: e.clientY - r0.top + gutter };
+        const me = layout.get(p);
+        const at = { x: me.x, y: me.y };
         let next = layout;
-        let last = '';
+        let frame = 0;
+        let pending;
         Object.assign(p.style, { width: `${r0.width}px`, height: `${r0.height}px`, left: `${r0.left}px`, top: `${r0.top}px` });
         p.classList.add('is-dragging');
         ghost.style.setProperty('--accent', getComputedStyle(p).getPropertyValue('--accent'));
-        setCell(ghost, layout.get(p));
+        setCell(ghost, me);
         ghost.hidden = false;
+        // Re-layout at most once a frame, however fast the pointer reports
+        const retarget = () => {
+            frame = 0;
+            const b = board.getBoundingClientRect();
+            const c = cell();
+            const x = clamp(snap((pending.clientX - off.x - b.left) / c.x + 1, at.x), 1, cols() - me.w + 1);
+            const y = Math.max(1, snap((pending.clientY - off.y - b.top) / c.y + 1, at.y));
+            if (x === at.x && y === at.y) return;
+            Object.assign(at, { x, y });
+            next = copy(layout);
+            Object.assign(next.get(p), at);
+            flip(() => { render(pack(next, p)); setCell(ghost, next.get(p)); }, p);
+        };
         return {
             move(ev) {
                 Object.assign(p.style, { left: `${ev.clientX - off.x + gutter}px`, top: `${ev.clientY - off.y + gutter}px` });
                 if (ev.clientY < 64) scrollBy(0, -16);
                 else if (ev.clientY > innerHeight - 64) scrollBy(0, 16);
-                const b = board.getBoundingClientRect();
-                const c = cell();
-                const me = layout.get(p);
-                const x = clamp(Math.round((ev.clientX - off.x - b.left) / c.x) + 1, 1, cols() - me.w + 1);
-                const y = Math.max(1, Math.round((ev.clientY - off.y - b.top) / c.y) + 1);
-                if (`${x},${y}` === last) return;
-                last = `${x},${y}`;
-                next = copy(layout);
-                Object.assign(next.get(p), { x, y });
-                flip(() => { render(pack(next, p)); setCell(ghost, next.get(p)); }, p);
+                pending = ev;
+                frame ||= requestAnimationFrame(retarget);
             },
             done() {
+                cancelAnimationFrame(frame);
                 ghost.hidden = true;
                 flip(() => {
                     p.classList.remove('is-dragging');
@@ -176,17 +199,19 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const resizeFrom = (p, dir) => (e) => {
         const start = { ...layout.get(p) };
         const c = cell();
+        const floor = minH(p);
+        const d = { c: 0, r: 0 };
         let next = layout;
         let last = '';
         return {
             move(ev) {
-                const dc = Math.round((ev.clientX - e.clientX) / c.x);
-                const dr = Math.round((ev.clientY - e.clientY) / c.y);
+                d.c = snap((ev.clientX - e.clientX) / c.x, d.c);
+                d.r = snap((ev.clientY - e.clientY) / c.y, d.r);
                 const r = { ...start };
-                if (dir.includes('e')) r.w = clamp(start.w + dc, MIN.w, cols() - start.x + 1);
-                if (dir.includes('w')) { r.x = clamp(start.x + dc, 1, start.x + start.w - MIN.w); r.w = start.w + start.x - r.x; }
-                if (dir.includes('s')) r.h = Math.max(MIN.h, start.h + dr);
-                if (dir.includes('n')) r.h = Math.max(MIN.h, start.h - dr);
+                if (dir.includes('e')) r.w = clamp(start.w + d.c, MIN.w, cols() - start.x + 1);
+                if (dir.includes('w')) { r.x = clamp(start.x + d.c, 1, start.x + start.w - MIN.w); r.w = start.w + start.x - r.x; }
+                if (dir.includes('s')) r.h = Math.max(floor, start.h + d.r);
+                if (dir.includes('n')) r.h = Math.max(floor, start.h - d.r);
                 if (`${r.x},${r.w},${r.h}` === last) return;
                 last = `${r.x},${r.w},${r.h}`;
                 next = copy(layout);
@@ -222,8 +247,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
 
     panels.forEach((p) => {
         const name = title(p);
-        // The head is the grab bar; the grip is the keyboard's move control and only shows on focus
-        const head = p.querySelector('.panel-head');
+        // The head is the grab bar (a headless panel gets a grab strip over its top-left, clear of
+        // a video's own buttons); the grip is the keyboard's move control and only shows on focus
+        const head = p.querySelector('.panel-head') ?? p.appendChild(el('div', 'panel-grab'));
         const tools = el('div', 'panel-tools');
         const grip = button('⠿', `Move ${name} with the arrow keys`, 'panel-grip');
         const hide = button('✕', `Hide ${name}`, 'panel-close');
@@ -236,7 +262,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             p.append(edge);
             track(edge, resizeFrom(p, dir));
         });
-        track(head ?? grip, moveFrom(p));
+        track(head, moveFrom(p));
 
         keyed(grip, p, (r, next, dx, dy) => {
             if (dx) r.x = clamp(r.x + dx, 1, cols() - r.w + 1);
@@ -249,7 +275,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         });
         keyed(p.querySelector('.panel-edge[data-dir="se"]'), p, (r, next, dx, dy) => {
             r.w = clamp(r.w + dx, MIN.w, cols() - r.x + 1);
-            r.h = Math.max(MIN.h, r.h + dy);
+            r.h = Math.max(minH(p), r.h + dy);
         });
 
         hide.addEventListener('click', () => {
@@ -273,6 +299,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         }
     } catch { /* no saved layout */ }
     render(pack(layout));
+    if (cols() > 1) { // lift anything saved shorter than its head and foot now need
+        layout.forEach((r, p) => { r.h = Math.max(r.h, minH(p)); });
+        render(pack(layout));
+    }
     settle(layout);
 
     reset.addEventListener('click', () => {

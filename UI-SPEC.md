@@ -37,14 +37,14 @@ scale); the code, names and look are ours. Implementation: `public/css/board.css
 | Part | Job |
 |---|---|
 | `.board[data-board]` | 24 columns × 2rem rows on desktop and tablet; one column in reading order on phones (≤640px) |
-| `.panel[id]` | One widget. `data-x`/`data-y` place it, `data-w`/`data-h` size it, in cells. The `id` is how a saved layout finds it, so never rename one casually. Minimum 3×3 |
+| `.panel[id]` | One widget. `data-x`/`data-y` place it, `data-w`/`data-h` size it, in cells. The `id` is how a saved layout finds it, so never rename one casually. At least 4 columns wide, and never shorter than its head and foot plus a few lines |
 | `data-accent` | Picks a semantic accent (`finance`, `crypto`, `taxes`, `invest`, `networth`, `lounge`, `amzn`, `myth`, `discord`); everything inside reads `--accent` |
 | `.panel-head` / `-body` / `-foot` | Title row (also a drag handle), content that scrolls when the panel is smaller than it, status line |
 | `.group` | Titled cluster inside a body |
 | `.chips` | Wrap of link buttons (plain `<a>`s, no class per link) |
 | `.fold` | Native `<details>` accordion that eases open; no JS |
 | `.tip` | Name, description, command, link, styled by element (`b`, `p`, `code`, `a`) |
-| `.panel-media` | A panel whose content another script owns (memes) |
+| `.panel-media` | A panel whose content another script owns (memes); `board.js` gives it an invisible grab strip over its top-left, clear of a video's buttons |
 
 ## Rules
 
@@ -62,14 +62,16 @@ scale); the code, names and look are ours. Implementation: `public/css/board.css
 - **Scales, not numbers:** spacing `--sp-2xs…l`, radius `--r-s/m/l`, type `--fs-xs/s/l`, fonts
   `--font-mono`/`--font-title`. They live in `board.css` until a second page adopts the board,
   then move to `shared.css`.
-- **Every control has a keyboard path:** arrows on the ⠿ grip move a cell sideways or past the
-  neighbor above or below; arrows on the corner handle resize; a live region announces each one.
+- **Every control has a keyboard path:** arrows on the ⠿ grip (it only shows for keyboard focus) move
+  a cell sideways or past the neighbor above or below; arrows on the corner handle resize; a live region announces each one.
 
 ## What a visitor can do
 
-Grab a panel's title or its ⠿ pill to move it: the board lights up as a field of cells and a
-glowing ghost shows where it will land. Drag any edge or corner to resize; it snaps to whole
-cells and the content scrolls once the panel is smaller than it. ✕ hides a panel, **＋ Add
+Grab a panel by its top (the title bar, or a meme's top-left) to move it: the board lights up
+as a field of cells and a breathing ghost in the panel's accent shows where it will land, while
+the other panels glide out of the way. The look is tunable from the `--field-opacity`,
+`--ghost-fill` and `--ghost-glow` knobs on `.board`. Drag any edge or corner to resize; it snaps to whole
+cells and the content scrolls once the panel is smaller than it. ✕ (top right, on hover) hides a panel, **＋ Add
 widget** brings it back, **Reset layout** returns to the default. The layout saves per browser
 in `localStorage` (`board:<name>`, versioned so an old save never breaks a new board); an
 untouched board saves nothing, so changes to the defaults reach every visitor who hasn't
