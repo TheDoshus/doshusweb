@@ -17,7 +17,7 @@
           "cadence": "every 4 h"
         },
         {
-          "job": "3 routines",
+          "job": "2 routines",
           "cadence": "daily"
         },
         {
