@@ -2,21 +2,10 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'G-KQ1RGHNMZG');
+// Honor Global Privacy Control: a visitor whose browser says "don't track me" sends no analytics
+if (!navigator.globalPrivacyControl) gtag('config', 'G-KQ1RGHNMZG');
 
-// Smooth scrolling
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
-        if (href.length < 2) return; // bare "#" — nothing to scroll to
-        e.preventDefault();
-        haptic();
-        const target = document.getElementById(href.slice(1));
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-});
+// Smooth scrolling for in-page links lives in CSS (shared.css, html scroll-behavior)
 
 // Respect the user's OS-level motion preference
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -91,9 +80,15 @@ if (starsContainer) {
     let lastFpsCheck = performance.now();
     let consecutiveGoodSeconds = 0; // The recovery buffer
 
+    let lastFrame = performance.now();
+
     function checkPerformance() {
-        frameCount++;
         const now = performance.now();
+        // One frame over a second is a hidden tab or a single hitch, not a slow page:
+        // start a fresh window instead of judging the engine on it
+        if (now - lastFrame > 1000) { frameCount = 0; lastFpsCheck = now; }
+        lastFrame = now;
+        frameCount++;
         const elapsed = now - lastFpsCheck;
 
         // Evaluate the frame rate once every 2.5 second
@@ -105,7 +100,7 @@ if (starsContainer) {
                 consecutiveGoodSeconds = 0; // Reset the recovery buffer if it chokes
             } else if (isPaused && fps >= 30) {
                 consecutiveGoodSeconds++;
-                // Require 5 straight seconds of clean performance to unlock the engine
+                // Require 5 straight clean checks (12.5 seconds) to unlock the engine
                 if (consecutiveGoodSeconds >= 5) {
                     isPaused = false;
                     consecutiveGoodSeconds = 0;
@@ -181,6 +176,25 @@ if (starsContainer) {
 }
 
 let videoJsLoadPromise;
+
+// The one "meme unavailable" image every fallback uses
+function memeUnavailable() {
+    const img = document.createElement('img');
+    img.src = '/assets/images/Image_not_available.webp';
+    img.alt = 'Meme unavailable';
+    return img;
+}
+
+// One observer for every meme video: play while it's on screen, pause once it scrolls away,
+// and never restart one the visitor paused themselves. Saves decoding video nobody can see.
+const memeVideoObserver = 'IntersectionObserver' in window && new IntersectionObserver((entries) => {
+    entries.forEach(({ target, isIntersecting }) => {
+        const player = target.memePlayer;
+        if (!player || player.isDisposed()) return;
+        if (!isIntersecting) player.pause();
+        else if (!target.dataset.userPaused) player.play()?.catch(() => {});
+    });
+}, { threshold: 0.25 });
 
 function loadVideoJs() {
     if (window.videojs) return Promise.resolve(window.videojs);
@@ -270,6 +284,9 @@ function createMemeVideoControls(player) {
     playbackButton.addEventListener('click', event => {
         event.stopPropagation();
         haptic();
+        // Remember a visitor's own pause so scrolling back doesn't restart it
+        const slot = playbackButton.closest('.random-meme, .random-meme-fixed');
+        if (slot) slot.dataset.userPaused = player.paused() ? '' : '1';
         if (player.paused()) {
             const playAttempt = player.play();
             if (playAttempt) playAttempt.catch(syncPlaybackButton);
@@ -302,22 +319,20 @@ async function renderVideoMeme(container, randomFile) {
     const showFallback = () => {
         if (hasFailed) return;
         hasFailed = true;
+        if (memeVideoObserver) memeVideoObserver.unobserve(container);
         if (player && !player.isDisposed()) player.dispose();
         container.classList.remove('meme-video-active');
-        const fallbackImage = document.createElement('img');
-        fallbackImage.src = '/assets/images/Image_not_available.webp';
-        fallbackImage.alt = 'Error';
-        container.replaceChildren(fallbackImage);
+        container.replaceChildren(memeUnavailable());
     };
 
     const video = document.createElement('video');
     video.className = 'video-js';
     video.src = randomFile;
-    video.autoplay = true;
+    // No autoplay: the observer starts it once it's on screen, so only metadata loads before then
     video.loop = true;
     video.muted = true;
     video.playsInline = true;
-    video.preload = 'auto';
+    video.preload = memeVideoObserver ? 'metadata' : 'auto';
     video.addEventListener('error', showFallback, { once: true });
 
     container.classList.add('meme-video-active');
@@ -328,11 +343,11 @@ async function renderVideoMeme(container, randomFile) {
         if (!video.isConnected || hasFailed) return;
 
         player = videojs(video, {
-            autoplay: 'muted',
+            autoplay: false,
             loop: true,
             muted: true,
             playsinline: true,
-            preload: 'auto',
+            preload: memeVideoObserver ? 'metadata' : 'auto',
             controls: false,
             bigPlayButton: false,
             controlBar: false,
@@ -342,8 +357,9 @@ async function renderVideoMeme(container, randomFile) {
         player.ready(() => {
             player.muted(true);
             player.loop(true);
-            const playAttempt = player.play();
-            if (playAttempt) playAttempt.catch(() => {});
+            container.memePlayer = player;
+            if (memeVideoObserver) memeVideoObserver.observe(container);
+            else player.play()?.catch(() => {});
         });
     } catch {
         showFallback();
@@ -352,104 +368,71 @@ async function renderVideoMeme(container, randomFile) {
 
 // Universal meme/video loader - Auto-loads from JSON on ANY page
 async function loadUniversalMemes() {
+    // Find ALL meme containers on the current page using their CSS classes
+    const containers = document.querySelectorAll('.random-meme, .random-meme-fixed');
+    if (containers.length === 0) return; // If no containers exist on this page, silently stop running
+
     try {
-        // Find ALL meme containers on the current page using their CSS classes
-        const containers = document.querySelectorAll('.random-meme, .random-meme-fixed');
-        
-        if (containers.length === 0) return; // If no containers exist on this page, silently stop running
-
         const response = await fetch('/assets/memes/meme-list.json');
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const memeFiles = await response.json();
+        if (memeFiles.length === 0) return;
 
-        if (memeFiles.length === 0) {
-            console.warn('⚠️ No memes found in meme-list.json');
-            return;
+        // Shuffle once, then deal one per container, so a page never shows the same meme twice
+        for (let i = memeFiles.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [memeFiles[i], memeFiles[j]] = [memeFiles[j], memeFiles[i]];
         }
 
-        // Loop through every container found and inject a random meme into each
         containers.forEach((container, index) => {
-            const randomIndex = Math.floor(Math.random() * memeFiles.length);
-            const randomFile = memeFiles[randomIndex];
-            const isVideo = /\.(mp4|webm|avi|wmv|flv|mkv|mov)$/i.test(randomFile);
+            const memeFile = memeFiles[index % memeFiles.length];
+            container.replaceChildren(); // Clear any existing content
 
-            container.innerHTML = ''; // Clear any existing content
-
-            if (isVideo) {
-                renderVideoMeme(container, randomFile);
-            } else {
-                const img = document.createElement('img');
-                img.src = randomFile;
-                img.alt = 'Random Meme';
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '10px';
-
-                img.onerror = function() {
-                    this.src = '/assets/images/Image_not_available.webp';
-                };
-
-                container.appendChild(img);
+            if (/\.(mp4|webm|avi|wmv|flv|mkv|mov)$/i.test(memeFile)) {
+                renderVideoMeme(container, memeFile);
+                return;
             }
+            // Size and fit come from each page's CSS (.random-meme img / .random-meme-fixed img)
+            const img = document.createElement('img');
+            img.src = memeFile;
+            img.alt = 'Random Meme';
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.addEventListener('error', () => img.replaceWith(memeUnavailable()), { once: true });
+            container.appendChild(img);
         });
-
-    } catch (error) {
-        console.error('❌ Error loading memes:', error);
+    } catch {
         // Fallback: Fill all broken containers with the error image
-        document.querySelectorAll('.random-meme, .random-meme-fixed').forEach(c => {
-            c.innerHTML = '<img src="/assets/images/Image_not_available.webp" alt="Loading Error">';
-        });
+        containers.forEach(c => c.replaceChildren(memeUnavailable()));
     }
 }
 window.addEventListener('DOMContentLoaded', loadUniversalMemes);
 
 // ─── UNIVERSAL COLLAPSIBLE SECTIONS & MODALS ───
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // 1. Handle all Collapsible Sections (Accordions)
-    document.querySelectorAll('.collapseBtn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            haptic();
-            this.parentElement.classList.toggle('open');
-            
-            // If we are inside the Finance Hub slider, tell the slider to resize
-            if (typeof syncSliderHeight === 'function') {
-                syncSliderHeight();
-            }
-        });
-    });
+// Collapsibles are native <details class="collapse">: the browser opens, closes and announces
+// them. `toggle` doesn't bubble, so it's caught on the way down.
+document.addEventListener('toggle', (e) => {
+    if (!e.target.matches?.('.collapse')) return;
+    haptic();
+    // Inside the Finance Hub slider: keep resizing it while the section eases open or closed
+    if (typeof syncSliderHeight !== 'function') return;
+    const easing = new ResizeObserver(() => syncSliderHeight());
+    easing.observe(e.target);
+    setTimeout(() => easing.disconnect(), 600);
+}, true);
 
-    // 2. Handle opening Modals via data-target
-    document.querySelectorAll('.srcBtn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            haptic();
-            const targetId = this.getAttribute('data-target');
-            const targetModal = document.getElementById(targetId);
-            if (targetModal) targetModal.classList.add('open');
-        });
+// Modals are native <dialog class="srcOverlay">: showModal() brings focus trapping, the Escape
+// key and an inert page behind it for free. The ✕ sits in a <form method="dialog">, which closes
+// it with no script.
+document.querySelectorAll('.srcBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        haptic();
+        document.getElementById(btn.dataset.target)?.showModal();
     });
-
-    // 3. Handle closing Modals (Clicking the X)
-    document.querySelectorAll('.srcClose').forEach(btn => {
-        btn.addEventListener('click', function() {
-            haptic();
-            this.closest('.srcOverlay').classList.remove('open');
-        });
-    });
-
-    // 4. Handle closing Modals (Clicking the dark background)
-    document.querySelectorAll('.srcOverlay').forEach(overlay => {
-        overlay.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('open');
-            }
-        });
-    });
+});
+// Clicking the dark background (the dialog itself, outside its card) closes it too
+document.querySelectorAll('dialog.srcOverlay').forEach(dialog => {
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
 });
 
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
@@ -495,6 +478,7 @@ window.populateDiscordWidget = async function(widget) {
     const countEl = widget.querySelector('.discord-count');
     const membersEl = widget.querySelector('.discord-members');
     const joinEl = widget.querySelector('.discord-join');
+    if (!countEl || !membersEl) return; // markup without the live parts: leave the static card
 
     try {
         const res = await fetch(`https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`);

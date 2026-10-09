@@ -160,10 +160,7 @@
     justify-content: space-between;
 }
 .data-node .collapseBtn:hover { background: oklch(var(--node-accent) / 0.12); }
-.data-node .collapse.open .collapseBody {
-    padding: 0.85rem 1rem 1rem;
-}
-.data-node .collapseBody { padding: 0 1rem; }
+.data-node .collapseBody { padding: 0.85rem 1rem 1rem; }
 
 /* Tip rows inside accordions */
 .tip-row {

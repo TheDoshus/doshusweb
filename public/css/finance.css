@@ -112,13 +112,17 @@
     transform: scale(1.1);
 }
 
-/* ─── SOURCES MODAL ─── */
-.srcOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+/* ─── SOURCES MODAL: a native <dialog class="srcOverlay"> covering the screen ─── */
+/* showModal() puts it in the top layer (above everything, outside the slider's transforms) */
+.srcOverlay { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+    align-items: center; justify-content: center; color: inherit;
     background: oklch(var(--space-oled) / 0.7);
     backdrop-filter: blur(5px);
-    z-index: 1000;
 }
-.srcOverlay.open { opacity: 1; visibility: visible; }
+.srcOverlay[open] { display: flex; animation: srcFade 0.3s ease; }
+.srcOverlay::backdrop { background: transparent; }
+@keyframes srcFade { from { opacity: 0; } }
+@keyframes srcRise { from { transform: translateY(20px); } }
 
 .sources-modal {
     background: oklch(var(--space-oled) / 0.925);
@@ -128,10 +132,8 @@
     max-width: 450px;
     width: 90%;
     position: relative;
-    transform: translateY(20px);
-    transition: transform 0.3s ease;
 }
-.srcOverlay.open .sources-modal { transform: translateY(0); }
+.srcOverlay[open] .sources-modal { animation: srcRise 0.3s ease; }
 .sources-modal h4 {
     color: oklch(var(--accent-crypto));
     font-size: 1.1rem;

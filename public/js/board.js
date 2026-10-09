@@ -182,8 +182,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         return {
             move(ev) {
                 p.style.translate = `${ev.clientX - e.clientX}px ${ev.clientY - e.clientY}px`;
-                if (ev.clientY < 64) scrollBy(0, -16);
-                else if (ev.clientY > innerHeight - 64) scrollBy(0, 16);
+                // instant: the page-wide smooth scroll would queue a glide on every pointer move
+                if (ev.clientY < 64) scrollBy({ top: -16, behavior: 'instant' });
+                else if (ev.clientY > innerHeight - 64) scrollBy({ top: 16, behavior: 'instant' });
                 pending = ev;
                 frame ||= requestAnimationFrame(retarget);
             },
