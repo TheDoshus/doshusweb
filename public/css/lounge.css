@@ -211,9 +211,10 @@
     box-shadow: 0 10px 30px oklch(var(--accent-lounge) / 0.4);
 }
 .random-meme-fixed img,
-.random-meme-fixed video { width: 100%; height: 100%; object-fit: cover;
+.random-meme-fixed video { width: 100%; height: 100%; object-fit: fill;
     border-radius: 10px;
 }
+.random-meme-fixed video { object-fit: contain; }
 
 .footer-nav a.footer-active { color: oklch(var(--accent-lounge)); font-weight: 600; }
 

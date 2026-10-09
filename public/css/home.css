@@ -356,7 +356,7 @@ button.social-item { cursor: pointer; font: inherit; }
     transform: scale(1.05);
     box-shadow: 0 10px 30px oklch(var(--accent-lounge) / 0.3);
 }
-.lounge-box .random-meme img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.lounge-box .random-meme img { width: 100%; height: 100%; object-fit: fill; border-radius: 10px; }
 #lounge p { margin-top: 1.5rem; opacity: 0.9; font-weight: 500; font-size: 0.95rem; }
 
 /* Category Tags */

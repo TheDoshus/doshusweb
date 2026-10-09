@@ -346,7 +346,7 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 /* Random Meme */
-.random-meme img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.random-meme img { width: 100%; height: 100%; object-fit: fill; border-radius: 10px; }
 .random-meme:hover {
     transform: scale(1.05);
     box-shadow: 0 10px 30px oklch(var(--accent-crypto) / 0.3);
