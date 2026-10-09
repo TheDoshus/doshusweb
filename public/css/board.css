@@ -103,9 +103,10 @@
     border-color: oklch(var(--accent) / 0.85);
     box-shadow: 0 12px 38px oklch(var(--accent) / 0.25), 0 0 0 1px oklch(var(--accent) / 0.4) inset;
 }
-.panel.is-dragging { position: fixed; z-index: 50; margin: 0; opacity: 0.92; scale: 1.02; cursor: grabbing;
+.panel.is-dragging, .panel.is-resizing { z-index: 50;
     box-shadow: 0 0 0 2px oklch(var(--accent) / 0.7), 0 24px 60px oklch(var(--accent) / 0.4);
 }
+.panel.is-dragging { position: fixed; margin: 0; opacity: 0.92; scale: 1.02; cursor: grabbing; }
 
 .panel-head { display: flex; align-items: center; gap: var(--sp-s); padding: var(--sp-m) var(--sp-m) var(--sp-xs);
     position: relative; cursor: grab; touch-action: none;

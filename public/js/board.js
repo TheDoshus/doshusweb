@@ -203,37 +203,69 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         };
     };
 
-    // Resize from any edge or corner, snapping to whole cells. Growth never shoves a panel that
-    // sits beside or above (it stops at that panel's edge); only the bottom edge pushes what's below
+    // Resize from any edge or corner: the dragged edge follows the pointer while the ghost shows
+    // the whole cells it will snap to on release. Growth never shoves a panel that sits beside or
+    // above (the ghost stops at that panel's edge); only the bottom edge pushes what's below
     const resizeFrom = (p, dir) => (e) => {
         const start = { ...layout.get(p) };
         const blockers = [...layout].filter(([o, r]) => o !== p && !r.hidden && r.y < start.y + start.h).map(([, r]) => r);
         const blocked = (r) => blockers.some((o) => overlap(o, r));
         const c = cell();
         const floor = minH(p);
+        const r0 = p.getBoundingClientRect();
+        // The live edge stays between the panel's minimum and the board's edge (px, gutters out)
+        const gutters = 2 * (parseFloat(getComputedStyle(p).marginTop) || 0);
+        const px = (cells, size) => cells * size - gutters;
+        const limit = {
+            w: [px(MIN.w, c.x), px(dir.includes('w') ? start.x + start.w - 1 : cols() - start.x + 1, c.x)],
+            h: [px(floor, c.y), dir.includes('n') ? px(start.y + start.h - 1, c.y) : Infinity],
+        };
         const d = { c: 0, r: 0 };
         let next = layout;
         let last = '';
+        let frame = 0;
+        let pending;
+        p.classList.add('is-resizing');
         showGhost(p, start);
+        // Once a frame: size the panel to the pointer, then re-target the ghost and the panels it
+        // pushes (the panel keeps its starting cell until release, so the two never fight)
+        const follow = () => {
+            frame = 0;
+            const dx = pending.clientX - e.clientX;
+            const dy = pending.clientY - e.clientY;
+            const w = dir.includes('e') ? clamp(r0.width + dx, ...limit.w) : dir.includes('w') ? clamp(r0.width - dx, ...limit.w) : r0.width;
+            const h = dir.includes('s') ? clamp(r0.height + dy, ...limit.h) : dir.includes('n') ? clamp(r0.height - dy, ...limit.h) : r0.height;
+            Object.assign(p.style, { width: `${w}px`, height: `${h}px`,
+                translate: `${dir.includes('w') ? r0.width - w : 0}px ${dir.includes('n') ? r0.height - h : 0}px` });
+            d.c = snap(dx / c.x, d.c);
+            d.r = snap(dy / c.y, d.r);
+            const r = { ...start };
+            if (dir.includes('e')) r.w = clamp(start.w + d.c, MIN.w, cols() - start.x + 1);
+            if (dir.includes('w')) { r.x = clamp(start.x + d.c, 1, start.x + start.w - MIN.w); r.w = start.w + start.x - r.x; }
+            while (r.w > start.w && blocked(r)) { if (dir.includes('w')) r.x++; r.w--; }
+            if (dir.includes('s')) r.h = Math.max(floor, start.h + d.r);
+            if (dir.includes('n')) { r.y = clamp(start.y + d.r, 1, start.y + start.h - floor); r.h = start.h + start.y - r.y; }
+            while (r.y < start.y && blocked(r)) { r.y++; r.h--; }
+            if (`${r.x},${r.y},${r.w},${r.h}` === last) return;
+            last = `${r.x},${r.y},${r.w},${r.h}`;
+            next = copy(layout);
+            Object.assign(next.get(p), r);
+            flip(() => { render(resolve(next, p)); setCell(p, start); setCell(ghost, next.get(p)); }, p);
+        };
         return {
             move(ev) {
-                d.c = snap((ev.clientX - e.clientX) / c.x, d.c);
-                d.r = snap((ev.clientY - e.clientY) / c.y, d.r);
-                const r = { ...start };
-                if (dir.includes('e')) r.w = clamp(start.w + d.c, MIN.w, cols() - start.x + 1);
-                if (dir.includes('w')) { r.x = clamp(start.x + d.c, 1, start.x + start.w - MIN.w); r.w = start.w + start.x - r.x; }
-                while (r.w > start.w && blocked(r)) { if (dir.includes('w')) r.x++; r.w--; }
-                if (dir.includes('s')) r.h = Math.max(floor, start.h + d.r);
-                if (dir.includes('n')) { r.y = clamp(start.y + d.r, 1, start.y + start.h - floor); r.h = start.h + start.y - r.y; }
-                while (r.y < start.y && blocked(r)) { r.y++; r.h--; }
-                if (`${r.x},${r.y},${r.w},${r.h}` === last) return;
-                last = `${r.x},${r.y},${r.w},${r.h}`;
-                next = copy(layout);
-                Object.assign(next.get(p), r);
-                flip(() => { render(resolve(next, p)); setCell(ghost, next.get(p)); });
+                pending = ev;
+                frame ||= requestAnimationFrame(follow);
             },
+            // Release: the panel glides from wherever the pointer left it into the ghost's cells
             done() {
+                if (frame) { cancelAnimationFrame(frame); follow(); }
                 ghost.hidden = true;
+                flip(() => {
+                    p.classList.remove('is-resizing');
+                    ['width', 'height', 'translate'].forEach((k) => p.style.removeProperty(k));
+                    render(next);
+                });
                 commit(next);
                 const r = next.get(p);
                 say(`${title(p)} is ${r.w} columns by ${r.h} rows`);

@@ -77,8 +77,9 @@ scale); the code, names and look are ours. Implementation: `public/css/board.css
 
 Grab a panel by its top (the title bar, or a meme's top-left) to move it: the board lights up
 as a field of cells and a breathing ghost in the panel's accent shows where it will land, while
-the other panels glide out of the way. Drag any edge or corner to resize, with the same ghost;
-it snaps to whole cells and the content scrolls once the panel is smaller than it. The feel is
+the other panels glide out of the way. Drag any edge or corner to resize: the edge follows the
+pointer, the same ghost shows the whole cells it will take, and it snaps into them on release;
+the content scrolls once the panel is smaller than it. The feel is
 tunable from the knobs on `.board` in `board.css`: `--field-opacity`, `--ghost-fill`,
 `--ghost-glow`, and `--glide` / `--ghost-glide` (glide durations, ms). ✕ (top right, on hover) hides a panel, **＋ Add
 widget** brings it back, **Reset layout** returns to the default. The layout saves per browser
