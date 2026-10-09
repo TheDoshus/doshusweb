@@ -54,24 +54,33 @@ scale); the code, names and look are ours. Implementation: `public/css/board.css
 - **No `style=` attributes in markup.** Cells are `data-x/y/w/h` and colors are `data-accent`;
   `board.js` turns cells into `--x/--y/--w/--h` through the CSSOM, which the CSP allows, so the
   `'unsafe-inline'` style exception stays an exception for widgets.
-- **Gravity, no holes by accident:** panels rise to the first free row in reading order. Drop a
-  panel onto another and the one underneath makes way; Reset restores the page's default.
+- **Free placement:** a panel stays wherever it's dropped, gaps and all. Dropped onto a panel
+  that starts above it, it tucks in underneath; anything else it lands on is pushed down.
+  Resizing never shoves a panel beside or above (growth stops at its edge); only the bottom edge
+  pushes what's below. Hiding leaves a gap and re-adding returns a panel to its spot. Reset
+  restores the page's default.
+- **Cheap to move:** panels glide translate-only on the compositor (only a panel whose size
+  changes animates width/height), the board re-lays out at most once a frame, and backdrop blur
+  is off while arranging: blurring the live star field behind every moving panel is the heaviest
+  thing on the page, and the star engine pauses itself below 25fps.
 - **Native first:** `<details>` for folds, the Popover API for the menu, `moveBefore()` (falls
   back to `insertBefore`) so reordering the DOM keeps focus and playing media. DOM order follows
   the layout, so tab order and the phone stack match what the visitor arranged.
 - **Scales, not numbers:** spacing `--sp-2xs…l`, radius `--r-s/m/l`, type `--fs-xs/s/l`, fonts
   `--font-mono`/`--font-title`. They live in `board.css` until a second page adopts the board,
   then move to `shared.css`.
-- **Every control has a keyboard path:** arrows on the ⠿ grip (it only shows for keyboard focus) move
-  a cell sideways or past the neighbor above or below; arrows on the corner handle resize; a live region announces each one.
+- **Every control has a keyboard path:** arrows on the ⠿ grip (it only shows for keyboard focus)
+  move one cell, hopping a neighbor they step into; arrows on the corner handle resize; a live
+  region announces each one.
 
 ## What a visitor can do
 
 Grab a panel by its top (the title bar, or a meme's top-left) to move it: the board lights up
 as a field of cells and a breathing ghost in the panel's accent shows where it will land, while
-the other panels glide out of the way. The look is tunable from the `--field-opacity`,
-`--ghost-fill` and `--ghost-glow` knobs on `.board`. Drag any edge or corner to resize; it snaps to whole
-cells and the content scrolls once the panel is smaller than it. ✕ (top right, on hover) hides a panel, **＋ Add
+the other panels glide out of the way. Drag any edge or corner to resize, with the same ghost;
+it snaps to whole cells and the content scrolls once the panel is smaller than it. The feel is
+tunable from the knobs on `.board` in `board.css`: `--field-opacity`, `--ghost-fill`,
+`--ghost-glow`, and `--glide` / `--ghost-glide` (glide durations, ms). ✕ (top right, on hover) hides a panel, **＋ Add
 widget** brings it back, **Reset layout** returns to the default. The layout saves per browser
 in `localStorage` (`board:<name>`, versioned so an old save never breaks a new board); an
 untouched board saves nothing, so changes to the defaults reach every visitor who hasn't

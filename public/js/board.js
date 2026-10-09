@@ -29,27 +29,29 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
 
     // ─── Layout engine ───
     const overlap = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-    // Gravity: in reading order each panel rises to its first free row. Whatever sits under the
-    // moving panel's target makes way (it sorts after it), and the moving panel wins ties.
-    function pack(map, moving) {
+    // Free placement: panels stay where they're put. A moving panel that overlaps one starting
+    // above it tucks in underneath that one; anything else it lands on is pushed straight down,
+    // top to bottom, until nothing overlaps.
+    function resolve(map, moving) {
         const mv = map.get(moving);
-        const placed = [];
-        [...map].filter(([, r]) => !r.hidden)
-            .map(([p, r]) => [p, r, mv && p !== moving && overlap(r, mv) ? mv.y + 0.5 : r.y])
-            .sort(([pa, a, ka], [pb, b, kb]) => ka - kb || (pb === moving) - (pa === moving) || a.x - b.x)
-            .forEach(([, r]) => {
-                r.y = 1;
-                for (let hit; (hit = placed.find((o) => overlap(r, o)));) r.y = hit.y + hit.h;
-                placed.push(r);
-            });
+        const others = [...map].filter(([p, r]) => !r.hidden && p !== moving).map(([, r]) => r).sort((a, b) => a.y - b.y || a.x - b.x);
+        if (mv && !mv.hidden) for (let hit; (hit = others.find((o) => o.y < mv.y && overlap(o, mv)));) mv.y = hit.y + hit.h;
+        const placed = mv && !mv.hidden ? [mv] : [];
+        others.forEach((r) => {
+            for (let hit; (hit = placed.find((o) => overlap(r, o)));) r.y = hit.y + hit.h;
+            placed.push(r);
+        });
         return map;
     }
     const setCell = (node, r) => ['x', 'y', 'w', 'h'].forEach((k) => node.style.setProperty(`--${k}`, r[k]));
     function render(map) {
         map.forEach((r, p) => { p.hidden = r.hidden; setCell(p, r); });
     }
-    // FLIP: measure, change, then glide every panel (and the ghost) from where it was, size included.
-    // Measuring mid-flight picks up the running animation, so rapid changes chain without a jump.
+    // FLIP: measure, change, then glide every panel (and the ghost) from where it was. Moves are
+    // translate-only, which the compositor runs off the main thread; only a node whose size
+    // changed animates width/height. Measuring mid-flight picks up a running glide, so rapid
+    // changes chain without a jump. Durations come from --glide / --ghost-glide in board.css.
+    const ms = (prop) => parseFloat(css.getPropertyValue(prop)) || 0;
     function flip(change, skip) {
         const nodes = [...panels.filter((p) => !p.hidden && p !== skip), ...(ghost.hidden ? [] : [ghost])];
         const first = new Map(nodes.map((n) => [n, n.getBoundingClientRect()]));
@@ -57,14 +59,14 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         if (prefersReducedMotion) return;
         first.forEach((a, n) => {
             if (n.hidden) return;
-            n.getAnimations().forEach((anim) => anim.cancel());
+            n.getAnimations().filter((anim) => anim.id === 'glide').forEach((anim) => anim.cancel());
             const b = n.getBoundingClientRect();
-            if (a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height) return;
-            n.animate({
-                translate: [`${a.left - b.left}px ${a.top - b.top}px`, '0 0'],
-                width: [`${a.width}px`, `${b.width}px`],
-                height: [`${a.height}px`, `${b.height}px`],
-            }, { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+            const near = (u, v) => Math.abs(u - v) < 0.5; // ignore sub-pixel rounding
+            const frames = { translate: [`${a.left - b.left}px ${a.top - b.top}px`, '0 0'] };
+            if (!near(a.width, b.width) || !near(a.height, b.height)) {
+                Object.assign(frames, { width: [`${a.width}px`, `${b.width}px`], height: [`${a.height}px`, `${b.height}px`] });
+            } else if (near(a.left, b.left) && near(a.top, b.top)) return;
+            n.animate(frames, { id: 'glide', duration: ms(n === ghost ? '--ghost-glide' : '--glide'), easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
         });
     }
     // Snap with hysteresis: the target only changes once the pointer is well into the next cell,
@@ -106,6 +108,12 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     board.before(bar);
     board.append(ghost);
     const say = (msg) => { status.textContent = msg; };
+    // The ghost marks where a grabbed panel will land, in that panel's accent
+    const showGhost = (p, r) => {
+        ghost.style.setProperty('--accent', getComputedStyle(p).getPropertyValue('--accent'));
+        setCell(ghost, r);
+        ghost.hidden = false;
+    };
 
     function fillMenu() {
         const hidden = panels.filter((p) => layout.get(p).hidden);
@@ -113,8 +121,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             const b = button(`＋ ${title(p)}`);
             b.addEventListener('click', () => {
                 const next = copy(layout);
-                Object.assign(next.get(p), { hidden: false, y: Infinity }); // joins at the bottom, then rises
-                flip(() => render(pack(next, p)));
+                next.get(p).hidden = false; // back where it was; anything there now is pushed down
+                flip(() => render(resolve(next, p)));
                 commit(next);
                 menu.hidePopover();
                 say(`${title(p)} added back`);
@@ -144,7 +152,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         });
     }
 
-    // Move: the panel follows the pointer while the ghost shows where it will land
+    // Move: the panel follows the pointer (translate only, so the compositor carries it) while
+    // the ghost shows where it will land
     const moveFrom = (p) => (e) => {
         const r0 = p.getBoundingClientRect();
         const gutter = parseFloat(getComputedStyle(p).marginTop) || 0;
@@ -156,9 +165,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         let pending;
         Object.assign(p.style, { width: `${r0.width}px`, height: `${r0.height}px`, left: `${r0.left}px`, top: `${r0.top}px` });
         p.classList.add('is-dragging');
-        ghost.style.setProperty('--accent', getComputedStyle(p).getPropertyValue('--accent'));
-        setCell(ghost, me);
-        ghost.hidden = false;
+        showGhost(p, me);
         // Re-layout at most once a frame, however fast the pointer reports
         const retarget = () => {
             frame = 0;
@@ -170,11 +177,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             Object.assign(at, { x, y });
             next = copy(layout);
             Object.assign(next.get(p), at);
-            flip(() => { render(pack(next, p)); setCell(ghost, next.get(p)); }, p);
+            flip(() => { render(resolve(next, p)); setCell(ghost, next.get(p)); }, p);
         };
         return {
             move(ev) {
-                Object.assign(p.style, { left: `${ev.clientX - off.x + gutter}px`, top: `${ev.clientY - off.y + gutter}px` });
+                p.style.translate = `${ev.clientX - e.clientX}px ${ev.clientY - e.clientY}px`;
                 if (ev.clientY < 64) scrollBy(0, -16);
                 else if (ev.clientY > innerHeight - 64) scrollBy(0, 16);
                 pending = ev;
@@ -185,7 +192,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 ghost.hidden = true;
                 flip(() => {
                     p.classList.remove('is-dragging');
-                    ['width', 'height', 'left', 'top'].forEach((k) => p.style.removeProperty(k));
+                    ['width', 'height', 'left', 'top', 'translate'].forEach((k) => p.style.removeProperty(k));
                     render(next);
                 });
                 commit(next);
@@ -195,14 +202,18 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         };
     };
 
-    // Resize from any edge or corner, snapping to whole cells
+    // Resize from any edge or corner, snapping to whole cells. Growth never shoves a panel that
+    // sits beside or above (it stops at that panel's edge); only the bottom edge pushes what's below
     const resizeFrom = (p, dir) => (e) => {
         const start = { ...layout.get(p) };
+        const blockers = [...layout].filter(([o, r]) => o !== p && !r.hidden && r.y < start.y + start.h).map(([, r]) => r);
+        const blocked = (r) => blockers.some((o) => overlap(o, r));
         const c = cell();
         const floor = minH(p);
         const d = { c: 0, r: 0 };
         let next = layout;
         let last = '';
+        showGhost(p, start);
         return {
             move(ev) {
                 d.c = snap((ev.clientX - e.clientX) / c.x, d.c);
@@ -210,15 +221,18 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 const r = { ...start };
                 if (dir.includes('e')) r.w = clamp(start.w + d.c, MIN.w, cols() - start.x + 1);
                 if (dir.includes('w')) { r.x = clamp(start.x + d.c, 1, start.x + start.w - MIN.w); r.w = start.w + start.x - r.x; }
+                while (r.w > start.w && blocked(r)) { if (dir.includes('w')) r.x++; r.w--; }
                 if (dir.includes('s')) r.h = Math.max(floor, start.h + d.r);
-                if (dir.includes('n')) r.h = Math.max(floor, start.h - d.r);
-                if (`${r.x},${r.w},${r.h}` === last) return;
-                last = `${r.x},${r.w},${r.h}`;
+                if (dir.includes('n')) { r.y = clamp(start.y + d.r, 1, start.y + start.h - floor); r.h = start.h + start.y - r.y; }
+                while (r.y < start.y && blocked(r)) { r.y++; r.h--; }
+                if (`${r.x},${r.y},${r.w},${r.h}` === last) return;
+                last = `${r.x},${r.y},${r.w},${r.h}`;
                 next = copy(layout);
                 Object.assign(next.get(p), r);
-                flip(() => render(pack(next, p)));
+                flip(() => { render(resolve(next, p)); setCell(ghost, next.get(p)); });
             },
             done() {
+                ghost.hidden = true;
                 commit(next);
                 const r = next.get(p);
                 say(`${title(p)} is ${r.w} columns by ${r.h} rows`);
@@ -226,8 +240,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         };
     };
 
-    // Keyboard: arrows on the grip move a cell sideways or past the neighbor above/below;
-    // arrows on the corner grow and shrink
+    // Keyboard: arrows on the grip move one cell; arrows on the corner grow and shrink
     const arrow = (e) => ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] })[e.key];
     function keyed(handle, p, change) {
         handle.addEventListener('keydown', (e) => {
@@ -235,8 +248,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (!d || cols() < 2) return;
             e.preventDefault();
             const next = copy(layout);
-            if (change(next.get(p), next, ...d) === false) return;
-            flip(() => render(pack(next, p)));
+            change(next.get(p), ...d, next);
+            flip(() => render(resolve(next, p)));
             commit(next);
             handle.focus();
             p.scrollIntoView({ block: 'nearest' });
@@ -264,16 +277,15 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         });
         track(head, moveFrom(p));
 
-        keyed(grip, p, (r, next, dx, dy) => {
-            if (dx) r.x = clamp(r.x + dx, 1, cols() - r.w + 1);
-            if (!dy) return true;
-            const near = [...next].filter(([o, n]) => o !== p && !n.hidden && n.x < r.x + r.w && r.x < n.x + n.w && (dy > 0 ? n.y > r.y : n.y < r.y))
-                .sort(([, a], [, b]) => dy * (a.y - b.y))[0];
-            if (!near) return false;
-            r.y = dy < 0 ? near[1].y : near[1].y + near[1].h; // onto the neighbor above, or just under the one below
-            return true;
+        keyed(grip, p, (r, dx, dy, next) => {
+            r.x = clamp(r.x + dx, 1, cols() - r.w + 1);
+            r.y = Math.max(1, r.y + dy);
+            // Stepping into a neighbor's rows hops it: going up, take its top (it moves down);
+            // going down, start inside it so resolve() settles this panel underneath
+            const hit = [...next].find(([o, n]) => o !== p && !n.hidden && overlap(n, r))?.[1];
+            if (hit && dy) r.y = dy < 0 ? hit.y : hit.y + 1;
         });
-        keyed(p.querySelector('.panel-edge[data-dir="se"]'), p, (r, next, dx, dy) => {
+        keyed(p.querySelector('.panel-edge[data-dir="se"]'), p, (r, dx, dy) => {
             r.w = clamp(r.w + dx, MIN.w, cols() - r.x + 1);
             r.h = Math.max(minH(p), r.h + dy);
         });
@@ -281,7 +293,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         hide.addEventListener('click', () => {
             const next = copy(layout);
             next.get(p).hidden = true;
-            flip(() => render(pack(next)));
+            flip(() => render(resolve(next)));
             commit(next);
             say(`${name} hidden. Add it back from Add widget.`);
             add.focus();
@@ -298,15 +310,15 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             });
         }
     } catch { /* no saved layout */ }
-    render(pack(layout));
+    render(resolve(layout));
     if (cols() > 1) { // lift anything saved shorter than its head and foot now need
         layout.forEach((r, p) => { r.h = Math.max(r.h, minH(p)); });
-        render(pack(layout));
+        render(resolve(layout));
     }
     settle(layout);
 
     reset.addEventListener('click', () => {
-        const next = pack(copy(DEFAULT));
+        const next = resolve(copy(DEFAULT));
         flip(() => render(next));
         settle(next);
         try { localStorage.removeItem(KEY); } catch { /* nothing saved */ }
