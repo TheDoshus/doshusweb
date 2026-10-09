@@ -79,9 +79,18 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 
 | Card | What |
 |---|---|
-| `49f2128c` | Seasonal page effects (Doshus's idea) |
+| `49f2128c` | Seasonal page effects (Doshus's idea). Plan: `main.js` sets `data-month` on `<html>` before the star block reads its tints (the WebGL sky reads `--star-*` once at load), and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, `--star-*` tints, the board's snap field). Section accents stay put so finance stays green |
 | `9414bd21` | Real OG images (every page's `og:image` is `doshusfavi.ico` today), `sitemap.xml` (lists 3 of 5 top-level pages, no `/zephyy/*`), `humans.txt` (empty) |
 | `ec678abe` | QA page claims vs live: needs OpenClaw to verify. The crew page's model chains and schedules are now generated (`data/crew-facts.json`) |
+
+**Board rollout** (the layout in `UI-SPEC.md`, signed off 2026-10-09): `/lab/nexus` stays the
+proving ground for each change; next the lab replaces `nexus.html` (nexus.css keeps only the
+hero and footer bits, and the board's scales move from `board.css` to `shared.css`), then
+Finance Hub, the Lounge and Zephyy's profile. The widget catalog reuses the profile's htmx
+fragments (`zephyy/fragments/`, htmx 2.0.10, moving from `/zephyy/vendor/` to a shared vendor
+folder). Site-specific parts that stay out of the spec: the cells go through the CSSOM, so no
+`style=` attribute ever leans on the CSP's `'unsafe-inline'`; `board.css` also carries the
+site's content kit (`.group`, `.chips`, `.fold`, `.tip`) and its cosmic panel surfaces.
 
 Chat-orb follow-through (abuse admission, retention, processing health, real-browser CSP
 checks) is tracked in OpenClaw `scripts/bridges/orb/README.md` § Remaining work, not here.

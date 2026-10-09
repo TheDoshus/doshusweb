@@ -1,127 +1,125 @@
-# UI-SPEC.md — how doshus.net pages are built
+# UI-SPEC.md — the board layout
 
-The house spec for page UI: a **board** of **panels** on a fine grid that each visitor can
-move, resize from any edge, hide and bring back, dressed in the site's own cosmic look. The
-idea comes from dashboard design systems (uniform containers on a shared grid and spacing
-scale); the code, names and look are ours. Implementation: `public/css/board.css` +
-`public/js/board.js`. Proving ground: `/lab/nexus` (`public/lab/nexus.html`), a copy of `/nexus`.
+Doshus's layout for pages and apps: a **board** of **panels** on a fine grid that every visitor
+can move, resize, hide and bring back, fluid from a folded phone to a wide monitor, saved per
+visitor. This spec is the layout and its feel only. The look is a layer each host applies on
+top (doshus.net's cosmic glass, Aether's own vibe), and so are the host's security and build
+rules. Hosts are listed under [Implementations](#implementations).
 
 ## Markup
 
 ```html
-<div class="board" data-board="nexus">                     <!-- name = the saved-layout key -->
+<div class="board" data-board="nexus">                 <!-- name = the saved-layout key -->
   <article class="panel" id="dev-core" data-accent="finance"
-           data-x="1" data-y="1" data-w="12" data-h="21">    <!-- grid cells, counted from 1 -->
-    <header class="panel-head">
-      <span class="panel-icon" aria-hidden="true"><svg>…</svg></span>
-      <h2>Dev Core</h2>
-      <span class="panel-tag">N.01</span>
-    </header>
-    <div class="panel-body">
-      <p>One-line description.</p>
-      <section class="group"><h3>⌘ Site Tooling</h3><p>Blurb</p>
-        <nav class="chips"><a href="…">W3C Validator</a>…</nav></section>
-      <details class="fold" open><summary>// shell_tools</summary>
-        <div class="tip"><b>name</b><p>what it does</p><code>command</code><a href="…">link</a></div>
-      </details>
-    </div>
-    <footer class="panel-foot"><span>06 endpoints</span><b>SYNCED</b></footer>
+           data-x="1" data-y="1" data-w="12" data-h="21"> <!-- grid cells, counted from 1 -->
+    <header class="panel-head"><h2>Dev Core</h2></header>
+    <div class="panel-body">…any content…</div>
+    <footer class="panel-foot">…status line…</footer>
   </article>
-  <figure class="panel panel-media" id="meme-1" data-accent="lounge" data-x="13" data-y="14"
-          data-w="6" data-h="8" aria-label="Meme slot 1">
-    <div class="random-meme-fixed"></div>                   <!-- main.js fills it -->
+  <figure class="panel panel-media" id="meme-1" data-accent="lounge"
+          data-x="13" data-y="14" data-w="6" data-h="8" aria-label="Meme slot 1">
+    …content another script owns (a video, an embed)…
   </figure>
 </div>
 ```
 
 | Part | Job |
 |---|---|
-| `.board[data-board]` | 24 columns × 2rem rows on desktop and tablet; 4 columns on phones (≤640px), with a layout and save of their own |
-| `.panel[id]` | One widget. `data-x`/`data-y` place it, `data-w`/`data-h` size it, in cells. The `id` is how a saved layout finds it, so never rename one casually. At least `--min-cols` wide (4, or half the screen on phones), never shorter than its head and foot plus a few lines, never taller than the screen |
-| `data-accent` | Picks a semantic accent (`finance`, `crypto`, `taxes`, `invest`, `networth`, `lounge`, `amzn`, `myth`, `discord`); everything inside reads `--accent` |
-| `.panel-head` / `-body` / `-foot` | Title row (also a drag handle), content that scrolls when the panel is smaller than it, status line |
-| `.group` | Titled cluster inside a body |
-| `.chips` | Wrap of link buttons (plain `<a>`s, no class per link) |
-| `.fold` | Native `<details>` accordion that eases open; no JS |
-| `.tip` | Name, description, command, link, styled by element (`b`, `p`, `code`, `a`) |
-| `.panel-media` | A panel whose content another script owns (memes); `board.js` gives it an invisible grab strip over its top-left, clear of a video's buttons |
+| `.board[data-board]` | The grid. Its name keys the saved layouts |
+| `.panel[id]` | One widget. `data-x`/`data-y` place it and `data-w`/`data-h` size it, in cells, for the wide layout. The `id` is how a saved layout finds it, so never rename one casually |
+| `data-accent` | Picks the panel's accent from the host's palette; everything in the panel reads `--accent` |
+| `.panel-head` / `-body` / `-foot` | Title row (a grab bar), content that scrolls when the panel is smaller than it, status line. All optional |
+| `.panel-media` | A headless panel whose content another script owns; it gets a grab strip over its top-left, clear of the player's own buttons |
 
-## Rules
+The markup holds only content. The engine adds every control (grab dots, resize handles, the
+snap ghost, ✕, Add widget, Reset), and without the engine the panels still flow as plain blocks.
 
-- **Content is markup, controls are JS.** `board.js` adds the grab bars, the resize handles,
-  the snap ghost, Add widget and Reset, so the HTML holds only content. Without JS the
-  panels still flow as plain blocks.
-- **No `style=` attributes in markup.** Cells are `data-x/y/w/h` and colors are `data-accent`;
-  `board.js` turns cells into `--x/--y/--w/--h` through the CSSOM, which the CSP allows, so the
-  `'unsafe-inline'` style exception stays an exception for widgets.
-- **Free placement:** a panel stays wherever it's dropped, gaps and all. Dragged upward, it
-  lifts what it lands on into free space above; otherwise, dropped onto the upper half of a
-  panel that starts above it, it takes that panel's place (a swap, how a phone stack reorders),
-  on its lower half it tucks in underneath, and anything else it lands on is pushed down. Resizing stops
-  at a panel that starts above (nothing is pushed up) and pushes down anything else it grows
-  into. Hiding leaves a gap and re-adding returns a panel to its spot. Reset restores the
-  default.
-- **Two layouts:** the wide grid is placed by `data-x/y/w/h`; the phone grid's default stacks
-  the panels full width in the wide reading order, each as tall as its content (memes a little
-  over half the screen). Each saves on its own, and the board swaps between them live as the
-  window crosses 640px (a foldable opening).
-- **Touch waits, a mouse doesn't:** a finger rests on a grab bar for `--hold` (500ms) before
-  the panel lifts, so a swipe still scrolls the page; touch screens resize by the corner only.
-- **Cheap to move:** panels glide translate-only on the compositor (only a panel whose size
-  changes animates width/height), the board re-lays out at most once a frame, and backdrop blur
-  is off while arranging: blurring the live star field behind every moving panel is the heaviest
-  thing on the page.
-- **Native first:** `<details>` for folds, the Popover API for the menu, `moveBefore()` (falls
-  back to `insertBefore`) so reordering the DOM keeps focus and playing media. DOM order follows
-  the layout, so tab order matches what the visitor arranged.
-- **Scales, not numbers:** spacing `--sp-2xs…l`, radius `--r-s/m/l`, type `--fs-xs/s/l`, fonts
-  `--font-mono`/`--font-title`. They live in `board.css` until a second page adopts the board,
-  then move to `shared.css`.
-- **Every control has a keyboard path:** arrows on the ⠿ grip (it only shows for keyboard focus)
-  move one cell, hopping a neighbor they step into; arrows on the corner handle resize; a live
-  region announces each one.
+## Layout
 
-## What a visitor can do
+- **Two grids, two layouts.** Wide: 24 columns of 2rem rows. Narrow (up to 640px): 4 columns.
+  Each layout has its own default and its own save, and the board swaps between them live as
+  the window crosses 640px (a foldable opening or closing). The wide default is the markup's
+  cells; the narrow default stacks every panel full width in the wide reading order, each as
+  tall as its content, media a little over half the screen.
+- **Sizes.** No narrower than `--min-cols` (4 wide, 2 narrow: half the screen), no shorter
+  than its head and foot plus a few lines of body, no taller than one screen. Content scrolls
+  inside a panel that's smaller than it.
+- **Free placement.** A panel stays wherever it's dropped, gaps and all; nothing floats up on
+  its own. Where it lands decides what moves:
+  - dragged upward onto a panel with free space above it, that panel rises out of the way;
+  - onto the upper half of a panel that starts above it, it takes that panel's place (a swap,
+    which is how a narrow stack reorders);
+  - onto the lower half of one, it tucks in underneath;
+  - anything else it lands on is pushed straight down.
+- **Resizing** stops at a panel that starts above (nothing is pushed up) and pushes down
+  anything else it grows into.
+- **Hide and bring back.** ✕ hides a panel and leaves its gap; Add widget (shown only while a
+  panel is hidden) brings it back to its spot. Reset (shown only once the layout differs from
+  the default) returns to the default.
+- **Saving.** Per browser, in `localStorage` under `board:<name>` (wide) and
+  `board:<name>:phone` (narrow), versioned so an old save never breaks a new board. A layout at
+  its default saves nothing, so a changed default reaches everyone who hasn't arranged their own.
+- **Layout is data.** Cells live in `data-x/y/w/h`; the engine turns them into the custom
+  properties `--x/--y/--w/--h`. Markup never carries inline styles.
+- **Reading order follows the layout.** The DOM is reordered to match (with `moveBefore()`,
+  which keeps focus and playing media), so tab order is what the visitor sees.
 
-Grab a panel by its top (the title bar, the grab dots at its top center, or a meme's top-left;
-on touch, hold it there for half a second) to move it: the board lights up
-as a field of cells and a breathing ghost in the panel's accent shows where it will land, while
-the other panels glide out of the way. Drag any edge or corner to resize: the edge follows the
-pointer, the same ghost shows the whole cells it will take, and it snaps into them on release;
-the content scrolls once the panel is smaller than it. The feel is
-tunable from the knobs on `.board` in `board.css`: `--field-opacity`, `--ghost-fill`,
-`--ghost-glow`, `--glide` / `--ghost-glide` (glide durations, ms), `--hold` and `--min-cols`.
-✕ (top right, on hover) hides a panel; **＋ Add widget** appears while one is hidden and brings
-it back; **Reset layout** appears once the layout differs from the default and returns to it.
-The layout saves per browser in `localStorage` (`board:<name>`, and `board:<name>:phone` for
-phones; versioned so an old save never breaks a new board); a board at its default saves
-nothing, so changes to the defaults reach every visitor who hasn't arranged their own.
+## Feel
+
+- **Grab** by the title bar, the grab dots at a panel's top center, or a media panel's
+  top-left strip. A mouse grabs at once. A finger or pen rests there for `--hold` (500ms; the
+  panel swells slightly while it charges) before it lifts, so a swipe that starts on a panel
+  still scrolls the page.
+- **While moving**, the board lights up as a field of cells, a breathing ghost in the panel's
+  accent shows where it will land, and the other panels glide out of the way.
+- **Resize** from any edge or corner with a mouse, from one large corner on touch screens
+  (thumbs catch thin edges by accident). The edge follows the pointer, the ghost shows the
+  whole cells it will take, and it snaps into them on release.
+- **Smooth on weak machines.** Panels glide translate-only, which the compositor runs off the
+  main thread (only a panel whose size changes animates width and height). The board re-lays
+  out at most once a frame. Expensive effects behind panels (backdrop blur) switch off while
+  arranging.
+- **Keyboard path for everything.** Arrows on the ⠿ grip (shown only to keyboard focus) move a
+  panel one cell, hopping a neighbor; arrows on the corner handle resize; a live region
+  announces each change.
+- **Native first.** `<details>` for anything that folds, the Popover API for the Add widget
+  menu, pointer events with capture for every gesture.
+- **Reduced motion.** Panels jump instead of gliding; nothing else changes.
+
+## Aesthetic layer
+
+The layout reads these; a host's theme sets them. Everything visual about a board is one of
+these or a host stylesheet on top.
+
+| Knob | What it shapes |
+|---|---|
+| `--accent` (from `data-accent`) | A panel's border, glow, title, ghost and controls |
+| `--cols`, `--row`, `--gutter`, `--min-cols` | Grid density and spacing |
+| `--field-opacity` | How strongly the cell field shows while arranging |
+| `--ghost-fill`, `--ghost-glow` | The landing ghost's fill and glow |
+| `--glide`, `--ghost-glide` | How long panels and the ghost glide (ms) |
+| `--hold` | How long a finger rests before a panel lifts (ms) |
+| `--sp-*`, `--r-*`, `--fs-*`, `--font-mono`, `--font-title` | Spacing, radius and type scales |
+| Panel surface, snap field, ghost colors | The host's own styles for `.panel`, `.board::before`, `.board-ghost` |
 
 ## Roadmap
 
-1. **Lab:** `/lab/nexus`. Signed off by Doshus 2026-10-09 ("this is the spec to keep improving
-   on"); it stays the proving ground for each change before the real pages get it.
-2. **Nexus:** the lab replaces `nexus.html`; nexus.css keeps only the hero and footer bits,
-   and the scales move to `shared.css`.
-3. **Every page where it fits:** Finance Hub, the Lounge, Zephyy's profile.
-4. **Inner sections:** groups and folds reorder within a panel and move between panels, using
-   the same gesture code in list mode. Panels stay the only thing that resizes; content reflows.
-5. **Widget catalog over htmx:** widgets that aren't on a page by default (Discord presence,
-   Zephyy status, a meme slot) become fragments in a shared folder, and Add widget pulls them
-   in with htmx, the way the Zephyy profile's signal deck already does (`zephyy/fragments/`,
-   htmx 2.0.10, which then moves from `/zephyy/vendor/` to a shared vendor folder).
-6. **Zephyy drives the board:** one registry of page actions (show a panel, open a page at a
-   panel, highlight, reset) that only ever names known pages and panel ids. Zephyy's chat replies
-   carry those actions over the existing realtime channel; the same registry is offered to
-   browser agents through WebMCP (`document.modelContext.registerTool()`, origin trial in Chrome
-   149 and Edge 150, 2026-10-09) where the browser supports it. AG-UI is the wire format to
-   consider if the OpenClaw gateway grows an event stream.
-7. **Monthly themes** (BLUEPRINT card `49f2128c`): `main.js` sets `data-month` on `<html>`,
-   and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, the `--star-*`
-   tints, the snap field). The WebGL sky reads its tints once at load, so `data-month` is set
-   before the star block runs. Section accents stay put so finance stays green.
-8. **Beyond doshus.net:** Doshus plans to build his other pages this way, Aether (OpenClaw's
-   mission control, `projects/aether` in the OpenClaw repo) first. Before that port, split this
-   file into the portable part (markup contract, placement and gesture rules, save format) and
-   the doshus.net part (CSP, tokens, the cosmic look), so Aether follows the same contract
-   instead of a copy that drifts.
+1. **Inner sections:** groups and folds reorder within a panel and move between panels, with
+   the same gestures in list mode. Panels stay the only thing that resizes.
+2. **Widget catalog:** widgets that aren't on a page by default are fragments the host serves,
+   and Add widget pulls them in with htmx.
+3. **Agents drive the board:** one registry of layout actions (show, hide, move, highlight,
+   reset) that only ever names known boards and panel ids. A host's agent calls it (Zephyy over
+   doshus.net's realtime channel); browser agents get it through WebMCP
+   (`document.modelContext.registerTool()`, origin trial in Chrome 149 and Edge 150,
+   2026-10-09). AG-UI is the wire format to consider for an event stream.
+4. **Theme surface:** today doshus.net's styles read its site tokens directly. When a second
+   host adopts the board, the panel surface, field and ghost colors move behind neutral
+   `--board-*` tokens each host maps to its own palette.
+
+## Implementations
+
+| Host | Where | Status |
+|---|---|---|
+| doshus.net | `public/css/board.css` + `public/js/board.js`; proving ground `/lab/nexus` | Reference implementation, signed off by Doshus 2026-10-09 ("this is the spec to keep improvin on"). Site rollout and theming: `BLUEPRINT.md` § Roadmap |
+| Aether (OpenClaw mission control) | `projects/aether` in the OpenClaw repo | Planned: the same layout, rebuilt with bun and htmx, with Aether's own look |
