@@ -14,66 +14,66 @@ below means the numbered coding Rules, which say how to meet them.
 ### The build bar
 
 1. **Futureproof.** Build so the next agent, model, machine or data source plugs in without
- rewriting what is already there: derive, don't copy (Rule 12). Anything that depends on a
- version, model, quota or upstream says so when it drifts, before it breaks.
+   rewriting what is already there: derive, don't copy (Rule 12). Anything that depends on a
+   version, model, quota or upstream says so when it drifts, before it breaks.
 2. **Modular.** Each part has one clear job and a defined interface, so it can be swapped
- out, or backed by another clean path, without touching the rest: *"a generic standard is
- better than a custom ragdolled one."* Modular is organized, not scattered: extend the part
- shaped like your change before adding another (Rule 18). A pile of small scripts splitting
- one job is not modular.
+   out, or backed by another clean path, without touching the rest: *"a generic standard is
+   better than a custom ragdolled one."* Modular is organized, not scattered: extend the part
+   shaped like your change before adding another (Rule 18). A pile of small scripts splitting
+   one job is not modular.
 3. **Lean and optimized.** *"The meanest and leanest code possible. I believe less code is
- the best code."* Lean over clever, native features first, the fewest moving parts, no
- bloat in code, prose or reports: a report states the finding, not the scan (Rule 16).
- Optimizing never costs a capability: *"I'm not here to lose functionality but improve
- on it."*
+   the best code."* Lean over clever, native features first, the fewest moving parts, no
+   bloat in code, prose or reports: a report states the finding, not the scan (Rule 16).
+   Optimizing never costs a capability: *"I'm not here to lose functionality but improve
+   on it."*
 4. **One source.** Every fact, rule, helper and template has one home, and everything else
- points at it. Where a harness cannot point, the copy is generated from the source and
- checked for drift. A hand-kept copy is allowed only when it forks into something
- specialized for one agent, harness or situation, and it names what it forks from.
+   points at it. Where a harness cannot point, the copy is generated from the source and
+   checked for drift. A hand-kept copy is allowed only when it forks into something
+   specialized for one agent, harness or situation, and it names what it forks from.
 5. **Portable.** It must survive a teleport: *"I don't wanna boot up on another machine with
- nothin workin."* Nothing machine-specific is baked into code or docs: users, homes, paths,
- ports and hosts come from config or the environment, or are derived (Rule 4). Build it
- generic enough to share, with our specifics layered on top.
+   nothin workin."* Nothing machine-specific is baked into code or docs: users, homes, paths,
+   ports and hosts come from config or the environment, or are derived (Rule 4). Build it
+   generic enough to share, with our specifics layered on top.
 6. **Continuous.** When you learn or land something, update the memory, daily log, doc,
- handoff or board it changes right then, not at the end. Saying you will is not doing it.
+   handoff or board it changes right then, not at the end. Saying you will is not doing it.
 7. **oklch() colors only.** Every color value: CSS, tokens, inline styles, SVG `fill` and
- `stroke`, generated colors, palettes, design specs, and any prompt you write for a tool
- that produces colors. No hex, rgb/rgba or hsl wherever oklch is available; a vendor
- example is a reference, not an exception.
+   `stroke`, generated colors, palettes, design specs, and any prompt you write for a tool
+   that produces colors. No hex, rgb/rgba or hsl wherever oklch is available; a vendor
+   example is a reference, not an exception.
 8. **Smart value first.** Anything with more than one way to get it done (models, search,
- scraping, APIs, services) runs the best free option first, then the next best, and a paid
- one only as the true last resort. The order lives in the config that routes it, not only
- in prose: a doc that says "free first" over a config that picks paid is how every web
- search here ran on paid providers for months.
+   scraping, APIs, services) runs the best free option first, then the next best, and a paid
+   one only as the true last resort. The order lives in the config that routes it, not only
+   in prose: a doc that says "free first" over a config that picks paid is how every web
+   search here ran on paid providers for months.
 
 ### How the work gets done
 
 - **Ask when you don't know or aren't confident.** *"Guessing does none of us any good."* A
- question costs one message; a wrong guess costs the build and his trust.
+  question costs one message; a wrong guess costs the build and his trust.
 - **Verify, don't assert.** Quote the output that proves it. A check that ran is not a check
- that found anything (Rule 15), and one that could not look reports UNKNOWN, never clean.
- Size the check to the blast radius: no unrequested repo-wide sweep for a local edit, and
- the wider audit when real dependencies or he calls for it.
+  that found anything (Rule 15), and one that could not look reports UNKNOWN, never clean.
+  Size the check to the blast radius: no unrequested repo-wide sweep for a local edit, and
+  the wider audit when real dependencies or he calls for it.
 - **Gold-star it before moving on.** Research it and think it through, then finish: the
- checks pass, the cleanup is done, the note is filed. Only then start the next thing.
+  checks pass, the cleanup is done, the note is filed. Only then start the next thing.
 - **Read the manual before you touch a part of the system.** Each part has a page: find it by the part's name and config keys and read it before the
- change, not after; a part with no page gets one in the same change.
+  change, not after; a part with no page gets one in the same change.
 - **Latest and greatest, done properly.** Prefer the maintained successor and the native
- feature over a superseded or hand-rolled one.
+  feature over a superseded or hand-rolled one.
 - **Build to the domain's published standard.** Where a spec or vendor best-practice guide
- exists (MCP, agent skills, hooks, an API), mirror it and build to it; our
- domain page holds only our deltas, each with its reason.
+  exists (MCP, agent skills, hooks, an API), mirror it and build to it; our
+  domain page holds only our deltas, each with its reason.
 - **Track what you install.** A new tool, CLI or package gets a line in the tooling inventory
- and a manual the same session, or it rots unseen.
+  and a manual the same session, or it rots unseen.
 - **Call out mess when you see it:** duplication, stale docs, dead files, and builds kept
- only because redoing them is work. Don't route around it.
+  only because redoing them is work. Don't route around it.
 - **Answer every part.** Keep every field he asked for and never drop one for brevity.
 - **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
- different model where a free lane is available, and every finding is fixed or answered; a
- reviewer he names is part of done, and a command he runs as root is reviewed before he
- gets it. Short on review quota, routine work lands with its review
- owed and sharp edges wait. Timing
- and the kept verdict: Rule 7 § E.
+  different model where a free lane is available, and every finding is fixed or answered; a
+  reviewer he names is part of done, and a command he runs as root is reviewed before he
+  gets it. Short on review quota, routine work lands with its review
+  owed and sharp edges wait. Timing
+  and the kept verdict: Rule 7 § E.
 
 **The messy trail** is the failure to guard against: scratch files left behind, a run-once
 script left in the script store (Rule 18), notes unfiled, board cards not moved, decisions
