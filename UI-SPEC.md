@@ -36,8 +36,8 @@ scale); the code, names and look are ours. Implementation: `public/css/board.css
 
 | Part | Job |
 |---|---|
-| `.board[data-board]` | 24 columns × 2rem rows on desktop and tablet; one column in reading order on phones (≤640px) |
-| `.panel[id]` | One widget. `data-x`/`data-y` place it, `data-w`/`data-h` size it, in cells. The `id` is how a saved layout finds it, so never rename one casually. At least 4 columns wide, and never shorter than its head and foot plus a few lines |
+| `.board[data-board]` | 24 columns × 2rem rows on desktop and tablet; 4 columns on phones (≤640px), with a layout and save of their own |
+| `.panel[id]` | One widget. `data-x`/`data-y` place it, `data-w`/`data-h` size it, in cells. The `id` is how a saved layout finds it, so never rename one casually. At least `--min-cols` wide (4, or half the screen on phones), never shorter than its head and foot plus a few lines, never taller than the screen |
 | `data-accent` | Picks a semantic accent (`finance`, `crypto`, `taxes`, `invest`, `networth`, `lounge`, `amzn`, `myth`, `discord`); everything inside reads `--accent` |
 | `.panel-head` / `-body` / `-foot` | Title row (also a drag handle), content that scrolls when the panel is smaller than it, status line |
 | `.group` | Titled cluster inside a body |
@@ -48,24 +48,32 @@ scale); the code, names and look are ours. Implementation: `public/css/board.css
 
 ## Rules
 
-- **Content is markup, controls are JS.** `board.js` adds the move pill, the eight resize
-  handles, the snap ghost, Add widget and Reset, so the HTML holds only content. Without JS the
+- **Content is markup, controls are JS.** `board.js` adds the grab bars, the resize handles,
+  the snap ghost, Add widget and Reset, so the HTML holds only content. Without JS the
   panels still flow as plain blocks.
 - **No `style=` attributes in markup.** Cells are `data-x/y/w/h` and colors are `data-accent`;
   `board.js` turns cells into `--x/--y/--w/--h` through the CSSOM, which the CSP allows, so the
   `'unsafe-inline'` style exception stays an exception for widgets.
-- **Free placement:** a panel stays wherever it's dropped, gaps and all. Dropped onto a panel
-  that starts above it, it tucks in underneath; anything else it lands on is pushed down.
-  Resizing never shoves a panel beside or above (growth stops at its edge); only the bottom edge
-  pushes what's below. Hiding leaves a gap and re-adding returns a panel to its spot. Reset
-  restores the page's default.
+- **Free placement:** a panel stays wherever it's dropped, gaps and all. Dragged upward, it
+  lifts what it lands on into free space above; otherwise, dropped onto the upper half of a
+  panel that starts above it, it takes that panel's place (a swap, how a phone stack reorders),
+  on its lower half it tucks in underneath, and anything else it lands on is pushed down. Resizing stops
+  at a panel that starts above (nothing is pushed up) and pushes down anything else it grows
+  into. Hiding leaves a gap and re-adding returns a panel to its spot. Reset restores the
+  default.
+- **Two layouts:** the wide grid is placed by `data-x/y/w/h`; the phone grid's default stacks
+  the panels full width in the wide reading order, each as tall as its content (memes a little
+  over half the screen). Each saves on its own, and the board swaps between them live as the
+  window crosses 640px (a foldable opening).
+- **Touch waits, a mouse doesn't:** a finger rests on a grab bar for `--hold` (500ms) before
+  the panel lifts, so a swipe still scrolls the page; touch screens resize by the corner only.
 - **Cheap to move:** panels glide translate-only on the compositor (only a panel whose size
   changes animates width/height), the board re-lays out at most once a frame, and backdrop blur
   is off while arranging: blurring the live star field behind every moving panel is the heaviest
   thing on the page.
 - **Native first:** `<details>` for folds, the Popover API for the menu, `moveBefore()` (falls
   back to `insertBefore`) so reordering the DOM keeps focus and playing media. DOM order follows
-  the layout, so tab order and the phone stack match what the visitor arranged.
+  the layout, so tab order matches what the visitor arranged.
 - **Scales, not numbers:** spacing `--sp-2xs…l`, radius `--r-s/m/l`, type `--fs-xs/s/l`, fonts
   `--font-mono`/`--font-title`. They live in `board.css` until a second page adopts the board,
   then move to `shared.css`.
@@ -75,17 +83,19 @@ scale); the code, names and look are ours. Implementation: `public/css/board.css
 
 ## What a visitor can do
 
-Grab a panel by its top (the title bar, or a meme's top-left) to move it: the board lights up
+Grab a panel by its top (the title bar, the grab dots at its top center, or a meme's top-left;
+on touch, hold it there for half a second) to move it: the board lights up
 as a field of cells and a breathing ghost in the panel's accent shows where it will land, while
 the other panels glide out of the way. Drag any edge or corner to resize: the edge follows the
 pointer, the same ghost shows the whole cells it will take, and it snaps into them on release;
 the content scrolls once the panel is smaller than it. The feel is
 tunable from the knobs on `.board` in `board.css`: `--field-opacity`, `--ghost-fill`,
-`--ghost-glow`, and `--glide` / `--ghost-glide` (glide durations, ms). ✕ (top right, on hover) hides a panel, **＋ Add
-widget** brings it back, **Reset layout** returns to the default. The layout saves per browser
-in `localStorage` (`board:<name>`, versioned so an old save never breaks a new board); an
-untouched board saves nothing, so changes to the defaults reach every visitor who hasn't
-arranged their own.
+`--ghost-glow`, `--glide` / `--ghost-glide` (glide durations, ms), `--hold` and `--min-cols`.
+✕ (top right, on hover) hides a panel; **＋ Add widget** appears while one is hidden and brings
+it back; **Reset layout** appears once the layout differs from the default and returns to it.
+The layout saves per browser in `localStorage` (`board:<name>`, and `board:<name>:phone` for
+phones; versioned so an old save never breaks a new board); a board at its default saves
+nothing, so changes to the defaults reach every visitor who hasn't arranged their own.
 
 ## Roadmap
 
