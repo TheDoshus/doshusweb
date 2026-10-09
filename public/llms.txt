@@ -2,7 +2,7 @@
 
 > Doshus's home on the internet. He's a Phoenix night owl who hand-codes this whole site and runs Zephyy, an autonomous multi-agent AI crew, off his own rig. Finance, crypto, tech, games, memes and one very opinionated AI, all in one place.
 
-No frameworks, no build step, no templates. Every page is hand-written HTML, CSS and JS, every color is oklch, and the security headers score A+. Zephyy's chat orb floats on every page, and yes, it talks back.
+No frameworks, no build step, no templates. Every page is pure HTML, CSS and JS, every color is oklch, and the security headers score A+. Zephyy's chat orb floats on every page, and yes, it talks back.
 
 ## Pages
 
