@@ -7,6 +7,9 @@
   packages = [
     pkgs.nodejs_20
     pkgs.python3
+    pkgs.bun          # the repo's scripts run through bun (bun run check, memes, ...)
+    pkgs.ffmpeg-full  # bun run memes:convert: VP9/Opus/WebP encoders + libvmaf
+    pkgs.libheif      # heif-convert, for .heic memes ffmpeg can't read
   ];
   # Sets environment variables in the workspace
   env = {};
@@ -21,7 +24,8 @@
       enable = true;
       previews = {
         web = {
-          command = ["python3" "-m" "http.server" "$PORT" "--bind" "0.0.0.0"];
+          # Serve public/ as the site root, like Firebase Hosting, so /css/... paths resolve
+          command = ["python3" "-m" "http.server" "$PORT" "--bind" "0.0.0.0" "--directory" "public"];
           manager = "web";
         };
       };

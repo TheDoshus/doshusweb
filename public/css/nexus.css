@@ -160,10 +160,7 @@
     justify-content: space-between;
 }
 .data-node .collapseBtn:hover { background: oklch(var(--node-accent) / 0.12); }
-.data-node .collapse.open .collapseBody {
-    padding: 0.85rem 1rem 1rem;
-}
-.data-node .collapseBody { padding: 0 1rem; }
+.data-node .collapseBody { padding: 0.85rem 1rem 1rem; }
 
 /* Tip rows inside accordions */
 .tip-row {
@@ -259,9 +256,10 @@
 .random-meme-fixed img,
 .random-meme-fixed video {
     width: 100%; height: 100%;
-    object-fit: cover;
+    object-fit: fill;
     display: block;
 }
+.random-meme-fixed video { object-fit: contain; }
 
 /* Sticky footer Nexus link */
 .footer-nav a.nx-active { color: oklch(var(--accent-invest)); font-weight: 600; }

@@ -82,11 +82,11 @@
                     <p>My card collection, credit tips, and everything I've learned about building credit. Don't believe everything you hear — here's what I know matters.</p>
                 
                     <!-- ─── CREDIT CARD GRID (COLLAPSIBLE) ─── -->
-                    <div class="collapse open">
-                        <button class="collapseBtn">
+                    <details class="collapse" open>
+                        <summary class="collapseBtn">
                             My credit card collection:
                             <span class="toggle-arrow">▼</span>
-                        </button>
+                        </summary>
                         <div class="collapseBody">
                             <div class="ccGrid">
     
@@ -406,7 +406,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </details>
 
                     <!-- ─── CREDIT FREEZE QUICK LINKS ─── -->
                     <div class="quickLinks">
@@ -450,9 +450,9 @@
                         <!-- ─── SOURCES ICON (opens modal) ─── -->
                         <button class="srcBtn" data-target="sources-modal" title="Where I learned this stuff">?</button>
                         <!-- ─── SOURCES MODAL ─── -->
-                        <div class="srcOverlay" id="sources-modal">
+                        <dialog class="srcOverlay" id="sources-modal" aria-label="Sources">
                             <div class="sources-modal">
-                                <button class="srcClose">✕</button>
+                                <form method="dialog"><button class="srcClose" aria-label="Close sources">✕</button></form>
                                 <h4>📎 Sources</h4>
                                 <p class="modal-subtext">Where I've learned this stuff:</p>
                                 <div class="sources-links">
@@ -462,7 +462,7 @@
                                     <!-- Add your source links here -->
                                 </div>
                             </div>
-                        </div>
+                        </dialog>
                     </div>
                     <!-- ─── CREDIT MONITORING TOOLS ─── -->
                     <div class="quickLinks">
@@ -479,10 +479,10 @@
                     </div>
     
                     <!-- ─── MY BANKS (COLLAPSIBLE) ─── -->
-                    <div class="collapse">
-                        <button class="collapseBtn">
+                    <details class="collapse">
+                        <summary class="collapseBtn">
                             🏦 Bank Accounts <span class="toggle-arrow">▾</span>
-                        </button>
+                        </summary>
                         <div class="collapseBody">
                             <p class="tips-description">Banks I've used & have collected some nice signup promos (Credit & Bank bonuses) — and you can too.  Need a new bank and some extra money? Look for signup bonuses for new checking accounts. Sites like <a href="https://www.doctorofcredit.com/best-bank-account-bonuses" target="_blank" class="finance-link">Doctor of Credit</a> and <a href="https://www.nerdwallet.com/best/banking/best-bank-bonuses-and-promotions" target="_blank"  class="finance-link">NerdWallet</a> track the latest offers.</p>
     
@@ -524,7 +524,7 @@
                                 <li><strong>Auto savings:</strong> Set up automatic transfers to savings — pay yourself first and tuck it away</li>
                             </ul>
                         </div>
-                    </div>
+                    </details>
                 </div>
             </div>
 
@@ -631,9 +631,9 @@
                             <li><strong>401k / Employer Match:</strong> If your employer matches contributions, always contribute at least enough to get the full match — it's literally free money you're leaving on the table</li>
                         </ul>
         
-                        <div class="srcOverlay" id="sources-modal-investing">
+                        <dialog class="srcOverlay" id="sources-modal-investing" aria-label="Sources">
                             <div class="sources-modal">
-                                <button class="srcClose">✕</button>
+                                <form method="dialog"><button class="srcClose" aria-label="Close sources">✕</button></form>
                                 <h4>📎 Sources</h4>
                                 <p class="modal-subtext">Where I've learned this stuff:</p>
                                 <div class="sources-links">
@@ -642,7 +642,7 @@
                                     <!-- Add investing sources here -->
                                 </div>
                             </div>
-                        </div>
+                        </dialog>
                     </div>
                 </div>
             </div>
@@ -696,9 +696,9 @@
                             <li><strong>Withholding matters:</strong> If you get a huge refund every year, you're giving the IRS an interest-free loan. Adjust your W-2 to keep more in each paycheck</li>
                         </ul>
         
-                        <div class="srcOverlay" id="sources-modal-taxes">
+                        <dialog class="srcOverlay" id="sources-modal-taxes" aria-label="Sources">
                             <div class="sources-modal">
-                                <button class="srcClose">✕</button>
+                                <form method="dialog"><button class="srcClose" aria-label="Close sources">✕</button></form>
                                 <h4>📎 Sources</h4>
                                 <p class="modal-subtext">Where I've learned this stuff:</p>
                                 <div class="sources-links">
@@ -707,7 +707,7 @@
                                     <!-- Add tax sources here -->
                                 </div>
                             </div>
-                        </div>    
+                        </dialog>    
                     </div>
                 
                     <!-- ─── Government & Identity Protection ─── -->

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script async src="https://www.googletagmanager.com/gtag/js?id=G-KQ1RGHNMZG"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Nexus (lab) | Doshus.NET</title>
+    <!-- Lab copy of /nexus for the board spec (UI-SPEC.md): kept out of search, never in the sitemap -->
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://doshus.net/nexus">
+    <link rel="icon" type="image/ico" href="https://doshus.net/doshusfavi.ico">
+
+    <link rel="stylesheet" href="/css/shared.css">
+    <link rel="stylesheet" href="/css/zephyy-chat.css">
+    <link rel="stylesheet" href="/assets/vendor/videojs/video-js.min.css">
+    <link rel="stylesheet" href="/css/meme-video.css">
+    <link rel="stylesheet" href="/css/nexus.css">
+    <link rel="stylesheet" href="/css/board.css">
+    <link rel="stylesheet" href="/css/zephyy-widget.css">
+</head>
+<body>
+    <!-- ─── COSMIC BACKGROUND ─── -->
+    <div class="cosmic-bg"></div>
+    <div class="stars" id="stars"></div>
+
+    <!-- ─── HERO ─── -->
+    <section class="hero">
+        <!-- Zephyy Online Badge -->
+        <div class="zephyy-badge-embed"></div>
+
+        <h1>The Nexus</h1>
+        <p>Doshus tech goodies dashboard</p>
+
+        <div class="nx-stats">
+            <span><span class="pulse-dot"></span> uplink stable</span>
+            <span><b>06</b> nodes</span>
+            <span><b>~80ms</b> latency</span>
+        </div>
+    </section>
+
+    <!-- ─── BOARD ─── -->
+    <main class="board-wrap">
+        <div class="board" data-board="nexus">
+            <article class="panel" id="dev-core" data-accent="finance" data-x="1" data-y="1" data-w="12" data-h="21">
+                <header class="panel-head">
+                    <span class="panel-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                    </span>
+                    <h2>Dev Core</h2>
+                    <span class="panel-tag">N.01</span>
+                </header>
+                <div class="panel-body">
+                    <p>A few developer tools and things I've collected while learning some programming.</p>
+                    <section class="group">
+                        <h3>⌘ Site Tooling</h3>
+                        <p>These tools kept my web projects secure, clean, and smooth</p>
+                        <nav class="chips">
+                            <a href="https://validator.w3.org/" target="_blank" rel="noreferrer">W3C Validator</a>
+                            <a href="https://pagespeed.web.dev/" target="_blank" rel="noreferrer">PageSpeed Insights</a>
+                            <a href="https://securityheaders.com/" target="_blank" rel="noreferrer">Security Headers</a>
+                            <a href="https://toolbox.googleapps.com/apps/dig/#TXT/" target="_blank" rel="noreferrer">DIG</a>
+                            <a href="https://www.catchpoint.com/webpagetest" target="_blank" rel="noreferrer">Catchpoint WPT</a>
+                            <a href="https://github.com/" target="_blank" rel="noreferrer">GitHub VC</a>
+                        </nav>
+                    </section>
+                    <details class="fold" open>
+                        <summary>// shell_tools</summary>
+                        <div class="tip"><b>FireImg</b><p>Image optimization, just by changing the URL</p><code>open www.fireimg.com</code><a href="https://www.fireimg.com/" target="_blank" rel="noreferrer">Upload some fire images 🔥</a></div>
+                        <div class="tip"><b>CloakBin</b><p>Free Encrypted Pastebin with Zero-Knowledge Encryption</p><code>open cloakbin.com</code><a href="https://cloakbin.com/" target="_blank" rel="noreferrer">Paste something private</a></div>
+                        <div class="tip"><b>code-sandbox</b><p>A website-templates sandbox for experimenting using an interactive online playground</p><code>open codesandbox.io</code><a href="https://codesandbox.io/templates" target="_blank" rel="noreferrer">Go build in the cloud</a></div>
+                        <div class="tip"><b>AI-Made Tools</b><p>All tools run in your browser. No data sent to any server. No sign-up needed. All Free.</p><code>launch AI-Made-Tools</code><a href="https://www.aimadetools.com/tools" target="_blank" rel="noreferrer">Check out all the free tools</a></div>
+                    </details>
+                    <details class="fold">
+                        <summary>// dev_docs</summary>
+                        <div class="tip"><b>;colony/dev</b><p>Long-form guides, hand-built simulators, and single-purpose tools</p><code>launch semicolony.dev/</code><a href="https://semicolony.dev/" target="_blank" rel="noreferrer">Learn how systems actually work</a></div>
+                        <div class="tip"><b>Javaship Brainfood</b><p>Fireship courses make learning the JavaScript ecosystem fun &amp;&amp; approachable.</p><code>open fireship.dev</code><a href="https://fireship.dev/" target="_blank" rel="noreferrer">Hop aboard the fireship</a></div>
+                        <div class="tip"><b>Codédex</b><p>The most fun and beginner-friendly way to learn to code. ⋆˙⟡</p><code>start Codédex.io</code><a href="https://fireship.dev/" target="_blank" rel="noreferrer">Start your coding adventure</a></div>
+                    </details>
+                </div>
+                <footer class="panel-foot"><span>06 endpoints · 06 recipes</span><b>SYNCED</b></footer>
+            </article>
+
+            <article class="panel" id="rig" data-accent="taxes" data-x="13" data-y="1" data-w="12" data-h="13">
+                <header class="panel-head">
+                    <span class="panel-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="2" x2="9" y2="4"></line><line x1="15" y1="2" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="22"></line><line x1="15" y1="20" x2="15" y2="22"></line><line x1="20" y1="9" x2="22" y2="9"></line><line x1="20" y1="15" x2="22" y2="15"></line><line x1="2" y1="9" x2="4" y2="9"></line><line x1="2" y1="15" x2="4" y2="15"></line></svg>
+                    </span>
+                    <h2>PC Hardware &amp; OS</h2>
+                    <span class="panel-tag">N.02</span>
+                </header>
+                <div class="panel-body">
+                    <p>Browse my collection of tools and resources to start performance tuning, system benchmarking, maintenance practices, and customization software</p>
+                    <section class="group">
+                        <h3>⚡ Hardware &amp; Software</h3>
+                        <p>Grab parts, monitor temps, push updates. The rig support stack.</p>
+                        <nav class="chips">
+                            <a href="https://www.hwinfo.com/" target="_blank" rel="noreferrer">HWiNFO</a>
+                            <a href="https://www.cpuid.com/softwares/hwmonitor.html" target="_blank" rel="noreferrer">HW Monitor</a>
+                            <a href="https://www.cpuid.com/softwares/cpu-z.html" target="_blank" rel="noreferrer">CPU-Z</a>
+                            <a href="https://www.techpowerup.com/gpuz/" target="_blank" rel="noreferrer">GPU-Z</a>
+                            <a href="https://www.ocbase.com/" target="_blank" rel="noreferrer">OCCT</a>
+                            <a href="https://frame.work/" target="_blank" rel="noreferrer">Framework</a>
+                            <a href="https://dstike.com/" target="_blank" rel="noreferrer">DSTIKE</a>
+                            <a href="https://flipperzero.one/" target="_blank" rel="noreferrer">Flipper Zero</a>
+                            <a href="https://www.techpowerup.com/download/techpowerup-nvcleanstall/" target="_blank" rel="noreferrer">NVCleanInstall</a>
+                            <a href="https://www.thewindowsclub.com/ultimate-windows-tweaker-5-for-windows-11" target="_blank" rel="noreferrer">UWT5-Win11</a>
+                            <a href="https://github.com/nyxiereal/XToolbox" target="_blank" rel="noreferrer">XToolbox</a>
+                            <a href="https://github.com/massgravel/Microsoft-Activation-Scripts" target="_blank" rel="noreferrer">MAS</a>
+                            <a href="https://github.com/hellzerg/optimizer/releases" target="_blank" rel="noreferrer">WindowsOptimizer</a>
+                            <a href="https://windhawk.net/" target="_blank" rel="noreferrer">Windhawk</a>
+                            <a href="https://github.com/builtbybel/TidyOS" target="_blank" rel="noreferrer">TidyOS</a>
+                        </nav>
+                    </section>
+                    <details class="fold">
+                        <summary>// rig_installs</summary>
+                        <div class="tip"><b>OSINT4ALL</b><p>Is there anything you can't find here?</p><code>sudo apt install ALL -y</code><a href="https://start.me/p/L1rEYQ/osint4all" target="_blank" rel="noreferrer">Get all the apps</a></div>
+                        <div class="tip"><b>Ninite</b><p>Automatically install or update multiple popular Windows applications at once with a single click</p><code>sudo apt update &amp;&amp; sudo apt upgrade ALL</code><a href="https://ninite.com/" target="_blank" rel="noreferrer">Update all the apps</a></div>
+                    </details>
+                </div>
+                <footer class="panel-foot"><span>15 tools · 02 diagnostics</span><b>ONLINE</b></footer>
+            </article>
+
+            <figure class="panel panel-media" id="meme-1" data-accent="lounge" data-x="13" data-y="14" data-w="6" data-h="8" aria-label="Meme slot 1">
+                <div class="random-meme-fixed"></div>
+            </figure>
+
+            <figure class="panel panel-media" id="meme-3" data-accent="lounge" data-x="19" data-y="14" data-w="6" data-h="8" aria-label="Meme slot 3">
+                <div class="random-meme-fixed"></div>
+            </figure>
+
+            <article class="panel" id="mobile" data-accent="lounge" data-x="1" data-y="22" data-w="6" data-h="15">
+                <header class="panel-head">
+                    <span class="panel-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12 L5 12 L7 4 L11 20 L13 8 L15 16 L17 12 L22 12"></path></svg>
+                    </span>
+                    <h2>Mobile &amp; Modding</h2>
+                    <span class="panel-tag">N.03</span>
+                </header>
+                <div class="panel-body">
+                    <p>Customize, optimize, enhance your Android and iOS devices with modding tools, apps, and guides I like to use</p>
+                    <section class="group">
+                        <h3>📱 Android Modding</h3>
+                        <nav class="chips">
+                            <a href="https://www.luckypatchers.com/download/" target="_blank" rel="noreferrer">LuckyPatcher</a>
+                            <a href="https://morphe.software/" target="_blank" rel="noreferrer">Morphe</a>
+                            <a href="https://revanced.app/" target="_blank" rel="noreferrer">ReVanced</a>
+                            <a href="https://xdaforums.com/t/how-to-debloat-adb-the-ultimate-adb-debloating-thread-for-the-s20-u-series.4089089/" target="_blank" rel="noreferrer">Android/Samsung Debloat Guide</a>
+                            <a href="https://github.com/jbro129/android-modding" target="_blank" rel="noreferrer">Android Modding Github</a>
+                        </nav>
+                    </section>
+                    <section class="group">
+                        <h3>📱 iOS Modding</h3>
+                        <nav class="chips">
+                            <a href="https://altstore.io/#Downloads" target="_blank" rel="noreferrer">AltStore</a>
+                            <a href="https://appdb.to/" target="_blank" rel="noreferrer">AppDBmarket</a>
+                            <a href="https://developer.apple.com/download/" target="_blank" rel="noreferrer">Apple Developer</a>
+                            <a href="https://github.com/iOS17/Jailbreak" target="_blank" rel="noreferrer">iOS Jailbreak</a>
+                            <a href="https://app.iosgods.com/" target="_blank" rel="noreferrer">Tweaked iOS Apps</a>
+                            <a href="https://bluepie.in/2026/01/jan-2026/" target="_blank" rel="noreferrer">Howto Sideload Apps</a>
+                        </nav>
+                    </section>
+                    <details class="fold">
+                        <summary>// phone_apps</summary>
+                        <div class="tip"><b>AudioRelay</b><p>Turn your phone into a microphone or speakers for PC</p><code>sudo apt stream audio-codec -y</code><a href="https://audiorelay.net/" target="_blank" rel="noreferrer">Relay your audio</a></div>
+                        <div class="tip"><b>LocalSend</b><p>Open source and cross-platform file sharing for everyone.</p><code>sudo transfer [exe,mp4,apk] -offline</code><a href="https://localsend.org/" target="_blank" rel="noreferrer">Transfer to any device locally</a></div>
+                    </details>
+                </div>
+                <footer class="panel-foot"><span>11 feeds · 02 apps</span><b>BROADCASTING</b></footer>
+            </article>
+
+            <article class="panel" id="privacy" data-accent="invest" data-x="1" data-y="37" data-w="18" data-h="11">
+                <header class="panel-head">
+                    <span class="panel-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path><path d="M8 4v16"></path><circle cx="14" cy="15" r="1.5"></circle></svg>
+                    </span>
+                    <h2>Privacy &amp; OpSec</h2>
+                    <span class="panel-tag">N.04</span>
+                </header>
+                <div class="panel-body">
+                    <p>Go off the grid with this stuff you only think about until the day you really need it.</p>
+                    <section class="group">
+                        <h3>🔒 Privacy &amp; Protection</h3>
+                        <p>Lock the doors. Then check that they're actually locked.</p>
+                        <nav class="chips">
+                            <a href="https://globalprivacycontrol.org/" target="_blank" rel="noreferrer">Global Privacy Control</a>
+                            <a href="https://www.optoutprescreen.com/" target="_blank" rel="noreferrer">OptOutPrescreen</a>
+                            <a href="https://consumer.ftc.gov/articles/how-stop-junk-mail" target="_blank" rel="noreferrer">FTC OptOut</a>
+                            <a href="https://optout.aboutads.info/" target="_blank" rel="noreferrer">ADs OptOut</a>
+                            <a href="https://www.donotcall.gov/" target="_blank" rel="noreferrer">Do Not Call</a>
+                            <a href="https://privacy.ca.gov/drop/" target="_blank" rel="noreferrer">DROP (CA)</a>
+                            <a href="https://coveryourtracks.eff.org/" target="_blank" rel="noreferrer">Cover Your Tracks</a>
+                            <a href="https://haveibeenpwned.com/" target="_blank" rel="noreferrer">HaveIBeenPwned</a>
+                            <a href="https://bitwarden.com/" target="_blank" rel="noreferrer">BitWarden</a>
+                            <a href="https://www.virustotal.com/gui/home/upload" target="_blank" rel="noreferrer">VirusTotal</a>
+                        </nav>
+                    </section>
+                    <details class="fold">
+                        <summary>// recovery_drills</summary>
+                        <div class="tip"><b>restic-snap</b><p>Encrypted, deduplicated nightly snapshot to remote object storage.</p><code>restic -r s3:s3.amazonaws.com/bk backup ~ --tag nightly</code><a href="https://restic.readthedocs.io/" target="_blank" rel="noreferrer">restic docs</a></div>
+                        <div class="tip"><b>age-encrypt</b><p>Modern, auditable file encryption — public-key, no keyring drama.</p><code>age -r age1xyz... -o secret.age secret.txt</code><a href="https://age-encryption.org/" target="_blank" rel="noreferrer">age homepage</a></div>
+                        <div class="tip"><b>recovery-drill</b><p>An untested backup is a wish. Restore to a fresh VM quarterly.</p><code>restic -r s3:... restore latest --target /tmp/drill</code><a href="https://en.wikipedia.org/wiki/3-2-1_rule" target="_blank" rel="noreferrer">3-2-1 backup rule</a></div>
+                    </details>
+                </div>
+                <footer class="panel-foot"><span>09 vaults · 03 drills</span><b>SEALED</b></footer>
+            </article>
+
+            <article class="panel" id="signals" data-accent="crypto" data-x="19" data-y="22" data-w="6" data-h="15">
+                <header class="panel-head">
+                    <span class="panel-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a14 14 0 0 1 0 18"></path><path d="M12 3a14 14 0 0 0 0 18"></path></svg>
+                    </span>
+                    <h2>Signals</h2>
+                    <span class="panel-tag">N.06</span>
+                </header>
+                <div class="panel-body">
+                    <p>Designer's toolkit — color, type, and the bench you reach for when something feels off.</p>
+                    <section class="group">
+                        <h3>🎛 Design Bench</h3>
+                        <nav class="chips">
+                            <a href="https://oklch.com/" target="_blank" rel="noreferrer">OKLCH Picker</a>
+                            <a href="https://oklch.fyi/" target="_blank" rel="noreferrer">oklch.fyi</a>
+                            <a href="https://fonts.google.com/" target="_blank" rel="noreferrer">Google Fonts</a>
+                            <a href="https://reactbits.dev/" target="_blank" rel="noreferrer">React Bits</a>
+                            <a href="https://utopia.fyi/" target="_blank" rel="noreferrer">Utopia (Fluid)</a>
+                            <a href="https://pagespeed.web.dev/" target="_blank" rel="noreferrer">PageSpeed</a>
+                        </nav>
+                    </section>
+                    <section class="group">
+                        <h3>📡 Tech News</h3>
+                        <nav class="chips">
+                            <a href="https://techcrunch.com/" target="_blank" rel="noreferrer">TechCrunch</a>
+                            <a href="https://arstechnica.com/" target="_blank" rel="noreferrer">Ars Technica</a>
+                            <a href="https://www.techspot.com/" target="_blank" rel="noreferrer">TechSpot</a>
+                            <a href="https://videocardz.com/" target="_blank" rel="noreferrer">VideoCardz</a>
+                            <a href="https://www.schneier.com/" target="_blank" rel="noreferrer">Schneier</a>
+                            <a href="https://www.theregister.com/" target="_blank" rel="noreferrer">The Register</a>
+                        </nav>
+                    </section>
+                </div>
+                <footer class="panel-foot"><span>06 utilities</span><b>TUNED</b></footer>
+            </article>
+
+            <article class="panel" id="stack" data-accent="networth" data-x="7" data-y="22" data-w="12" data-h="15">
+                <header class="panel-head">
+                    <span class="panel-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 7 12 12 2 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg>
+                    </span>
+                    <h2>The Stack</h2>
+                    <span class="panel-tag">N.05</span>
+                </header>
+                <div class="panel-body">
+                    <p>The model layer — chat agents, image gen, voice, and the research papers worth keeping bookmarked.</p>
+                    <section class="group">
+                        <h3>🧠 Chat &amp; Reasoning</h3>
+                        <p>Daily drivers for thinking out loud at machines.</p>
+                        <nav class="chips">
+                            <a href="https://chat.openai.com/" target="_blank" rel="noreferrer">ChatGPT</a>
+                            <a href="https://claude.ai/" target="_blank" rel="noreferrer">Claude</a>
+                            <a href="https://gemini.google.com/" target="_blank" rel="noreferrer">Gemini</a>
+                            <a href="https://www.perplexity.ai/" target="_blank" rel="noreferrer">Perplexity</a>
+                            <a href="https://chat.deepseek.com/" target="_blank" rel="noreferrer">DeepSeek</a>
+                            <a href="https://x.ai/" target="_blank" rel="noreferrer">xAI</a>
+                            <a href="https://mistral.ai/" target="_blank" rel="noreferrer">Mistral</a>
+                            <a href="https://notebooklm.google.com/" target="_blank" rel="noreferrer">NotebookLM</a>
+                        </nav>
+                    </section>
+                    <section class="group">
+                        <h3>🎨 Generative Media</h3>
+                        <p>Pixels, frames, and waveforms on demand.</p>
+                        <nav class="chips">
+                            <a href="https://www.midjourney.com/" target="_blank" rel="noreferrer">Midjourney</a>
+                            <a href="https://openai.com/sora" target="_blank" rel="noreferrer">Sora</a>
+                            <a href="https://deepmind.google/technologies/veo/" target="_blank" rel="noreferrer">Veo 2</a>
+                            <a href="https://klingai.com/" target="_blank" rel="noreferrer">Kling</a>
+                            <a href="https://firefly.adobe.com/" target="_blank" rel="noreferrer">Firefly</a>
+                            <a href="https://lexica.art/" target="_blank" rel="noreferrer">Lexica</a>
+                            <a href="https://labs.google/fx/tools/whisk" target="_blank" rel="noreferrer">Whisk</a>
+                            <a href="https://www.opus.pro/" target="_blank" rel="noreferrer">Opus Clip</a>
+                        </nav>
+                    </section>
+                    <details class="fold">
+                        <summary>// research_pins</summary>
+                        <div class="tip"><b>machines-of-loving-grace</b><p>Dario Amodei's essay on what powerful AI could actually deliver.</p><code>open https://darioamodei.com/machines-of-loving-grace</code><a href="https://darioamodei.com/machines-of-loving-grace" target="_blank" rel="noreferrer">Read the essay</a></div>
+                        <div class="tip"><b>ai-2027</b><p>Live tracker of where the major labs say they'll be by 2027.</p><code>curl https://ai-2027.com/tracker</code><a href="https://ai-2027.com/" target="_blank" rel="noreferrer">AI 2027 Tracker</a></div>
+                        <div class="tip"><b>humanitys-last-exam</b><p>Benchmark designed to be hard enough to outlast frontier models.</p><code>open https://lastexam.ai</code><a href="https://lastexam.ai/" target="_blank" rel="noreferrer">Humanity's Last Exam</a></div>
+                    </details>
+                </div>
+                <footer class="panel-foot"><span>16 models · 03 papers</span><b>STREAMING</b></footer>
+            </article>
+
+            <figure class="panel panel-media" id="meme-2" data-accent="lounge" data-x="19" data-y="37" data-w="6" data-h="11" aria-label="Meme slot 2">
+                <div class="random-meme-fixed"></div>
+            </figure>
+
+        </div>
+    </main>
+
+    <!-- ─── STICKY FOOTER ─── -->
+    <footer class="sticky-footer" id="sticky-footer">
+        <span class="footer-copyright">© 2026 Doshus.NET</span>
+        <nav class="footer-nav">
+            <a href="/">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M600-160v-280h280v280H600ZM440-520v-280h440v280H440ZM80-160v-280h440v280H80Zm0-360v-280h280v280H80Zm440-80h280v-120H520v120ZM160-240h280v-120H160v120Zm520 0h120v-120H680v120ZM160-600h120v-120H160v120Zm360 0Zm-80 240Zm240 0ZM280-600Z"/></svg>
+                <span>Home</span>
+            </a>
+            <a href="/thelounge.html">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M500-120v-440q-14-18-34.5-29T420-600q-25 0-45.5 10.5T340-560h-80q0-117 81.5-198.5T540-840q117 0 198.5 81.5T820-560h-80q-14-19-34.5-29.5T660-600q-25 0-45.5 11T580-560v440h-80Zm33-520h14q23-19 52.5-29.5T661-680q11 0 21.5 1.5T704-675q-27-39-70-62t-94-23q-51 0-94 23t-70 62q11-2 21.5-3.5T419-680q32 0 61.5 10.5T533-640Zm107 520v-240h240v240h-80v-160h-80v160h-80Zm-480 0v-122q-18-5-30-19t-14-34L80-680h25q23 0 40.5 16t19.5 39l24 265h171q33 0 56.5 23.5T440-280v40h-40v120h-60v-120H220v120h-60Zm380-520Z"/></svg>
+                <span>Lounge</span>
+            </a>
+            <a href="/financehub.html">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm40-40h400L400-680H200v400Zm320-320h240v-80H520v80ZM160-240v-480 480Z"/></svg>
+                <span>Finance</span>
+            </a>
+            <a href="/nexus.html" class="nx-active">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="m480-400-80-80 80-80 80 80-80 80Zm-85-235L295-735l185-185 185 185-100 100-85-85-85 85ZM225-295 40-480l185-185 100 100-85 85 85 85-100 100Zm510 0L635-395l85-85-85-85 100-100 185 185-185 185ZM480-40 295-225l100-100 85 85 85-85 100 100L480-40Z"/></svg>
+                <span>Nexus</span>
+            </a>
+        </nav>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/board.js"></script>
+    <script src="/js/zephyy-widget.js"></script>
+
+    <!-- zp-chat:start -->
+        <!-- Zephyy Chat Backdrop -->
+        <div class="zp-chat-backdrop" id="zp-chat-backdrop"></div>
+
+        <!-- Zephyy Chat Panel -->
+        <div class="zp-chat-panel" id="zp-chat-panel">
+            <div class="zp-chat-header">
+                <span class="zp-chat-title">
+                    <span class="zp-chat-icon-glyph">
+                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="zp-chat-glyph-icon">
+                            <defs>
+                                <linearGradient id="chatGlyphGrad" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
+                                    <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
+                                    <stop offset="100%" stop-color="oklch(var(--brand-green))" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.15)" stroke-width="0.6" fill="none"/>
+                            <path d="M 32 9 A 23 23 0 1 1 12 44"
+                                stroke="url(#chatGlyphGrad)" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+                            <path d="M 45 40 A 15 15 0 1 1 32 17"
+                                stroke="url(#chatGlyphGrad)" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+                            <path d="M 25 36 A 8 8 0 1 1 39 36"
+                                stroke="url(#chatGlyphGrad)" stroke-width="1.6" stroke-linecap="round" opacity="0.95"/>
+                            <circle cx="32" cy="32" r="2.2" fill="oklch(var(--brand-teal))"/>
+                        </svg>
+                    </span>
+                    <span class="zp-chat-name">Zephyy</span>
+                    <span class="zp-model-badge" id="zp-model-badge" title="Current AI model">Checking...</span>
+                </span>
+                <button class="zp-chat-refresh" id="zp-chat-refresh" aria-label="Refresh chat">↻</button>
+                <button class="zp-chat-close" id="zp-chat-close" aria-label="Close chat">✕</button>
+            </div>
+            <div class="zp-chat-messages" id="zp-chat-messages">
+                <div class="zp-chat-msg zp-chat-msg-bot" id="zp-welcome-msg">
+                    Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄
+                </div>
+            </div>
+            <div class="zp-chat-input-area">
+                <input type="text" id="zp-chat-input" placeholder="Type a message..." maxlength="2000">
+                <button class="zp-chat-send" id="zp-chat-send" aria-label="Send message">Send</button>
+            </div>
+        </div>
+
+        <!-- Sitewide Chat Orb Embed -->
+        <link rel="stylesheet" href="/css/zephyy-orb-embed.css">
+        <div class="zephyy-orb-sitewide-wrapper" id="sitewide-orb-wrapper">
+            <div class="zephyy-orb-sitewide" id="zp-orb-demo" tabindex="0" role="button" aria-label="Chat with Zephyy">
+                <div class="sitewide-orb-core"><span class="sitewide-orb-ping"></span></div>
+                <div class="sitewide-orb-preview">Zephyy ⚡</div>
+            </div>
+        </div>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js" integrity="sha384-WCNi5HrUqYpPiERhOGB000a3XlerI8Hq52+uTGtzyl/ZFU/LmuVx+lqA1cYJnEkq" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js" integrity="sha384-hb6zQWOUCteeQSkZPIVwI6sr/1arrQrsb0xv1fevRvO58hDu2d617rC8afnX3jCv" crossorigin="anonymous"></script>
+    <script src="/js/zephyy-realtime.js"></script>
+    <script src="/js/zephyy-chat.js"></script>
+    <script src="/js/zephyy-orb-embed.js"></script>
+    <!-- zp-chat:end -->
+</body>
+</html>

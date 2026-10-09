@@ -3,6 +3,10 @@
     /* Neutral Space (Grays/Blacks) */
     --space-oled: 0% 0 0;
     --star-white: 100% 0 0;
+    --star-cool: 88% 0.06 250;      /* star tints, read by main.js's WebGL sky */
+    --star-warm: 90% 0.06 75;
+    --star-violet: 82% 0.1 300;
+    --star-glow: 62% 0.2 290;       /* halo around the closest stars */
     --neutral-900: 15% 0.01 285;  /* Deep dark background */
     --neutral-100: 89% 0 0;
     --neutral-400: 68% 0 0;
@@ -139,7 +143,7 @@ body { position: relative; min-height: -webkit-fill-available; min-height: 100vh
     color: var(--text-main);
     overflow-x: clip;
 }
-button {
+button, .collapseBtn {
     font-family: 'Braah One', system-ui, sans-serif;
 }
 h1 {
@@ -158,6 +162,12 @@ h1, h2, h3 { text-wrap: balance; }
 :where(a, button, input, [tabindex]):focus-visible {
     outline: 2px solid oklch(var(--accent-crypto) / 0.9);
     outline-offset: 3px;
+}
+
+/* In-page # links glide to their section (and keep the #hash in the URL), unless the
+   visitor asked for less motion */
+@media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
 }
 
 /* Respect OS-level reduced-motion: freeze cosmic drift, twinkle, glow, floats */
@@ -201,42 +211,15 @@ h1, h2, h3 { text-wrap: balance; }
     100% { background: linear-gradient(135deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.85) 30%, oklch(var(--nebula-blue) / 0.65) 65%, oklch(var(--space-oled)) 100%); }
 }
 
-/* ─── STAR BASE ─── */
-.star { position: absolute; background: oklch(var(--star-white)); border-radius: 50%;
-    will-change: transform, opacity;
-}
+/* ─── STARS ─── main.js draws them on a WebGL canvas, tinted by the --star-* tokens */
 #stars { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; pointer-events: none;
     z-index: -1;
 }
-
-/* ─── FAR STARS: tiny, dim, slow twinkle ─── */
-.star-far {
-    opacity: 0.35;
-    animation: twinkleFar 6s ease-in-out infinite;
-}
-@keyframes twinkleFar {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.5; }
-}
-/* ─── MID STARS: medium, moderate glow ─── */
-.star-mid {
-    opacity: 0.5;
-    animation: twinkleMid 4s ease-in-out infinite;
-    box-shadow: 0 0 2px oklch(var(--star-white) / 0.3);
-}
-@keyframes twinkleMid {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.8; }
-}
-/* ─── CLOSE STARS: big, bright, purple-white glow halo ─── */
-.star-close {
-    opacity: 0.8;
-    animation: twinkleClose 3s ease-in-out infinite;
-    box-shadow: 0 0 4px oklch(var(--nebula-blue)   / 0.5), 0 0 8px oklch(var(--accent-crypto) / 0.2);
-}
-@keyframes twinkleClose {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+#stars canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Shooting star: the head is the right end; main.js sets its path */
+.sky-meteor { position: absolute; top: 0; left: -140px; width: 140px; height: 1.5px; border-radius: 1px;
+    transform-origin: right center; opacity: 0;
+    background: linear-gradient(to right, transparent, oklch(var(--star-cool) / 0.5) 70%, oklch(var(--star-white)));
 }
 
 
@@ -288,26 +271,26 @@ h1, h2, h3 { text-wrap: balance; }
     transform: translateY(-3px);
 }
 
-/* ─── UNIVERSAL COLLAPSIBLE SECTIONS ─── */
+/* ─── UNIVERSAL COLLAPSIBLE SECTIONS: native <details class="collapse"><summary class="collapseBtn"> ─── */
 .collapse { background: oklch(var(--accent-finance) / 0.03); border: 1px solid oklch(var(--accent-finance) / 0.15); transition: all 0.3s ease; overflow: hidden;
     border-radius: 12px;
 }
-.collapseBody { max-height: 0; transition: max-height 0.4s ease, padding 0.3s ease;
-    padding: 0 1.5rem;
-}
+.collapseBody { padding: 1rem 1.5rem 1.5rem 1.5rem; }
 .collapseBtn { width: 100%; background: oklch(var(--accent-finance) / 0.05); border: none; color: oklch(var(--accent-finance)); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease;
+    list-style: none;
     padding: 1rem 1.5rem;
     font-size: 1rem;
     font-weight: 600;
     gap: 0.5rem;
 }
+.collapseBtn::-webkit-details-marker { display: none; }
 .collapseBtn:hover { background: oklch(var(--accent-finance) / 0.1); }
-.collapse.open { overflow: visible; }
-.collapse.open .toggle-arrow { transform: rotate(180deg); }
+.collapse[open] { overflow: visible; }
+.collapse[open] .toggle-arrow { transform: rotate(180deg); }
 .toggle-arrow { transition: transform 0.3s ease; font-size: 0.9rem; }
-.collapse.open .collapseBody { max-height: fit-content;
-    padding: 1rem 1.5rem 1.5rem 1.5rem;
-}
+/* Eases open where the browser can animate <details> (interpolate-size on :root); opens instantly elsewhere */
+.collapse::details-content { block-size: 0; overflow: clip; transition: block-size 0.4s ease, content-visibility 0.4s allow-discrete; }
+.collapse[open]::details-content { block-size: auto; }
 
 /* Content Section */
 .content-section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -340,7 +323,7 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 /* Random Meme */
-.random-meme img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.random-meme img { width: 100%; height: 100%; object-fit: fill; border-radius: 10px; }
 .random-meme:hover {
     transform: scale(1.05);
     box-shadow: 0 10px 30px oklch(var(--accent-crypto) / 0.3);
