@@ -1,0 +1,30 @@
+/* Night sky renderers (public/js/sky.js). Star tints are tier-1 triples scoped to the sky: a monthly
+   theme overrides these five and both renderers follow */
+.sky {
+    --star-cool: 88% 0.06 250;
+    --star-warm: 90% 0.06 75;
+    --star-violet: 82% 0.1 300;
+    --star-glow: 62% 0.2 290;
+    position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: -1;
+}
+.sky-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* Layers: each depth slides one field-width on a loop (compositor only); pointer parallax eases in */
+.sky-layers { --mx: 0; --my: 0; position: absolute; inset: 0; }
+.sky-depth { position: absolute; top: 0; left: 0;
+    translate: calc(var(--mx) * var(--depth) * 80px) calc(var(--my) * var(--depth) * 80px);
+    transition: translate 0.5s ease-out;
+    animation: sky-drift var(--loop) linear infinite;
+}
+.sky-dots { position: absolute; top: 0; left: 0; width: 1px; height: 1px; border-radius: 50%;
+    opacity: calc((var(--dim) + var(--bright)) / 2);
+    animation: sky-twinkle var(--rate) ease-in-out infinite alternate;
+}
+@keyframes sky-drift { from { transform: translateX(calc(-1 * var(--field))); } }
+@keyframes sky-twinkle { from { opacity: var(--dim); } to { opacity: var(--bright); } }
+
+/* Shooting star: the head is the right end; sky.js sets its path */
+.sky-meteor { position: absolute; top: 0; left: -140px; width: 140px; height: 1.5px; border-radius: 1px;
+    transform-origin: right center; opacity: 0;
+    background: linear-gradient(to right, transparent, oklch(var(--star-cool) / 0.5) 70%, oklch(var(--star-white)));
+}

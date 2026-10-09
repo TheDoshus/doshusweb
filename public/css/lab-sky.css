@@ -1,0 +1,28 @@
+/* Sky lab page only (public/lab/sky.html) */
+.lab-cards { position: relative; z-index: 10; display: grid; gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    max-width: 1100px; margin: 0 auto; padding: 0 1rem 60vh;
+}
+.lab-cards h2 { margin: 0 0 0.5rem; }
+.lab-cards p { margin: 0; color: var(--text-muted); line-height: 1.55; }
+.lab-no-cards .lab-cards { visibility: hidden; }
+
+/* The aurora palette: what a monthly theme does, a token swap */
+.sky-aurora .sky { --star-cool: 88% 0.08 180; --star-warm: 90% 0.08 140; --star-violet: 84% 0.1 200; --star-glow: 70% 0.16 165; }
+
+.lab-sky { position: fixed; z-index: 1000; left: 50%; bottom: 1rem; translate: -50% 0;
+    display: grid; gap: 0.4rem; justify-items: center; width: max-content; max-width: calc(100vw - 2rem);
+    padding: 0.6rem 0.75rem; border-radius: 14px; border: 1px solid oklch(var(--accent-crypto) / 0.35);
+    background: oklch(var(--space-oled) / 0.7); backdrop-filter: blur(8px);
+    font: 0.8rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text-muted);
+}
+.lab-sky-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.35rem; }
+.lab-sky a, .lab-sky button { font: inherit; color: var(--text-main); text-decoration: none; cursor: pointer;
+    padding: 0.3rem 0.6rem; border-radius: 8px; border: 1px solid oklch(var(--star-white) / 0.15);
+    background: oklch(var(--star-white) / 0.04);
+}
+.lab-sky a:hover, .lab-sky button:hover { border-color: oklch(var(--accent-crypto) / 0.7); }
+.lab-sky [aria-current="page"], .lab-sky [aria-pressed="true"] {
+    border-color: oklch(var(--accent-crypto)); background: oklch(var(--accent-crypto) / 0.25);
+}
+.lab-sky output { min-width: 11ch; text-align: center; color: oklch(var(--accent-finance)); }
