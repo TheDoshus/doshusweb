@@ -18,160 +18,229 @@ function haptic(ms = 8) {
 }
 
 // Deep Space Stars
+// One WebGL draw call a frame paints the whole sky: every star is a point that twinkles on its own
+// clock, drifts smoothly between pixels and shifts with the pointer and the scroll, and a shooting
+// star crosses now and then. Tints are the --star-* tokens in shared.css, so a monthly theme is a
+// token swap. No WebGL: the nebula shows alone. Reduced motion: one still frame, no meteors.
+// (Measured 2026-10-09: main-thread cost the same as no stars; the old 245-element engine took a
+// fifth of a core on /nexus.)
 const starsContainer = document.getElementById('stars');
 if (starsContainer) {
 
     // ─── STAR LAYER CONFIG ───
-    // Far = tiny & slow, Mid = medium, Close = big & fast
-    const starLayers = [
-        { count: 170, minSize: 0.5, maxSize: 1.5, className: 'star star-far',   drift: 0.3 },
-        { count: 55,  minSize: 1.5, maxSize: 2.8, className: 'star star-mid',   drift: 0.7 },
-        { count: 20,  minSize: 2.8, maxSize: 4.5, className: 'star star-close', drift: 1.2 },
+    // Far = tiny & slow, Mid = medium, Close = big, bright & fast, with a glow. Counts are per
+    // 1.3 megapixels of window (1440x900), scaled to the visitor's. Radius in css px, twinkle rate
+    // in radians/s. Depths keep one decimal: the drift wraps every 100 fields, seamless only then.
+    const DEPTHS = [
+        { count: 220, radius: [0.25, 0.75], depth: 0.3, light: [0.2, 0.55], rate: [0.9, 1.6] },
+        { count: 60, radius: [0.75, 1.4], depth: 0.7, light: [0.4, 0.8], rate: [1, 1.8] },
+        { count: 20, radius: [1.4, 2.25], depth: 1.2, light: [0.6, 1], rate: [1.2, 2.1], glow: 1 },
     ];
+    const TINTS = ['white', 'white', 'white', 'white', 'cool', 'cool', 'warm', 'violet'];
+    const DRIFT = [0.024, 0.006];  // fields per second at depth 1, across and down
+    const PARALLAX = 80;           // px of pointer parallax at depth 1, edge to edge
+    const SCROLL = 0.06;           // stars shift this share of the page scroll, times depth
+    const PAD = 60;                // the field runs this far past every edge, so no star pops in
+    const rand = (lo, hi) => lo + Math.random() * (hi - lo);
 
-    // ─── RAM CACHE ───
-    const starsData = [];
+    // Positions are fractions of the field. A third of the far stars crowd a soft wavy band
+    // (periodic across the field, so it has no seam where the field wraps)
+    const scale = Math.min(Math.max(innerWidth * innerHeight / 1.3e6, 0.5), 1.6);
+    const stars = DEPTHS.flatMap((d, i) => Array.from({ length: Math.round(d.count * scale) }, () => {
+        const x = Math.random();
+        const y = i === 0 && Math.random() < 0.35
+            ? (1.45 + 0.12 * Math.sin(x * 2 * Math.PI) + 0.07 * (Math.random() + Math.random() - 1)) % 1
+            : Math.random();
+        return { x, y, d, r: rand(...d.radius), tint: TINTS[Math.floor(Math.random() * TINTS.length)],
+            phase: rand(0, 2 * Math.PI), rate: rand(...d.rate) };
+    }));
 
-    // ─── CREATE STARS ───
-    starLayers.forEach(layer => {
-        for (let i = 0; i < layer.count; i++) {
-            const star = document.createElement('div');
-            star.className = layer.className;
-
-            // Anchor the physical DOM element to the top left. 
-            // We will move it purely with GPU transforms later.
-            star.style.left = '0px';
-            star.style.top = '0px';
-
-            const size = Math.random() * (layer.maxSize - layer.minSize) + layer.minSize;
-            star.style.width = size + 'px';
-            star.style.height = size + 'px';
-
-            star.style.animationDelay = Math.random() * 5 + 's';
-            star.style.animationDuration = (Math.random() * 4 + 3) + 's';
-
-            starsContainer.appendChild(star);
-
-            // Populate the memory array with its initial randomized coordinates
-            starsData.push({
-                el: star,
-                drift: layer.drift,
-                x: Math.random() * 100, // Viewport Width percentage
-                y: Math.random() * 100  // Viewport Height percentage
-            });
-        }
-    });
-
-    // ─── PARALLAX VARIABLES ───
-    let mouseX = 0;
-    let mouseY = 0;
-    let currentX = 0;
-    let currentY = 0;
-
-    // ─── MOUSE PARALLAX (DESKTOP) ───
-    document.addEventListener('mousemove', (e) => {
-        mouseX = (e.clientX / window.innerWidth - 0.5);
-        mouseY = (e.clientY / window.innerHeight - 0.5);
-    });
-
-    // ─── FPS PERFORMANCE MONITOR (SUSTAINED RECOVERY) ───
-    let isPaused = false;
-    let frameCount = 0;
-    let lastFpsCheck = performance.now();
-    let consecutiveGoodSeconds = 0; // The recovery buffer
-
-    let lastFrame = performance.now();
-
-    function checkPerformance() {
-        const now = performance.now();
-        // One frame over a second is a hidden tab or a single hitch, not a slow page:
-        // start a fresh window instead of judging the engine on it
-        if (now - lastFrame > 1000) { frameCount = 0; lastFpsCheck = now; }
-        lastFrame = now;
-        frameCount++;
-        const elapsed = now - lastFpsCheck;
-
-        // Evaluate the frame rate once every 2.5 second
-        if (elapsed >= 2500) { 
-            const fps = frameCount / (elapsed / 1000);
-
-            if (fps < 25) {
-                isPaused = true;
-                consecutiveGoodSeconds = 0; // Reset the recovery buffer if it chokes
-            } else if (isPaused && fps >= 30) {
-                consecutiveGoodSeconds++;
-                // Require 5 straight clean checks (12.5 seconds) to unlock the engine
-                if (consecutiveGoodSeconds >= 5) {
-                    isPaused = false;
-                    consecutiveGoodSeconds = 0;
-                }
-            }
-
-            // Same low-FPS signal also eases off other ambient decorative CSS
-            // animations (glows, spins, drifts) sitewide — not just the stars.
-            document.body.classList.toggle('zp-motion-throttled', isPaused);
-
-            frameCount = 0;
-            lastFpsCheck = now;
-        }
+    // An oklch token ("88% 0.06 250") as the gamma-encoded sRGB floats WebGL takes (CSS Color 4 math)
+    function srgb(name) {
+        const [L, C, H] = getComputedStyle(starsContainer).getPropertyValue(name).trim().split(/\s+/);
+        const l0 = parseFloat(L) / (L.endsWith('%') ? 100 : 1), a = C * Math.cos(H * Math.PI / 180), b = C * Math.sin(H * Math.PI / 180);
+        const l = (l0 + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+        const m = (l0 - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+        const s = (l0 - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+        return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+            -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+            -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s]
+            .map((c) => Math.min(Math.max(c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055, 0), 1));
     }
 
-    // ─── MAIN ANIMATION LOOP: TIME DILATION ENGINE ───
-    let currentSpeed = 1; // 1 = 100% speed, 0 = fully paused
+    // ─── SHADERS ───
+    const VERTEX = `
+        attribute vec2 a_pos;    // 0..1 across the field
+        attribute vec4 a_star;   // radius (css px), depth, twinkle phase, twinkle rate
+        attribute vec4 a_color;  // rgb, glow 0..1
+        attribute vec2 a_light;  // dimmest, brightest
+        uniform vec2 u_view;     // the sky's box, css px
+        uniform vec2 u_shift;    // drift + parallax at depth 1, css px
+        uniform float u_time, u_dpr, u_max;
+        varying vec4 v_color;
+        varying float v_radius, v_size, v_light;
+        const float PAD = ${PAD}.0;
+        void main() {
+            vec2 span = u_view + 2.0 * PAD;
+            vec2 p = mod(a_pos * span + u_shift * a_star.y, span) - PAD;
+            gl_Position = vec4(p / u_view * vec2(2.0, -2.0) + vec2(-1.0, 1.0), 0.0, 1.0);
+            v_radius = a_star.x * u_dpr;
+            v_size = min(2.0 * v_radius * (1.0 + 3.0 * a_color.a) + 2.0, u_max);
+            gl_PointSize = v_size;
+            v_light = mix(a_light.x, a_light.y, 0.5 + 0.5 * sin(u_time * a_star.w + a_star.z));
+            v_color = a_color;
+        }`;
+    // gl_PointCoord is measured from the star's exact center, so the disk stays antialiased and
+    // moves smoothly between pixels; close stars add a halo in --star-glow
+    const FRAGMENT = `
+        precision mediump float;
+        uniform vec3 u_glow;
+        varying vec4 v_color;
+        varying float v_radius, v_size, v_light;
+        void main() {
+            float d = length(gl_PointCoord - 0.5) * v_size;
+            float core = clamp(v_radius + 0.5 - d, 0.0, 1.0);
+            float halo = v_color.a * 0.6 * pow(max(1.0 - d / (4.0 * v_radius), 0.0), 2.0);
+            gl_FragColor = vec4(v_color.rgb * core + u_glow * halo * (1.0 - core), core + halo * (1.0 - core)) * v_light;
+        }`;
 
-    function animateStars() {
-        checkPerformance();
+    // ─── WEBGL SKY ───
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false,
+        depth: false, stencil: false, powerPreference: 'low-power' });
+    const at = {};
+    const pointer = { x: 0, y: 0 }, eased = { x: 0, y: 0 };
+    const drift = { x: 0, y: 0 };  // in fields, so a resize keeps every star's place
+    let frame = 0, last = 0, time = 0, w = 0, h = 0;
 
-        // 1. Calculate Time Dilation (The Brake Pedal)
-        const targetSpeed = isPaused ? 0 : 1;
-        // Smoothly transition between moving and paused over several frames
-        currentSpeed += (targetSpeed - currentSpeed) * 0.05; 
-
-        // 2. Calculate Parallax Target
-        // We calculate this regardless of speed so the internal math never jumps
-        currentX += (mouseX - currentX) * 0.12;
-        currentY += (mouseY - currentY) * 0.12;
-
-        // 3. Iterate over the high-speed RAM array
-        for (let i = 0; i < starsData.length; i++) {
-            const star = starsData[i];
-
-            // If the engine is fully paused (speed near 0), skip DOM writes entirely.
-            // This is crucial: it relieves the CPU/GPU, allowing the FPS to actually recover.
-            if (currentSpeed < 0.005 && isPaused) {
-                continue; 
-            }
-
-            // Apply Time Dilation to the drift
-            star.x += (star.drift * 0.04) * currentSpeed;
-            star.y += (star.drift * 0.01) * currentSpeed;
-
-            // Wrap around screen edges seamlessly
-            // Subtraction is used instead of setting to 0 to prevent micro-stutters
-            if (star.x > 100) star.x -= 100; 
-            if (star.x < 0) star.x += 100;
-            if (star.y > 100) star.y -= 100;
-            if (star.y < 0) star.y += 100;
-
-            // Apply Time Dilation to the parallax intensity
-            const finalParallaxX = currentX * star.drift * 80 * currentSpeed;
-            const finalParallaxY = currentY * star.drift * 80 * currentSpeed;
-
-            // Single GPU-Accelerated DOM Write
-            star.el.style.transform = `translate3d(calc(${star.x}vw + ${finalParallaxX}px), calc(${star.y}vh + ${finalParallaxY}px), 0)`;
+    function compile() {
+        const program = gl.createProgram();
+        for (const [type, src] of [[gl.VERTEX_SHADER, VERTEX], [gl.FRAGMENT_SHADER, FRAGMENT]]) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, src);
+            gl.compileShader(shader);
+            gl.attachShader(program, shader);
         }
-
-        requestAnimationFrame(animateStars);
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return false;
+        gl.useProgram(program);
+        for (const name of ['u_view', 'u_shift', 'u_time', 'u_dpr', 'u_max', 'u_glow']) at[name] = gl.getUniformLocation(program, name);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        let offset = 0;
+        for (const [name, size] of [['a_pos', 2], ['a_star', 4], ['a_color', 4], ['a_light', 2]]) {
+            const loc = gl.getAttribLocation(program, name);
+            gl.enableVertexAttribArray(loc);
+            gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 12 * 4, offset * 4);
+            offset += size;
+        }
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);  // premultiplied alpha
+        gl.uniform1f(at.u_max, gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1]);
+        // Star data, with tints read from the tokens
+        const tint = Object.fromEntries([...new Set(TINTS)].map((t) => [t, srgb(`--star-${t}`)]));
+        gl.uniform3fv(at.u_glow, srgb('--star-glow'));
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(stars.flatMap((s) =>
+            [s.x, s.y, s.r, s.d.depth, s.phase, s.rate, ...tint[s.tint], s.d.glow || 0, ...s.d.light])), gl.STATIC_DRAW);
+        size();
+        return true;
+    }
+    // The drawing buffer matches the sky's box in device pixels (capped at 2x: past that, stars
+    // only cost fill), so the canvas is never stretched
+    function size() {
+        w = starsContainer.clientWidth || innerWidth;
+        h = starsContainer.clientHeight || innerHeight;
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform2f(at.u_view, w, h);
+        gl.uniform1f(at.u_dpr, canvas.width / w);
+        if (prefersReducedMotion) draw();
+    }
+    function draw() {
+        gl.uniform1f(at.u_time, time);
+        gl.uniform2f(at.u_shift, drift.x * (w + 2 * PAD) + eased.x * PARALLAX,
+            drift.y * (h + 2 * PAD) + eased.y * PARALLAX - (prefersReducedMotion ? 0 : scrollY * SCROLL));
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.POINTS, 0, stars.length);
+    }
+    // A hidden tab or a long hitch resumes where it left off instead of jumping ahead
+    function tick(now) {
+        const dt = Math.min(now - (last || now), 50) / 1000;
+        last = now;
+        time += dt;
+        drift.x = (drift.x + DRIFT[0] * dt) % 100;
+        drift.y = (drift.y + DRIFT[1] * dt) % 100;
+        const k = 1 - Math.exp(-dt * 7.5);  // the old engine's 0.12 per 60 Hz frame, at any refresh rate
+        eased.x += (pointer.x - eased.x) * k;
+        eased.y += (pointer.y - eased.y) * k;
+        draw();
+        frame = requestAnimationFrame(tick);
     }
 
-    if (prefersReducedMotion) {
-        // Static starfield: place each star once, skip the drift/parallax loop
-        starsData.forEach(star => {
-            star.el.style.transform = `translate3d(${star.x}vw, ${star.y}vh, 0)`;
+    // ─── SHOOTING STARS ───
+    // One element streaking 20-40 degrees down, left or right, animated on the compositor. Its head
+    // is the element's right end, so rotating it to its heading puts the tail behind
+    function meteor() {
+        const m = document.createElement('i');
+        m.className = 'sky-meteor';
+        const x = rand(0.15, 0.85) * starsContainer.clientWidth, y = rand(0.05, 0.4) * starsContainer.clientHeight;
+        const heading = rand(20, 40) * Math.PI / 180, run = rand(250, 450), side = Math.random() < 0.5 ? 1 : -1;
+        const dx = side * Math.cos(heading) * run, dy = Math.sin(heading) * run;
+        const turn = `rotate(${Math.atan2(dy, dx)}rad)`;
+        starsContainer.append(m);
+        m.animate([
+            { transform: `translate(${x}px, ${y}px) ${turn} scaleX(0.2)`, opacity: 0 },
+            { opacity: 1, offset: 0.2 },
+            { transform: `translate(${x + dx}px, ${y + dy}px) ${turn} scaleX(1)`, opacity: 0 },
+        ], { duration: rand(700, 1100), easing: 'cubic-bezier(.3, 0, .8, .6)' }).finished.finally(() => m.remove());
+    }
+
+    // ─── FPS WATCHER ───
+    // The stars need no brake any more, but a struggling device still eases off the other ambient
+    // animations: under 25 fps over 2.5 s the body gets .zp-motion-throttled (Zephyy's CSS pauses
+    // her glows, spins and drifts) until 5 straight checks run at 30+ (12.5 s). One frame over a
+    // second is a hidden tab or a single hitch, not a slow page: it starts a fresh window.
+    function watchFrameRate() {
+        let frames = 0, start = performance.now(), prev = start, clean = 0, throttled = false;
+        requestAnimationFrame(function check(now) {
+            if (now - prev > 1000) { frames = 0; start = now; }
+            prev = now;
+            frames++;
+            if (now - start >= 2500) {
+                const fps = frames * 1000 / (now - start);
+                if (fps < 25) { throttled = true; clean = 0; }
+                else if (throttled && fps >= 30 && ++clean >= 5) { throttled = false; clean = 0; }
+                document.body.classList.toggle('zp-motion-throttled', throttled);
+                frames = 0;
+                start = now;
+            }
+            requestAnimationFrame(check);
         });
-    } else {
-        // Kick off the animation loop
-        animateStars();
+    }
+
+    const ready = gl && compile();
+    if (ready) {
+        starsContainer.append(canvas);
+        new ResizeObserver(size).observe(starsContainer);
+        // A GPU reset (driver update, sleep) drops the context: stop, then rebuild once it's back
+        canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); cancelAnimationFrame(frame); });
+        canvas.addEventListener('webglcontextrestored', () => { if (compile() && !prefersReducedMotion) frame = requestAnimationFrame(tick); });
+    }
+    if (!prefersReducedMotion) {
+        if (ready) {
+            document.addEventListener('pointermove', (e) => {
+                pointer.x = e.clientX / innerWidth - 0.5;
+                pointer.y = e.clientY / innerHeight - 0.5;
+            }, { passive: true });
+            frame = requestAnimationFrame(tick);
+        }
+        // A shooting star every 20-60 s while the tab is in view
+        (function next(wait) {
+            setTimeout(() => { if (!document.hidden) meteor(); next(rand(20e3, 60e3)); }, wait);
+        })(rand(4e3, 12e3));
+        watchFrameRate();
     }
 }
 

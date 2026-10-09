@@ -62,7 +62,7 @@ scale); the code, names and look are ours. Implementation: `public/css/board.css
 - **Cheap to move:** panels glide translate-only on the compositor (only a panel whose size
   changes animates width/height), the board re-lays out at most once a frame, and backdrop blur
   is off while arranging: blurring the live star field behind every moving panel is the heaviest
-  thing on the page, and the star engine pauses itself below 25fps.
+  thing on the page.
 - **Native first:** `<details>` for folds, the Popover API for the menu, `moveBefore()` (falls
   back to `insertBefore`) so reordering the DOM keeps focus and playing media. DOM order follows
   the layout, so tab order and the phone stack match what the visitor arranged.
@@ -105,5 +105,6 @@ arranged their own.
    149 and Edge 150, 2026-10-09) where the browser supports it. AG-UI is the wire format to
    consider if the OpenClaw gateway grows an event stream.
 7. **Monthly themes** (BLUEPRINT card `49f2128c`): `main.js` sets `data-month` on `<html>`,
-   and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, stars, the
-   snap field). Section accents stay put so finance stays green.
+   and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, the `--star-*`
+   tints, the snap field). The WebGL sky reads its tints once at load, so `data-month` is set
+   before the star block runs. Section accents stay put so finance stays green.

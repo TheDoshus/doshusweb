@@ -16,7 +16,6 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `CLAUDE.md` | One-line doorway that imports `AGENTS.md` for Claude Code |
 | `BLUEPRINT.md` | Site architecture and roadmap |
 | `UI-SPEC.md` | The board/panel UI spec every page builds on (proving ground: `/lab/nexus`) |
-| `public/js/sky.js` | Star renderers under test (WebGL points, box-shadow layers); compare them against the shipped main.js stars at `/lab/sky` (not wired into real pages yet) |
 | `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
 | `scripts/generate-meme-list.js` | `bun run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
 | `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images); report first, `--apply` to swap |

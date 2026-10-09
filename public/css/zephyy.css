@@ -1675,14 +1675,9 @@ body.zephyy-page::before {
   box-shadow: 0 2px 10px oklch(var(--brand-teal) / 0.2);
 }
 
-/* ── Performance: strip excessive will-change from stars ── */
-body .star {
-  will-change: opacity;
-}
-
-/* ── Performance safety valve: main.js's FPS monitor already pauses the star
-   drift when frames drop; it also flips this class so the same signal eases
-   off every other ambient/decorative infinite animation on the page. Presence
+/* ── Performance safety valve: when frames drop, main.js's FPS watcher flips
+   this class so every ambient/decorative infinite animation on the page eases
+   off (the WebGL stars are cheap enough to keep going). Presence
    dots, the typing indicator, and the status pulse are left untouched — they're
    cheap and carry real meaning, not just atmosphere. ── */
 body.zp-motion-throttled .zp-glyph-ring,
