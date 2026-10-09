@@ -21,7 +21,8 @@
       enable = true;
       previews = {
         web = {
-          command = ["python3" "-m" "http.server" "$PORT" "--bind" "0.0.0.0"];
+          # Serve public/ as the site root, like Firebase Hosting, so /css/... paths resolve
+          command = ["python3" "-m" "http.server" "$PORT" "--bind" "0.0.0.0" "--directory" "public"];
           manager = "web";
         };
       };
