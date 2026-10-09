@@ -10,7 +10,8 @@
 /* The aurora palette: what a monthly theme does, a token swap */
 .sky-aurora .sky { --star-cool: 88% 0.08 180; --star-warm: 90% 0.08 140; --star-violet: 84% 0.1 200; --star-glow: 70% 0.16 165; }
 
-.lab-sky { position: fixed; z-index: 1000; left: 50%; bottom: 1rem; translate: -50% 0;
+/* Top center: the bottom belongs to the sticky footer and the chat orb */
+.lab-sky { position: fixed; z-index: 1000; left: 50%; top: 0.75rem; translate: -50% 0;
     display: grid; gap: 0.4rem; justify-items: center; width: max-content; max-width: calc(100vw - 2rem);
     padding: 0.6rem 0.75rem; border-radius: 14px; border: 1px solid oklch(var(--accent-crypto) / 0.35);
     background: oklch(var(--space-oled) / 0.7); backdrop-filter: blur(8px);

@@ -1,6 +1,7 @@
-// Sky lab (/lab/sky): switch star renderers with ?sky= and read what each leaves the page.
+// Sky lab (/lab/sky, and /lab/nexus for a busy page): switch star renderers with ?sky= and read
+// what each leaves the page.
 //   ?sky=gl (default) | layers | dom (the shipped main.js engine) | off (nebula only)
-//   &cards=0 hides the glass cards (their backdrop blur re-renders whenever the sky moves)
+//   &cards=0 hides /lab/sky's glass cards (their backdrop blur re-renders whenever the sky moves)
 //   &theme=aurora swaps the star tokens, the way a monthly theme would
 // Must load before main.js: main.js starts its own engine only if #stars still exists.
 (() => {
