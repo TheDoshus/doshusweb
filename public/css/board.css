@@ -113,21 +113,27 @@
 }
 .panel-foot b { color: oklch(var(--accent)); font-weight: 600; }
 
-/* Media panel: a meme slot main.js fills (it owns the inner div's children) */
-.panel-media > .random-meme-fixed { flex: 1; min-height: 0; border: 0; border-radius: inherit; }
+/* Media panel: a slim head (its grab bar) over a meme slot main.js fills */
+.panel-media > .panel-head { padding-block: var(--sp-xs); }
+.panel-media .panel-tag { margin-left: 0; color: oklch(var(--accent) / 0.8); }
+.panel-media > .random-meme-fixed { flex: 1; min-height: 0; border: 0; border-radius: 0 0 var(--r-l) var(--r-l); }
 .panel-media > .random-meme-fixed:hover { transform: none; box-shadow: none; }
+.panel-media > .random-meme-fixed::before { content: none; }
 
 /* ─── PANEL CONTROLS (added by js/board.js) ─── */
-/* A pill riding the top border, clear of the title, the tag and any video controls */
-.panel-tools { position: absolute; top: 0; left: 50%; translate: -50% -50%; z-index: 5;
-    display: flex; gap: 2px; padding: 2px; border-radius: 999px; opacity: 0; transition: opacity 0.2s ease;
-    background: oklch(var(--space-oled) / 0.85); border: 1px solid oklch(var(--accent) / 0.5);
+/* The head is the grab bar. ✕ shows at its right end on hover; the move button appears
+   only when a keyboard reaches it */
+.panel-tools { position: absolute; top: 50%; right: var(--sp-s); translate: 0 -50%; z-index: 5;
+    display: flex; gap: var(--sp-2xs); opacity: 0; transition: opacity 0.2s ease;
 }
-.panel-tools button { width: 1.7rem; height: 1.4rem; display: grid; place-items: center; padding: 0; cursor: pointer;
-    font-size: 0.8rem; color: oklch(var(--accent)); background: none; border: 0; border-radius: 999px;
+.panel-tools button { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; padding: 0; cursor: pointer;
+    font-size: 0.8rem; color: oklch(var(--accent)); background: oklch(var(--space-oled) / 0.6);
+    border: 1px solid oklch(var(--accent) / 0.3); border-radius: var(--r-s);
 }
-.panel-tools button:hover { background: oklch(var(--accent) / 0.2); }
-.panel-grip { cursor: grab; touch-action: none; }
+.panel-tools button:hover { border-color: oklch(var(--accent)); }
+.panel-grip:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.panel:not(.panel-media):is(:hover, :focus-within) .panel-tag { visibility: hidden; }
+.panel.is-dragging .panel-head { cursor: grabbing; }
 /* Resize handles straddle every edge and corner; only the corner shows itself */
 .panel-edge { position: absolute; inset: 10px; z-index: 4; padding: 0; border: 0; background: none; touch-action: none; }
 .panel-edge[data-dir^="n"] { top: -5px; bottom: auto; height: 10px; }
@@ -141,9 +147,11 @@
 .panel-edge[data-dir="se"] { right: 0; bottom: 0; width: 1.3rem; height: 1.3rem; opacity: 0; border-radius: 0 0 var(--r-l) 0;
     background: linear-gradient(135deg, transparent 55%, oklch(var(--accent) / 0.7) 55% 62%, transparent 62% 72%, oklch(var(--accent) / 0.7) 72% 79%, transparent 79%);
 }
-.panel:hover > :is(.panel-tools, .panel-edge[data-dir="se"]),
-.panel:focus-within > :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 1; }
-@media (hover: none) { .panel-tools, .panel-edge[data-dir="se"] { opacity: 1; } }
+.panel:is(:hover, :focus-within) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 1; }
+@media (hover: none) {
+    .panel-tools, .panel-edge[data-dir="se"] { opacity: 1; }
+    .panel:not(.panel-media) .panel-tag { visibility: hidden; }
+}
 
 /* ─── CONTENT PRIMITIVES ─── */
 /* group: a titled cluster, e.g. a set of link chips */

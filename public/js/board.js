@@ -114,7 +114,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // ─── Pointer gestures: start() returns { move, done }, or nothing to ignore the press ───
     function track(handle, start) {
         handle.addEventListener('pointerdown', (e) => {
-            if (e.button || cols() < 2) return;
+            // A press on a button inside the handle (the head's ✕) is a click, not a drag
+            if (e.button || cols() < 2 || (e.target !== handle && e.target.closest('button, a'))) return;
             const op = start(e);
             if (!op) return;
             e.preventDefault();
@@ -221,11 +222,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
 
     panels.forEach((p) => {
         const name = title(p);
+        // The head is the grab bar; the grip is the keyboard's move control and only shows on focus
+        const head = p.querySelector('.panel-head');
         const tools = el('div', 'panel-tools');
-        const grip = button('⠿', `Move ${name}`, 'panel-grip');
+        const grip = button('⠿', `Move ${name} with the arrow keys`, 'panel-grip');
         const hide = button('✕', `Hide ${name}`, 'panel-close');
         tools.append(grip, hide);
-        p.append(tools);
+        (head ?? p).append(tools);
         EDGES.forEach((dir) => {
             // The corner is the keyboard's way in; the other edges are pointer-only
             const edge = dir === 'se' ? button('', `Resize ${name}`, 'panel-edge') : el('span', 'panel-edge');
@@ -233,9 +236,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             p.append(edge);
             track(edge, resizeFrom(p, dir));
         });
-        track(grip, moveFrom(p));
-        const head = p.querySelector('.panel-head');
-        if (head) track(head, moveFrom(p));
+        track(head ?? grip, moveFrom(p));
 
         keyed(grip, p, (r, next, dx, dy) => {
             if (dx) r.x = clamp(r.x + dx, 1, cols() - r.w + 1);
