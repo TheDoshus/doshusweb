@@ -433,7 +433,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             flip(() => render(resolve(next)));
             commit(next);
             say(`${name} hidden. Add it back from Add widget.`);
-            add.focus();
+            add.focus({ preventScroll: true }); // focus where it comes back from, without jumping the page there
         });
     });
 

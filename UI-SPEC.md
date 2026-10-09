@@ -99,7 +99,8 @@ nothing, so changes to the defaults reach every visitor who hasn't arranged thei
 
 ## Roadmap
 
-1. **Lab:** `/lab/nexus` until Doshus signs off on the look and feel.
+1. **Lab:** `/lab/nexus`. Signed off by Doshus 2026-10-09 ("this is the spec to keep improving
+   on"); it stays the proving ground for each change before the real pages get it.
 2. **Nexus:** the lab replaces `nexus.html`; nexus.css keeps only the hero and footer bits,
    and the scales move to `shared.css`.
 3. **Every page where it fits:** Finance Hub, the Lounge, Zephyy's profile.
@@ -119,3 +120,8 @@ nothing, so changes to the defaults reach every visitor who hasn't arranged thei
    and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, the `--star-*`
    tints, the snap field). The WebGL sky reads its tints once at load, so `data-month` is set
    before the star block runs. Section accents stay put so finance stays green.
+8. **Beyond doshus.net:** Doshus plans to build his other pages this way, Aether (OpenClaw's
+   mission control, `projects/aether` in the OpenClaw repo) first. Before that port, split this
+   file into the portable part (markup contract, placement and gesture rules, save format) and
+   the doshus.net part (CSP, tokens, the cosmic look), so Aether follows the same contract
+   instead of a copy that drifts.
