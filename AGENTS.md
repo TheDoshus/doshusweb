@@ -96,9 +96,9 @@ before you stop, ask what you left behind.
 | `public/js/main.js` | Global: stars engine, meme loader, collapsibles, sticky footer |
 | `public/zephyy/` | Zephyy profile subpages |
 | `public/amazon/` | Printmon + work tools — legacy tree, don't refactor casually |
-| `public/assets/memes/` | Meme pool; regen index with `bun run memes` |
+| `public/assets/memes/` | Meme pool; regen index with `bun run memes`; shrink new ones with `bun run memes:convert` (quality-gated, report first) |
 | `firebase.json` | Hosting config + CSP/security headers (two targets) |
-| `scripts/` | Repo tooling, run through bun (`bun run <name>`): `check`, `csp:hashes`, `memes`, `sync:zephyy` (re-stamp the Zephyy subpages after editing `public/zephyy.html`) |
+| `scripts/` | Repo tooling, run through bun (`bun run <name>`): `check`, `csp:hashes`, `memes`, `memes:convert`, `sync:zephyy` (re-stamp the Zephyy subpages after editing `public/zephyy.html`) |
 
 ## Conventions
 

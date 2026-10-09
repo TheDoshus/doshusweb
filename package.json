@@ -12,6 +12,7 @@
     "og": "bun scripts/og-cards.js",
     "csp:hashes": "bun scripts/update-csp-hashes.js",
     "memes": "bun scripts/generate-meme-list.js",
+    "memes:convert": "bun scripts/convert-memes.js",
     "sync:zephyy": "bun scripts/sync-zephyy-nav.js && bun scripts/sync-zephyy-chat.js && bun scripts/sync-zephyy-crew.js"
   }
 }

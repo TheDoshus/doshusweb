@@ -7,6 +7,9 @@
   packages = [
     pkgs.nodejs_20
     pkgs.python3
+    pkgs.bun          # the repo's scripts run through bun (bun run check, memes, ...)
+    pkgs.ffmpeg-full  # bun run memes:convert: VP9/Opus/WebP encoders + libvmaf
+    pkgs.libheif      # heif-convert, for .heic memes ffmpeg can't read
   ];
   # Sets environment variables in the workspace
   env = {};

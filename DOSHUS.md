@@ -18,6 +18,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `UI-SPEC.md` | The board/panel UI spec every page builds on (proving ground: `/lab/nexus`) |
 | `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
 | `scripts/generate-meme-list.js` | `bun run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
+| `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images); report first, `--apply` to swap |
 | `scripts/sync-zephyy-{nav,chat}.js` | `bun run sync:zephyy` — re-stamps the Zephyy subpages' nav bar and chat orb from `public/zephyy.html` |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
@@ -111,6 +112,11 @@ cd ~/.openclaw/projects/doshusweb && bun run deploy
 
 # Regenerate the meme list after dropping new memes in assets/memes/
 cd ~/.openclaw/projects/doshusweb && bun run memes
+
+# Shrink memes into WebM/WebP without losing quality: report first, then swap the winners in
+# (needs ffmpeg with libvmaf; Firebase Studio gets it from .idx/dev.nix after a rebuild)
+cd ~/.openclaw/projects/doshusweb && bun run memes:convert
+cd ~/.openclaw/projects/doshusweb && bun run memes:convert --apply
 
 # Re-stamp the Zephyy subpages (nav bar + chat orb) after editing public/zephyy.html
 cd ~/.openclaw/projects/doshusweb && bun run sync:zephyy
