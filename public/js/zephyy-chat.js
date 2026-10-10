@@ -104,8 +104,6 @@
     let isOpen = false;
     let quickReplied = false;
     let sessionEnded = false;
-    let sessionId = window.__zpRealtime ? window.__zpRealtime.sessionId : null;
-    const savedName = localStorage.getItem('zp-visitor-name');
 
     /* ── Listen for online/offline status changes from Firebase listener.
        Offline does NOT disable input — RTDB is always up, so messages queue
@@ -153,8 +151,7 @@
         var bd = document.getElementById('zp-chat-backdrop');
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
-            document.dispatchEvent(new CustomEvent('zp-chat-opened'));
-            if (navigator.vibrate) { try { navigator.vibrate(6); } catch (e) {} }
+            window.haptic?.(6);
             orb.classList.remove('unread');
             /* checkOnlineStatus handled by Firebase realtime listener */
             /* Ensure name prompt shows even if loadMessages hasn't fired yet */
@@ -235,9 +232,9 @@
     }
 
     function addMessage(role, content, timestamp) {
-        // Dedup: skip if last message with same role has same content
+        // Dedup Zephyy's side only (a reply can arrive twice); a visitor's repeat is a real message
         var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-of-type[data-content]');
-        if (prev && prev.dataset.content === content) return;
+        if (role !== 'user' && prev && prev.dataset.content === content) return prev;
         var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-' + role;
         div.dataset.content = content;
@@ -378,7 +375,7 @@
         if (!item || !item.alt) return;
         copyText(item.alt)
             .then(function() {
-                if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
+                window.haptic?.(15);
                 setCopyButtonState(button, 'Copied');
             })
             .catch(function() { setCopyButtonState(button, 'Failed'); });
@@ -440,7 +437,7 @@
      * ================================================ */
 
     function showNamePrompt() {
-        if (quickReplied || savedName) return;
+        if (quickReplied) return;
         var row = document.getElementById('zp-quick-reply-row');
         if (row) return; // already shown
         /* Don't show buttons if conversation already has user messages */
@@ -450,7 +447,6 @@
         row = document.createElement('div');
         row.id = 'zp-quick-reply-row';
         row.className = 'zp-chat-msg zp-chat-msg-bot';
-        row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;background:none;border:none;';
 
         /* "I have a name!" button */
         var nameBtn = document.createElement('button');
@@ -482,13 +478,11 @@
         var row = document.createElement('div');
         row.id = 'zp-name-input-row';
         row.className = 'zp-chat-msg zp-chat-msg-bot';
-        row.style.cssText = 'display:flex;gap:6px;padding:6px 10px;background:none;border:none;align-items:center;';
 
         var input = document.createElement('input');
         input.type = 'text';
         input.placeholder = 'Your name...';
         input.maxLength = 30;
-        input.style.cssText = 'flex:1;padding:8px 12px;border-radius:8px;border:1px solid oklch(var(--brand-teal) / 0.3);background:oklch(15% 0.03 260 / 0.8);color:var(--text-main);font-size:0.85rem;outline:none;';
         input.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -499,7 +493,6 @@
         var okBtn = document.createElement('button');
         okBtn.textContent = 'OK';
         okBtn.className = 'zp-qr-btn';
-        okBtn.style.cssText = 'padding:8px 16px;border-radius:8px;border:1px solid oklch(var(--brand-teal) / 0.4);background:oklch(var(--brand-teal) / 0.15);cursor:pointer;font-size:0.85rem;transition:all 0.15s;';
         okBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             submitName(input.value.trim());
@@ -527,8 +520,6 @@
                 setTimeout(showNamePrompt, 500);
                 return;
             }
-            /* Clear anonymous flags — user provided a real name */
-            localStorage.removeItem('zp-no-name');
             var caps = name[0].toUpperCase() + name.slice(1).toLowerCase();
             var greetings = ["Yeah it's ", "You can call me ", "I go by "];
             var greet = greetings[Math.floor(Math.random() * greetings.length)];
@@ -554,12 +545,7 @@
     function sendText(text) {
         if (!text) return;
         quickReplied = true; // prevent re-showing buttons
-        /* Clear stale name if user chooses to stay anonymous */
-        if (text.includes("without a name") || text.includes("don't have a name")) {
-            localStorage.removeItem('zp-visitor-name');
-            localStorage.setItem('zp-no-name', '1');
-            removeWelcome();
-        }
+        if (text.includes("without a name") || text.includes("don't have a name")) removeWelcome();
         inputEl.value = text;
         sendBtn.click();
     }
@@ -777,16 +763,6 @@
         if (e.key === 'Escape' && panel.classList.contains('open')) togglePanel();
     });
 
-    /* Restore saved name on load — only if the panel hasn't been opened yet.
-       If user already said "no name", skip the welcome text entirely */
-    if (savedName && !localStorage.getItem('zp-no-name')) {
-        setWelcomeText('Hey ' + savedName + '! ⚡');
-    } else if (savedName) {
-        /* User previously said no name — clear stale name */
-        localStorage.removeItem('zp-visitor-name');
-        removeWelcome();
-    }
-
     /* Open panel → reload messages */
     var panelObserver = new MutationObserver(function() {
         if (panel.classList.contains('open')) {
@@ -808,22 +784,9 @@
         resettingSession = true;
         sessionEnded = false;
         touchActivity(); /* don't let the idle timer instantly re-fire on the new session */
-        /* Forget the visitor identity — a fresh session greets like a first visit */
-        localStorage.removeItem('zp-visitor-name');
-        localStorage.removeItem('zp-no-name');
+        /* A fresh session greets like a first visit: new session, rebound Firebase refs */
         localStorage.removeItem(CACHE_KEY);
-        /* New session + rebound Firebase refs via realtime's lifecycle API */
-        if (window.__zpRealtime && window.__zpRealtime.resetSession) {
-            sessionId = window.__zpRealtime.resetSession();
-        } else {
-            /* Realtime not loaded — swap localStorage so a reload picks it up */
-            sessionId = crypto.randomUUID ? crypto.randomUUID() :
-                'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = Math.random() * 16 | 0;
-                    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-                });
-            localStorage.setItem('zephyy-chat-session', sessionId);
-        }
+        if (window.__zpRealtime) window.__zpRealtime.resetSession();
         /* Wipe the panel back to the first-load state (keep any typed draft) */
         messagesEl.querySelectorAll('.zp-chat-msg, .zp-chat-ended').forEach(function(el) { el.remove(); });
         removeThinkingBubble();
@@ -863,16 +826,13 @@
             return;
         }
         clearTimeout(refreshConfirmTimer);
-        if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
-        localStorage.removeItem('zephyy-chat-session');
-        localStorage.removeItem('zp-visitor-name');
-        localStorage.removeItem('zp-no-name');
+        window.haptic?.(8);
         localStorage.removeItem(CACHE_KEY);
         location.reload();
     });
     sendBtn.addEventListener('click', function(e) {
         if (e.isTrusted && !sendBtn.disabled && !sessionEnded && inputEl.value.trim()) {
-            if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+            window.haptic?.(8);
         }
         sendMessage();
     });

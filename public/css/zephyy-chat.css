@@ -384,6 +384,15 @@
 
 
 /* ── Quick-reply buttons ── */
+/* The name prompt's rows (zephyy-chat.js): quick replies, then the name field */
+#zp-quick-reply-row, #zp-name-input-row { display: flex; gap: 6px; padding: 8px 10px; background: none; border: none; }
+#zp-quick-reply-row { flex-wrap: wrap; }
+#zp-name-input-row { padding: 6px 10px; align-items: center; }
+#zp-name-input-row input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid oklch(var(--brand-teal) / 0.3);
+  background: oklch(15% 0.03 260 / 0.8); color: var(--text-main); font-size: 0.85rem; outline: none; }
+#zp-name-input-row .zp-qr-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid oklch(var(--brand-teal) / 0.4);
+  background: oklch(var(--brand-teal) / 0.15); font-size: 0.85rem; }
+
 .zp-qr-btn {
   display: inline-flex;
   align-items: center;

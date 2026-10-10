@@ -53,7 +53,7 @@
             !wrapper.classList.contains('gallery-dock')) {
             e.preventDefault();
             e.stopPropagation();
-            if (navigator.vibrate) { try { navigator.vibrate(8); } catch (err) {} }
+            window.haptic?.(); // main.js's (the printmon gallery has none)
             wrapper.classList.remove('auto'); // real tap — let the arrival play
             wrapper.classList.add('expanded');
             updateFooterHarmony(); // apply the footer offset before paint, not after
