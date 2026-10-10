@@ -97,7 +97,7 @@ before you stop, ask what you left behind.
 |---|---|
 | `public/*.html` + `css/` + `js/` | Main site (home, financehub, thelounge, nexus, zephyy) |
 | `public/css/shared.css` | Tokens, fonts, cosmic background, shared components |
-| `public/js/main.js` | Global: WebGL star field + shooting stars (tints are the `--star-*` tokens), meme loader, collapsibles, sticky footer |
+| `public/js/main.js` | Global: WebGL sky (the drifting nebula, then the star field; colors are the `--nebula-*` and `--star-*` tokens) + shooting stars, meme loader, collapsibles, sticky footer |
 | `public/zephyy/` | Zephyy profile subpages |
 | `public/amazon/` | Printmon + work tools — legacy tree, don't refactor casually |
 | `public/assets/memes/` | Meme pool; regen index with `bun run memes`; shrink new ones with `bun run memes:convert` (quality-gated, report first) |

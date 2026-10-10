@@ -180,38 +180,16 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 /* ─── COSMIC BACKGROUND ─── */
-.cosmic-bg { 
+/* The nebula. main.js draws it drifting on the star canvas above; this is its first moment,
+   still, for the first paint and for pages without WebGL */
+.cosmic-bg {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
-    background: linear-gradient(135deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.5) 50%, oklch(var(--space-oled)) 100%);
-    animation: deepSpaceDrift 40s ease-in-out infinite;
+    background: linear-gradient(135deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.85) 30%, oklch(var(--nebula-blue) / 0.65) 65%, oklch(var(--space-oled)) 100%);
     z-index: -2;
 }
 
-@keyframes deepSpaceDrift {
-    0%   { background: linear-gradient(135deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.85) 30%, oklch(var(--nebula-blue) / 0.65) 65%, oklch(var(--space-oled)) 100%); }
-    5%   { background: linear-gradient(153deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.80) 32%, oklch(var(--nebula-blue) / 0.60) 64%, oklch(var(--space-oled)) 100%); }
-    10%  { background: linear-gradient(171deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.78) 33%, oklch(var(--nebula-blue) / 0.68) 63%, oklch(var(--space-oled)) 100%); }
-    15%  { background: linear-gradient(189deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-blue)   / 0.82) 31%, oklch(var(--nebula-purple) / 0.58) 66%, oklch(var(--space-oled)) 100%); }
-    20%  { background: linear-gradient(207deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-blue)   / 0.88) 34%, oklch(var(--nebula-purple) / 0.52) 65%, oklch(var(--space-oled)) 100%); }
-    25%  { background: linear-gradient(225deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-blue)   / 0.90) 35%, oklch(var(--nebula-purple) / 0.55) 64%, oklch(var(--space-oled)) 100%); }
-    30%  { background: linear-gradient(243deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.85) 33%, oklch(var(--nebula-blue) / 0.72) 62%, oklch(var(--space-oled)) 100%); }
-    35%  { background: linear-gradient(261deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-pink)   / 0.82) 30%, oklch(var(--nebula-blue) / 0.70) 61%, oklch(var(--space-oled)) 100%); }
-    40%  { background: linear-gradient(279deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-pink)   / 0.78) 29%, oklch(var(--nebula-blue) / 0.68) 63%, oklch(var(--space-oled)) 100%); }
-    45%  { background: linear-gradient(297deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.74) 31%, oklch(var(--nebula-pink) / 0.30) 68%, oklch(var(--space-oled)) 100%); }
-    50%  { background: linear-gradient(315deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-blue)   / 0.88) 30%, oklch(var(--nebula-purple) / 0.72) 65%, oklch(var(--space-oled)) 100%); }
-    55%  { background: linear-gradient(333deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-blue)   / 0.84) 32%, oklch(var(--nebula-purple) / 0.68) 64%, oklch(var(--space-oled)) 100%); }
-    60%  { background: linear-gradient(351deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.86) 34%, oklch(var(--nebula-blue) / 0.62) 63%, oklch(var(--space-oled)) 100%); }
-    65%  { background: linear-gradient(  9deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-blue)   / 0.82) 31%, oklch(var(--nebula-purple) / 0.58) 66%, oklch(var(--space-oled)) 100%); }
-    70%  { background: linear-gradient( 27deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-blue)   / 0.78) 33%, oklch(var(--nebula-purple) / 0.62) 64%, oklch(var(--space-oled)) 100%); }
-    75%  { background: linear-gradient( 45deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-pink)   / 0.38) 25%, oklch(var(--nebula-purple) / 0.80) 58%, oklch(var(--space-oled)) 100%); }
-    80%  { background: linear-gradient( 63deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.85) 30%, oklch(var(--nebula-blue) / 0.62) 65%, oklch(var(--space-oled)) 100%); }
-    85%  { background: linear-gradient( 81deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.82) 32%, oklch(var(--nebula-blue) / 0.66) 64%, oklch(var(--space-oled)) 100%); }
-    90%  { background: linear-gradient( 99deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.80) 33%, oklch(var(--nebula-blue) / 0.70) 63%, oklch(var(--space-oled)) 100%); }
-    95%  { background: linear-gradient(117deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.83) 31%, oklch(var(--nebula-blue) / 0.67) 65%, oklch(var(--space-oled)) 100%); }
-    100% { background: linear-gradient(135deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.85) 30%, oklch(var(--nebula-blue) / 0.65) 65%, oklch(var(--space-oled)) 100%); }
-}
-
-/* ─── STARS ─── main.js draws them on a WebGL canvas, tinted by the --star-* tokens */
+/* ─── STARS ─── main.js draws them on a WebGL canvas, tinted by the --star-* tokens, over the
+   nebula (--nebula-* tokens). --sky-nebula: none on #stars leaves the nebula to .cosmic-bg */
 #stars { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; pointer-events: none;
     z-index: -1;
 }

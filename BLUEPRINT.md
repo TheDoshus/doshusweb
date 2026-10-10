@@ -79,7 +79,7 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 
 | Card | What |
 |---|---|
-| `49f2128c` | Seasonal page effects (Doshus's idea). Plan: `main.js` sets `data-month` on `<html>` before the star block reads its tints (the WebGL sky reads `--star-*` once at load), and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, `--star-*` tints, the board's snap field). Section accents stay put so finance stays green |
+| `49f2128c` | Seasonal page effects (Doshus's idea). Plan: `main.js` sets `data-month` on `<html>` before the star block reads its colors (the WebGL sky reads `--star-*` and `--nebula-*` once at load), and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, `--star-*` tints, the board's snap field). Section accents stay put so finance stays green |
 | `9414bd21` | Real OG images (every page's `og:image` is `doshusfavi.ico` today), `sitemap.xml` (lists 3 of 5 top-level pages, no `/zephyy/*`), `humans.txt` (empty) |
 | `ec678abe` | QA page claims vs live: needs OpenClaw to verify. The crew page's model chains and schedules are now generated (`data/crew-facts.json`) |
 

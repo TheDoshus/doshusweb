@@ -18,10 +18,11 @@ function haptic(ms = 8) {
 }
 
 // Deep Space Stars
-// One WebGL draw call a frame paints the whole sky: every star is a point that twinkles on its own
-// clock, drifts smoothly between pixels and shifts with the pointer and the scroll, and a shooting
-// star crosses now and then. Tints are the --star-* tokens in shared.css, so a monthly theme is a
-// token swap. No WebGL: the nebula and the shooting stars. Reduced motion: one still frame, no meteors.
+// Two WebGL draws a frame paint the whole sky: the nebula, slowly turning and shifting color, then
+// every star as a point that twinkles on its own clock, drifts smoothly between pixels and shifts
+// with the pointer and the scroll; a shooting star crosses now and then. Colors are the --star-*
+// and --nebula-* tokens in shared.css, so a monthly theme is a token swap. No WebGL: the still
+// nebula of .cosmic-bg and the shooting stars. Reduced motion: one still frame, no meteors.
 // (Measured 2026-10-09: main-thread cost the same as no stars; the old 245-element engine took a
 // fifth of a core on /nexus.)
 const starsContainer = document.getElementById('stars');
@@ -55,31 +56,35 @@ if (starsContainer) {
             phase: rand(0, 2 * Math.PI), rate: rand(...d.rate) };
     }));
 
-    // An oklch token ("88% 0.06 250") as the gamma-encoded sRGB floats WebGL takes (CSS Color 4 math)
-    function srgb(name) {
+    // An oklch token ("88% 0.06 250") as oklab; the shaders turn it into the screen's sRGB
+    function labOf(name) {
         const [L, C, H] = getComputedStyle(starsContainer).getPropertyValue(name).trim().split(/\s+/);
-        const l0 = parseFloat(L) / (L.endsWith('%') ? 100 : 1), a = C * Math.cos(H * Math.PI / 180), b = C * Math.sin(H * Math.PI / 180);
-        const l = (l0 + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-        const m = (l0 - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-        const s = (l0 - 0.0894841775 * a - 1.2914855480 * b) ** 3;
-        return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-            -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-            -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s]
-            .map((c) => Math.min(Math.max(c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055, 0), 1));
+        return [parseFloat(L) / (L.endsWith('%') ? 100 : 1), C * Math.cos(H * Math.PI / 180), C * Math.sin(H * Math.PI / 180)];
     }
 
     // ─── SHADERS ───
+    // oklab to gamma-encoded sRGB (CSS Color 4 math), shared by both programs
+    const SRGB = `
+        vec3 srgb(vec3 lab) {
+            vec3 lms = mat3(1.0, 1.0, 1.0, 0.3963377774, -0.1055613458, -0.0894841775, 0.2158037573, -0.0638541728, -1.2914855480) * lab;
+            vec3 rgb = clamp(mat3(4.0767416621, -1.2684380046, -0.0041960863, -3.3077115913, 2.6097574011, -0.7034186147,
+                0.2309699292, -0.3413193965, 1.7076147010) * (lms * lms * lms), 0.0, 1.0);
+            return mix(12.92 * rgb, 1.055 * pow(rgb, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, rgb));
+        }`;
     const VERTEX = `
         attribute vec2 a_pos;    // 0..1 across the field
         attribute vec4 a_star;   // radius (css px), depth, twinkle phase, twinkle rate
-        attribute vec4 a_color;  // rgb, glow 0..1
+        attribute vec4 a_color;  // oklab, glow 0..1
         attribute vec2 a_light;  // dimmest, brightest
         uniform vec2 u_view;     // the sky's box, css px
         uniform vec2 u_shift;    // drift + parallax at depth 1, css px
         uniform float u_time, u_dpr, u_max;
+        uniform vec3 u_glow;     // oklab
         varying vec4 v_color;
+        varying vec3 v_glow;
         varying float v_radius, v_size, v_light;
         const float PAD = ${PAD}.0;
+        ${SRGB}
         void main() {
             vec2 span = u_view + 2.0 * PAD;
             vec2 p = mod(a_pos * span + u_shift * a_star.y, span) - PAD;
@@ -88,60 +93,122 @@ if (starsContainer) {
             v_size = min(2.0 * v_radius * (1.0 + 3.0 * a_color.a) + 2.0, u_max);
             gl_PointSize = v_size;
             v_light = mix(a_light.x, a_light.y, 0.5 + 0.5 * sin(u_time * a_star.w + a_star.z));
-            v_color = a_color;
+            v_color = vec4(srgb(a_color.rgb), a_color.a);
+            v_glow = srgb(u_glow);
         }`;
     // gl_PointCoord is measured from the star's exact center, so the disk stays antialiased and
     // moves smoothly between pixels; close stars add a halo in --star-glow
     const FRAGMENT = `
         precision mediump float;
-        uniform vec3 u_glow;
         varying vec4 v_color;
+        varying vec3 v_glow;
         varying float v_radius, v_size, v_light;
         void main() {
             float d = length(gl_PointCoord - 0.5) * v_size;
             float core = clamp(v_radius + 0.5 - d, 0.0, 1.0);
             float halo = v_color.a * 0.6 * pow(max(1.0 - d / (4.0 * v_radius), 0.0), 2.0);
-            gl_FragColor = vec4(v_color.rgb * core + u_glow * halo * (1.0 - core), core + halo * (1.0 - core)) * v_light;
+            gl_FragColor = vec4(v_color.rgb * core + v_glow * halo * (1.0 - core), core + halo * (1.0 - core)) * v_light;
+        }`;
+
+    // ─── NEBULA ───
+    // The glow behind the stars: a gradient from black through two nebula colors and back to
+    // black, turning once every TURN seconds while its colors drift through these moments, one
+    // every 2 s ("token alpha where", where in % along the gradient). Here it moves smoothly for
+    // one light pass a frame; as a CSS animation it snapped every 2 s (gradients don't tween) and
+    // repainted the whole window each time. .cosmic-bg keeps the first moment, still, for pages
+    // without WebGL; a page whose CSS sets --sky-nebula: none on #stars keeps its own background.
+    const NEBULA = [
+        'purple .85 30, blue .65 65', 'purple .80 32, blue .60 64', 'purple .78 33, blue .68 63', 'blue .82 31, purple .58 66',
+        'blue .88 34, purple .52 65', 'blue .90 35, purple .55 64', 'purple .85 33, blue .72 62', 'pink .82 30, blue .70 61',
+        'pink .78 29, blue .68 63', 'purple .74 31, pink .30 68', 'blue .88 30, purple .72 65', 'blue .84 32, purple .68 64',
+        'purple .86 34, blue .62 63', 'blue .82 31, purple .58 66', 'blue .78 33, purple .62 64', 'pink .38 25, purple .80 58',
+        'purple .85 30, blue .62 65', 'purple .82 32, blue .66 64', 'purple .80 33, blue .70 63', 'purple .83 31, blue .67 65',
+    ].map((m) => m.split(', ').map((stop) => stop.split(' ')));
+    const TURN = 40;
+    const drifting = getComputedStyle(starsContainer).getPropertyValue('--sky-nebula').trim() !== 'none';
+    const backdrop = document.querySelector('.cosmic-bg');
+    const CORNER = 'attribute vec2 a_corner; void main() { gl_Position = vec4(a_corner, 0.0, 1.0); }';
+    // The browser's own linear-gradient() math: buffer pixels with y up, colors mixed in oklab
+    // with premultiplied alpha, then laid over the black page
+    const GLOW = `
+        #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+        #else
+        precision mediump float;
+        #endif
+        uniform vec2 u_size, u_dir, u_at;  // buffer px; heading (sin, cos of the CSS angle); where the colors sit, 0..1
+        uniform vec4 u_c1, u_c2;           // the two colors: oklab times alpha, alpha
+        ${SRGB}
+        void main() {
+            const vec4 BLACK = vec4(0.0, 0.0, 0.0, 1.0);
+            vec2 p = gl_FragCoord.xy - 0.5 * u_size;
+            float t = clamp(dot(p, u_dir) / dot(abs(u_dir), u_size) + 0.5, 0.0, 1.0);
+            vec4 c = t < u_at.x ? mix(BLACK, u_c1, t / u_at.x)
+                : t < u_at.y ? mix(u_c1, u_c2, (t - u_at.x) / (u_at.y - u_at.x))
+                : mix(u_c2, BLACK, (t - u_at.y) / (1.0 - u_at.y));
+            // Dithered like the browser's own gradients, so the dark ramps don't band
+            float n = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+            gl_FragColor = vec4(srgb(c.rgb / c.a) * c.a + (n - 0.5) / 255.0, 1.0);
         }`;
 
     // ─── WEBGL SKY ───
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false,
         depth: false, stencil: false, powerPreference: 'low-power' });
-    const at = {};
     const pointer = { x: 0, y: 0 }, eased = { x: 0, y: 0 };
     // scrolled is kept by a scroll listener: reading scrollY in the frame would force a layout
     // whenever something else on the page had just changed one
     let frame = 0, last = 0, time = 0, w = 0, h = 0, scrolled = 0;
+    let sky, nebula, moments;
 
-    function compile() {
+    // A program from its shaders, with its uniforms' locations and its attributes laid over its
+    // own buffer. The two programs share attribute slots, so use() points them at its buffer.
+    function build(vertex, fragment, uniforms, attributes, data) {
         const program = gl.createProgram();
-        for (const [type, src] of [[gl.VERTEX_SHADER, VERTEX], [gl.FRAGMENT_SHADER, FRAGMENT]]) {
+        for (const [type, src] of [[gl.VERTEX_SHADER, vertex], [gl.FRAGMENT_SHADER, fragment]]) {
             const shader = gl.createShader(type);
             gl.shaderSource(shader, src);
             gl.compileShader(shader);
             gl.attachShader(program, shader);
         }
         gl.linkProgram(program);
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return false;
-        gl.useProgram(program);
-        for (const name of ['u_view', 'u_shift', 'u_time', 'u_dpr', 'u_max', 'u_glow']) at[name] = gl.getUniformLocation(program, name);
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return null;
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+        const stride = attributes.reduce((sum, [, size]) => sum + size, 0) * 4;
         let offset = 0;
-        for (const [name, size] of [['a_pos', 2], ['a_star', 4], ['a_color', 4], ['a_light', 2]]) {
+        const layout = attributes.map(([name, size]) => {
             const loc = gl.getAttribLocation(program, name);
             gl.enableVertexAttribArray(loc);
-            gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 12 * 4, offset * 4);
-            offset += size;
-        }
+            offset += size * 4;
+            return [loc, size, offset - size * 4];
+        });
+        return { program, buffer, stride, layout, u: Object.fromEntries(uniforms.map((name) => [name, gl.getUniformLocation(program, name)])) };
+    }
+    function use({ program, buffer, stride, layout }) {
+        gl.useProgram(program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        layout.forEach(([loc, size, offset]) => gl.vertexAttribPointer(loc, size, gl.FLOAT, false, stride, offset));
+    }
+    // Both programs, with the star and nebula colors read from the tokens (a nebula that fails
+    // to build just leaves .cosmic-bg showing)
+    function compile() {
+        const tint = Object.fromEntries([...new Set(TINTS)].map((t) => [t, labOf(`--star-${t}`)]));
+        sky = build(VERTEX, FRAGMENT, ['u_view', 'u_shift', 'u_time', 'u_dpr', 'u_max', 'u_glow'],
+            [['a_pos', 2], ['a_star', 4], ['a_color', 4], ['a_light', 2]],
+            stars.flatMap((s) => [s.x, s.y, s.r, s.d.depth, s.phase, s.rate, ...tint[s.tint], s.d.glow || 0, ...s.d.light]));
+        if (!sky) return false;
+        nebula = drifting && build(CORNER, GLOW, ['u_size', 'u_dir', 'u_at', 'u_c1', 'u_c2'], [['a_corner', 2]], [-1, -1, 3, -1, -1, 3]);
+        if (backdrop) backdrop.hidden = !!nebula; // fully covered, so the page skips compositing it
+        // Each moment as the nebula shader takes it: both colors as oklab times alpha and alpha, then where they sit
+        const color = ([token, alpha]) => [...labOf(`--nebula-${token}`).map((c) => c * alpha), +alpha];
+        moments = NEBULA.map(([a, b]) => [...color(a), ...color(b), a[2] / 100, b[2] / 100]);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);  // premultiplied alpha
-        gl.uniform1f(at.u_max, gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1]);
-        // Star data, with tints read from the tokens
-        const tint = Object.fromEntries([...new Set(TINTS)].map((t) => [t, srgb(`--star-${t}`)]));
-        gl.uniform3fv(at.u_glow, srgb('--star-glow'));
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(stars.flatMap((s) =>
-            [s.x, s.y, s.r, s.d.depth, s.phase, s.rate, ...tint[s.tint], s.d.glow || 0, ...s.d.light])), gl.STATIC_DRAW);
+        use(sky);
+        gl.uniform1f(sky.u.u_max, gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1]);
+        gl.uniform3fv(sky.u.u_glow, labOf('--star-glow'));
         size();
         return true;
     }
@@ -154,16 +221,35 @@ if (starsContainer) {
         canvas.width = Math.round(w * dpr);
         canvas.height = Math.round(h * dpr);
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform2f(at.u_view, w, h);
-        gl.uniform1f(at.u_dpr, canvas.width / w);
+        if (nebula) {
+            use(nebula);
+            gl.uniform2f(nebula.u.u_size, canvas.width, canvas.height);
+            use(sky);
+        }
+        gl.uniform2f(sky.u.u_view, w, h);
+        gl.uniform1f(sky.u.u_dpr, canvas.width / w);
         draw(); // resizing clears the buffer, and the next frame's draw comes after it's painted
     }
     // Drift is in fields (wrapping every 100), so a resize keeps every star's place
     function draw() {
-        gl.uniform1f(at.u_time, time);
-        gl.uniform2f(at.u_shift, time * DRIFT[0] % 100 * (w + 2 * PAD) + eased.x * PARALLAX,
-            time * DRIFT[1] % 100 * (h + 2 * PAD) + eased.y * PARALLAX - scrolled * SCROLL);
         gl.clear(gl.COLOR_BUFFER_BIT);
+        if (nebula) {
+            use(nebula);
+            const turn = time / TURN;
+            const f = turn % 1 * moments.length, i = Math.floor(f), k = f - i;
+            const m = moments[i], n = moments[(i + 1) % moments.length];
+            const mix = (j) => m[j] + (n[j] - m[j]) * k;
+            const angle = (135 + 360 * turn) * Math.PI / 180;
+            gl.uniform2f(nebula.u.u_dir, Math.sin(angle), Math.cos(angle));
+            gl.uniform4f(nebula.u.u_c1, mix(0), mix(1), mix(2), mix(3));
+            gl.uniform4f(nebula.u.u_c2, mix(4), mix(5), mix(6), mix(7));
+            gl.uniform2f(nebula.u.u_at, mix(8), mix(9));
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            use(sky);
+        }
+        gl.uniform1f(sky.u.u_time, time);
+        gl.uniform2f(sky.u.u_shift, time * DRIFT[0] % 100 * (w + 2 * PAD) + eased.x * PARALLAX,
+            time * DRIFT[1] % 100 * (h + 2 * PAD) + eased.y * PARALLAX - scrolled * SCROLL);
         gl.drawArrays(gl.POINTS, 0, stars.length);
     }
     // A hidden tab or a long hitch resumes where it left off instead of jumping ahead
@@ -225,7 +311,11 @@ if (starsContainer) {
         starsContainer.append(canvas);
         new ResizeObserver(size).observe(starsContainer);
         // A GPU reset (driver update, sleep) drops the context: stop, then rebuild once it's back
-        canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); cancelAnimationFrame(frame); });
+        canvas.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            cancelAnimationFrame(frame);
+            if (backdrop) backdrop.hidden = false; // the still nebula stands in until the GPU is back
+        });
         canvas.addEventListener('webglcontextrestored', () => { if (compile() && !prefersReducedMotion) frame = requestAnimationFrame(tick); });
     }
     if (!prefersReducedMotion) {

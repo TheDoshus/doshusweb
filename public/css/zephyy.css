@@ -1699,6 +1699,8 @@ body.zephyy-page .cosmic-bg {
   background-color: oklch(2% 0.02 260);
   overflow: hidden;
 }
+/* The star canvas skips the site's drifting nebula here: it would cover these layers */
+body.zephyy-page #stars { --sky-nebula: none; }
 
 /* Atmospheric pressure systems — bright vivid gradients (Chapter 2) */
 body.zephyy-page .cosmic-bg::before {
