@@ -20,7 +20,7 @@
     letter-spacing: 0.05em;
     color: var(--text-main);
 }
-/* zephyy.js marks the reading: online green, stale or offline red */
+/* zephyy-pages.js marks the reading: online green, stale or offline red */
 .st-hero-badge.online { color: oklch(var(--brand-green)); }
 .st-hero-badge.off { color: oklch(65% 0.25 20); }
 .st-hero-mid {

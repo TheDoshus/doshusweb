@@ -2,7 +2,7 @@
 
 /* ── Atmospheric whorl glyph ── */
 .zephyy-glyph { position: relative; flex-shrink: 0; width: 20px; height: 20px; }
-.zephyy-glyph svg { display: block; width: 100%; height: 100%; } /* her whorl; it moves by zephyy-chat.css */
+.zephyy-glyph svg { display: block; width: 100%; height: 100%; } /* her whorl; it moves by zephyy-orb.css */
 
 /* ── Badge container ── */
 .zephyy-badge {

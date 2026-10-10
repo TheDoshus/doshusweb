@@ -182,7 +182,7 @@
 
 .zp-profile-v4[data-zp-mood="heartbeat"] { --zp-state: var(--brand-green); }
 
-/* Her glyph spins at the mood's pace (calm is the default, in zephyy-chat.css) */
+/* Her glyph spins at the mood's pace (calm is the default, in zephyy-orb.css) */
 
 [data-zp-mood="active"] #zephyy-glyph    { --whorl-1: 5s;   --whorl-2: 3.5s; --whorl-3: 2.2s; --whorl-4: 0.8s; }
 
@@ -1280,7 +1280,7 @@
 body.zp-motion-throttled .zp-glyph-ring,
 body.zp-motion-throttled .zp-hero-bg::before {
   animation-play-state: paused;
-} /* her orb (zephyy.css) and whorl (zephyy-chat.css) pause by their own rules */
+} /* her orb (zephyy.css) and whorl (zephyy-orb.css) pause by their own rules */
 
 /* ── Daily Zephyy ── */
 

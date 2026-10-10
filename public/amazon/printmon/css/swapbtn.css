@@ -99,7 +99,7 @@
 }
 
 /* ── Whorl avatar inside the dock orb (glyph injected by swap-img.js;
-   animation rules local since printmon doesn't load zephyy-chat.css) ── */
+   animation rules local since printmon doesn't load zephyy-orb.css) ── */
 .sitewide-orb-core .zp-orb-glyph {
     display: block;
     width: 82%;

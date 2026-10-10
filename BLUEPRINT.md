@@ -36,7 +36,7 @@ Update this file when structure, a page, or a cross-repo contract changes.
 | `/financehub` | `financehub.html` | Finance card slider: credit, crypto, investing, taxes, credit report |
 | `/thelounge` | `thelounge.html` | Games, curios, memes |
 | `/bot` | `bot.html` | For site admins who find our User-Agent in their logs: the UA forms, what carries it and what doesn't, how to block it or reach us. UA forms and operator crew stamped by `sync:zephyy` |
-| `/zephyy` | `zephyy.html` | Zephyy's profile: signal deck, story, systems, crew, code, contact. Styles: `zephyy.css` (the base all her pages share) + `zephyy-profile.css` (this page only); script: `zephyy.js` (also on the subpages) |
+| `/zephyy` | `zephyy.html` | Zephyy's profile: signal deck, story, systems, crew, code, contact. Styles: `zephyy.css` (the base all her pages share) + `zephyy-profile.css` (this page only); script: `zephyy-pages.js` (also on the subpages) |
 | `/zephyy/fragments/*` | `zephyy/fragments/*.html` | HTMX panels the profile's signal deck swaps in (`now`, `identity`, `receipts`, `latest`) |
 | `/zephyy/crew` · `/qa` · `/changelog` · `/status` | `zephyy/<id>/index.html` | Subpages. The nav bar is stamped from the page list in `scripts/sync-zephyy-nav.js` and the chat orb from `zephyy.html` by `sync:zephyy`; never hand-edit inside the `zp-nav` / `zp-chat` markers. The crew page's model chains, schedules and operator crew are stamped from `data/crew-facts.json` between `crew:` markers |
 | `/amazon/printmon/*` | `amazon/printmon/` | Printmon: handcrafted themed pages, the theme gallery (`gallery.html`) and themes generated from chat (`generated/`, `css/generated/`) |
@@ -45,7 +45,7 @@ Update this file when structure, a page, or a cross-repo contract changes.
 
 **Chat orb.** On every page, in two forms. The full chat panel lives in the profile
 (canonical markup inside the `zp-chat` markers) and is stamped into each Zephyy subpage;
-client `js/zephyy-realtime.js` + `js/zephyy-chat.js` + `css/zephyy-chat.css`. Everywhere
+client `js/zephyy-live.js` + `js/zephyy-orb.js` + `css/zephyy-orb.css`. Everywhere
 else (home, nexus, financehub, lounge, 404, Printmon gallery) it arrives through
 `js/zephyy-orb-embed.js`; on the Printmon pages it docks (over each theme page's Doshus.NET
 button, in the gallery's hero) through `css/zephyy-orb-dock.css`, linked after the embed sheet.

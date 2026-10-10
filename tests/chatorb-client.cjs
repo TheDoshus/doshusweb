@@ -55,7 +55,7 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
     fetch: async () => ({ok: true, json: async () => ({projectId: 'test'})}),
     setInterval: () => 0, console,
   };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-realtime.js'), 'utf8'), context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-live.js'), 'utf8'), context);
   const settle = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
   await settle();
   return {window, events, updates, listeners, records, scripts, streams, settle};

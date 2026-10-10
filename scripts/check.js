@@ -166,7 +166,7 @@ const CHECKS = {
     },
     'csp hashes current': () => runGenerator('update-csp-hashes.js'),
     'zephyy nav stamp': () => runGenerator('sync-zephyy-nav.js'),
-    'zephyy chat stamp': () => runGenerator('sync-zephyy-chat.js'),
+    'zephyy chat stamp': () => runGenerator('sync-zephyy-orb.js'),
     'crew facts stamp': () => runGenerator('sync-zephyy-crew.js'),
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {

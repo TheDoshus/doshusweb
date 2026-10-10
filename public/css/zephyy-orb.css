@@ -338,7 +338,7 @@
 }
 
 /* ── Quick-reply buttons ── */
-/* The name prompt's rows (zephyy-chat.js): quick replies, then the name field */
+/* The name prompt's rows (zephyy-orb.js): quick replies, then the name field */
 #zp-quick-reply-row, #zp-name-input-row { display: flex; gap: 6px; padding: 8px 10px; background: none; border: none; }
 #zp-quick-reply-row { flex-wrap: wrap; }
 #zp-name-input-row { padding: 6px 10px; align-items: center; }
@@ -575,7 +575,7 @@ body.zp-motion-throttled .zp-chat-panel::before {
 
 }
 
-/* ── Orb whorl glyph (injected by zephyy-chat.js into #zp-orb-demo on every
+/* ── Orb whorl glyph (injected by zephyy-orb.js into #zp-orb-demo on every
    chat page — moved here from zephyy.css so the sitewide embed gets it too) ── */
 .zp-orb-glyph {
   display: flex;
@@ -592,7 +592,7 @@ body.zp-motion-throttled .zp-chat-panel::before {
   height: 100%;
 }
 
-/* Her whorl (zephyy-chat.js draws every copy): the brand gradient, its ring and center in
+/* Her whorl (zephyy-orb.js draws every copy): the brand gradient, its ring and center in
    --whorl-tint (teal; her profile sets her state color); the orb's bold copy is white (the
    fallback is for the Printmon gallery, which has no shared.css) */
 .whorl stop:nth-child(1) { stop-color: oklch(var(--brand-teal)); }

@@ -187,7 +187,7 @@
     }, HEARTBEAT_MS / 4);
     // The daily thought changes once a day: one read is enough
     if (document.getElementById('zephyy-daily')) read('daily').then(renderDaily).catch(function () { renderDaily(null); });
-    // A conversation going (zephyy-chat.js keeps it): connect now, so her replies light the orb
+    // A conversation going (zephyy-orb.js keeps it): connect now, so her replies light the orb
     if (window.zephyyHasConvo?.()) window.__zpConnect().catch(function () {});
   }
 

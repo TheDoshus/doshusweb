@@ -1,9 +1,9 @@
 /**
  * ZEPHYY CHAT ORB
- * Split from zephyy.js 2026-07-12 — everything chat: panel UI, message
+ * Split from zephyy-pages.js 2026-07-12 — everything chat: panel UI, message
  * rendering (escapeHtml/renderContent), send flow, session lifecycle UX.
  *
- * Depends on zephyy-realtime.js, loaded before this file: its 'zephyy-status' events, and
+ * Depends on zephyy-live.js, loaded before this file: its 'zephyy-status' events, and
  * window.__zpConnect(), which connects on first use and resolves with the session API
  * (loadHistory, sendMessage, resetSession, controlRef, sessionEnded).
  * DOM lives in zephyy.html only; all lookups guard for missing elements.
@@ -28,8 +28,8 @@
     if (!orb || !panel) return;
 
     /* Her whorl, the one copy every surface draws: the orb (bold), the chat header, the status
-       badge (zephyy-widget.js) and her profile (zephyy.js). Three rings spin at their own speeds
-       around a pulsing center; zephyy-chat.css colors and moves them. Each copy gets its own
+       badge (zephyy-widget.js) and her profile (zephyy-pages.js). Three rings spin at their own speeds
+       around a pulsing center; zephyy-orb.css colors and moves them. Each copy gets its own
        gradient id: a page draws several, and a url(#id) into a hidden copy paints nothing */
     const WHORL = { // per ring (outer, mid, inner): stroke width, opacity, dot radius; then the center's radius
         fine: { w: [1, 1.2, 1.35], o: [0.55, 0.78, 0.95], dot: [1, 0.85, 0.75], center: 2, ring: 0.45 },
@@ -97,7 +97,7 @@
     let quickReplied = false;
     let sessionEnded = false;
 
-    /* ── Her online/offline status, from zephyy-realtime.js's status events.
+    /* ── Her online/offline status, from zephyy-live.js's status events.
        Offline does NOT disable input — RTDB is always up, so messages queue
        and the orb answers them when Zephyy wakes. Just set expectations. ── */
     var zephyyOnline = true;
@@ -221,7 +221,7 @@
     }
 
     function addMessage(role, content, timestamp) {
-        if (role === 'assistant') role = 'bot'; // her replies arrive as 'assistant' (zephyy-realtime.js)
+        if (role === 'assistant') role = 'bot'; // her replies arrive as 'assistant' (zephyy-live.js)
         // Dedup Zephyy's side only (a reply can arrive twice); a visitor's repeat is a real message
         var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-of-type[data-content]');
         if (role !== 'user' && prev && prev.dataset.content === content) return prev;
@@ -377,7 +377,7 @@
     function readMsgCache() {
         try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || []; } catch (e) { return []; }
     }
-    /* zephyy-realtime.js and -orb-embed.js ask this: a conversation going? */
+    /* zephyy-live.js and -orb-embed.js ask this: a conversation going? */
     window.zephyyHasConvo = function() { return readMsgCache().length > 0; };
     function saveMsgCache(list) {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(list.slice(-30))); } catch (e) { /* quota — skip */ }
@@ -547,7 +547,7 @@
      * 4. FIREBASE OPERATIONS
      * ================================================ */
 
-    /* The chat's Firebase connection (zephyy-realtime.js): the first ask loads the SDK and
+    /* The chat's Firebase connection (zephyy-live.js): the first ask loads the SDK and
        signs in, so opening the panel starts it and every send waits for it */
     function connect() {
         return window.__zpConnect ? window.__zpConnect() : Promise.reject(new Error('No chat connection'));
@@ -732,7 +732,7 @@
         startFreshSession();
     });
 
-    /* ── Message detection: handled exclusively by zephyy-realtime.js onValue listener.
+    /* ── Message detection: handled exclusively by zephyy-live.js onValue listener.
        No polling fallback — that duplicated every message fetch. ── */
 
     /* ================================================

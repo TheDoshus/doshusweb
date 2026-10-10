@@ -2,7 +2,7 @@
  * Zephyy's pages: the profile glyph and mood dial, the HTMX signal deck, section nav, chat
  * CTAs, title word reveals and nav haptics. Every part checks for its markup, so the profile
  * and the subpages share this one file. Loads after main.js (haptic, prefersReducedMotion);
- * realtime data comes from zephyy-realtime.js.
+ * realtime data comes from zephyy-live.js.
  */
 
 (function () {
@@ -79,7 +79,7 @@
     function setupGlyph() {
         const wrap = document.getElementById('zephyy-glyph');
         if (!wrap) return;
-        wrap.innerHTML = window.zephyyWhorl?.() || ''; // zephyy-chat.js (guarded: a week-old cached copy predates it)
+        wrap.innerHTML = window.zephyyWhorl?.() || ''; // zephyy-orb.js (guarded: a week-old cached copy predates it)
         wrap.setAttribute('role', 'button');
         wrap.setAttribute('tabindex', '0');
         wrap.setAttribute('aria-label', 'Cycle profile signal state');
@@ -199,7 +199,7 @@
     }
 
     // The status page (/zephyy/status): the hero badge, service cards and live heartbeat row,
-    // from zephyy-realtime.js's events (one Firebase connection, one heartbeat threshold);
+    // from zephyy-live.js's events (one Firebase connection, one heartbeat threshold);
     // the ages re-render every minute between beats
     function setupStatusPage() {
         const badge = document.getElementById('st-online-text');

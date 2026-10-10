@@ -1,6 +1,6 @@
 /* ─── ZEPHYY ONLINE STATUS WIDGET ───
  * Vanilla JS — renders her whorl glyph + status badge from the 'zephyy-status' event
- * zephyy-realtime.js sends, so the page must load it too, and zephyy-chat.js (the whorl).
+ * zephyy-live.js sends, so the page must load it too, and zephyy-orb.js (the whorl).
  *
  * Usage:
  *   <div class="zephyy-badge-embed"></div>   (add inline-hero for the home hero's variant)
@@ -44,7 +44,7 @@
 
     const glyphWrap = document.createElement('span');
     glyphWrap.className = 'zephyy-glyph';
-    glyphWrap.innerHTML = window.zephyyWhorl?.() || ''; // her whorl, from zephyy-chat.js (a stale cached copy lacks it)
+    glyphWrap.innerHTML = window.zephyyWhorl?.() || ''; // her whorl, from zephyy-orb.js (a stale cached copy lacks it)
 
     const dot = document.createElement('span');
     dot.className = `zephyy-dot ${isOnline ? 'online' : 'offline'}`;

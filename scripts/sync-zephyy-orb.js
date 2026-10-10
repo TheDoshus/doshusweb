@@ -5,15 +5,15 @@ const writeIfChanged = require('./lib/write-if-changed');
 const ROOT = path.join(__dirname, '..');
 const PROFILE_PATH = path.join(ROOT, 'public', 'zephyy.html');
 const STAMP_PATTERN = /^[ \t]*<!-- zp-chat:start -->[\s\S]*?^[ \t]*<!-- zp-chat:end -->/m;
-// The Firebase SDK is not among them: zephyy-realtime.js loads it when the chat needs it
+// The Firebase SDK is not among them: zephyy-live.js loads it when the chat needs it
 const SCRIPT_KEYS = [
-    'js/zephyy-realtime.js',
-    'js/zephyy-chat.js'
+    'js/zephyy-live.js',
+    'js/zephyy-orb.js'
 ];
 const SUBPAGES = ['crew', 'qa', 'changelog', 'status'];
 // Keys the stamp OWNS on subpages (always re-stamped at the profile's current
 // version); any other required key would be insert-if-missing only.
-const OWNED_KEYS = ['js/zephyy-realtime.js', 'js/zephyy-chat.js'];
+const OWNED_KEYS = ['js/zephyy-live.js', 'js/zephyy-orb.js'];
 
 function scriptKey(src) {
     return src.replace(/^\//, '').split('?')[0];

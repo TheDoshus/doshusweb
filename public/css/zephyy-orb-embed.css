@@ -66,7 +66,7 @@
     justify-content: center;
 }
 
-/* Whorl glyph (zephyy-chat.js injects it; embed JS adopts it into the core) */
+/* Whorl glyph (zephyy-orb.js injects it; embed JS adopts it into the core) */
 .sitewide-orb-core .zp-orb-glyph {
     width: 82%;
     height: 82%;
