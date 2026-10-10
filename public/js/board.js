@@ -219,7 +219,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         add.hidden = !panels.some((p) => layout.get(p).hidden);
         reset.hidden = !undo && same(layout, base);
         reset.textContent = undo ? 'Undo reset' : 'Reset layout';
-        if (stale && reset.hidden) remeasure();
+        if (stale && same(layout, base)) remeasure();
     }
     // A visitor's change: settle it and save it (a board back at its default saves nothing).
     // `back` is what a reset replaced; any other change drops it
@@ -623,8 +623,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         // Arranged or mid-gesture, it waits: settle() asks again once the layout is back at its default
         again = setTimeout(() => {
             if (board.querySelector('.is-holding')) return remeasure(); // a finger resting on a panel (it swells): once it lifts or lets go
-            stale = !(reset.hidden && !active);
-            if (!stale) load();
+            stale = !!active || !same(layout, base);
+            if (stale) return;
+            const back = undo; // just reset: Undo stays on offer
+            load();
+            if (back) { undo = back; settle(layout); }
         }, 150);
     };
     load();

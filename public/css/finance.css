@@ -389,11 +389,13 @@
 /* The wrap holds only the nav, so the wrap is what sticks (the page is its room); the slides
    scroll under it. Clicks pass through the wrap's empty sides to the slide below. The page tells
    focus and the board's drag autoscroll where the stuck nav ends (scroll-padding-top) */
-.sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: sticky; top: 2rem; z-index: 50; overflow-x: clip; overflow-y: visible; pointer-events: none;
-    scroll-margin-top: calc(2rem - var(--nav-room)); /* the CTA lands it where it sticks */
+.sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: sticky; top: var(--nav-top); z-index: 50; overflow-x: clip; overflow-y: visible; pointer-events: none;
+    scroll-margin-top: calc(var(--nav-top) - var(--nav-room)); /* the CTA lands it where it sticks */
 }
 .slideNav { pointer-events: auto; }
-html { --nav-room: 7.5rem; scroll-padding-top: var(--nav-room); } /* the stuck nav's top and height */
+html { --nav-top: 2rem; --nav-room: 7.5rem; scroll-padding-top: var(--nav-room); } /* where the nav sticks; that and its height */
+/* Keyboard focus on the nav itself, which sits in that room, scrolls nothing */
+html:has(.slideNav:focus-within) { scroll-padding-top: 0; }
 
 /* The Window */
 .sliderView { width: 100%; overflow: hidden; transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -497,4 +499,4 @@ html { --nav-room: 7.5rem; scroll-padding-top: var(--nav-room); } /* the stuck n
     }
 }
 /* A phone on its side has no height to spare for a stuck nav (after the width rules, so it wins there too) */
-@media (max-height: 500px) { .sliderWrap { position: relative; } html { --nav-room: 0px; } }
+@media (max-height: 500px) { .sliderWrap { position: relative; } html { --nav-top: 0px; --nav-room: 0px; } }

@@ -153,16 +153,18 @@ if (viewport && slides && totalSlides > 0) {
 }
 
 // ─── CARD TOOLTIPS: kept inside the box that would cut them off ───
-// The nearest box that clips (a panel body scrolls, an open fold clips to its content), or the screen
+// The nearest box that clips (a panel body scrolls, an open fold clips to its content), or the
+// screen; `end` is where the box's content ends (a tooltip past it would stretch its scroll)
 function clipBox(el) {
     for (let n = el.parentElement; n; n = n.parentElement) {
         const fold = n.matches('details[open]') && getComputedStyle(n, '::details-content').overflow !== 'visible';
         if (fold || getComputedStyle(n).overflow !== 'visible') {
             const r = n.getBoundingClientRect();
-            return { top: fold ? n.querySelector('summary').getBoundingClientRect().bottom : r.top, bottom: r.bottom, left: r.left, right: r.right };
+            return { top: fold ? n.querySelector('summary').getBoundingClientRect().bottom : r.top, bottom: r.bottom, left: r.left, right: r.right,
+                end: fold ? r.bottom : r.top - n.scrollTop + n.scrollHeight };
         }
     }
-    return { top: 0, bottom: innerHeight, left: 0, right: innerWidth };
+    return { top: 0, bottom: innerHeight, left: 0, right: innerWidth, end: Infinity };
 }
 document.querySelectorAll('.ccCard').forEach((card) => {
     const tip = card.querySelector('.card-tooltip');
@@ -171,17 +173,18 @@ document.querySelectorAll('.ccCard').forEach((card) => {
         // running from the last hover would skew a measured box
         const c = card.getBoundingClientRect(), box = clipBox(card), w = tip.offsetWidth;
         const left = c.left + c.width / 2 - w / 2;
-        // Under the card when it doesn't fit above (below the box's top and the slide nav) but does fit
-        // under it; fitting neither, it stays above (13px for the lifts hover gives the card and the tooltip)
+        // Above the card where it fits (below the box's top and the slide nav), else under it where it
+        // fits there; fitting neither, on the roomier side, but never past the end of the box's
+        // content, where it would stretch the scroll (13px for the lifts hover gives the card and the tooltip)
         const nav = document.querySelector('.slideNav')?.getBoundingClientRect().bottom ?? 0;
-        const above = c.top - 13 - Math.max(0, box.top, nav), below = Math.min(innerHeight, box.bottom) - c.bottom - 13;
-        card.classList.toggle('tip-below', tip.offsetHeight > above && tip.offsetHeight <= below);
+        const h = tip.offsetHeight, above = c.top - 13 - Math.max(0, box.top, nav), below = Math.min(innerHeight, box.bottom) - c.bottom - 13;
+        card.classList.toggle('tip-below', h > above && (h <= below || (below > above && c.bottom + 13 + h <= box.end)));
         // Along the card, never past the box's sides (8px in from them)
         const shift = Math.max(0, Math.max(box.left, 0) + 8 - left) - Math.max(0, left + w - Math.min(box.right, innerWidth) + 8);
         if (shift) tip.style.setProperty('--tip-shift', `${shift}px`);
         else tip.style.removeProperty('--tip-shift');
     });
-    // Once it has slid away, back above: a hidden tooltip hanging under the last row would still
-    // stretch its panel's scroll
-    tip.addEventListener('transitionend', () => { if (!card.matches(':hover')) card.classList.remove('tip-below'); });
+    // Once it has slid away (hidden: its move ends before its fade), back above: a hidden tooltip
+    // hanging under the last row would still stretch its panel's scroll
+    tip.addEventListener('transitionend', () => { if (!card.matches(':hover') && getComputedStyle(tip).visibility === 'hidden') card.classList.remove('tip-below'); });
 });

@@ -477,6 +477,12 @@ const TESTS = {
         await sleep(300);
         const at = await page.evaluate(() => document.querySelector('.slideNav').getBoundingClientRect().top);
         assert.ok(Math.abs(at - 32) < 3, `the CTA lands the nav at ${Math.round(at)}px`);
+        // Tabbing on into the nav (it sits in the room the page keeps for it) scrolls nothing
+        const y = await page.evaluate(() => scrollY);
+        for (let i = 0; i < 6 && !(await page.evaluate(() => !!document.activeElement?.closest('.slideNav'))); i++) await page.keyboard.press('Tab');
+        assert.ok(await page.evaluate(() => !!document.activeElement?.closest('.slideNav')), 'Tab never reached the nav');
+        await sleep(300);
+        assert.equal(await page.evaluate(() => scrollY), y, 'focusing the nav scrolled the page');
         const card = page.locator('#cc-cards .ccCard').last();
         // 20px under the stuck nav (it sticks 2rem from the top)
         await card.evaluate((c) => { document.documentElement.style.scrollBehavior = 'auto';
@@ -502,9 +508,42 @@ const TESTS = {
         assert.equal(await first.evaluate((c) => c.classList.contains('tip-below')), false, 'still flipped after it went');
         return errors;
     },
+    async "Finance Hub: a flipped tooltip hops back above only once hidden; in a squeezed panel it shows on the roomier side"(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/financehub.html', motion: 'no-preference' });
+        await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('cc-cards').scrollIntoView({ block: 'center' }); }); // no glide to race
+        await sleep(150);
+        const first = page.locator('#cc-cards .ccCard').first();
+        // A short hover, left mid-slide: its move ends before its fade, and it must not hop above the card while it still shows
+        let hops = 0;
+        for (const ms of [240, 270, 300, 330]) {
+            await first.hover();
+            await sleep(ms);
+            assert.equal(await first.evaluate((c) => c.classList.contains('tip-below')), true, "the first row's tooltip didn't flip, so this tests nothing");
+            await page.mouse.move(5, 500);
+            hops += await first.evaluate((c) => new Promise((done) => {
+                const tip = c.querySelector('.card-tooltip'), t0 = performance.now(); let n = 0;
+                const look = () => { if (getComputedStyle(tip).visibility === 'visible' && !c.classList.contains('tip-below')) n++; if (performance.now() - t0 < 500) requestAnimationFrame(look); else done(n); };
+                requestAnimationFrame(look);
+            }));
+        }
+        assert.equal(hops, 0, 'frames with the tooltip above the card while it still showed');
+        await page.focus('#cc-cards .panel-edge[data-dir="se"]');
+        while (await page.evaluate(() => +document.getElementById('cc-cards').style.getPropertyValue('--h')) > 9) await page.keyboard.press('ArrowUp');
+        await sleep(800);
+        await first.hover();
+        await settled(first);
+        const shown = await first.evaluate((c) => { const t = c.querySelector('.card-tooltip').getBoundingClientRect(), b = c.closest('.panel-body').getBoundingClientRect();
+            return Math.max(0, Math.min(t.bottom, b.bottom) - Math.max(t.top, b.top)); });
+        assert.ok(shown > 20, `only ${Math.round(shown)}px of the tooltip shows`);
+        return errors;
+    },
     async 'Finance Hub: a phone on its side keeps the nav in the page, and nothing makes room for it'(browser) {
         const { page, errors } = await open(browser, { viewport: { width: 667, height: 375 }, isMobile: true, hasTouch: true }, { path: '/financehub.html' });
-        assert.deepEqual(await page.evaluate(() => [getComputedStyle(document.querySelector('.sliderWrap')).position, getComputedStyle(document.documentElement).scrollPaddingTop]), ['relative', '0px']);
+        assert.deepEqual(await page.evaluate(() => { const w = getComputedStyle(document.querySelector('.sliderWrap')); return [w.position, w.top, getComputedStyle(document.documentElement).scrollPaddingTop]; }), ['relative', '0px', '0px']);
+        await page.evaluate(() => document.querySelector('.hero .cta-button').click());
+        await sleep(300);
+        const at = await page.evaluate(() => document.querySelector('.slideNav').getBoundingClientRect().top);
+        assert.ok(Math.abs(at) < 3, `the CTA lands the nav at ${Math.round(at)}px`);
         return errors;
     },
     async 'Finance Hub: a drag scrolls the page up from just under the stuck nav'(browser) {
@@ -635,6 +674,27 @@ const TESTS = {
         await sleep(400);
         const over = await page.evaluate(() => { const b = document.querySelector('#cc-cards .panel-body'); return b.scrollHeight - b.clientHeight; });
         assert.ok(over <= 0, `after Reset the card panel is ${over}px short of its pictures`);
+        return errors;
+    },
+    async 'pictures arriving right after a Reset are measured, and Undo stays on offer'(browser) {
+        const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, reducedMotion: 'reduce' });
+        await ctx.route((url) => !url.href.startsWith(base), (r) => r.abort());
+        await ctx.route('**/assets/images/**', async (r) => { await sleep(1500); r.continue(); });
+        const page = await ctx.newPage();
+        const errors = [];
+        page.on('pageerror', (e) => errors.push(e.message));
+        await page.goto(base + '/financehub.html', { waitUntil: 'domcontentloaded' });
+        await page.waitForSelector('#cc-tools .panel-grip');
+        await page.focus('#cc-tools .panel-grip');
+        await page.keyboard.press('ArrowDown');
+        const reset = () => page.evaluate(() => [...document.querySelectorAll('[data-board-bar="finance-credit"] button')].find((b) => /Reset|Undo/.test(b.textContent)));
+        await page.evaluate(() => [...document.querySelectorAll('[data-board-bar="finance-credit"] button')].find((b) => b.textContent === 'Reset layout').click());
+        await page.waitForLoadState('load');
+        await sleep(400);
+        const [over, offer] = await page.evaluate(() => { const b = document.querySelector('#cc-cards .panel-body'), r = [...document.querySelectorAll('[data-board-bar="finance-credit"] button')].find((x) => /Undo/.test(x.textContent));
+            return [b.scrollHeight - b.clientHeight, !!r && !r.hidden]; });
+        assert.ok(over <= 0, `the card panel is ${over}px short of its pictures`);
+        assert.equal(offer, true, 'Undo reset went away');
         return errors;
     },
     async "a finger resting on a panel (it swells) doesn't measure it bigger"(browser) {
