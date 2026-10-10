@@ -191,6 +191,8 @@
 }
 .panel-tools button:hover { border-color: oklch(var(--accent)); }
 .panel-grip { position: absolute; top: 0; right: calc(100% + var(--sp-2xs)); }
+/* A headless panel's strip can be narrow: there the grip sits under ✕, inside the panel */
+.panel-grab .panel-grip { top: calc(100% + var(--sp-2xs)); right: 0; }
 .panel-grip:not(:focus-visible) { width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .panel:not(.panel-media):is(:hover, :focus-within) .panel-tag { visibility: hidden; }
 .panel.is-dragging :is(.panel-head, .panel-grab, .panel-dots) { cursor: grabbing; }

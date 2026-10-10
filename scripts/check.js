@@ -189,7 +189,7 @@ const CHECKS = {
                 const [, close, tag, rest] = m;
                 const line = `${rel(f)}:${lineOf(html, m.index)}`;
                 if (close) { if (board && --board.depth === 0) board = null; continue; }
-                if (VOID.test(tag)) continue;
+                if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
                 const a = attrs(rest);
                 if (!board) {
                     if (!('data-board' in a)) continue;
