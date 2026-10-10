@@ -120,10 +120,11 @@ before you stop, ask what you left behind.
 
 ```bash
 bun run check                                  # read-only; exits 1 on any failure
+bun run test                                   # chat client + board engine in Chromium (Playwright)
 python3 -m http.server 8080 -d public          # eyeball locally
 ```
 
-`bun run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result.
+`bun run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result. It also checks every board's markup (board names unique across the site, panel ids unique, cells inside the grid, no overlapping defaults) and that a page with a Printmon orb dock links its sheet. `bun run test` drives the board in Chromium: every bug a review found there and every promise `UI-SPEC.md` makes; a board change lands with its case.
 
 Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
 

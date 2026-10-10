@@ -168,6 +168,50 @@ const CHECKS = {
     'zephyy nav stamp': () => runGenerator('sync-zephyy-nav.js'),
     'zephyy chat stamp': () => runGenerator('sync-zephyy-orb.js'),
     'crew facts stamp': () => runGenerator('sync-zephyy-crew.js'),
+    // A board's name and its panels' ids key every visitor's saved layout (UI-SPEC.md), so a
+    // reused name or id mixes two saves; cells sit inside the wide grid board.css sets, at least
+    // its narrowest panel wide, and the default panels don't overlap.
+    'boards are well-formed': () => {
+        const css = fs.readFileSync(path.join(ROOT, 'public/css/board.css'), 'utf8');
+        const [, cols, minCols] = css.match(/\.board \{[^}]*--cols:\s*(\d+)[^}]*--min-cols:\s*(\d+)/).map(Number);
+        const names = new Map();
+        const problems = [];
+        for (const f of byExt('.html').filter((f) => rel(f).startsWith('public/'))) {
+            const html = fs.readFileSync(f, 'utf8');
+            const boards = [...html.matchAll(/<div\b[^>]*\bdata-board="([^"]+)"/g)];
+            const ids = new Set();
+            boards.forEach((b, i) => {
+                const where = `${rel(f)}:${lineOf(html, b.index)}`;
+                if (names.has(b[1])) problems.push(`${where}: board "${b[1]}" also in ${names.get(b[1])}`);
+                names.set(b[1], rel(f));
+                const cells = [];
+                for (const m of html.slice(b.index, boards[i + 1]?.index).matchAll(/<\w+\b[^>]*\bclass="([^"]*)"[^>]*>/g)) {
+                    if (!m[1].split(/\s+/).includes('panel')) continue;
+                    const at = (a) => m[0].match(new RegExp(`\\b${a}="([^"]*)"`))?.[1];
+                    const line = `${rel(f)}:${lineOf(html, b.index + m.index)}`;
+                    const id = at('id');
+                    if (!id || ids.has(id)) problems.push(`${line}: panel id ${id ? `"${id}" repeats` : 'missing'}`);
+                    ids.add(id);
+                    const [x, y, w, h] = ['data-x', 'data-y', 'data-w', 'data-h'].map((a) => Number(at(a)));
+                    if (![x, y, w, h].every((n) => Number.isInteger(n) && n > 0) || w < minCols || x + w - 1 > cols) {
+                        problems.push(`${line}: ${id} cells ${x},${y},${w},${h} outside a ${cols}-column grid (≥ ${minCols} wide)`);
+                        continue;
+                    }
+                    for (const o of cells) {
+                        if (x < o.x + o.w && o.x < x + w && y < o.y + o.h && o.y < y + h) problems.push(`${line}: ${id} overlaps ${o.id}`);
+                    }
+                    cells.push({ id, x, y, w, h });
+                }
+            });
+        }
+        return problems;
+    },
+    // The Printmon orb docks are styled by their own sheet; a page with a dock and without it
+    // shows the floating site-wide orb instead (the theme pages run under a <base> to doshus.net)
+    'orb docks link their sheet': () => byExt('.html').filter((f) => {
+        const html = fs.readFileSync(f, 'utf8');
+        return /\b(?:printmon|gallery)-dock\b/.test(html) && !html.includes('zephyy-orb-dock.css');
+    }).map((f) => `${rel(f)}: has a Printmon orb dock but no css/zephyy-orb-dock.css`),
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {
         const listed = new Set([...fs.readFileSync(path.join(ROOT, 'public/sitemap.xml'), 'utf8')
