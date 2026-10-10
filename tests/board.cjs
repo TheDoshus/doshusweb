@@ -471,6 +471,42 @@ const TESTS = {
         assert.ok(Math.abs(nav - view) < 2, `the new slide starts ${Math.round(view - nav)}px from the nav`);
         return errors;
     },
+    async "Finance Hub: the CTA lands the nav where it sticks; a last-row card's tooltip doesn't flip into no room"(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/financehub.html' });
+        await page.click('.hero .cta-button');
+        await sleep(300);
+        const at = await page.evaluate(() => document.querySelector('.slideNav').getBoundingClientRect().top);
+        assert.ok(Math.abs(at - 32) < 3, `the CTA lands the nav at ${Math.round(at)}px`);
+        const card = page.locator('#cc-cards .ccCard').last();
+        // 20px under the stuck nav (it sticks 2rem from the top)
+        await card.evaluate((c) => { document.documentElement.style.scrollBehavior = 'auto';
+            scrollTo(0, c.getBoundingClientRect().top + scrollY - (32 + document.querySelector('.slideNav').offsetHeight + 20)); });
+        await frames(page);
+        const b = await card.boundingBox();
+        assert.ok(Math.abs(b.y - (await page.evaluate(() => document.querySelector('.slideNav').getBoundingClientRect().bottom)) - 20) < 3, 'the card is not where the case needs it');
+        await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); // a hover() would scroll it into view first
+        await settled(card);
+        assert.equal(await card.evaluate((c) => c.classList.contains('tip-below')), false, 'flipped under the last row');
+        await page.mouse.move(5, 500);
+        await settled(card);
+        const over = await page.evaluate(() => { const b = document.querySelector('#cc-cards .panel-body'); return b.scrollHeight - b.clientHeight; });
+        assert.ok(over <= 0, `the card panel scrolls ${over}px after the tooltip went`);
+        // A tooltip that flipped under its card goes back above once it has slid away
+        const first = page.locator('#cc-cards .ccCard').first();
+        await first.hover();
+        await settled(first);
+        assert.equal(await first.evaluate((c) => c.classList.contains('tip-below')), true, "the first row's tooltip didn't flip, so this part tests nothing");
+        await page.mouse.move(5, 500);
+        await settled(first);
+        await frames(page); // the transitionend that moves it back comes with the animation's end
+        assert.equal(await first.evaluate((c) => c.classList.contains('tip-below')), false, 'still flipped after it went');
+        return errors;
+    },
+    async 'Finance Hub: a phone on its side keeps the nav in the page, and nothing makes room for it'(browser) {
+        const { page, errors } = await open(browser, { viewport: { width: 667, height: 375 }, isMobile: true, hasTouch: true }, { path: '/financehub.html' });
+        assert.deepEqual(await page.evaluate(() => [getComputedStyle(document.querySelector('.sliderWrap')).position, getComputedStyle(document.documentElement).scrollPaddingTop]), ['relative', '0px']);
+        return errors;
+    },
     async 'Finance Hub: a drag scrolls the page up from just under the stuck nav'(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/financehub.html' });
         await center(page, 'cc-tools');
@@ -580,6 +616,72 @@ const TESTS = {
         const short = await page.evaluate(() => { const b = document.querySelector('#cc-cards .panel-body'); return b.scrollHeight - b.clientHeight; });
         assert.ok(short <= 0, `the card panel is ${short}px short of its pictures`);
         return errors;
+    },
+    async "Reset lands on today's default, even after a measure skipped while arranged"(browser) {
+        const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, reducedMotion: 'reduce' });
+        await ctx.route((url) => !url.href.startsWith(base), (r) => r.abort());
+        await ctx.route('**/assets/images/**', async (r) => { await sleep(1500); r.continue(); });
+        const page = await ctx.newPage();
+        const errors = [];
+        page.on('pageerror', (e) => errors.push(e.message));
+        await page.goto(base + '/financehub.html', { waitUntil: 'domcontentloaded' });
+        await page.waitForSelector('#cc-tools .panel-grip');
+        await page.focus('#cc-tools .panel-grip');
+        await page.keyboard.press('ArrowDown'); // arranged (and saved) while the pictures load
+        assert.ok(await page.evaluate(() => !!localStorage.getItem('board:finance-credit')), 'the move saved nothing, so this case tests nothing');
+        await page.waitForLoadState('load');
+        await sleep(400);
+        await page.evaluate(() => [...document.querySelectorAll('[data-board-bar="finance-credit"] button')].find((b) => b.textContent === 'Reset layout').click());
+        await sleep(400);
+        const over = await page.evaluate(() => { const b = document.querySelector('#cc-cards .panel-body'); return b.scrollHeight - b.clientHeight; });
+        assert.ok(over <= 0, `after Reset the card panel is ${over}px short of its pictures`);
+        return errors;
+    },
+    async "a finger resting on a panel (it swells) doesn't measure it bigger"(browser) {
+        const { ctx, page, errors } = await open(browser, PHONE);
+        const all = () => page.evaluate(() => [...document.querySelectorAll('.board > .panel')].map((p) => `${p.id} ${p.style.getPropertyValue('--h')}`));
+        const before = await all();
+        await center(page, 'signals');
+        const h = await page.locator('#signals .panel-head').boundingBox();
+        const cdp = await ctx.newCDPSession(page);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: h.x + 60, y: h.y + 20 }] });
+        await sleep(100);
+        assert.ok(await page.evaluate(() => !!document.querySelector('.is-holding')), 'the press never started a hold');
+        await page.evaluate(() => document.querySelector('.board').dispatchEvent(new Event('load'))); // a picture arriving mid-hold
+        await sleep(250);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); // let go before it lifts
+        await sleep(500);
+        assert.deepEqual(await all(), before);
+        return errors;
+    },
+    async 'with scrollbars that take room (Windows), Fit gives a squeezed panel its content, no more and no less'(browser) {
+        const classic = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--disable-3d-apis'], ignoreDefaultArgs: ['--hide-scrollbars'] });
+        try {
+            const { page, errors } = await open(classic, WIDE, { path: '/financehub.html' });
+            const bad = [];
+            for (const id of ['cc-myths', 'cc-freeze', 'cc-building', 'cc-rewards', 'cc-tools']) {
+                await center(page, id);
+                await page.focus(`#${id} .panel-edge[data-dir="se"]`);
+                for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowUp'); // squeezed: its body scrolls, with a scrollbar
+                const bar = await page.evaluate((id) => { const b = document.querySelector(`#${id} .panel-body`); return b.offsetWidth > b.clientWidth; }, id);
+                if (!bar) { bad.push(`${id}: no scrollbar taking room, so it tests nothing`); continue; }
+                await page.keyboard.press('Enter');
+                await sleep(300);
+                bad.push(...await page.evaluate((id) => {
+                    const p = document.getElementById(id), b = p.querySelector('.panel-body'), row = parseFloat(getComputedStyle(p.parentElement).gridAutoRows);
+                    const capped = +p.style.getPropertyValue('--h') >= Math.floor(innerHeight / row);
+                    const kids = [...b.children].filter((n) => getComputedStyle(n).display !== 'none' && !/absolute|fixed/.test(getComputedStyle(n).position));
+                    const css = getComputedStyle(b), [a, z] = [kids[0], kids.at(-1)];
+                    const content = parseFloat(css.paddingTop) + parseFloat(css.paddingBottom) + z.getBoundingClientRect().bottom + parseFloat(getComputedStyle(z).marginBottom) - a.getBoundingClientRect().top + parseFloat(getComputedStyle(a).marginTop);
+                    if (b.offsetWidth > b.clientWidth) return [`${id}: a scrollbar stayed`];
+                    if (!capped && b.scrollHeight > b.clientHeight) return [`${id}: ${b.scrollHeight - b.clientHeight}px short`];
+                    if (b.clientHeight - content >= row) return [`${id}: ${Math.floor((b.clientHeight - content) / row)} spare row(s)`];
+                    return [];
+                }, id));
+            }
+            assert.deepEqual(bad, []);
+            return errors;
+        } finally { await classic.close(); }
     },
     async 'measuring again leaves a panel scrolled inside where it was'(browser) {
         const { page, errors } = await open(browser);
@@ -895,9 +997,10 @@ const TESTS = {
     const server = await serve();
     base = `http://127.0.0.1:${server.address().port}`;
     const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--disable-3d-apis'] });
-    let failed = 0;
+    let failed = 0, ran = 0;
     for (const [name, test] of Object.entries(TESTS)) {
         if (process.env.ONLY && !name.includes(process.env.ONLY)) continue; // ONLY=<part of a name> runs just those
+        ran++;
         try {
             const errors = await test(browser);
             assert.deepEqual(errors, [], 'page errors');
@@ -910,6 +1013,7 @@ const TESTS = {
     }
     await browser.close();
     server.close();
+    if (!ran) failed = 1, console.log(`ONLY=${process.env.ONLY} matches no case`);
     console.log(failed ? `\n${failed} failed` : '\nall board tests passed');
     process.exitCode = failed ? 1 : 0;
 })();

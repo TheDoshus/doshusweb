@@ -134,14 +134,22 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     }
     // A body's content end to end, whatever height the body has now: its padding and the extent of
     // its in-flow children, margins in. Read off the layout as it stands, so nothing moves and a
-    // body scrolled (or being swiped) keeps its place. Its children don't stretch (flex: none)
+    // body scrolled (or being swiped) keeps its place. Its children sit in elements stacked in flow
+    // and don't stretch (UI-SPEC.md § Markup). A classic scrollbar (Windows) narrows the body and
+    // makes its content taller than it will be once the panel fits it, so it goes for the reading
+    // (overlay scrollbars, the touch screens that swipe, take no room and are left alone)
     function bodyH(body) {
+        const bar = body.offsetWidth > body.clientWidth;
+        if (bar) body.style.setProperty('overflow', 'hidden');
         const css = getComputedStyle(body);
         const kids = [...body.children].filter((n) => { const k = getComputedStyle(n); return k.display !== 'none' && k.position !== 'absolute' && k.position !== 'fixed'; });
-        const pad = parseFloat(css.paddingTop) + parseFloat(css.paddingBottom);
-        if (!kids.length) return pad;
-        const [a, z] = [kids[0], kids.at(-1)];
-        return pad + z.getBoundingClientRect().bottom + parseFloat(getComputedStyle(z).marginBottom) - a.getBoundingClientRect().top + parseFloat(getComputedStyle(a).marginTop);
+        let h = parseFloat(css.paddingTop) + parseFloat(css.paddingBottom);
+        if (kids.length) {
+            const [a, z] = [kids[0], kids.at(-1)];
+            h += z.getBoundingClientRect().bottom + parseFloat(getComputedStyle(z).marginBottom) - a.getBoundingClientRect().top + parseFloat(getComputedStyle(a).marginTop);
+        }
+        if (bar) body.style.removeProperty('overflow');
+        return h;
     }
     // Keep every panel inside what it can be at this size: the grid's width, then (measured at
     // that width) its own minimum height, head and foot, and one screen; a collapsed one, its head
@@ -313,7 +321,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         let last = e;
         let scroll = 0;
         let then = 0;
-        const top = EDGE + (parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0);
+        const pad = getComputedStyle(document.documentElement).scrollPaddingTop;
+        const top = EDGE + (pad.endsWith('%') ? innerHeight * parseFloat(pad) / 100 : parseFloat(pad) || 0);
         const edge = (now) => {
             const v = last.clientY < top ? last.clientY - top : Math.max(0, last.clientY - innerHeight + EDGE);
             const dt = Math.min(now - (then || now), 50); // ms since the last step
@@ -612,7 +621,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const remeasure = () => {
         clearTimeout(again);
         // Arranged or mid-gesture, it waits: settle() asks again once the layout is back at its default
-        again = setTimeout(() => { stale = !(reset.hidden && !active); if (!stale) load(); }, 150);
+        again = setTimeout(() => {
+            if (board.querySelector('.is-holding')) return remeasure(); // a finger resting on a panel (it swells): once it lifts or lets go
+            stale = !(reset.hidden && !active);
+            if (!stale) load();
+        }, 150);
     };
     load();
     document.fonts?.ready.then(remeasure);
@@ -622,8 +635,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
 
     // Reset, then (until the next change) Undo puts the visitor's own layout back
     reset.addEventListener('click', () => {
-        const next = undo ?? copy(base);
-        flip(() => render(next));
+        let next = undo;
+        // A measure skipped while the board was arranged runs now, so Reset lands on today's default
+        flip(() => { if (!next && stale) { stale = false; base = defaults(); } next ??= copy(base); render(next); });
         say(undo ? 'Layout restored' : 'Layout reset');
         commit(next, undo ? null : copy(layout));
         haptic();

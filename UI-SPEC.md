@@ -28,7 +28,7 @@ rules. Hosts are listed under [Implementations](#implementations).
 | `.board[data-board]` | The grid. Its name keys the saved layouts |
 | `.panel[id]` | One widget. `data-x`/`data-y` place it and `data-w`/`data-h` size it, in cells, for the wide layout. The `id` is how a saved layout finds it, so never rename one casually |
 | `data-accent` | Picks the panel's accent from the host's palette; everything in the panel reads `--accent` |
-| `.panel-head` / `-body` / `-foot` | Title row (a grab bar), content that scrolls when the panel is smaller than it, status line. All optional |
+| `.panel-head` / `-body` / `-foot` | Title row (a grab bar), content that scrolls when the panel is smaller than it, status line. All optional. A body's content sits in elements stacked in flow, top to bottom (no bare text, `display: contents`, `order` or reversed flow, auto margins or stretched children): the engine reads the body's height off their extent |
 | `.panel-media` | A headless panel whose content another script owns; it gets a grab strip over its top-left, clear of the player's own buttons |
 
 The markup holds only content. The engine adds every control (grab dots, resize handles, the
