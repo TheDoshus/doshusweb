@@ -52,7 +52,7 @@
 }
 
 .zp-section-header h2 {
-  font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif;
+  font-family: var(--font-accent);
   font-size: clamp(1.3rem, 3vw, 1.8rem);
   margin: 0;
   color: var(--text-main);
@@ -92,7 +92,7 @@
 .zp-card p:last-child { margin-bottom: 0; }
 
 .zp-card code {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   padding: 0.15em 0.4em;
   border-radius: 4px;
@@ -223,7 +223,7 @@ body.zephyy-page {
   border-radius: 20px;
   text-transform: uppercase;
   width: fit-content;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
 }
 
 .zp-crew-badge.operational {

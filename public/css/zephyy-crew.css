@@ -26,7 +26,7 @@
 
 .crew-emoji { font-size: 2.5rem; text-align: center; }
 .crew-name {
-    font-family: 'Fugaz One', system-ui, sans-serif;
+    font-family: var(--font-accent);
     font-size: 1.3rem;
     text-align: center;
     color: var(--text-main);
@@ -34,7 +34,7 @@
 }
 .crew-role {
     font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     text-align: center;
     color: var(--text-muted);
     margin-bottom: 0.4rem;
@@ -60,7 +60,7 @@
     background: oklch(var(--brand-teal) / 0.06);
     border: 1px solid oklch(var(--brand-teal) / 0.12);
     color: oklch(var(--brand-teal));
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
 }
 .crew-spec-pill.green  { background: oklch(var(--brand-green)  / 0.06); border-color: oklch(var(--brand-green)  / 0.12); color: oklch(var(--brand-green)); }
 .crew-spec-pill.gold   { background: oklch(var(--brand-gold)   / 0.06); border-color: oklch(var(--brand-gold)   / 0.12); color: oklch(var(--brand-gold)); }
@@ -73,7 +73,7 @@
     margin-top: 1rem;
 }
 .resp-matrix th {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.7rem;
     font-weight: 600;
     padding: 0.5rem 0.8rem;
@@ -107,7 +107,7 @@
     border-radius: 12px;
     background: oklch(var(--brand-teal) / 0.1);
     border: 1px solid oklch(var(--brand-teal) / 0.3);
-    font-family: 'Fugaz One', system-ui, sans-serif;
+    font-family: var(--font-accent);
     font-size: 0.9rem;
     color: oklch(var(--brand-teal));
     text-align: center;
@@ -146,7 +146,7 @@
 .aether-node-label {
     font-size: 0.7rem;
     color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     text-align: center;
 }
 .crew-badge-wrap { text-align: center; margin-top: 0.6rem; }
@@ -158,7 +158,7 @@
 /* ── Live facts + operator crew: stamped from data/crew-facts.json by scripts/sync-zephyy-crew.js ── */
 .crew-facts {
     margin: 0.2rem 0 0;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.72rem;
     line-height: 1.5;
     color: var(--text-muted);
@@ -178,7 +178,7 @@
     gap: 0.6rem 1.4rem;
     margin: 0;
 }
-.crew-ops dt { font-family: 'Fugaz One', system-ui, sans-serif; color: var(--text-main); }
+.crew-ops dt { font-family: var(--font-accent); color: var(--text-main); }
 .crew-ops dd { margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-muted); }
 @media (max-width: 600px) {
     .crew-ops { grid-template-columns: 1fr; gap: 0.2rem; }

@@ -32,7 +32,7 @@
 }
 .qa-gate-icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
 .qa-gate-name {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-main);
@@ -43,7 +43,7 @@
     font-weight: 700;
     padding: 0.2em 0.6em;
     border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     background: oklch(var(--brand-green) / 0.12);
     color: oklch(var(--brand-green));
     border: 1px solid oklch(var(--brand-green) / 0.2);
@@ -82,7 +82,7 @@
 }
 .rule-item:last-child { border-bottom: none; }
 .rule-tag {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.65rem;
     padding: 0.2em 0.5em;
     border-radius: 4px;

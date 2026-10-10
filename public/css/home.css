@@ -146,7 +146,7 @@
 }
 
 .promo-text {
-    font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif; text-align: center;
+    font-family: var(--font-accent); text-align: center;
     font-size: clamp(0.75rem, 6vw, 1.5rem);
     color: oklch(var(--accent-taxes));
     opacity: 0.9;

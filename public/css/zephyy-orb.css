@@ -91,7 +91,7 @@
   font-weight: 600;
   font-size: 1rem;
   color: var(--text-main);
-  font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif;
+  font-family: var(--font-accent, system-ui, sans-serif);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -388,7 +388,7 @@
   display: flex; align-items: center; justify-content: space-between;
   gap: 0.75rem;
   margin-top: 0.45rem;
-  font: 500 0.72rem/1.2 'JetBrains Mono', 'Fira Code', monospace;
+  font: 500 0.72rem/1.2 var(--font-mono, monospace);
 }
 .zp-chat-img-copy {
   border: 1px solid oklch(var(--brand-teal) / 0.38);
@@ -431,7 +431,7 @@
   color: oklch(var(--star-white));
   border-radius: 8px;
   padding: 0.45rem 0.7rem;
-  font: 600 0.78rem/1 'JetBrains Mono', 'Fira Code', monospace;
+  font: 600 0.78rem/1 var(--font-mono, monospace);
   cursor: pointer;
   backdrop-filter: blur(12px);
 }

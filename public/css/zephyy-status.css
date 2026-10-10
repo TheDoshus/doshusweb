@@ -14,7 +14,7 @@
     flex: 0 0 auto;
 }
 .st-hero-badge {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.82rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -29,7 +29,7 @@
 .st-hero-label {
     font-size: 0.68rem;
     color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     margin-bottom: 0.25rem;
 }
 .st-hero-working {
@@ -42,7 +42,7 @@
     gap: 1.2rem;
     font-size: 0.72rem;
     color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     flex: 0 0 auto;
 }
 .st-hero-meta span b {
@@ -88,7 +88,7 @@
 .st-svc-dot.offline { background: oklch(65% 0.25 20 / 0.5); box-shadow: none; }
 .st-svc-dot.loading { background: oklch(var(--brand-gold) / 0.5); }
 .st-svc-name {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--text-main);
@@ -98,7 +98,7 @@
     font-size: 0.65rem;
     padding: 0.2em 0.5em;
     border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     background: oklch(var(--brand-green) / 0.12);
     color: oklch(var(--brand-green));
     border: 1px solid oklch(var(--brand-green) / 0.2);
@@ -127,7 +127,7 @@
 }
 .st-beat-item.live { border-left-color: oklch(var(--brand-teal)); background: oklch(var(--brand-teal) / 0.04); }
 .st-beat-time {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.7rem;
     color: oklch(var(--brand-teal));
     min-width: 70px;
@@ -153,12 +153,12 @@
 }
 .st-gw-header { display: flex; align-items: center; gap: 0.5rem; }
 .st-gw-emoji { font-size: 1.3rem; }
-.st-gw-name { font-family: 'Fugaz One', system-ui, sans-serif; font-size: 0.9rem; color: var(--text-main); }
+.st-gw-name { font-family: var(--font-accent); font-size: 0.9rem; color: var(--text-main); }
 .st-gw-status {
     font-size: 0.7rem;
     padding: 0.2em 0.5em;
     border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     width: fit-content;
 }
@@ -171,7 +171,7 @@
 .st-updated {
     font-size: 0.7rem;
     color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     text-align: center;
     margin-top: 3rem;
     opacity: 0.6;

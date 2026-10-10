@@ -8,7 +8,7 @@
     line-height: 1.65;
     color: var(--text-main);
 }
-.bot-page h1 { font-family: 'Fugaz One', system-ui, sans-serif; font-size: 2rem; margin: 0 0 0.75rem; }
+.bot-page h1 { font-family: var(--font-accent); font-size: 2rem; margin: 0 0 0.75rem; }
 .bot-page h2 { font-size: 1.1rem; margin: 2.2rem 0 0.6rem; color: oklch(var(--brand-teal)); }
 .bot-page p,
 .bot-page li,
@@ -17,7 +17,7 @@
 .bot-page strong { color: var(--text-main); }
 .bot-page a { color: oklch(var(--brand-teal)); }
 .bot-page code {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.85em;
     padding: 0.1em 0.4em;
     border-radius: 6px;

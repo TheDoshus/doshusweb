@@ -156,7 +156,7 @@ h1 {
     font-family: 'Chango', cursive, system-ui, sans-serif;
 }
 h2 {
-    font-family: 'Shojumaru', system-ui, sans-serif;
+    font-family: var(--font-title);
     font-size: 2rem;
 }
 h3 {
@@ -340,7 +340,7 @@ h1, h2, h3 { text-wrap: balance; }
 .qlBtns { display: grid;
     grid-template-columns: repeat(3, minmax(125px, 1fr));
     gap: 1rem;
-    font-family: 'Fugaz One';
+    font-family: var(--font-accent);
 }
 .quickLinks .qlBtn { text-decoration: none; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     padding: 1.2rem 0.8rem;
