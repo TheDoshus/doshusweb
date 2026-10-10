@@ -276,6 +276,12 @@ const TESTS = {
         const c = await page.evaluate(() => [...document.querySelectorAll('.panel')].map((p) => ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k))));
         c.forEach(([x, , w]) => assert.deepEqual([x, w], [1, 4]));
         c.slice(1).forEach(([, y], i) => assert.ok(y >= c[i][1] + c[i][3], 'stacked without overlap'));
+        // Twice the air between stacked panels (32px), the panels as wide as before (24px in from the edge)
+        const [gap, edge] = await page.evaluate(() => {
+            const [a, b] = [...document.querySelectorAll('.panel')].map((p) => p.getBoundingClientRect());
+            return [b.top - a.bottom, a.left];
+        });
+        assert.deepEqual([Math.round(gap), Math.round(edge)], [32, 24]);
         return errors;
     },
     async 'a head keeps its title readable and clear of its tag and tools, at any width'(browser) {

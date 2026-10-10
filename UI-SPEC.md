@@ -53,7 +53,8 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
   content, media keeping its wide height, in the highest free spot in reading order (a half-width
   panel can fill the gap beside an earlier one, so it may read one place early). The phone
   default stacks every panel full width in the wide reading order, each as tall as its content,
-  media a little over half the screen.
+  media a little over half the screen, with 2rem between panels (the wider tiers keep 1rem) and
+  1.5rem to the screen's edge.
 - **Sizes.** No narrower than `--min-cols` (4 of 24 wide, 4 of 12 mid, 2 of 4 phone), no
   shorter than its head and foot plus a few lines of body, no taller than one screen. Content
   scrolls inside a panel that's smaller than it.

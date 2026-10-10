@@ -290,7 +290,9 @@
     .board { --cols: 12; --min-cols: 4; }
 }
 /* Phones: 4 columns. By default every panel is full width and as tall as its content; half
-   width is the narrowest */
+   width is the narrowest. Stacked panels get twice the air between them (Doshus, 2026-10-10),
+   and the board's side padding gives back the extra, so the panels keep their width */
 @media (max-width: 640px) {
-    .board { --cols: 4; --min-cols: 2; }
+    .board { --cols: 4; --min-cols: 2; --gutter: 1rem; }
+    .board-wrap { padding-inline: 0.5rem; }
 }
