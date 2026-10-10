@@ -394,8 +394,9 @@
 }
 .slideNav { pointer-events: auto; }
 html { --nav-top: 2rem; --nav-room: 7.5rem; scroll-padding-top: var(--nav-room); } /* where the nav sticks; that and its height */
-/* Keyboard focus on the nav itself, which sits in that room, scrolls nothing */
-html:has(.slideNav:focus-within) { scroll-padding-top: 0; }
+/* Keyboard focus on the nav itself, which sits in that room, scrolls nothing (a mouse-clicked dot
+   keeps focus too, but not :focus-visible, so a drag's autoscroll edge stays below the nav) */
+html:has(.slideNav :focus-visible) { scroll-padding-top: 0; }
 
 /* The Window */
 .sliderView { width: 100%; overflow: hidden; transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);

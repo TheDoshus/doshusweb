@@ -233,7 +233,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     }
     // This size's layout: the default, with the visitor's saved one on top (panels added to the
     // page since keep their default spot). Runs again when the window crosses into another tier
-    function load() {
+    function load(keep = null) {
         // Measuring renders the markup's cells for a moment, which can clamp a body scrolled
         // inside: each keeps its place
         const scrolled = panels.flatMap((p) => { const b = p.querySelector('.panel-body'); return b?.scrollTop ? [[b, b.scrollTop]] : []; });
@@ -249,7 +249,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             });
         }
         render(fit(next));
-        undo = null;
+        undo = keep; // a re-measure right after a Reset keeps Undo on offer (and its focus)
         settle(next);
         scrolled.forEach(([b, top]) => { if (b.scrollTop !== top) b.scrollTop = top; });
         return !!saved;
@@ -333,7 +333,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             op.move(last); // re-aim at whatever is under the pointer now
         };
         // The panel lands before the board drops its arranging room, so the page can't lose its scroll
-        const end = (cancel) => { stop.abort(); cancelAnimationFrame(scroll); active = null; op.done(cancel); board.classList.remove('is-arranging'); haptic(); };
+        const end = (cancel) => { stop.abort(); cancelAnimationFrame(scroll); active = null; op.done(cancel); board.classList.remove('is-arranging'); haptic(); if (stale) remeasure(); };
         active = () => end(true);
         on('pointermove', mine((ev) => { last = ev; op.move(ev); scroll ||= requestAnimationFrame(edge); }));
         on('pointerup', mine(() => end(false)));
@@ -624,10 +624,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         again = setTimeout(() => {
             if (board.querySelector('.is-holding')) return remeasure(); // a finger resting on a panel (it swells): once it lifts or lets go
             stale = !!active || !same(layout, base);
-            if (stale) return;
-            const back = undo; // just reset: Undo stays on offer
-            load();
-            if (back) { undo = back; settle(layout); }
+            if (!stale) load(undo);
         }, 150);
     };
     load();

@@ -546,8 +546,12 @@ const TESTS = {
         assert.ok(Math.abs(at) < 3, `the CTA lands the nav at ${Math.round(at)}px`);
         return errors;
     },
-    async 'Finance Hub: a drag scrolls the page up from just under the stuck nav'(browser) {
+    async 'Finance Hub: a drag scrolls the page up from just under the stuck nav, a dot clicked or not'(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/financehub.html' });
+        await center(page, 'cc-tools'); // the nav stuck on screen
+        const dot = await page.locator('.nav-dot.active').boundingBox();
+        await page.mouse.click(dot.x + dot.width / 2, dot.y + dot.height / 2); // a mouse click leaves the dot focused (not focus-visible)
+        assert.ok(await page.evaluate(() => !!document.activeElement?.closest('.slideNav')), 'the click left no focus on the nav, so that part tests nothing');
         await center(page, 'cc-tools');
         const h = await page.locator('#cc-tools .panel-head').boundingBox();
         const nav = await page.evaluate(() => document.querySelector('.slideNav').getBoundingClientRect().bottom);
@@ -687,7 +691,6 @@ const TESTS = {
         await page.waitForSelector('#cc-tools .panel-grip');
         await page.focus('#cc-tools .panel-grip');
         await page.keyboard.press('ArrowDown');
-        const reset = () => page.evaluate(() => [...document.querySelectorAll('[data-board-bar="finance-credit"] button')].find((b) => /Reset|Undo/.test(b.textContent)));
         await page.evaluate(() => [...document.querySelectorAll('[data-board-bar="finance-credit"] button')].find((b) => b.textContent === 'Reset layout').click());
         await page.waitForLoadState('load');
         await sleep(400);
@@ -695,6 +698,19 @@ const TESTS = {
             return [b.scrollHeight - b.clientHeight, !!r && !r.hidden]; });
         assert.ok(over <= 0, `the card panel is ${over}px short of its pictures`);
         assert.equal(offer, true, 'Undo reset went away');
+        return errors;
+    },
+    async 'a re-measure right after Reset keeps Undo on offer and keyboard focus on it'(browser) {
+        const { page, errors } = await open(browser);
+        await page.focus('#stack .panel-grip');
+        await page.keyboard.press('ArrowRight');
+        await page.focus('.board-bar button:not([popovertarget])');
+        await page.keyboard.press('Enter');
+        const undo = () => page.evaluate(() => { const b = document.activeElement; return `${b.tagName}:${b.textContent}:${b.hidden}`; });
+        assert.equal(await undo(), 'BUTTON:Undo reset:false');
+        await page.evaluate(() => document.querySelector('.board').dispatchEvent(new Event('load'))); // a picture arriving
+        await sleep(400);
+        assert.equal(await undo(), 'BUTTON:Undo reset:false');
         return errors;
     },
     async "a finger resting on a panel (it swells) doesn't measure it bigger"(browser) {
