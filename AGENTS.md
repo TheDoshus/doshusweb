@@ -132,6 +132,9 @@ Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
 
 Read the newest file in `handoff/` before starting work. Every session that changes files
 appends one entry to `handoff/YYYY-MM-DD.md` (today's date; create it if you're first),
+dated and stamped on the house clock, MST (America/Phoenix, no daylight saving; OpenClaw pins
+it in `scripts/lib/localtime.py`), never UTC: `TZ=America/Phoenix date '+%F %H:%M'` gives both.
+Claude Code gets that clock by default here from `.claude/settings.json`. Entries are
 chronological and tagged with who did the work — `[claude]`, `[codex]`, `[zephyy]`,
 `[agy]`, `[gemini]`, `[doshus]` — not merely which model ran it:
 
