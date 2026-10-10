@@ -532,12 +532,10 @@
                 var tb = document.getElementById('zp-chat-thinking');
                 if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
             }, 15000);
-            if (window.__zpRealtime) {
-                window.__zpRealtime.sendMessage(userMsg).catch(function() {
-                    removeThinkingBubble();
-                    addMessage('bot', 'That message could not be sent. Please try again.', Date.now());
-                });
-            }
+            send(userMsg).catch(function() {
+                removeThinkingBubble();
+                addMessage('bot', 'That message could not be sent. Please try again.', Date.now());
+            });
         } else {
             sendText("I don't have a name");
         }
@@ -555,6 +553,15 @@
      * 4. FIREBASE OPERATIONS
      * ================================================ */
 
+    /* The chat's Firebase connection (zephyy-realtime.js): the first ask loads the SDK and
+       signs in, so opening the panel starts it and every send waits for it */
+    function connect() {
+        return window.__zpConnect ? window.__zpConnect() : Promise.reject(new Error('No chat connection'));
+    }
+    function send(text) {
+        return connect().then(function(rt) { return rt.sendMessage(text); });
+    }
+
     function loadMessages() {
         /* Instant paint from local cache while Firebase round-trips —
            the full repaint below reconciles any drift. */
@@ -563,9 +570,7 @@
                 addMessage(m.role, m.content, m.timestamp);
             });
         }
-        /* Firebase realtime: load history via zephyy-realtime.js */
-        if (!window.__zpRealtime) { showNamePrompt(); return; }
-        window.__zpRealtime.loadHistory(50).then(function(snap) {
+        connect().then(function(rt) { return rt.loadHistory(50); }).then(function(snap) {
             if (!snap.exists()) { showNamePrompt(); return; }
             var data = snap.val();
             var keys = Object.keys(data).sort(function (a, b) {
@@ -598,10 +603,6 @@
 
     function sendMessage() {
         if (sendBtn.disabled || sessionEnded) return;
-        if (!window.__zpRealtime) {
-            addMessage('bot', 'Private chat is not connected yet. Please refresh or try again later.', Date.now());
-            return;
-        }
         var text = inputEl.value.trim();
         if (!text) return;
 
@@ -642,26 +643,24 @@
             window.__zpSlowTimeout = slowTimeout;
         }
 
-        if (window.__zpRealtime) {
-            window.__zpRealtime.sendMessage(text).then(function() {
-                tick.textContent = '✓';
-                tick.title = 'Delivered';
-                tick.classList.add('zp-delivered');
-                cacheAppend('user', text, userTs);
-                /* Offline: no thinking bubble — set honest expectations once */
-                if (!zephyyOnline && !offlineNoteShown) {
-                    offlineNoteShown = true;
-                    addMessage('bot', '📬 Delivered. Zephyy\'s recharging right now — she\'ll pick this up the moment she\'s back ⚡', Date.now());
-                }
-            }).catch(function() {
-                removeThinkingBubble();
-                tick.textContent = '!';
-                tick.title = 'Failed to send';
-                tick.classList.add('zp-failed');
-                addMessage('bot', '⚠️ Message didn\'t send. Try refreshing the page or check back later.', Date.now());
-                sendBtn.disabled = false;
-            });
-        }
+        send(text).then(function() {
+            tick.textContent = '✓';
+            tick.title = 'Delivered';
+            tick.classList.add('zp-delivered');
+            cacheAppend('user', text, userTs);
+            /* Offline: no thinking bubble — set honest expectations once */
+            if (!zephyyOnline && !offlineNoteShown) {
+                offlineNoteShown = true;
+                addMessage('bot', '📬 Delivered. Zephyy\'s recharging right now — she\'ll pick this up the moment she\'s back ⚡', Date.now());
+            }
+        }).catch(function() {
+            removeThinkingBubble();
+            tick.textContent = '!';
+            tick.title = 'Failed to send';
+            tick.classList.add('zp-failed');
+            addMessage('bot', '⚠️ Message didn\'t send. Try refreshing the page or check back later.', Date.now());
+            sendBtn.disabled = false;
+        });
 
         sendBtn.disabled = false;
         inputEl.focus();
@@ -763,6 +762,9 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && panel.classList.contains('open')) togglePanel();
     });
+
+    /* Warm the connection while the pointer heads for the orb, so the panel opens to it ready */
+    orb.addEventListener('pointerenter', function() { connect().catch(function() {}); }, { once: true });
 
     /* Open panel → reload messages */
     var panelObserver = new MutationObserver(function() {

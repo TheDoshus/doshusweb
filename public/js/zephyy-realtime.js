@@ -1,18 +1,20 @@
 /**
- * Zephyy Realtime — Firebase native listeners replacing all fetch/poll.
+ * Zephyy Realtime — her status and daily thought, live, and the chat's Firebase connection.
  *
- * Listens to RTDB via onValue/onChildAdded (persistent WebSocket under the hood).
- * Updates DOM directly — no polling, no setInterval data fetches.
+ * Status and the daily thought stream straight from the database's REST endpoint (Server-Sent
+ * Events): live, with no SDK. The Firebase SDK (~340 KB of script) loads only for the chat,
+ * through window.__zpConnect() when the panel opens, or at once for a visitor with a
+ * conversation going, so her replies still light the orb.
  *
- * Covers: status, daily thought, service health, chat orb, and embed widget. Every page that
- * shows Zephyy's status listens for the events this file sends instead of reading Firebase
- * itself: 'zephyy-status' {online, data} (also kept in window.__zpLatestStatus),
- * 'zephyy-online-change' {online} and 'zephyy-connection' {connected}.
+ * Every page that shows Zephyy's status listens for the events this file sends instead of
+ * reading Firebase itself: 'zephyy-status' {online, data} (also kept in
+ * window.__zpLatestStatus), 'zephyy-online-change' {online} and 'zephyy-connection' {connected}.
  *
  * STALENESS-BASED OFFLINE:
  *   Status includes lastHeartbeat (ISO timestamp, updated by systemd pinger every 60s).
- *   If lastHeartbeat > 120s old, status shows offline — no server-side "offline" write needed.
- *   STALE_SEC is the one threshold every surface uses.
+ *   If lastHeartbeat > 120s old, status shows offline — no server-side "offline" write needed,
+ *   and a pinger that falls silent turns the page offline too. STALE_SEC is the one threshold
+ *   every surface uses.
  */
 
 (function () {
@@ -21,11 +23,15 @@
   const RTDB_URL = 'https://doshusweb-default-rtdb.firebaseio.com';
   const STALE_SEC = 120; // seconds before heartbeat considered stale
   const HEARTBEAT_MS = STALE_SEC * 1000;
-  const FALLBACK_POLL_MS = 300000; // without the SDK, status is re-fetched every 5 min
   const DAILY_FALLBACK = 'Quiet orbit. Keeping the signal clean.';
   const PRIVATE_DAILY_PATTERN = /\b(?:doshus|armand|austin|school|class|course|canvas|assignment|exam|shift|amazon|message|texted|health|medication|doctor|finance|bank|schedule|relationship|partner|girlfriend|boyfriend|family|address|location|phoenix)\b/i;
-
-  let db = null;
+  // The chat's SDK, pinned like every other script here: one version, checked against these hashes
+  const SDK = 'https://www.gstatic.com/firebasejs/11.0.0/firebase-';
+  const SDK_HASH = {
+    app: 'sha384-WCNi5HrUqYpPiERhOGB000a3XlerI8Hq52+uTGtzyl/ZFU/LmuVx+lqA1cYJnEkq',
+    database: 'sha384-hb6zQWOUCteeQSkZPIVwI6sr/1arrQrsb0xv1fevRvO58hDu2d617rC8afnX3jCv',
+    auth: 'sha384-qPmeVjQDHzUDQlO1KgrSi2azIff7RQim//zsE3kkA2HKGuZhlhpap6Cab0xfKSXi',
+  };
 
   function isPublicDaily(data) {
     const publicText = data ? [data.mood, data.quote].join(' ') : '';
@@ -78,10 +84,10 @@
 
   // One status reading, from the live listener or the fallback fetch: the orb's status line,
   // the model badge and service dots, then the events every other surface listens for
+  const fresh = function (data) { return Date.now() - (data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0) < HEARTBEAT_MS; };
   function publish(data) {
     data = data || {};
-    const lastHb = data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0;
-    const isOnline = (Date.now() - lastHb) < HEARTBEAT_MS;
+    const isOnline = fresh(data);
 
     const dot = document.getElementById('zp-status-dot');
     const text = document.getElementById('zp-status-text');
@@ -114,51 +120,82 @@
   // INIT
   // ──────────────────────────────────────────────
 
-  async function init() {
-    if (typeof firebase === 'undefined') {
-      console.warn('[zephyy-rt] Firebase SDK not loaded — falling back to fetch');
-      initFallbacks();
-      return;
-    }
-    try {
-      const response = await fetch('/__/firebase/init.json');
-      if (!response.ok) throw new Error('Firebase configuration unavailable');
-      firebase.initializeApp(await response.json());
-      db = firebase.database();
+  // One database path, live: Firebase sends its whole value first (a 'put' at /), then each
+  // change as a 'put' (replace) or 'patch' (merge) at a sub-path
+  function stream(path, render) {
+    let value = null;
+    const source = new EventSource(RTDB_URL + '/zephyy/' + path + '.json');
+    const apply = function (merge) {
+      return function (event) {
+        const change = JSON.parse(event.data);
+        const keys = change.path.split('/').filter(Boolean);
+        const set = function (node, i) {
+          if (i === keys.length) return merge ? Object.assign({}, node, change.data) : change.data;
+          return Object.assign({}, node, { [keys[i]]: set(node && node[keys[i]], i + 1) });
+        };
+        value = set(value, 0);
+        render(value);
+      };
+    };
+    source.addEventListener('put', apply(false));
+    source.addEventListener('patch', apply(true));
+    return source;
+  }
 
-      db.ref('.info/connected').on('value', function (snap) {
-        window.dispatchEvent(new CustomEvent('zephyy-connection', { detail: { connected: snap.val() === true } }));
-      });
-      db.ref('zephyy/status').on('value', function (snap) { publish(snap.val()); });
-      if (document.getElementById('zephyy-daily')) db.ref('zephyy/daily').on('value', function (snap) { renderDaily(snap.val()); });
-      try {
-        if (!firebase.auth) {
-          await new Promise(function (resolve, reject) {
-            const script = document.createElement('script');
-            script.src = 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js';
-            // Pinned like the app and database SDKs the pages load (same version, same check)
-            script.integrity = 'sha384-qPmeVjQDHzUDQlO1KgrSi2azIff7RQim//zsE3kkA2HKGuZhlhpap6Cab0xfKSXi';
-            script.crossOrigin = 'anonymous';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-          });
-        }
-        const credential = await firebase.auth().signInAnonymously();
-        if (window.__zpChatInit) window.__zpChatInit(db, credential.user.uid);
-      } catch (error) {
+  function init() {
+    const status = stream('status', publish);
+    const connected = function (on) {
+      return function () { window.dispatchEvent(new CustomEvent('zephyy-connection', { detail: { connected: on } })); };
+    };
+    status.onopen = connected(true);
+    status.onerror = connected(false); // the browser reconnects on its own
+    // Nothing new arrives while her pinger is silent, so the last reading turns her offline once stale
+    setInterval(function () {
+      const last = window.__zpLatestStatus;
+      if (last && last.online && !fresh(last.data)) publish(last.data);
+    }, HEARTBEAT_MS / 4);
+    const card = document.getElementById('zephyy-daily');
+    if (card) stream('daily', renderDaily).onerror = function () { if (!card.classList.contains('loaded')) renderDaily(null); };
+    try {
+      if (JSON.parse(localStorage.getItem('zp-chat-cache') || '[]').length) window.__zpConnect().catch(function () {});
+    } catch (e) { /* storage blocked: the chat connects when it opens */ }
+  }
+
+  function load(name) {
+    return new Promise(function (resolve, reject) {
+      const script = Object.assign(document.createElement('script'), { src: SDK + name + '-compat.js', integrity: SDK_HASH[name], crossOrigin: 'anonymous' });
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  // The chat's connection: the SDK, an anonymous sign-in and the visitor's private session, made
+  // once, the first time anything asks. Resolves with window.__zpRealtime
+  let connecting = null;
+  window.__zpConnect = function () {
+    connecting = connecting || load('app')
+      .then(function () { return Promise.all([load('database'), load('auth'), fetch('/__/firebase/init.json')]); })
+      .then(function (loaded) {
+        if (!loaded[2].ok) throw new Error('Firebase configuration unavailable');
+        return loaded[2].json();
+      })
+      .then(function (config) {
+        firebase.initializeApp(config);
+        return firebase.auth().signInAnonymously();
+      })
+      .then(function (credential) {
+        setupChatOrb(firebase.database(), credential.user.uid);
+        return window.__zpRealtime;
+      })
+      .catch(function (error) {
         window.dispatchEvent(new CustomEvent('zephyy-chat-error', {
           detail: {message: 'Private chat could not connect. Please refresh or try again later.'}
         }));
-      }
-
-      // Signal widget that Firebase is ready
-      window.dispatchEvent(new CustomEvent('zephyy-rt-ready', { detail: { db } }));
-    } catch (e) {
-      console.warn('[zephyy-rt] Firebase init failed:', e.message);
-      initFallbacks();
-    }
-  }
+        throw error;
+      });
+    return connecting;
+  };
 
   // ──────────────────────────────────────────────
   // CHAT ORB (replaces pollAndDetect + checkControl)
@@ -261,32 +298,13 @@
   }
 
   // ──────────────────────────────────────────────
-  // FALLBACKS (when Firebase SDK unavailable)
-  // ──────────────────────────────────────────────
-
-  function initFallbacks() {
-    // Direct fetch fallback — render status/daily even without Firebase SDK
-    console.warn('[zephyy-rt] No Firebase SDK — using direct fetch fallback');
-    const read = function (path) {
-      return fetch(RTDB_URL + '/zephyy/' + path + '.json').then(function (r) { return r.json(); });
-    };
-    const status = function () { read('status').then(publish).catch(function () {}); };
-    status();
-    setInterval(status, FALLBACK_POLL_MS);
-    if (document.getElementById('zephyy-daily')) read('daily').then(renderDaily).catch(function () { renderDaily(null); });
-  }
-
-  // ──────────────────────────────────────────────
   // ENTRY
   // ──────────────────────────────────────────────
 
-  // After the page's own scripts (the Firebase SDK and chat.js load ahead of this point)
+  // After the page's own scripts (chat.js loads after this file and listens for its events)
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 200); });
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    setTimeout(init, 200);
+    init();
   }
-
-  // Register chat orb setup — called by init() after db is ready
-  window.__zpChatInit = setupChatOrb;
 })();

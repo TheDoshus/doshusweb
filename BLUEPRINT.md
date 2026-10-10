@@ -47,7 +47,9 @@ Update this file when structure, a page, or a cross-repo contract changes.
 (canonical markup inside the `zp-chat` markers) and is stamped into each Zephyy subpage;
 client `js/zephyy-realtime.js` + `js/zephyy-chat.js` + `css/zephyy-chat.css`. Everywhere
 else (home, nexus, financehub, lounge, 404, Printmon gallery) it arrives through
-`js/zephyy-orb-embed.js`. Tests: `tests/chatorb-client.cjs` (client wiring) and
+`js/zephyy-orb-embed.js`. Her status and daily thought stream from RTDB's REST endpoint
+(Server-Sent Events, no SDK); the Firebase SDK loads only for the chat (panel opened, the
+pointer on the orb, or a visitor with a conversation going). Tests: `tests/chatorb-client.cjs` (client wiring) and
 `tests/rules-emulator.py` (rules, in the Firebase emulator); both commands are in `DOSHUS.md`.
 
 **Status surfaces.** `js/zephyy-widget.js` (badge on home, nexus and the profile) and

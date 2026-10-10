@@ -5,16 +5,14 @@ const writeIfChanged = require('./lib/write-if-changed');
 const ROOT = path.join(__dirname, '..');
 const PROFILE_PATH = path.join(ROOT, 'public', 'zephyy.html');
 const STAMP_PATTERN = /^[ \t]*<!-- zp-chat:start -->[\s\S]*?^[ \t]*<!-- zp-chat:end -->/m;
+// The Firebase SDK is not among them: zephyy-realtime.js loads it when the chat needs it
 const SCRIPT_KEYS = [
-    'https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js',
-    'https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js',
     'js/zephyy-realtime.js',
     'js/zephyy-chat.js'
 ];
 const SUBPAGES = ['crew', 'qa', 'changelog', 'status'];
 // Keys the stamp OWNS on subpages (always re-stamped at the profile's current
-// version). SDK keys are insert-if-missing only — the status page loads its
-// own copies mid-page and they must not move.
+// version); any other required key would be insert-if-missing only.
 const OWNED_KEYS = ['js/zephyy-realtime.js', 'js/zephyy-chat.js'];
 
 function scriptKey(src) {
