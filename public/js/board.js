@@ -8,7 +8,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const MIN_H = 3;
     const EDGES = ['n', 'e', 's', 'w', 'ne', 'se', 'sw', 'nw'];
     const css = getComputedStyle(board);
-    // Grid size and the narrowest panel come from board.css, which changes them for phones
+    // Grid size and the narrowest panel come from board.css, which changes them per tier
     const cols = () => +css.getPropertyValue('--cols') || 1;
     const minW = () => Math.min(+css.getPropertyValue('--min-cols') || 1, cols());
     const cell = () => ({ x: board.clientWidth / cols(), y: parseFloat(css.gridAutoRows) });
@@ -17,10 +17,12 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const title = (p) => p.querySelector('h2')?.textContent ?? p.getAttribute('aria-label') ?? p.id;
     const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: p.hidden });
     const copy = (map) => new Map([...map].map(([p, r]) => [p, { ...r }]));
-    // Two layouts, each with its own default and save: the wide grid placed by data-x/y/w/h, and
-    // the phone grid (board.css: fewer --cols up to 640px wide), whose default stacks the panels
-    // full width in the wide reading order, each as tall as its content
-    const phone = matchMedia('(max-width: 640px)');
+    // Three grids, each with its own layout and save (board.css sets their --cols): wide, placed by
+    // data-x/y/w/h; mid, up to 1080px (foldables, tablets), the wide layout flowed onto half the
+    // columns; and phone, up to 640px, a stack of full-width panels. Mid and phone panels start
+    // in the wide reading order, each as tall as its content
+    const TIERS = [['phone', '(max-width: 640px)'], ['mid', '(max-width: 1080px)']].map(([name, query]) => ({ name, mq: matchMedia(query) }));
+    const tier = () => TIERS.find((t) => t.mq.matches)?.name ?? 'wide';
     let key;
     let base;
     let layout = new Map();
@@ -64,7 +66,12 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     }
     const setCell = (node, r) => ['x', 'y', 'w', 'h'].forEach((k) => node.style.setProperty(`--${k}`, r[k]));
     function render(map) {
-        map.forEach((r, p) => { p.hidden = r.hidden; setCell(p, r); });
+        map.forEach((r, p) => {
+            p.hidden = r.hidden;
+            p.classList.toggle('is-collapsed', !!r.collapsed);
+            p.querySelector('.panel-collapse')?.setAttribute('aria-expanded', String(!r.collapsed));
+            setCell(p, r);
+        });
     }
     // FLIP: measure, change, then glide every panel (and the ghost) from where it was. Moves are
     // translate-only, which the compositor runs off the main thread; only a node whose size
@@ -99,6 +106,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const fixed = parts(p);
         return Math.max(MIN_H, Math.ceil((fixed + gutters(p) + (fixed ? 48 : 0)) / cell().y));
     }
+    // Collapsed to its title bar: the head alone (and the panel's border)
+    const headRows = (p) => Math.ceil((p.querySelector('.panel-head').offsetHeight + gutters(p) + p.offsetHeight - p.clientHeight) / cell().y);
     // The tallest: one screen (100dvh), so a panel always fits in view
     const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y));
     // Tall enough for everything it holds, at its current width (a running glide is finished
@@ -126,21 +135,37 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         map.forEach((r, p) => {
             r.w = clamp(r.w, minW(), cols());
             r.x = clamp(r.x, 1, cols() - r.w + 1);
-            r.h = clamp(r.h, minH(p), maxH(p));
+            if (!r.collapsed) r.h = clamp(r.h, minH(p), maxH(p));
         });
         return resolve(map);
     }
     function defaults() {
         const wide = new Map(panels.map((p) => [p, read(p)]));
-        if (!phone.matches) return fit(wide);
+        const t = tier();
+        if (t === 'wide') return fit(wide);
         const order = [...wide].sort(([, a], [, b]) => a.y - b.y || a.x - b.x).map(([p]) => p);
-        const stack = new Map(order.map((p) => [p, { x: 1, y: 1, w: cols(), h: MIN_H, hidden: false }]));
-        render(stack); // full width, so each body's content wraps the way it will
-        let y = 1;
-        stack.forEach((r, p) => { Object.assign(r, { y, h: clamp(contentH(p), minH(p), maxH(p)) }); y += r.h; });
-        return fit(stack);
+        // Phone: full width. Mid: half its wide width and no less than half the row, so the board
+        // reads as two columns; a meme keeps its wide height
+        const media = (p) => p.matches('.panel-media');
+        const width = (p) => (t === 'phone' ? cols() : clamp(Math.round(wide.get(p).w / 2), cols() / 2, cols()));
+        const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false }]));
+        render(flow); // at their widths, so each body's content wraps the way it will
+        flow.forEach((r, p) => { r.h = t === 'mid' && media(p) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
+        // In reading order, each takes the highest free spot, leftmost first
+        const placed = [];
+        flow.forEach((r) => {
+            for (let y = 1; !placed.includes(r); y++) {
+                for (let x = 1; x <= cols() - r.w + 1; x++) {
+                    if (placed.some((o) => overlap(o, { ...r, x, y }))) continue;
+                    Object.assign(r, { x, y });
+                    placed.push(r);
+                    break;
+                }
+            }
+        });
+        return fit(flow);
     }
-    const same = (a, b) => [...a].every(([p, r]) => ['x', 'y', 'w', 'h', 'hidden'].every((k) => r[k] === b.get(p)[k]));
+    const same = (a, b) => [...a].every(([p, r]) => ['x', 'y', 'w', 'h', 'hidden', 'collapsed'].every((k) => (r[k] ?? false) === (b.get(p)[k] ?? false)));
     // The layout Reset replaced, offered back until the next change
     let undo = null;
     // Reading order becomes DOM order, so tab order follows the layout. Add widget shows only
@@ -171,17 +196,17 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         } catch { /* private mode: the layout lasts this visit */ }
     }
     // This size's layout: the default, with the visitor's saved one on top (panels added to the
-    // page since keep their default spot). Runs again when the window crosses the phone width
+    // page since keep their default spot). Runs again when the window crosses into another tier
     function load() {
-        key = `board:${board.dataset.board}${phone.matches ? ':phone' : ''}`;
+        key = `board:${board.dataset.board}${tier() === 'wide' ? '' : `:${tier()}`}`;
         base = defaults();
         const next = copy(base);
         let saved = null;
         try { saved = JSON.parse(localStorage.getItem(key)); } catch { /* no saved layout */ }
         if (saved?.v === VERSION) {
-            saved.items.forEach(({ id, x, y, w, h, hidden }) => {
+            saved.items.forEach(({ id, x, y, w, h, hidden, collapsed, full }) => {
                 const p = document.getElementById(id);
-                if (next.has(p)) next.set(p, { x, y, w, h, hidden });
+                if (next.has(p)) next.set(p, { x, y, w, h, hidden, collapsed, full });
             });
         }
         render(fit(next));
@@ -461,13 +486,15 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const name = title(p);
         // The head and the grab dots move the panel (a headless panel gets a grab strip over its
         // top-left, clear of a video's own buttons); the grip is the keyboard's move control and
-        // only shows on focus
-        const head = p.querySelector('.panel-head') ?? p.appendChild(el('div', 'panel-grab'));
+        // only shows on focus. The tools sit at the head's end, or a headless panel's top right
+        const headed = p.querySelector('.panel-head');
+        const head = headed ?? p.appendChild(el('div', 'panel-grab'));
         const tools = el('div', 'panel-tools');
         const grip = button('⠿', `Move ${name} with the arrow keys`, 'panel-grip');
+        const collapse = headed && button('▾', `Collapse ${name} to its title bar`, 'panel-collapse');
         const hide = button('✕', `Hide ${name}`, 'panel-close');
-        tools.append(grip, hide);
-        (head ?? p).append(tools);
+        tools.append(...[grip, collapse, hide].filter(Boolean));
+        (headed ?? p).append(tools);
         EDGES.forEach((dir) => {
             // The corner is the keyboard's way in; the other edges are pointer-only
             const edge = dir === 'se' ? button('', `Resize ${name}; Enter fits it to its content`, 'panel-edge') : el('span', 'panel-edge');
@@ -505,6 +532,18 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             r.h = clamp(r.h + dy, minH(p), maxH(p));
         });
 
+        // Collapse to the title bar and back. The space below stays as it was, and opening again
+        // pushes down whatever has moved into it
+        collapse?.addEventListener('click', () => {
+            const next = copy(layout);
+            const r = next.get(p);
+            if (r.collapsed) Object.assign(r, { h: r.full, collapsed: false, full: undefined });
+            else Object.assign(r, { full: r.h, h: headRows(p), collapsed: true });
+            flip(() => render(resolve(next, p)));
+            commit(next);
+            say(`${name} ${r.collapsed ? 'collapsed' : 'opened'}`);
+        });
+
         hide.addEventListener('click', () => {
             const next = copy(layout);
             next.get(p).hidden = true;
@@ -525,9 +564,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
 
     // Default heights are measured from the content, so measure again once the fonts are in,
     // unless the visitor has already made the layout their own (or is making it now). Crossing
-    // the phone width swaps layouts, ending a gesture first so it can't save into the other one
+    // into another tier swaps layouts, ending a gesture first so it can't save into the other one
     if (!load()) document.fonts?.ready.then(() => { if (reset.hidden && !active) load(); });
-    phone.addEventListener('change', () => { active?.(); load(); });
+    TIERS.forEach((t) => t.mq.addEventListener('change', () => { active?.(); load(); }));
 
     // Reset, then (until the next change) Undo puts the visitor's own layout back
     reset.addEventListener('click', () => {
