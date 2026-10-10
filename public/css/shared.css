@@ -41,6 +41,14 @@
     --accent-myth: var(--brand-red);
     --accent-discord: var(--brand-blurple);
 
+    /* ─── SCALES: spacing, radius, type and font stacks (the board's, UI-SPEC.md) ─── */
+    --sp-2xs: 0.25rem; --sp-xs: 0.5rem; --sp-s: 0.75rem; --sp-m: 1rem; --sp-l: 1.5rem;
+    --r-s: 8px; --r-m: 10px; --r-l: 14px;
+    --fs-xs: 0.68rem; --fs-s: 0.78rem; --fs-l: 1.4rem;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-title: 'Shojumaru', system-ui, sans-serif;
+    --font-accent: 'Fugaz One', system-ui, sans-serif;  /* link buttons, display names */
+
     /* Lets max-height animate to fit-content — makes .collapse actually
        ease open in supporting browsers (progressive enhancement) */
     interpolate-size: allow-keywords;

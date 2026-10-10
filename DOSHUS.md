@@ -15,7 +15,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy); VS Code reads it directly |
 | `CLAUDE.md` | One-line doorway that imports `AGENTS.md` for Claude Code |
 | `BLUEPRINT.md` | Site architecture and roadmap |
-| `UI-SPEC.md` | The board layout: panels visitors move, resize and hide, fluid on every screen. Layout and feel only, so it ports (Aether next); the site's look and rollout live in `BLUEPRINT.md`. Proving ground: `/lab/nexus` |
+| `UI-SPEC.md` | The board layout: panels visitors move, resize and hide, fluid on every screen. Layout and feel only, so it ports (Aether next); the site's look and rollout live in `BLUEPRINT.md`. First page on it: `/nexus` |
 | `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
 | `scripts/generate-meme-list.js` | `bun run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
 | `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images); report first, `--apply` to swap |

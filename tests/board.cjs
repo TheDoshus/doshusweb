@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The board engine (UI-SPEC.md, public/js/board.js) in a real browser, on /lab/nexus served from
+// The board engine (UI-SPEC.md, public/js/board.js) in a real browser, on /nexus served from
 // public/. Every case here is a bug a review found or a promise the spec makes.
 // Run: bun run test. Once per machine: bunx playwright install chromium. PW_CHROMIUM=<path to a
 // chrome binary> runs another Chromium build instead of Playwright's own.
@@ -10,7 +10,7 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 
 const ROOT = path.join(__dirname, '..', 'public');
-const PAGE = '/lab/nexus.html';
+const PAGE = '/nexus.html';
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml',
     '.woff2': 'font/woff2', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.mp4': 'video/mp4', '.webm': 'video/webm' };
 const WIDE = { viewport: { width: 1440, height: 900 } };
@@ -76,14 +76,14 @@ const TESTS = {
     },
     async 'a drag moves a panel and saves; Escape puts it back'(browser) {
         const { page, errors } = await open(browser);
-        await center(page, 'mobile');
-        const before = await cells(page, 'mobile');
-        await drag(page, '#mobile .panel-head', 200, 0);
-        const moved = await cells(page, 'mobile');
+        await center(page, 'stack');
+        const before = await cells(page, 'stack');
+        await drag(page, '#stack .panel-head', 200, 0);
+        const moved = await cells(page, 'stack');
         assert.ok(moved[0] > before[0], `moved right: ${before} -> ${moved}`);
-        assert.ok(JSON.parse(await saved(page)).items.some((i) => i.id === 'mobile' && i.x === moved[0]));
-        await drag(page, '#mobile .panel-head', -200, 0, { before: () => page.keyboard.press('Escape') });
-        assert.deepEqual(await cells(page, 'mobile'), moved);
+        assert.ok(JSON.parse(await saved(page)).items.some((i) => i.id === 'stack' && i.x === moved[0]));
+        await drag(page, '#stack .panel-head', -200, 0, { before: () => page.keyboard.press('Escape') });
+        assert.deepEqual(await cells(page, 'stack'), moved);
         return errors;
     },
     async 'a drop after autoscrolling keeps the page where it is'(browser) {
@@ -124,20 +124,20 @@ const TESTS = {
     },
     async 'two fingers run one gesture'(browser) {
         const { ctx, page, errors } = await open(browser, { viewport: { width: 1300, height: 900 }, hasTouch: true });
-        await center(page, 'mobile');
+        await center(page, 'stack');
         const cdp = await ctx.newCDPSession(page);
         const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([id, x, y]) => ({ id, x, y })) });
-        const a = await page.locator('#mobile .panel-head').boundingBox(), b = await page.locator('#stack .panel-head').boundingBox();
-        const mobile = await cells(page, 'mobile');
+        const a = await page.locator('#stack .panel-head').boundingBox(), b = await page.locator('#signals .panel-head').boundingBox();
+        const stack = await cells(page, 'stack');
         const A = [1, a.x + 100, a.y + 20], B = [2, b.x + 100, b.y + 20];
         await touch('touchStart', [A]); await sleep(100);
         await touch('touchStart', [A, B]); await sleep(700);
-        assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.is-dragging')].map((p) => p.id)), ['mobile']);
+        assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.is-dragging')].map((p) => p.id)), ['stack']);
         await touch('touchMove', [[1, A[1] + 160, A[2]], [2, B[1] - 60, B[2]]]); await sleep(100);
         await touch('touchMove', [[1, A[1] + 160, A[2]]]); await sleep(200); // finger 2 lifts: it's no longer listed
         assert.equal(await arranging(page), true, 'lifting the second finger ends nothing');
         await touch('touchEnd', []); await sleep(300);
-        assert.ok((await cells(page, 'mobile'))[0] > mobile[0], "the first finger's move lands");
+        assert.ok((await cells(page, 'stack'))[0] > stack[0], "the first finger's move lands");
         assert.equal(await arranging(page), false);
         return errors;
     },
@@ -209,21 +209,52 @@ const TESTS = {
         assert.ok(sh <= ch, `scrollHeight ${sh} > clientHeight ${ch}`);
         return errors;
     },
+    async 'a panel taller than the screen scrolls to its end, then the page carries on'(browser) {
+        const all = [];
+        for (const opts of [WIDE, PHONE]) {
+            const { ctx, page, errors } = await open(browser, opts);
+            all.push(...errors);
+            const at = `${opts.viewport.width}px`;
+            const body = () => page.evaluate(() => { const b = document.querySelector('#dev-core .panel-body'); return [b.scrollTop, b.scrollHeight - b.clientHeight]; });
+            assert.ok((await body())[1] > 0, `${at}: Dev Core fits on screen, so this case tests nothing`);
+            await page.evaluate(() => { const b = document.querySelector('#dev-core .panel-body').getBoundingClientRect(); scrollBy({ top: b.top - 100, behavior: 'instant' }); });
+            await sleep(200);
+            const box = await page.locator('#dev-core .panel-body').boundingBox();
+            const [x, y] = [box.x + box.width / 2, box.y + 150];
+            const y0 = await page.evaluate(() => scrollY);
+            // A finger swipes up (CDP touch events; a synthesized scroll gesture moves nothing headless), a mouse wheels
+            const cdp = opts.hasTouch && await ctx.newCDPSession(page);
+            const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts });
+            for (let n = 0; n < 4; n++) {
+                if (!cdp) { for (let i = 0; i < 3; i++) { await page.mouse.move(x, y); await page.mouse.wheel(0, 250); await sleep(60); } continue; }
+                await touch('touchStart', [{ x, y: y + 200 }]);
+                for (let i = 1; i <= 10; i++) { await touch('touchMove', [{ x, y: y + 200 - i * 25 }]); await sleep(16); }
+                await touch('touchEnd', []);
+                await sleep(400);
+            }
+            await sleep(300);
+            const [top, max] = await body();
+            assert.ok(top >= max - 1, `${at}: the panel stopped at ${top} of ${max}`);
+            assert.ok((await page.evaluate(() => scrollY)) > y0 + 200, `${at}: the page did not carry on past the panel`);
+            await ctx.close();
+        }
+        return all;
+    },
     async 'the keyboard moves and resizes'(browser) {
         const { page, errors } = await open(browser);
-        const [x, y, w, h] = await cells(page, 'mobile');
-        await page.focus('#mobile .panel-grip');
+        const [x, y, w, h] = await cells(page, 'stack');
+        await page.focus('#stack .panel-grip');
         await page.keyboard.press('ArrowRight');
-        assert.equal((await cells(page, 'mobile'))[0], x + 1);
-        await page.focus('#mobile .panel-edge[data-dir="se"]');
+        assert.equal((await cells(page, 'stack'))[0], x + 1);
+        await page.focus('#stack .panel-edge[data-dir="se"]');
         await page.keyboard.press('ArrowDown');
-        assert.equal((await cells(page, 'mobile'))[3], h + 1);
+        assert.equal((await cells(page, 'stack'))[3], h + 1);
         assert.ok(await saved(page));
         return errors;
     },
     async 'Reset, then Undo, puts the visitor layout back'(browser) {
         const { page, errors } = await open(browser);
-        await page.focus('#mobile .panel-grip');
+        await page.focus('#stack .panel-grip');
         await page.keyboard.press('ArrowRight');
         const mine = await saved(page);
         const reset = page.locator('.board-bar button', { hasText: 'Reset layout' });

@@ -54,7 +54,7 @@ is one read; the Firebase SDK loads only for the chat (the pointer on the orb, t
 opened, a send, or a visitor with a conversation going). Tests: `tests/chatorb-client.cjs` (client wiring) and
 `tests/rules-emulator.py` (rules, in the Firebase emulator); both commands are in `DOSHUS.md`.
 
-**Status surfaces.** `js/zephyy-widget.js` (badge on home, nexus and lab/nexus) and
+**Status surfaces.** `js/zephyy-widget.js` (badge on home and nexus) and
 `/zephyy/status` both read `zephyy/status` in RTDB.
 
 ## Connected systems
@@ -87,9 +87,10 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 | `9414bd21` | Real OG images (every page's `og:image` is `doshusfavi.ico` today), `sitemap.xml` (lists 3 of 5 top-level pages, no `/zephyy/*`), `humans.txt` (empty) |
 | `ec678abe` | QA page claims vs live: needs OpenClaw to verify. The crew page's model chains and schedules are now generated (`data/crew-facts.json`) |
 
-**Board rollout** (the layout in `UI-SPEC.md`, signed off 2026-10-09): `/lab/nexus` stays the
-proving ground for each change; next the lab replaces `nexus.html` (nexus.css keeps only the
-hero and footer bits, and the board's scales move from `board.css` to `shared.css`), then
+**Board rollout** (the layout in `UI-SPEC.md`, signed off 2026-10-09): Nexus is the first page on it
+(2026-10-10), and the lab copy it was proven on is retired; board changes are proven on a
+preview channel and `tests/board.cjs` runs on `/nexus`. nexus.css keeps only the hero, the room
+around the board and the footer link; the board's scales live in `shared.css`. Next come
 Finance Hub, the Lounge, the home page (Doshus, 2026-10-10: its hero stays; everything below it
 becomes the board, the Discord section included, with the same spacing between sections as
 now) and, last, Zephyy's profile (Doshus, 2026-10-10). Each conversion follows `UI-SPEC.md` § Converting a page. The widget catalog reuses the profile's htmx
