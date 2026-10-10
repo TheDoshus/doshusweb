@@ -47,7 +47,7 @@
     --fs-xs: 0.68rem; --fs-s: 0.78rem; --fs-l: 1.4rem;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
     --font-title: 'Shojumaru', system-ui, sans-serif;
-    --font-panel: var(--font-title);  /* every board panel's title, on every page */
+    --font-panel: var(--font-title);  /* a board panel's title (Finance Hub keeps its own header styles) */
     --font-accent: 'Fugaz One', system-ui, sans-serif;  /* link buttons, display names */
     --font-body: 'Nata Sans', system-ui, sans-serif;
     --font-button: 'Braah One', system-ui, sans-serif;  /* buttons, fold bars */
@@ -139,6 +139,15 @@
     font-family: 'Fugaz One';
     src: url('../assets/fonts/FugazOne-Regular.woff2') format('woff2');
     font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+/* JetBrains Mono 2.304 (SIL OFL 1.1), its variable weights, trimmed to Latin, punctuation, arrows,
+   box drawing and checks (52 KB) */
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('../assets/fonts/JetBrainsMono-VariableFont_wght.woff2') format('woff2');
+    font-weight: 100 800;
     font-style: normal;
     font-display: swap;
 }
@@ -321,16 +330,17 @@ h1, h2, h3 { text-wrap: balance; }
     opacity: 0.9;
 }
 
-.qlBtns { display: grid;
+/* Link buttons: one style site-wide. A board panel's accent colors them (--accent), finance green elsewhere */
+.qlBtns { display: grid; --btn-accent: var(--accent, var(--accent-finance));
     grid-template-columns: repeat(3, minmax(125px, 1fr));
     gap: 1rem;
     font-family: var(--font-accent);
 }
 .qlBtns > .qlBtn { text-decoration: none; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     padding: 1.2rem 0.8rem;
-    background: oklch(var(--accent-finance) / 0.08);
-    border: 2px solid oklch(var(--accent-finance) / 0.25); border-radius: 12px;
-    color: oklch(var(--accent-finance));
+    background: oklch(var(--btn-accent) / 0.08);
+    border: 2px solid oklch(var(--btn-accent) / 0.25); border-radius: 12px;
+    color: oklch(var(--btn-accent));
     font-size: 0.85rem; font-weight: 600;
     
     /* Flex setup for internal alignment */
@@ -338,11 +348,11 @@ h1, h2, h3 { text-wrap: balance; }
     gap: 0.6rem;
 }
 .qlBtns > .qlBtn:hover {
-    background: oklch(var(--accent-finance) / 0.15);
-    border-color: oklch(var(--accent-finance));
-    color: oklch(var(--accent-finance) / 0.8); /* Slight color pop on hover */
+    background: oklch(var(--btn-accent) / 0.15);
+    border-color: oklch(var(--btn-accent));
+    color: oklch(var(--btn-accent) / 0.8); /* Slight color pop on hover */
     transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 10px 25px oklch(var(--accent-finance) / 0.25);
+    box-shadow: 0 10px 25px oklch(var(--btn-accent) / 0.25);
 }
 .qlBtns > .qlBtn:active {
     transform: translateY(0) scale(0.98);
@@ -425,6 +435,10 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 /* Tab & Phone Optimizations */
+/* In a board panel the grid answers to the panel's width, not the window's */
+@container panel (max-width: 26rem) { .qlBtns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container panel (max-width: 14rem) { .qlBtns { grid-template-columns: 1fr; } }
+
 @media (max-width: 900px) {
     h2 { text-align: center; }
     .content-section { padding: 3rem 0.5rem; }

@@ -90,14 +90,15 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 **Board rollout** (the layout in `UI-SPEC.md`, signed off 2026-10-09): Nexus is the first page on it
 (2026-10-10), and the lab copy it was proven on is retired; board changes are proven on a
 preview channel and `tests/board.cjs` runs on `/nexus`. nexus.css keeps only the hero, the room
-around the board and the footer link; the board's scales live in `shared.css`. Next come
-Finance Hub, the Lounge, the home page (Doshus, 2026-10-10: its hero stays; everything below it
+around the board and the footer link; the board's scales live in `shared.css`. Finance Hub
+followed the same day (Doshus's call: the slider stays and each slide is a board of its blocks;
+panel titles keep the font and color of the header each replaced). Next come the Lounge, the home page (Doshus, 2026-10-10: its hero stays; everything below it
 becomes the board, the Discord section included, with the same spacing between sections as
 now) and, last, Zephyy's profile (Doshus, 2026-10-10). Each conversion follows `UI-SPEC.md` § Converting a page. The widget catalog reuses the profile's htmx
 fragments (`zephyy/fragments/`, htmx 2.0.10, moving from `/zephyy/vendor/` to a shared vendor
 folder). Site-specific parts that stay out of the spec: the cells go through the CSSOM, so no
 `style=` attribute ever leans on the CSP's `'unsafe-inline'`; `board.css` also carries the
-site's content kit (`.group`, `.chips`, `.fold`, `.tip`) and its cosmic panel surfaces.
+site's content kit (`.group`, `.fold`, `.tip`; links are the site's own `.qlBtns` buttons, from `shared.css`) and its cosmic panel surfaces.
 
 Chat-orb follow-through (abuse admission, retention, processing health, real-browser CSP
 checks) is tracked in OpenClaw `scripts/bridges/orb/README.md` § Remaining work, not here.

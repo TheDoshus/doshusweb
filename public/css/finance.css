@@ -1,10 +1,10 @@
 /* ─── CARD TOOLTIP ─── */
-.card-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: oklch(var(--space-oled) / 0.85); border: 1px solid oklch(var(--accent-finance)); border-radius: 8px; visibility: hidden; transition: all 0.3s ease; z-index: 100; pointer-events: none; line-height: 1.4; width: 200px; padding: 0.6rem 0.8rem; font-size: 0.75rem; color: var(--text-main); }
+.card-tooltip { position: absolute; bottom: 100%; left: 50%; transform: translateX(calc(-50% + var(--tip-shift, 0px))); background: oklch(var(--space-oled) / 0.85); border: 1px solid oklch(var(--accent-finance)); border-radius: 8px; visibility: hidden; transition: all 0.3s ease; z-index: 100; pointer-events: none; line-height: 1.4; width: 200px; padding: 0.6rem 0.8rem; font-size: 0.75rem; color: var(--text-main); }
 .card-tooltip ul { list-style: none; text-align: left; }
 .card-tooltip li { position: relative; font-size: 0.72rem; line-height: 1.4; padding-left: 0.8rem; margin-bottom: 0.2rem; }
 .card-tooltip li::before { position: absolute; left: 0; content: '•'; color: oklch(var(--accent-finance)); }
 .card-tooltip li:last-child { margin-bottom: 0; }
-.card-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: oklch(var(--accent-finance) / 0.4); }
+.card-tooltip::after { content: ''; position: absolute; top: 100%; left: calc(50% - var(--tip-shift, 0px)); transform: translateX(-50%); border: 6px solid transparent; border-top-color: oklch(var(--accent-finance) / 0.4); }
 
 /* ─── CREDIT CARD GRID ─── */
 .ccGrid { display: grid; gap: 1.75rem;
@@ -18,10 +18,13 @@
     gap: 0.4rem;
 }
 .ccCard img { width: 100%; height: auto; object-fit: cover; border-radius: 8px; }
-.ccCard:hover .card-tooltip { visibility: visible; transform: translateX(-50%) translateY(-8px); }
+.ccCard:hover { z-index: 1; } /* its tooltip paints over the next row's cards */
+.ccCard:hover .card-tooltip { visibility: visible; transform: translateX(calc(-50% + var(--tip-shift, 0px))) translateY(-8px); }
 /* No room above inside the box that clips it (js/finance.js): under the card instead */
 .ccCard.tip-below .card-tooltip { bottom: auto; top: 100%; }
-.ccCard.tip-below:hover .card-tooltip { transform: translateX(-50%) translateY(8px); }
+.ccCard.tip-below:hover .card-tooltip { transform: translateX(calc(-50% + var(--tip-shift, 0px))) translateY(8px); }
+/* Resting tooltips hang past the outer cards: no sideways scrollbar for them (a shown one shifts inside) */
+.panel-body:has(> .ccGrid) { overflow-x: hidden; }
 .ccCard.tip-below .card-tooltip::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: oklch(var(--accent-finance) / 0.4); }
 .ccCard:hover { transform: translateY(-5px);
     border-color: oklch(var(--accent-finance));
@@ -93,12 +96,14 @@
     margin-top: 1.5rem;
 }
 .tips-column { flex: 1; min-width: 0; /* prevents flex overflow */ }
+.tips-column .qlBtns { grid-template-columns: repeat(3, minmax(0, 1fr)); } /* three across as before, narrowing instead of running past the column */
 
 @container panel (max-width: 49rem) {
     .tips-columns { flex-direction: column; }
 }
 
 /* ─── SOURCES ICON BUTTON ─── */
+.srcBtn[hidden] { display: none; } /* its display: flex would beat the hidden attribute */
 .srcBtn { position: absolute; background: oklch(var(--accent-crypto) / 0.1); color: oklch(var(--accent-crypto)); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; width: 28px; height: 28px; border-radius: 50%;
     right: 0.8rem; border: 1px solid oklch(var(--accent-crypto) / 0.4);
     font-size: 0.85rem;
@@ -200,7 +205,7 @@
 .bank-bonus { font-size: 0.7rem; color: oklch(var(--accent-finance)); font-weight: 600; opacity: 1; }
 
 /* ─── CRYPTO TICKER WRAPPER ─── */
-.crypto-ticker-wrapper { margin: 1rem 0; border-radius: 10px; overflow: hidden; border: 1px solid oklch(var(--accent-finance) / 0.15); background: oklch(var(--accent-finance) / 0.03); width: 105%; align-self: center; height: 55px;     overflow: hidden; }
+.crypto-ticker-wrapper { margin: 1rem 0; border-radius: 10px; overflow: hidden; border: 1px solid oklch(var(--accent-finance) / 0.15); background: oklch(var(--accent-finance) / 0.03); height: 55px; }
 
 /* ─── UNCLAIMED MONEY BOX ─── */
 .unclaimedBox { text-align: center; } /* the eye-catcher's body; its panel (accent invest) is the frame */
@@ -369,12 +374,19 @@
 
 /* ─── A SLIDE ON THE BOARD (UI-SPEC.md): its title and intro, then its board ─── */
 /* A blur on the slide would pin a dragged panel to it (a backdrop-filter is a containing block for fixed) */
-.slide:has(> .board) { backdrop-filter: none; }
-.slide-head { --sec: var(--accent-finance); margin-bottom: 0.5rem; }
+.slide:has(> .board) { backdrop-filter: none; padding-bottom: 6rem; }
+.slide-head { --sec: var(--accent-finance); display: flex; flex-direction: column; gap: 1rem; margin-bottom: 0.5rem; padding-inline: 0.625rem; }
 .slide-head h2 { font-size: clamp(2rem, 3vw, 2.25rem); color: oklch(var(--sec)); }
-.slide-head > p { font-size: 0.9rem; opacity: 0.7; line-height: 1.5; margin: 0.5rem 0; }
-.slide-head > .board-bar { margin-top: 0.5rem; }
+.slide-head > p { font-size: 0.9rem; opacity: 0.7; line-height: 1.5; margin: 0 0 0.5rem; }
+.slide-head > .crypto-ticker-wrapper { margin: 0; }
 .slide .panel { --sec: var(--accent); }
+/* A panel's title keeps the font and color of the header it replaced (Doshus, 2026-10-10): a link
+   group's header by default, an info box's (.title-info) or a fold bar's (.title-fold) */
+.slide .panel-head h2 { font: 600 clamp(1.45rem, 3vw, 1.525rem) var(--font-h3); line-height: normal; text-align: center; color: var(--text-main); opacity: 0.9; }
+.slide .panel-head h2.title-info { font: 600 1.1rem var(--font-body); text-align: start; color: oklch(var(--sec)); opacity: 1; }
+.slide .panel-head h2.title-fold { font: 600 1rem var(--font-button); color: oklch(var(--sec)); opacity: 1; }
+.slide .panel-head:has(> .title-fold) { background: oklch(var(--sec) / 0.05); border-radius: var(--r-l) var(--r-l) 0 0; } /* the fold bar's tint */
+.slide .panel.is-collapsed .panel-head:has(> .title-fold) { border-radius: var(--r-l); }
 .panel-body > .tracker-widget { max-width: none; } /* its panel sets the width */
 
 /* ─── FINANCE CARD SLIDER ─── */
@@ -468,6 +480,8 @@
 .footer-nav a.footer-active { color: oklch(var(--accent-finance)); font-weight: 600; }
 
 /* ─── MOBILE: Hide labels, smaller bar ─── */
+@media (max-width: 900px) { .slide-head h2 { margin-bottom: 1rem; } }
+@media (max-width: 640px) { .slide-head { padding-inline: 1rem; } }
 @media (max-width: 700px) {
     .dot-label { display: none; }
     .nav-dots-track { gap: 0; margin: auto; }

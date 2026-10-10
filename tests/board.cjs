@@ -41,6 +41,8 @@ async function open(browser, opts = WIDE, { init, motion = 'reduce', delayBoard,
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(base + path, { waitUntil: 'load' });
+    // Web fonts change what a panel measures; board.js measures its defaults again once they're in
+    await page.evaluate(() => document.fonts.ready);
     await sleep(600);
     return { ctx, page, errors };
 }
@@ -115,7 +117,14 @@ const TESTS = {
         const t0 = Date.now();
         let moved = 0;
         while (moved <= 100 && Date.now() - t0 < 3000) { await sleep(100); moved = y0 - (await page.evaluate(() => scrollY)); }
-        const rate = moved / (Date.now() - t0);
+        // The pace, timed in the page between two samples once it's running (a clock started out here
+        // misses whatever scrolled before it, so a busy machine read fast)
+        const sample = () => page.evaluate(() => [scrollY, performance.now()]);
+        const [s1, t1] = await sample();
+        await sleep(300);
+        const [s2, t2] = await sample();
+        assert.ok(s2 > 0, 'reached the top while timing the pace');
+        const rate = (s1 - s2) / (t2 - t1);
         await page.mouse.up();
         assert.ok(moved > 100, `scrolled only ${moved}px up in 3s of resting`);
         // Paced by time, not frames: under the 1.2 px/ms cap, and nowhere near a pixel a frame
@@ -277,7 +286,8 @@ const TESTS = {
                 const p = document.getElementById('rig'), row = parseFloat(getComputedStyle(p.parentElement).gridAutoRows);
                 const head = p.querySelector('.panel-head').offsetHeight + 2 * parseFloat(getComputedStyle(p).marginTop) + p.offsetHeight - p.clientHeight;
                 const body = p.querySelector('.panel-body');
-                return { collapsed: p.classList.contains('is-collapsed'), slack: +p.style.getPropertyValue('--h') - head / row, over: body.scrollHeight - body.clientHeight };
+                return { collapsed: p.classList.contains('is-collapsed'), slack: +p.style.getPropertyValue('--h') - head / row, over: body.scrollHeight - body.clientHeight,
+                    capped: +p.style.getPropertyValue('--h') >= Math.floor(innerHeight / row) };
             });
             const start = await rig();
             assert.ok(start.collapsed && start.slack >= 0 && start.slack < 1, `${at}: starts as a tight title bar ${JSON.stringify(start)}`);
@@ -285,7 +295,7 @@ const TESTS = {
             await page.click('#rig .panel-collapse');
             await frames(page);
             const opened = await rig();
-            assert.ok(!opened.collapsed && opened.over <= 0, `${at}: opens to its content ${JSON.stringify(opened)}`);
+            assert.ok(!opened.collapsed && (opened.over <= 0 || opened.capped), `${at}: opens to its content (or a screen tall) ${JSON.stringify(opened)}`);
             if (opts === WIDE) {
                 await page.locator('.board-bar button', { hasText: 'Reset layout' }).click();
                 await frames(page);
@@ -321,25 +331,90 @@ const TESTS = {
         for (const opts of [WIDE, PHONE]) {
             const { page, errors } = await open(browser, opts, { path: '/financehub.html' });
             all.push(...errors);
-            for (const card of (await page.locator('.ccGrid .ccCard').all()).slice(0, 8)) {
+            for (const card of await page.locator('.ccGrid .ccCard').all()) {
                 await card.scrollIntoViewIfNeeded();
                 await card.hover();
-                await frames(page);
-                const cut = await card.evaluate((c) => {
-                    const tip = c.querySelector('.card-tooltip').getBoundingClientRect();
-                    // The top of the nearest box that clips it: an open fold's content, a scrolling panel body
-                    let box = 0;
-                    for (let n = c.parentElement; n && !box; n = n.parentElement) {
-                        if (n.matches('details[open]') && getComputedStyle(n, '::details-content').overflow !== 'visible') box = n.querySelector('summary').getBoundingClientRect().bottom;
-                        else if (getComputedStyle(n).overflow !== 'visible') box = n.getBoundingClientRect().top;
-                    }
-                    return Math.round(Math.max(box, 0) - tip.top);
+                // Its lift and the tooltip's move are transitions: wait them out, not a frame count
+                await card.evaluate((c) => Promise.all(c.getAnimations({ subtree: true }).map((a) => a.finished)));
+                const bad = await card.evaluate((c) => {
+                    const tip = c.querySelector('.card-tooltip'), r = tip.getBoundingClientRect();
+                    const box = c.closest('.panel-body').getBoundingClientRect(), out = [];
+                    if (r.top < Math.max(box.top, 0) - 0.5 || r.bottom > Math.min(box.bottom, innerHeight) + 0.5) out.push(`cut ${Math.round(r.top)}-${Math.round(r.bottom)} vs ${Math.round(box.top)}-${Math.round(box.bottom)}`);
+                    if (r.left < box.left - 0.5 || r.right > box.right + 0.5) out.push(`cut at the side ${Math.round(r.left)}-${Math.round(r.right)} vs ${Math.round(box.left)}-${Math.round(box.right)}`);
+                    tip.style.pointerEvents = 'auto'; // it ignores the pointer; ask what paints on top at its middle
+                    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                    tip.style.removeProperty('pointer-events');
+                    if (!tip.contains(top)) out.push(`under ${top?.className}`);
+                    return out.join('; ');
                 });
-                assert.ok(cut <= 0, `${opts.viewport.width}px: ${await card.locator('.card-title').textContent()}'s tooltip cut by ${cut}px`);
+                assert.equal(bad, '', `${opts.viewport.width}px: ${await card.locator('.card-title').textContent()}'s tooltip: ${bad}`);
             }
+            const [sw, cw] = await page.evaluate(() => { const b = document.querySelector('#cc-cards .panel-body'); return [b.scrollWidth, b.clientWidth]; });
+            assert.ok(sw <= cw, `${opts.viewport.width}px: the card panel scrolls sideways (${sw} > ${cw})`);
             await page.context().close();
         }
         return all;
+    },
+    async 'at a narrower desktop window the default rows grow to their content'(browser) {
+        const all = [];
+        for (const [path, viewport] of [['/nexus.html', { width: 1100, height: 1000 }], ['/financehub.html', { width: 1280, height: 720 }]]) {
+            const { page, errors } = await open(browser, { viewport }, { path });
+            all.push(...errors);
+            const short = await page.evaluate(() => [...document.querySelectorAll('.board > .panel:not(.panel-media):not(.is-collapsed):not([hidden])')].flatMap((p) => {
+                const b = p.querySelector('.panel-body'), row = parseFloat(getComputedStyle(p.parentElement).gridAutoRows);
+                const capped = +p.style.getPropertyValue('--h') >= Math.floor(innerHeight / row);
+                return b.scrollHeight - b.clientHeight > 1 && !capped ? [`${p.id} ${b.scrollHeight - b.clientHeight}px`] : [];
+            }));
+            assert.deepEqual(short, [], `${path} at ${viewport.width}px: panels scrolling inside`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async 'Finance Hub: the slider follows a slide that shrinks, even while panels glide'(browser) {
+        const init = () => localStorage.setItem('financeSlidePosition', '4');
+        const { page, errors } = await open(browser, WIDE, { init, motion: 'no-preference', path: '/financehub.html' });
+        await page.click('#nw-budget .panel-collapse');
+        await sleep(1600); // past the glide
+        const [view, slide] = await page.evaluate(() => [document.querySelector('.sliderView').getBoundingClientRect().height, document.querySelector('.slide.active-slide').offsetHeight]);
+        assert.ok(Math.abs(view - slide) < 2, `the window is ${Math.round(view)}px on a ${slide}px slide`);
+        return errors;
+    },
+    async "Finance Hub: the last panel is clear of the footer and Zephyy's orb at the end of the page"(browser) {
+        const all = [];
+        for (const opts of [WIDE, PHONE]) {
+            const { page, errors } = await open(browser, opts, { path: '/financehub.html' });
+            all.push(...errors);
+            await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+            await sleep(400);
+            const hit = await page.evaluate(() => {
+                const b = document.querySelector('#cc-banks .panel-collapse').getBoundingClientRect();
+                return document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)?.closest('.panel-collapse') ? 'ok' : 'covered';
+            });
+            assert.equal(hit, 'ok', `${opts.viewport.width}px: Bank Accounts' ▾ is covered`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async 'Finance Hub: arrow keys during a panel drag stay on the slide'(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/financehub.html' });
+        await center(page, 'cc-tools');
+        const h = await page.locator('#cc-tools .panel-head').boundingBox();
+        await page.mouse.move(h.x + 100, h.y + 20);
+        await page.mouse.down();
+        await page.mouse.move(h.x + 160, h.y + 40, { steps: 4 });
+        await page.keyboard.press('ArrowRight');
+        await page.mouse.up();
+        await sleep(200);
+        assert.equal(await page.evaluate(() => document.querySelector('.slide.active-slide').id), 'slide-credit');
+        return errors;
+    },
+    async 'a headless panel marked data-collapsed stays open and breaks nothing'(browser) {
+        const init = () => new MutationObserver((_, mo) => { const p = document.getElementById('meme-1'); if (p) { p.dataset.collapsed = ''; mo.disconnect(); } })
+            .observe(document, { childList: true, subtree: true });
+        const { page, errors } = await open(browser, WIDE, { init });
+        assert.equal(await page.evaluate(() => document.getElementById('meme-1').classList.contains('is-collapsed')), false);
+        assert.ok(await page.evaluate(() => document.querySelectorAll('.panel-tools').length > 0), 'the board set up');
+        return errors;
     },
     async 'collapse to the title bar and back'(browser) {
         const { page, errors } = await open(browser);
@@ -548,7 +623,8 @@ const TESTS = {
             await page.focus('#meme-1 .panel-edge[data-dir="se"]');
             for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowLeft');
             await page.focus('#meme-1 .panel-grip');
-            await frames(page);
+            // It shows through a transition: wait that out, not a frame count (a busy machine starts it late)
+            await page.evaluate(() => Promise.all(document.querySelector('#meme-1 .panel-grip').getAnimations().map((a) => a.finished)));
             const bad = await page.evaluate(() => {
                 const g = document.querySelector('#meme-1 .panel-grip').getBoundingClientRect(), p = document.getElementById('meme-1').getBoundingClientRect();
                 const top = document.elementFromPoint(g.x + g.width / 2, g.y + g.height / 2);

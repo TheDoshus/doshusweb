@@ -20,5 +20,12 @@
 /* ─── BOARD: the same room around it as the bento grid it replaced ─── */
 .board-wrap { margin-block: 6rem; }
 
+/* Link buttons: the site's (.qlBtns, shared.css) at Nexus's own compact size, as before the board */
+.board .qlBtns { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 0.5rem; }
+.board .qlBtn { border-width: 1px; border-color: oklch(var(--btn-accent) / 0.3); border-radius: 8px;
+    padding: 0.6rem 0.55rem; font-size: 0.72rem; line-height: 1.25; gap: 0.3rem; min-height: 44px;
+}
+.board .qlBtn:hover { background: oklch(var(--btn-accent) / 0.16); color: oklch(var(--btn-accent)); box-shadow: 0 5px 15px oklch(var(--btn-accent) / 0.25); }
+
 /* Sticky footer Nexus link */
 .footer-nav a.nx-active { color: oklch(var(--accent-invest)); font-weight: 600; }

@@ -16,7 +16,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const panels = [...board.children].filter((el) => el.matches('.panel'));
     const title = (p) => p.querySelector('h2')?.textContent ?? p.getAttribute('aria-label') ?? p.id;
     // A panel marked data-collapsed starts as its title bar (data-h counts the bar's rows) and opens to its content
-    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: p.hidden, collapsed: 'collapsed' in p.dataset });
+    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: p.hidden, collapsed: 'collapsed' in p.dataset && !!p.querySelector('.panel-head') });
     const copy = (map) => new Map([...map].map(([p, r]) => [p, { ...r }]));
     // Three grids, each with its own layout and save (board.css sets their --cols): wide, placed by
     // data-x/y/w/h; mid, up to 1080px (foldables, tablets), the wide layout flowed onto half the
@@ -148,11 +148,20 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     function defaults() {
         const wide = new Map(panels.map((p) => [p, read(p)]));
         const t = tier();
-        if (t === 'wide') return fit(wide);
+        const media = (p) => p.matches('.panel-media');
+        if (t === 'wide') {
+            // The markup's cells, each row grown to its tallest content where this window wraps it
+            // taller than the cells allow; panels sharing a row's top and height grow together
+            render(wide);
+            const row = (r) => `${r.y}/${r.h}`;
+            const need = new Map();
+            wide.forEach((r, p) => { if (!r.collapsed && !r.hidden && !media(p)) need.set(row(r), Math.max(need.get(row(r)) ?? 0, clamp(contentH(p), minH(p), maxH(p)))); });
+            wide.forEach((r) => { if (!r.collapsed) r.h = Math.max(r.h, need.get(row(r)) ?? 0); });
+            return fit(wide);
+        }
         const order = [...wide].sort(([, a], [, b]) => a.y - b.y || a.x - b.x).map(([p]) => p);
         // Phone: full width. Mid: half the row, or all of it for a panel spanning three quarters or
         // more of the wide row, so every row holds two panels or one; a meme keeps its wide height
-        const media = (p) => p.matches('.panel-media');
         const width = (p) => (t === 'phone' || wide.get(p).w >= cols() * 1.5 ? cols() : Math.floor(cols() / 2));
         const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false, collapsed: wide.get(p).collapsed }]));
         render(flow); // at their widths, so each body's content wraps the way it will

@@ -16,7 +16,7 @@ const STORAGE_KEY = 'financeSlidePosition';
 // Size the viewport window to the active card
 function setSliderHeight() {
     const activeSlide = allSlides[currentSlide];
-    if (activeSlide && viewport) viewport.style.height = activeSlide.scrollHeight + 'px';
+    if (activeSlide && viewport) viewport.style.height = activeSlide.offsetHeight + 'px'; // its box: a gliding panel's overflow would inflate scrollHeight
 }
 
 // If you switch from a long card to a short card, jump up to the nav bar
@@ -124,7 +124,8 @@ if (viewport && slides && totalSlides > 0) {
 
     // ─── KEYBOARD NAVIGATION ───
     document.addEventListener('keydown', (e) => {
-        if (e.defaultPrevented) return; // a panel's grip or corner took the arrow
+        // A panel's grip or corner took the arrow, or a panel is being moved
+        if (e.defaultPrevented || slides.querySelector('.board.is-arranging')) return;
         if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
         if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
     });
@@ -147,20 +148,30 @@ if (viewport && slides && totalSlides > 0) {
     allSlides.forEach((slide) => resized.observe(slide));
 }
 
-// ─── CARD TOOLTIPS: under the card when the box they're in would cut them off above ───
-// The nearest box that clips (an open fold clips to its content, a panel body scrolls), or the screen
-function clipTop(el) {
+// ─── CARD TOOLTIPS: kept inside the box that would cut them off ───
+// The nearest box that clips (a panel body scrolls, an open fold clips to its content), or the screen
+function clipBox(el) {
     for (let n = el.parentElement; n; n = n.parentElement) {
-        if (n.matches('details[open]') && getComputedStyle(n, '::details-content').overflow !== 'visible') return n.querySelector('summary').getBoundingClientRect().bottom;
-        if (getComputedStyle(n).overflow !== 'visible') return n.getBoundingClientRect().top;
+        const fold = n.matches('details[open]') && getComputedStyle(n, '::details-content').overflow !== 'visible';
+        if (fold || getComputedStyle(n).overflow !== 'visible') {
+            const r = n.getBoundingClientRect();
+            return { top: fold ? n.querySelector('summary').getBoundingClientRect().bottom : r.top, left: r.left, right: r.right };
+        }
     }
-    return 0;
+    return { top: 0, left: 0, right: innerWidth };
 }
 document.querySelectorAll('.ccCard').forEach((card) => {
     const tip = card.querySelector('.card-tooltip');
     card.addEventListener('pointerenter', () => {
-        card.classList.remove('tip-below');
-        // 13px for the lifts hover gives the card (5) and the tooltip (8)
-        card.classList.toggle('tip-below', tip.getBoundingClientRect().top - 13 < Math.max(0, clipTop(card)));
+        // Where it sits at rest, centered over the card, worked out from layout: a transition still
+        // running from the last hover would skew a measured box
+        const c = card.getBoundingClientRect(), box = clipBox(card), w = tip.offsetWidth;
+        const left = c.left + c.width / 2 - w / 2;
+        // Under the card when there's no room above (13px for the lifts hover gives the card and the tooltip)
+        card.classList.toggle('tip-below', c.top - tip.offsetHeight - 13 < Math.max(0, box.top));
+        // Along the card, never past the box's sides (8px in from them)
+        const shift = Math.max(0, Math.max(box.left, 0) + 8 - left) - Math.max(0, left + w - Math.min(box.right, innerWidth) + 8);
+        if (shift) tip.style.setProperty('--tip-shift', `${shift}px`);
+        else tip.style.removeProperty('--tip-shift');
     });
 });

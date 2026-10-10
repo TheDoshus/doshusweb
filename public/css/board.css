@@ -84,7 +84,8 @@
     background: oklch(var(--space-oled) / 0.5); border: 1px solid oklch(var(--accent-crypto) / 0.4);
 }
 .board-bar button:hover, .board-menu button:hover { border-color: oklch(var(--accent-crypto)); }
-.board-menu { padding: var(--sp-m); border-radius: var(--r-l); color: var(--text-main);
+.board-menu { margin: auto; /* a popover centers by margin: auto, which a page's * { margin: 0 } reset zeroes */
+    padding: var(--sp-m); border-radius: var(--r-l); color: var(--text-main);
     background: oklch(var(--space-oled) / 0.85); backdrop-filter: blur(12px);
     border: 1px solid oklch(var(--accent-crypto) / 0.5);
 }
@@ -235,21 +236,12 @@
 }
 
 /* ─── CONTENT PRIMITIVES ─── */
-/* group: a titled cluster, e.g. a set of link chips */
+/* group: a titled cluster, e.g. a grid of the site's link buttons (.qlBtns, shared.css) */
 .group { display: grid; gap: var(--sp-xs); padding: var(--sp-s);
     background: oklch(var(--accent) / 0.04); border: 1px solid oklch(var(--accent) / 0.25); border-radius: var(--r-m);
 }
 .group > h3 { margin: 0; font: 600 0.72rem var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: oklch(var(--accent)); }
 .group > p { margin: 0; font-size: var(--fs-s); line-height: 1.5; color: var(--text-muted); }
-
-/* chips: a wrap of link buttons */
-.chips { display: flex; flex-wrap: wrap; gap: var(--sp-xs); }
-.chips > a { display: inline-flex; align-items: center; min-height: 2rem; padding: var(--sp-2xs) var(--sp-s);
-    font: 600 0.72rem/1.25 var(--font-accent); text-decoration: none; color: oklch(var(--accent));
-    background: oklch(var(--accent) / 0.08); border: 1px solid oklch(var(--accent) / 0.3); border-radius: var(--r-s);
-    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.chips > a:hover { background: oklch(var(--accent) / 0.16); border-color: oklch(var(--accent)); box-shadow: 0 5px 15px oklch(var(--accent) / 0.25); }
 
 /* fold: native <details> accordion that eases open */
 .fold { background: oklch(var(--accent) / 0.04); border: 1px solid oklch(var(--accent) / 0.22); border-radius: var(--r-m); }
@@ -284,7 +276,7 @@
 
 /* One focus ring for every control in the system */
 .board-bar button:focus-visible, .board-menu button:focus-visible, .panel-tools button:focus-visible,
-.panel-edge:focus-visible, .chips > a:focus-visible, .fold > summary:focus-visible, .tip > a:focus-visible {
+.panel-edge:focus-visible, .fold > summary:focus-visible, .tip > a:focus-visible {
     outline: 2px solid oklch(var(--accent)); outline-offset: 2px; opacity: 1;
 }
 

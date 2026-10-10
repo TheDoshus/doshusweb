@@ -47,7 +47,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
 - **Three tiers, three layouts.** Wide: 24 columns of 2rem rows. Mid (up to 1080px: foldables
   opened, tablets): 12 columns. Phone (up to 640px): 4 columns. Each tier has its own default
   and its own save, and the board swaps between them live as the window crosses a tier (a
-  foldable opening or closing). The wide default is the markup's cells. The mid default flows
+  foldable opening or closing). The wide default is the markup's cells, each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). The mid default flows
   the wide layout onto half the columns: every panel half the row, or all of it if it spans
   three quarters or more of the wide row, so a row holds two panels or one; each as tall as its
   content, media keeping its wide height, in the highest free spot in reading order (a half-width
@@ -73,7 +73,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
   (cut with … when it's long), so the bar is the same height at any width. The space below stays as it was
   (nothing floats up); opening it again pushes down whatever has moved in. A headless media
   panel has no title bar, so no ▾. A page can start a panel collapsed (`data-collapsed`, as a closed fold
-  converts): its `data-h` counts the title bar's rows, and it opens to fit its content.
+  converts): its `data-h` counts the title bar's rows (what the markup lint checks for overlaps; the engine measures the bar itself), and it opens to fit its content. A panel with no title bar ignores it.
 - **Hide and bring back.** ✕ hides a panel and leaves its gap; Add widget (shown only while a
   panel is hidden) brings it back to its spot. Reset (shown only once the layout differs from
   the default) returns to the default, then offers Undo reset until the next change.
