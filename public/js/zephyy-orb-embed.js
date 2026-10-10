@@ -7,7 +7,7 @@
 
     if (!wrapper || !orb) return;
 
-    // zephyy-chat.js injects the whorl glyph as a loose child of the orb;
+    // zephyy-orb.js injects the whorl glyph as a loose child of the orb;
     // move it inside the core so it renders as her avatar, like the profile.
     const core = orb.querySelector('.sitewide-orb-core');
     const glyph = orb.querySelector('.zp-orb-glyph');
@@ -16,11 +16,7 @@
     // An in-progress conversation follows the visitor page to page: skip the
     // shy collapsed/dim idle states and present the full orb immediately.
     // ('auto' suppresses the arrival animation — it only plays on a real tap.)
-    try {
-        const hasConvo = localStorage.getItem('zephyy-chat-session') &&
-            (JSON.parse(localStorage.getItem('zp-chat-cache') || '[]')).length > 0;
-        if (hasConvo) wrapper.classList.add('expanded', 'auto', 'has-session');
-    } catch (e) { /* storage blocked — stay in idle state */ }
+    if (window.zephyyHasConvo?.()) wrapper.classList.add('expanded', 'auto', 'has-session'); // zephyy-orb.js
 
     // Sticky-footer harmony & scroll-aware hide — both driven by the one
     // scroll signal main.js already computes (the .footer-hidden toggle).
@@ -46,14 +42,14 @@
         }
     }
 
-    // Mobile tap-to-expand logic using capture phase to intercept zephyy-chat.js
+    // Mobile tap-to-expand logic using capture phase to intercept zephyy-orb.js
     // (gallery-dock is always full-size — its first tap should open the chat)
     wrapper.addEventListener('click', function(e) {
         if (window.innerWidth <= 768 && !wrapper.classList.contains('expanded') &&
             !wrapper.classList.contains('gallery-dock')) {
             e.preventDefault();
             e.stopPropagation();
-            if (navigator.vibrate) { try { navigator.vibrate(8); } catch (err) {} }
+            window.haptic?.(); // main.js's (the printmon gallery has none)
             wrapper.classList.remove('auto'); // real tap — let the arrival play
             wrapper.classList.add('expanded');
             updateFooterHarmony(); // apply the footer offset before paint, not after

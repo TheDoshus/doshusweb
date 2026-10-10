@@ -19,10 +19,11 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
 | `scripts/generate-meme-list.js` | `bun run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
 | `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images); report first, `--apply` to swap |
-| `scripts/sync-zephyy-{nav,chat}.js` | `bun run sync:zephyy` — re-stamps the Zephyy subpages' nav bar and chat orb from `public/zephyy.html` |
+| `scripts/sync-zephyy-{nav,orb,crew}.js` | `bun run sync:zephyy` — re-stamps the Zephyy subpages' nav bar (from the list in `sync-zephyy-nav.js`), the chat orb (from `public/zephyy.html`) and the crew facts (from `data/crew-facts.json`) |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
 | `scripts/check.js` | `bun run check` — every pre-commit check, read-only (see AGENTS.md § Verify) |
+| `tests/` | `bun run test` — the chat client's wiring, then the board engine in a real browser (Playwright; once per machine: `bunx playwright install chromium`) |
 | `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`bun run csp:hashes`) |
 
 ## Key Folders
@@ -76,7 +77,7 @@ these protections. The backend contract and remaining work live in
 Run these from this repository:
 
 ```bash
-node tests/chatorb-client.cjs
+bun run test
 firebase emulators:exec --only database --project doshusweb "python3 tests/rules-emulator.py"
 ```
 

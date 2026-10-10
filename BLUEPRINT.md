@@ -36,21 +36,25 @@ Update this file when structure, a page, or a cross-repo contract changes.
 | `/financehub` | `financehub.html` | Finance card slider: credit, crypto, investing, taxes, credit report |
 | `/thelounge` | `thelounge.html` | Games, curios, memes |
 | `/bot` | `bot.html` | For site admins who find our User-Agent in their logs: the UA forms, what carries it and what doesn't, how to block it or reach us. UA forms and operator crew stamped by `sync:zephyy` |
-| `/zephyy` | `zephyy.html` | Zephyy's profile: signal deck, story, systems, crew, code, contact |
+| `/zephyy` | `zephyy.html` | Zephyy's profile: signal deck, story, systems, crew, code, contact. Styles: `zephyy.css` (the base all her pages share) + `zephyy-profile.css` (this page only); script: `zephyy-pages.js` (also on the subpages) |
 | `/zephyy/fragments/*` | `zephyy/fragments/*.html` | HTMX panels the profile's signal deck swaps in (`now`, `identity`, `receipts`, `latest`) |
-| `/zephyy/crew` · `/qa` · `/changelog` · `/status` | `zephyy/<id>/index.html` | Subpages. Nav bar and chat orb are stamped from `zephyy.html` by `sync:zephyy`; never hand-edit inside the `zp-nav` / `zp-chat` markers. The crew page's model chains, schedules and operator crew are stamped from `data/crew-facts.json` between `crew:` markers |
+| `/zephyy/crew` · `/qa` · `/changelog` · `/status` | `zephyy/<id>/index.html` | Subpages. The nav bar is stamped from the page list in `scripts/sync-zephyy-nav.js` and the chat orb from `zephyy.html` by `sync:zephyy`; never hand-edit inside the `zp-nav` / `zp-chat` markers. The crew page's model chains, schedules and operator crew are stamped from `data/crew-facts.json` between `crew:` markers |
 | `/amazon/printmon/*` | `amazon/printmon/` | Printmon: handcrafted themed pages, the theme gallery (`gallery.html`) and themes generated from chat (`generated/`, `css/generated/`) |
 | `/amazon/aio/*`, `/amazon/tmb/*` | `amazon/aio/`, `amazon/tmb/` | Work tools: AIO pages, Tampermonkey bookmarks tutorial |
 | 404 | `404.html` | Astronaut error page |
 
 **Chat orb.** On every page, in two forms. The full chat panel lives in the profile
 (canonical markup inside the `zp-chat` markers) and is stamped into each Zephyy subpage;
-client `js/zephyy-realtime.js` + `js/zephyy-chat.js` + `css/zephyy-chat.css`. Everywhere
+client `js/zephyy-live.js` + `js/zephyy-orb.js` + `css/zephyy-orb.css`. Everywhere
 else (home, nexus, financehub, lounge, 404, Printmon gallery) it arrives through
-`js/zephyy-orb-embed.js`. Tests: `tests/chatorb-client.cjs` (client wiring) and
+`js/zephyy-orb-embed.js`; on the Printmon pages it docks (over each theme page's Doshus.NET
+button, in the gallery's hero) through `css/zephyy-orb-dock.css`, linked after the embed sheet.
+Her status streams from RTDB's REST endpoint (Server-Sent Events, no SDK) and the daily thought
+is one read; the Firebase SDK loads only for the chat (the pointer on the orb, the panel
+opened, a send, or a visitor with a conversation going). Tests: `tests/chatorb-client.cjs` (client wiring) and
 `tests/rules-emulator.py` (rules, in the Firebase emulator); both commands are in `DOSHUS.md`.
 
-**Status surfaces.** `js/zephyy-widget.js` (badge on home, nexus and the profile) and
+**Status surfaces.** `js/zephyy-widget.js` (badge on home, nexus and lab/nexus) and
 `/zephyy/status` both read `zephyy/status` in RTDB.
 
 ## Connected systems
@@ -79,14 +83,16 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 
 | Card | What |
 |---|---|
-| `49f2128c` | Seasonal page effects (Doshus's idea). Plan: `main.js` sets `data-month` on `<html>` before the star block reads its tints (the WebGL sky reads `--star-*` once at load), and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, `--star-*` tints, the board's snap field). Section accents stay put so finance stays green |
+| `49f2128c` | Seasonal page effects (Doshus's idea). Plan: `main.js` sets `data-month` on `<html>` before the star block reads its colors (the WebGL sky reads `--star-*` and `--nebula-*` once at load), and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, `--star-*` tints, the board's snap field). Section accents stay put so finance stays green |
 | `9414bd21` | Real OG images (every page's `og:image` is `doshusfavi.ico` today), `sitemap.xml` (lists 3 of 5 top-level pages, no `/zephyy/*`), `humans.txt` (empty) |
 | `ec678abe` | QA page claims vs live: needs OpenClaw to verify. The crew page's model chains and schedules are now generated (`data/crew-facts.json`) |
 
 **Board rollout** (the layout in `UI-SPEC.md`, signed off 2026-10-09): `/lab/nexus` stays the
 proving ground for each change; next the lab replaces `nexus.html` (nexus.css keeps only the
 hero and footer bits, and the board's scales move from `board.css` to `shared.css`), then
-Finance Hub, the Lounge and Zephyy's profile. The widget catalog reuses the profile's htmx
+Finance Hub, the Lounge, Zephyy's profile and the home page (Doshus, 2026-10-10: its hero stays;
+everything below it becomes the board, the Discord section included, with the same spacing
+between sections as now). Each conversion follows `UI-SPEC.md` § Converting a page. The widget catalog reuses the profile's htmx
 fragments (`zephyy/fragments/`, htmx 2.0.10, moving from `/zephyy/vendor/` to a shared vendor
 folder). Site-specific parts that stay out of the spec: the cells go through the CSSOM, so no
 `style=` attribute ever leans on the CSP's `'unsafe-inline'`; `board.css` also carries the

@@ -1,10 +1,11 @@
 /**
  * ZEPHYY CHAT ORB
- * Split from zephyy.js 2026-07-12 — everything chat: panel UI, message
+ * Split from zephyy-pages.js 2026-07-12 — everything chat: panel UI, message
  * rendering (escapeHtml/renderContent), send flow, session lifecycle UX.
  *
- * Depends on zephyy-realtime.js (window.__zpRealtime API: msgsRef/controlRef,
- * loadHistory, resetSession, sessionEnded) — loaded before this file.
+ * Depends on zephyy-live.js, loaded before this file: its 'zephyy-status' events, and
+ * window.__zpConnect(), which connects on first use and resolves with the session API
+ * (loadHistory, sendMessage, resetSession, controlRef, sessionEnded).
  * DOM lives in zephyy.html only; all lookups guard for missing elements.
  */
 
@@ -26,49 +27,40 @@
 
     if (!orb || !panel) return;
 
-    /* Replace the 💬 placeholder with the dual-vortex glyph
-       (local copy — the badge's glyphSVG lives in a separate IIFE closure) */
-    const orbGlyphSVG = `
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="orbGlyphGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="oklch(100% 0 0)" stop-opacity="0.98" />
-                <stop offset="50%" stop-color="oklch(94% 0.035 240)" stop-opacity="0.9" />
-                <stop offset="100%" stop-color="oklch(100% 0 0)" stop-opacity="0.75" />
-            </linearGradient>
-        </defs>
-        <circle cx="32" cy="32" r="29" stroke="oklch(100% 0 0)" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>
-        <g class="whorl-outer">
-            <path d="M 32 9 A 23 23 0 1 1 12 44"
-                stroke="url(#orbGlyphGrad)" stroke-width="3.2" stroke-linecap="round" opacity="0.85"/>
-            <circle cx="32" cy="9" r="2.0" fill="oklch(100% 0 0)" opacity="0.9"/>
-        </g>
-        <g class="whorl-mid">
-            <path d="M 45 40 A 15 15 0 1 1 32 17"
-                stroke="url(#orbGlyphGrad)" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/>
-            <circle cx="45" cy="40" r="1.8" fill="oklch(100% 0 0)" opacity="0.95"/>
-        </g>
-        <g class="whorl-inner">
-            <path d="M 25 36 A 8 8 0 1 1 39 36"
-                stroke="url(#orbGlyphGrad)" stroke-width="3.8" stroke-linecap="round" opacity="0.98"/>
-            <circle cx="25" cy="36" r="1.6" fill="oklch(100% 0 0)" opacity="0.98"/>
-        </g>
-        <circle cx="32" cy="32" r="3.6" fill="oklch(100% 0 0)" class="whorl-center"/>
-    </svg>
-    `;
+    /* Her whorl, the one copy every surface draws: the orb (bold), the chat header, the status
+       badge (zephyy-widget.js) and her profile (zephyy-pages.js). Three rings spin at their own speeds
+       around a pulsing center; zephyy-orb.css colors and moves them. Each copy gets its own
+       gradient id: a page draws several, and a url(#id) into a hidden copy paints nothing */
+    const WHORL = { // per ring (outer, mid, inner): stroke width, opacity, dot radius; then the center's radius
+        fine: { w: [1, 1.2, 1.35], o: [0.55, 0.78, 0.95], dot: [1, 0.85, 0.75], center: 2, ring: 0.45 },
+        bold: { w: [3.2, 3.4, 3.8], o: [0.85, 0.9, 0.98], dot: [2, 1.8, 1.6], center: 3.6, ring: 0.8 },
+    };
+    const RINGS = [['outer', 'M 32 9 A 23 23 0 1 1 12 44', 32, 9], ['mid', 'M 45 40 A 15 15 0 1 1 32 17', 45, 40], ['inner', 'M 25 36 A 8 8 0 1 1 39 36', 25, 36]];
+    let whorls = 0;
+    window.zephyyWhorl = function (bold) {
+        const v = WHORL[bold ? 'bold' : 'fine'];
+        const id = 'zp-whorl-' + (++whorls);
+        return `<svg class="whorl${bold ? ' whorl-bold' : ''}" viewBox="0 0 64 64" fill="none" aria-hidden="true">`
+            + `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0"/><stop offset="0.55"/><stop offset="1"/></linearGradient></defs>`
+            + `<circle class="whorl-ring" cx="32" cy="32" r="29" stroke-width="${v.ring}"/>`
+            + RINGS.map(([name, d, x, y], i) => `<g class="whorl-${name}"><path d="${d}" stroke="url(#${id})" stroke-width="${v.w[i]}" stroke-linecap="round" opacity="${v.o[i]}"/><circle cx="${x}" cy="${y}" r="${v.dot[i]}"/></g>`).join('')
+            + `<circle class="whorl-center" cx="32" cy="32" r="${v.center}"/></svg>`;
+    };
     if (orb && !orb.querySelector('.zp-orb-glyph')) {
         const orbGlyph = document.createElement('span');
         orbGlyph.className = 'zp-orb-glyph';
-        orbGlyph.innerHTML = orbGlyphSVG;
+        orbGlyph.innerHTML = window.zephyyWhorl(true);
         orb.insertBefore(orbGlyph, orb.firstChild);
         orb.classList.add('has-glyph');
     }
+    const headerGlyph = document.querySelector('.zp-chat-icon-glyph');
+    if (headerGlyph) headerGlyph.innerHTML = window.zephyyWhorl();
 
     /* ── Varied first-visit greeting — the static welcome line rotates so
        returning-but-new visitors don't get the exact same open every time.
-       Repaint removes the welcome once a real conversation exists. ── */
-    (function() {
-        var welcome = document.getElementById('zp-welcome-msg');
+       Repaint removes the welcome once a real conversation exists; a fresh session puts it back. ── */
+    const welcomeMsg = document.getElementById('zp-welcome-msg');
+    (function(welcome) {
         if (!welcome) return;
         var intros = [
             "Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄",
@@ -79,7 +71,7 @@
             "Hey hey! ⚡ I'm Zephyy. I know where everything is around here — literally everything. What's your name?"
         ];
         welcome.textContent = intros[Math.floor(Math.random() * intros.length)];
-    })();
+    })(welcomeMsg);
 
     /* ── Header name → profile link (JS so all 10 stamped pages get it
        without markup surgery) ── */
@@ -100,14 +92,12 @@
         tooltip.style.display = 'none';
     }
 
-    /* Session — uses zephyy-realtime.js (Firebase native listeners, no polling) */
+    /* Session state */
     let isOpen = false;
     let quickReplied = false;
     let sessionEnded = false;
-    let sessionId = window.__zpRealtime ? window.__zpRealtime.sessionId : null;
-    const savedName = localStorage.getItem('zp-visitor-name');
 
-    /* ── Listen for online/offline status changes from Firebase listener.
+    /* ── Her online/offline status, from zephyy-live.js's status events.
        Offline does NOT disable input — RTDB is always up, so messages queue
        and the orb answers them when Zephyy wakes. Just set expectations. ── */
     var zephyyOnline = true;
@@ -132,9 +122,7 @@
             if (sendBtn) sendBtn.disabled = false;
         }
     }
-    window.addEventListener('zephyy-online-change', handleOnlineChange);
-
-    /* checkOnlineStatus → replaced by zephyy-online-change event listener */
+    window.addEventListener('zephyy-status', handleOnlineChange); /* its detail carries online too */
 
     /* ================================================
      * 2. DOM HELPERS
@@ -153,10 +141,8 @@
         var bd = document.getElementById('zp-chat-backdrop');
         if (bd) bd.classList.toggle('open', isOpen);
         if (isOpen) {
-            document.dispatchEvent(new CustomEvent('zp-chat-opened'));
-            if (navigator.vibrate) { try { navigator.vibrate(6); } catch (e) {} }
+            window.haptic?.(6);
             orb.classList.remove('unread');
-            /* checkOnlineStatus handled by Firebase realtime listener */
             /* Ensure name prompt shows even if loadMessages hasn't fired yet */
             setTimeout(function() { showNamePrompt(); }, 600);
             /* Focus input once the open transition settles */
@@ -235,9 +221,10 @@
     }
 
     function addMessage(role, content, timestamp) {
-        // Dedup: skip if last message with same role has same content
+        if (role === 'assistant') role = 'bot'; // her replies arrive as 'assistant' (zephyy-live.js)
+        // Dedup Zephyy's side only (a reply can arrive twice); a visitor's repeat is a real message
         var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-of-type[data-content]');
-        if (prev && prev.dataset.content === content) return;
+        if (role !== 'user' && prev && prev.dataset.content === content) return prev;
         var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-' + role;
         div.dataset.content = content;
@@ -378,7 +365,7 @@
         if (!item || !item.alt) return;
         copyText(item.alt)
             .then(function() {
-                if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
+                window.haptic?.(15);
                 setCopyButtonState(button, 'Copied');
             })
             .catch(function() { setCopyButtonState(button, 'Failed'); });
@@ -390,6 +377,8 @@
     function readMsgCache() {
         try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || []; } catch (e) { return []; }
     }
+    /* zephyy-live.js and -orb-embed.js ask this: a conversation going? */
+    window.zephyyHasConvo = function() { return readMsgCache().length > 0; };
     function saveMsgCache(list) {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(list.slice(-30))); } catch (e) { /* quota — skip */ }
     }
@@ -440,7 +429,7 @@
      * ================================================ */
 
     function showNamePrompt() {
-        if (quickReplied || savedName) return;
+        if (quickReplied) return;
         var row = document.getElementById('zp-quick-reply-row');
         if (row) return; // already shown
         /* Don't show buttons if conversation already has user messages */
@@ -450,7 +439,6 @@
         row = document.createElement('div');
         row.id = 'zp-quick-reply-row';
         row.className = 'zp-chat-msg zp-chat-msg-bot';
-        row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;background:none;border:none;';
 
         /* "I have a name!" button */
         var nameBtn = document.createElement('button');
@@ -482,13 +470,11 @@
         var row = document.createElement('div');
         row.id = 'zp-name-input-row';
         row.className = 'zp-chat-msg zp-chat-msg-bot';
-        row.style.cssText = 'display:flex;gap:6px;padding:6px 10px;background:none;border:none;align-items:center;';
 
         var input = document.createElement('input');
         input.type = 'text';
         input.placeholder = 'Your name...';
         input.maxLength = 30;
-        input.style.cssText = 'flex:1;padding:8px 12px;border-radius:8px;border:1px solid oklch(var(--brand-teal) / 0.3);background:oklch(15% 0.03 260 / 0.8);color:var(--text-main);font-size:0.85rem;outline:none;';
         input.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -499,7 +485,6 @@
         var okBtn = document.createElement('button');
         okBtn.textContent = 'OK';
         okBtn.className = 'zp-qr-btn';
-        okBtn.style.cssText = 'padding:8px 16px;border-radius:8px;border:1px solid oklch(var(--brand-teal) / 0.4);background:oklch(var(--brand-teal) / 0.15);cursor:pointer;font-size:0.85rem;transition:all 0.15s;';
         okBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             submitName(input.value.trim());
@@ -527,25 +512,24 @@
                 setTimeout(showNamePrompt, 500);
                 return;
             }
-            /* Clear anonymous flags — user provided a real name */
-            localStorage.removeItem('zp-no-name');
             var caps = name[0].toUpperCase() + name.slice(1).toLowerCase();
             var greetings = ["Yeah it's ", "You can call me ", "I go by "];
             var greet = greetings[Math.floor(Math.random() * greetings.length)];
             var userMsg = greet + caps + '!';
             quickReplied = true;
-            addMessage('user', userMsg, Date.now());
+            var nameTs = Date.now();
+            addMessage('user', userMsg, nameTs);
             addThinkingBubble();
             var timeoutId = setTimeout(function() {
                 var tb = document.getElementById('zp-chat-thinking');
                 if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
             }, 15000);
-            if (window.__zpRealtime) {
-                window.__zpRealtime.sendMessage(userMsg).catch(function() {
-                    removeThinkingBubble();
-                    addMessage('bot', 'That message could not be sent. Please try again.', Date.now());
-                });
-            }
+            send(userMsg).then(function() {
+                cacheAppend('user', userMsg, nameTs); /* a conversation now: her reply finds the visitor on any page */
+            }, function() {
+                removeThinkingBubble();
+                addMessage('bot', 'That message could not be sent. Please try again.', Date.now());
+            });
         } else {
             sendText("I don't have a name");
         }
@@ -554,12 +538,7 @@
     function sendText(text) {
         if (!text) return;
         quickReplied = true; // prevent re-showing buttons
-        /* Clear stale name if user chooses to stay anonymous */
-        if (text.includes("without a name") || text.includes("don't have a name")) {
-            localStorage.removeItem('zp-visitor-name');
-            localStorage.setItem('zp-no-name', '1');
-            removeWelcome();
-        }
+        if (text.includes("without a name") || text.includes("don't have a name")) removeWelcome();
         inputEl.value = text;
         sendBtn.click();
     }
@@ -567,6 +546,15 @@
     /* ================================================
      * 4. FIREBASE OPERATIONS
      * ================================================ */
+
+    /* The chat's Firebase connection (zephyy-live.js): the first ask loads the SDK and
+       signs in, so opening the panel starts it and every send waits for it */
+    function connect() {
+        return window.__zpConnect ? window.__zpConnect() : Promise.reject(new Error('No chat connection'));
+    }
+    function send(text) {
+        return connect().then(function(rt) { return rt.sendMessage(text); });
+    }
 
     function loadMessages() {
         /* Instant paint from local cache while Firebase round-trips —
@@ -576,9 +564,10 @@
                 addMessage(m.role, m.content, m.timestamp);
             });
         }
-        /* Firebase realtime: load history via zephyy-realtime.js */
-        if (!window.__zpRealtime) { showNamePrompt(); return; }
-        window.__zpRealtime.loadHistory(50).then(function(snap) {
+        connect().catch(function(error) {
+            addMessage('bot', 'Private chat could not connect. Please refresh or try again later.', Date.now());
+            throw error;
+        }).then(function(rt) { return rt.loadHistory(50); }).then(function(snap) {
             if (!snap.exists()) { showNamePrompt(); return; }
             var data = snap.val();
             var keys = Object.keys(data).sort(function (a, b) {
@@ -611,10 +600,6 @@
 
     function sendMessage() {
         if (sendBtn.disabled || sessionEnded) return;
-        if (!window.__zpRealtime) {
-            addMessage('bot', 'Private chat is not connected yet. Please refresh or try again later.', Date.now());
-            return;
-        }
         var text = inputEl.value.trim();
         if (!text) return;
 
@@ -655,26 +640,24 @@
             window.__zpSlowTimeout = slowTimeout;
         }
 
-        if (window.__zpRealtime) {
-            window.__zpRealtime.sendMessage(text).then(function() {
-                tick.textContent = '✓';
-                tick.title = 'Delivered';
-                tick.classList.add('zp-delivered');
-                cacheAppend('user', text, userTs);
-                /* Offline: no thinking bubble — set honest expectations once */
-                if (!zephyyOnline && !offlineNoteShown) {
-                    offlineNoteShown = true;
-                    addMessage('bot', '📬 Delivered. Zephyy\'s recharging right now — she\'ll pick this up the moment she\'s back ⚡', Date.now());
-                }
-            }).catch(function() {
-                removeThinkingBubble();
-                tick.textContent = '!';
-                tick.title = 'Failed to send';
-                tick.classList.add('zp-failed');
-                addMessage('bot', '⚠️ Message didn\'t send. Try refreshing the page or check back later.', Date.now());
-                sendBtn.disabled = false;
-            });
-        }
+        send(text).then(function() {
+            tick.textContent = '✓';
+            tick.title = 'Delivered';
+            tick.classList.add('zp-delivered');
+            cacheAppend('user', text, userTs);
+            /* Offline: no thinking bubble — set honest expectations once */
+            if (!zephyyOnline && !offlineNoteShown) {
+                offlineNoteShown = true;
+                addMessage('bot', '📬 Delivered. Zephyy\'s recharging right now — she\'ll pick this up the moment she\'s back ⚡', Date.now());
+            }
+        }).catch(function() {
+            removeThinkingBubble();
+            tick.textContent = '!';
+            tick.title = 'Failed to send';
+            tick.classList.add('zp-failed');
+            addMessage('bot', '⚠️ Message didn\'t send. Try refreshing the page or check back later.', Date.now());
+            sendBtn.disabled = false;
+        });
 
         sendBtn.disabled = false;
         inputEl.focus();
@@ -749,7 +732,7 @@
         startFreshSession();
     });
 
-    /* ── Message detection: handled exclusively by zephyy-realtime.js onValue listener.
+    /* ── Message detection: handled exclusively by zephyy-live.js onValue listener.
        No polling fallback — that duplicated every message fetch. ── */
 
     /* ================================================
@@ -777,15 +760,8 @@
         if (e.key === 'Escape' && panel.classList.contains('open')) togglePanel();
     });
 
-    /* Restore saved name on load — only if the panel hasn't been opened yet.
-       If user already said "no name", skip the welcome text entirely */
-    if (savedName && !localStorage.getItem('zp-no-name')) {
-        setWelcomeText('Hey ' + savedName + '! ⚡');
-    } else if (savedName) {
-        /* User previously said no name — clear stale name */
-        localStorage.removeItem('zp-visitor-name');
-        removeWelcome();
-    }
+    /* Warm the connection while the pointer heads for the orb, so the panel opens to it ready */
+    orb.addEventListener('pointerenter', function() { connect().catch(function() {}); }, { once: true });
 
     /* Open panel → reload messages */
     var panelObserver = new MutationObserver(function() {
@@ -808,24 +784,13 @@
         resettingSession = true;
         sessionEnded = false;
         touchActivity(); /* don't let the idle timer instantly re-fire on the new session */
-        /* Forget the visitor identity — a fresh session greets like a first visit */
-        localStorage.removeItem('zp-visitor-name');
-        localStorage.removeItem('zp-no-name');
+        /* A fresh session greets like a first visit: new session, rebound Firebase refs */
         localStorage.removeItem(CACHE_KEY);
-        /* New session + rebound Firebase refs via realtime's lifecycle API */
-        if (window.__zpRealtime && window.__zpRealtime.resetSession) {
-            sessionId = window.__zpRealtime.resetSession();
-        } else {
-            /* Realtime not loaded — swap localStorage so a reload picks it up */
-            sessionId = crypto.randomUUID ? crypto.randomUUID() :
-                'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = Math.random() * 16 | 0;
-                    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-                });
-            localStorage.setItem('zephyy-chat-session', sessionId);
-        }
+        connect().then(function(rt) { rt.resetSession(); }).catch(function() { /* no chat connection: nothing to reset */ });
         /* Wipe the panel back to the first-load state (keep any typed draft) */
-        messagesEl.querySelectorAll('.zp-chat-msg, .zp-chat-ended').forEach(function(el) { el.remove(); });
+        messagesEl.querySelectorAll('.zp-chat-msg').forEach(function(el) { el.remove(); });
+        if (welcomeMsg) messagesEl.prepend(welcomeMsg);
+        quickReplied = false;
         removeThinkingBubble();
         if (sendBtn) sendBtn.disabled = false;
         if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; }
@@ -849,30 +814,27 @@
        first tap arms the button for 3.5s, second tap actually resets. ── */
     var refreshBtn = document.getElementById("zp-chat-refresh");
     var refreshConfirmTimer = null;
+    function disarmRefresh() {
+        refreshBtn.classList.remove('confirming');
+        refreshBtn.title = '';
+        refreshBtn.setAttribute('aria-label', 'Refresh chat');
+    }
     if (refreshBtn) refreshBtn.addEventListener("click", function() {
+        clearTimeout(refreshConfirmTimer);
         if (!refreshBtn.classList.contains('confirming')) {
             refreshBtn.classList.add('confirming');
             refreshBtn.title = 'Start over? Tap again to confirm';
             refreshBtn.setAttribute('aria-label', 'Tap again to confirm starting over');
-            clearTimeout(refreshConfirmTimer);
-            refreshConfirmTimer = setTimeout(function() {
-                refreshBtn.classList.remove('confirming');
-                refreshBtn.title = '';
-                refreshBtn.setAttribute('aria-label', 'Refresh chat');
-            }, 3500);
+            refreshConfirmTimer = setTimeout(disarmRefresh, 3500);
             return;
         }
-        clearTimeout(refreshConfirmTimer);
-        if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
-        localStorage.removeItem('zephyy-chat-session');
-        localStorage.removeItem('zp-visitor-name');
-        localStorage.removeItem('zp-no-name');
-        localStorage.removeItem(CACHE_KEY);
-        location.reload();
+        disarmRefresh();
+        window.haptic?.(8);
+        startFreshSession(); /* a new server session too, not just a cleared screen */
     });
     sendBtn.addEventListener('click', function(e) {
         if (e.isTrusted && !sendBtn.disabled && !sessionEnded && inputEl.value.trim()) {
-            if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+            window.haptic?.(8);
         }
         sendMessage();
     });

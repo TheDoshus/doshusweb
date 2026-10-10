@@ -11,7 +11,7 @@
     <meta property="twitter:card" content="summary_large_image"> <meta property="twitter:image" content="https://doshus.net/assets/images/og/zephyy-status.jpg">
     <link rel="stylesheet" href="/css/shared.css">
     <link rel="stylesheet" href="/css/zephyy.css">
-    <link rel="stylesheet" href="/css/zephyy-chat.css">
+    <link rel="stylesheet" href="/css/zephyy-orb.css">
     <link rel="stylesheet" href="/css/zephyy-subpage.css">
     <link rel="stylesheet" href="/css/zephyy-status.css">
 </head>
@@ -202,142 +202,8 @@
     </main>
 
 
-    <!-- Firebase SDK (compat) — persistent WebSocket RTDB listener -->
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js" integrity="sha384-WCNi5HrUqYpPiERhOGB000a3XlerI8Hq52+uTGtzyl/ZFU/LmuVx+lqA1cYJnEkq" crossorigin="anonymous"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js" integrity="sha384-hb6zQWOUCteeQSkZPIVwI6sr/1arrQrsb0xv1fevRvO58hDu2d617rC8afnX3jCv" crossorigin="anonymous"></script>
     <script src="/js/main.js"></script>
-    <script src="/js/zephyy-text-motion.js"></script>
-    <script src="/js/zephyy-subpage.js"></script>
-    <script>
-    (function () {
-        'use strict';
-        var STALE_MS = 180000; // 3 min — pinger fires every 60s, 3 misses = stale
-
-        var SVC_MAP = {
-            gateway: 'svc-gateway',
-            orb:     'svc-orb',
-            ws:      'svc-ws',
-            embed:   'svc-embed',
-            aether:  'svc-aether'
-        };
-
-        function fmtAge(ts) {
-            if (!ts) return '—';
-            var diff = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
-            if (diff < 2) return 'just now';
-            if (diff < 60) return diff + 'm ago';
-            var h = Math.round(diff / 60);
-            if (h < 24) return h + 'h ago';
-            return new Date(ts).toLocaleDateString();
-        }
-
-        function fmtTime(ts) {
-            if (!ts) return '—';
-            var d = new Date(ts);
-            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-        }
-
-        function el(id) { return document.getElementById(id); }
-
-        function setDot(dotEl, state) {
-            dotEl.className = 'st-svc-dot ' + state;
-        }
-
-        function applyStatus(data) {
-            if (!data) { el('st-updated-text').textContent = 'No data in the database.'; return; }
-
-            var fresh = data.lastHeartbeat && (Date.now() - new Date(data.lastHeartbeat).getTime()) < STALE_MS;
-            var isOnline = data.online && fresh;
-
-            // Hero
-            var dot = el('st-online-dot'), badge = el('st-online-text');
-            setDot(dot, isOnline ? 'online' : 'offline');
-            badge.textContent = isOnline ? 'ONLINE' : (data.online ? 'STALE' : 'OFFLINE');
-            badge.style.color = isOnline ? 'oklch(var(--brand-green))' : 'oklch(65% 0.25 20)';
-            if (data.workingOn) el('st-working-on').textContent = data.workingOn;
-            if (data.mood) el('st-mood').textContent = data.mood;
-            if (data.lastHeartbeat) el('st-last-beat').textContent = fmtAge(data.lastHeartbeat);
-
-            // Zephyy gateway badge (driven by heartbeat freshness)
-            var gwBadge = el('gw-zephyy-status');
-            if (gwBadge) {
-                gwBadge.textContent = isOnline ? 'online' : 'offline';
-                gwBadge.className = 'st-gw-status ' + (isOnline ? 'online' : 'offline');
-            }
-
-            // Service cards
-            var svcs = data.services || {};
-            Object.keys(SVC_MAP).forEach(function (key) {
-                var card = el(SVC_MAP[key]);
-                if (!card) return;
-                var dotEl = card.querySelector('.st-svc-dot');
-                var labelEl = card.querySelector('.st-svc-label');
-                var val = svcs[key];
-                var up = val === 'active';
-                if (dotEl) setDot(dotEl, up ? 'online' : 'offline');
-                if (labelEl) {
-                    labelEl.textContent = val || 'unknown';
-                    labelEl.className = 'st-svc-label' + (up ? '' : ' off');
-                }
-            });
-
-            // Live heartbeat row
-            if (data.lastHeartbeat) {
-                el('st-beat-live-time').textContent = fmtTime(data.lastHeartbeat);
-                el('st-beat-live-detail').textContent = isOnline
-                    ? 'All clear — services nominal. Heartbeat fresh.'
-                    : 'Heartbeat stale — gateway may be sleeping or restarting.';
-            }
-
-            el('st-updated-text').textContent = 'Live via Firebase WebSocket · last beat ' + fmtAge(data.lastHeartbeat);
-        }
-
-        // ── Firebase init + onValue (persistent WebSocket, not polling) ──
-        try {
-            firebase.initializeApp({
-                databaseURL: 'https://doshusweb-default-rtdb.firebaseio.com',
-                projectId: 'doshusweb'
-            });
-            var db = firebase.database();
-
-            // Status — pushes on every heartbeat write (~60s), instant
-            db.ref('zephyy/status').on('value', function (snap) {
-                applyStatus(snap.val());
-            }, function (err) {
-                el('st-updated-text').textContent = 'Listener error: ' + err.message;
-            });
-
-            // Connection state — Firebase .info/connected tells us if WS is live
-            db.ref('.info/connected').on('value', function (snap) {
-                var connected = snap.val();
-                if (!connected) {
-                    el('st-updated-text').textContent = 'Firebase offline — showing cached data.';
-                }
-            });
-
-        } catch (e) {
-            el('st-updated-text').textContent = 'Firebase init failed — ' + e.message;
-            console.warn('[status-rt] Firebase init failed:', e);
-        }
-
-        // Stale badge refresher — keep "Xm ago" accurate between RTDB pushes
-        var _lastHbTs = null;
-        var _origApply = applyStatus;
-        applyStatus = function (data) {
-            _origApply(data);
-            if (data && data.lastHeartbeat) _lastHbTs = data.lastHeartbeat;
-        };
-        setInterval(function () {
-            if (!_lastHbTs) return;
-            var beatEl = el('st-last-beat');
-            if (beatEl) beatEl.textContent = fmtAge(_lastHbTs);
-            var updEl = el('st-updated-text');
-            if (updEl && updEl.textContent.indexOf('Live via') === 0) {
-                updEl.textContent = 'Live via Firebase WebSocket · last beat ' + fmtAge(_lastHbTs);
-            }
-        }, 60000);
-    })();
-    </script>
+    <script src="/js/zephyy-pages.js"></script>
 
     <!-- zp-chat:start -->
         <!-- Zephyy Chat Backdrop -->
@@ -347,25 +213,7 @@
         <div class="zp-chat-panel" id="zp-chat-panel">
             <div class="zp-chat-header">
                 <span class="zp-chat-title">
-                    <span class="zp-chat-icon-glyph">
-                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="zp-chat-glyph-icon">
-                            <defs>
-                                <linearGradient id="chatGlyphGrad" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
-                                    <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
-                                    <stop offset="100%" stop-color="oklch(var(--brand-green))" />
-                                </linearGradient>
-                            </defs>
-                            <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.15)" stroke-width="0.6" fill="none"/>
-                            <path d="M 32 9 A 23 23 0 1 1 12 44"
-                                stroke="url(#chatGlyphGrad)" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
-                            <path d="M 45 40 A 15 15 0 1 1 32 17"
-                                stroke="url(#chatGlyphGrad)" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
-                            <path d="M 25 36 A 8 8 0 1 1 39 36"
-                                stroke="url(#chatGlyphGrad)" stroke-width="1.6" stroke-linecap="round" opacity="0.95"/>
-                            <circle cx="32" cy="32" r="2.2" fill="oklch(var(--brand-teal))"/>
-                        </svg>
-                    </span>
+                    <span class="zp-chat-icon-glyph"></span>
                     <span class="zp-chat-name">Zephyy</span>
                     <span class="zp-model-badge" id="zp-model-badge" title="Current AI model">Checking...</span>
                 </span>
@@ -387,8 +235,8 @@
         <div class="zp-orb-demo zp-orb-floating" id="zp-orb-demo">
             <div class="zp-orb-tooltip">Chat with me!</div>
         </div>
-    <script src="/js/zephyy-realtime.js"></script>
-    <script src="/js/zephyy-chat.js"></script>
+    <script src="/js/zephyy-live.js"></script>
+    <script src="/js/zephyy-orb.js"></script>
     <!-- zp-chat:end -->
 </body>
 </html>

@@ -54,7 +54,7 @@
 }
 .zp-sub-links a:hover { color: oklch(var(--brand-teal)); }
 .zp-sub-links a.active {
-    color: oklch(var(--accent, var(--brand-teal)));
+    color: oklch(var(--brand-teal)); /* teal on every page, as the nav always was */
     font-weight: 600;
 }
 .zp-sub-doshus {
@@ -106,7 +106,6 @@
 
 /* ── Shared subpage utilities ── */
 .zp-section-subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 0.5rem; }
-.zp-card-note { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 1rem; }
 .zp-section--tight { margin-bottom: 0.5rem; }
 
 /* Heartbeat history opacity fade */

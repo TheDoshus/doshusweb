@@ -1,81 +1,25 @@
 /**
- * Zephyy profile interactions.
- * Owns the profile glyph, state lens, HTMX deck hydration, nav state, and chat CTAs.
- * Realtime data still comes from zephyy-realtime.js.
+ * Zephyy's pages: the profile glyph and mood dial, the HTMX signal deck, section nav, chat
+ * CTAs, title word reveals and nav haptics. Every part checks for its markup, so the profile
+ * and the subpages share this one file. Loads after main.js (haptic, prefersReducedMotion);
+ * realtime data comes from zephyy-live.js.
  */
 
 (function () {
     'use strict';
 
+    // Each mood's line; its glyph speeds live in zephyy-profile.css, keyed off [data-zp-mood]
     const MOODS = {
-        calm: {
-            copy: 'Quiet orbit. Watching the whole board.',
-            speeds: ['16s', '11s', '7s', '2.5s'],
-        },
-        active: {
-            copy: 'Pressure is up. Moving the work.',
-            speeds: ['5s', '3.5s', '2.2s', '0.8s'],
-        },
-        debugging: {
-            copy: 'Two race conditions in a trench coat. Cute.',
-            speeds: ['1.8s', '1.2s', '0.7s', '0.4s'],
-        },
-        heartbeat: {
-            copy: 'Pulse check. Receipts or it did not happen.',
-            speeds: ['8s', '5s', '3s', '1.1s'],
-        },
+        calm: 'Quiet orbit. Watching the whole board.',
+        active: 'Pressure is up. Moving the work.',
+        debugging: 'Two race conditions in a trench coat. Cute.',
+        heartbeat: 'Pulse check. Receipts or it did not happen.',
     };
 
-    const glyphSVG = `
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="glyphGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="oklch(var(--brand-teal))" />
-                    <stop offset="60%" stop-color="oklch(var(--brand-purple))" />
-                    <stop offset="100%" stop-color="oklch(var(--brand-green))" />
-                </linearGradient>
-            </defs>
-            <circle cx="32" cy="32" r="29" stroke="oklch(var(--zp-state) / 0.18)" stroke-width="0.45" fill="none"/>
-            <g class="whorl-outer">
-                <path d="M 32 9 A 23 23 0 1 1 12 44" stroke="url(#glyphGrad)" stroke-width="1" stroke-linecap="round" opacity="0.55"/>
-                <circle cx="32" cy="9" r="1" fill="oklch(var(--brand-teal))" opacity="0.8"/>
-            </g>
-            <g class="whorl-mid">
-                <path d="M 45 40 A 15 15 0 1 1 32 17" stroke="url(#glyphGrad)" stroke-width="1.2" stroke-linecap="round" opacity="0.78"/>
-                <circle cx="45" cy="40" r="0.85" fill="oklch(var(--brand-purple))" opacity="0.85"/>
-            </g>
-            <g class="whorl-inner">
-                <path d="M 25 36 A 8 8 0 1 1 39 36" stroke="url(#glyphGrad)" stroke-width="1.35" stroke-linecap="round" opacity="0.95"/>
-                <circle cx="25" cy="36" r="0.75" fill="oklch(var(--brand-teal))"/>
-            </g>
-            <circle cx="32" cy="32" r="2" fill="oklch(var(--zp-state))" class="whorl-center"/>
-        </svg>
-    `;
 
     let selectedMood = 'calm';
     let moodWasChosen = false;
     let latestStatus = null;
-
-    function getGlyphParts() {
-        const wrap = document.getElementById('zephyy-glyph');
-        if (!wrap) return null;
-        return {
-            wrap,
-            outer: wrap.querySelector('.whorl-outer'),
-            mid: wrap.querySelector('.whorl-mid'),
-            inner: wrap.querySelector('.whorl-inner'),
-            center: wrap.querySelector('.whorl-center'),
-        };
-    }
-
-    function applyGlyphSpeed(mood) {
-        const parts = getGlyphParts();
-        if (!parts) return;
-        const speeds = MOODS[mood].speeds;
-        [parts.outer, parts.mid, parts.inner, parts.center].forEach(function (part, index) {
-            if (part) part.style.animationDuration = speeds[index];
-        });
-    }
 
     function setMood(mood, chosenByVisitor) {
         if (!MOODS[mood]) return;
@@ -90,8 +34,7 @@
         });
 
         const copy = document.getElementById('zp-mood-copy');
-        if (copy) copy.textContent = MOODS[mood].copy;
-        applyGlyphSpeed(mood);
+        if (copy) copy.textContent = MOODS[mood];
     }
 
     function inferMood(value) {
@@ -136,7 +79,7 @@
     function setupGlyph() {
         const wrap = document.getElementById('zephyy-glyph');
         if (!wrap) return;
-        wrap.innerHTML = glyphSVG;
+        wrap.innerHTML = window.zephyyWhorl?.() || ''; // zephyy-orb.js (guarded: a week-old cached copy predates it)
         wrap.setAttribute('role', 'button');
         wrap.setAttribute('tabindex', '0');
         wrap.setAttribute('aria-label', 'Cycle profile signal state');
@@ -163,9 +106,7 @@
         document.querySelectorAll('.zp-mood-btn').forEach(function (button) {
             button.addEventListener('click', function () {
                 setMood(button.dataset.mood, true);
-                if (navigator.vibrate) {
-                    try { navigator.vibrate(8); } catch (error) { /* Optional haptic. */ }
-                }
+                haptic();
             });
         });
         setMood(selectedMood, false);
@@ -183,7 +124,9 @@
         }
 
         tabs.forEach(function (tab) {
-            tab.addEventListener('click', function () {
+            tab.addEventListener('click', function (event) {
+                // htmx swaps the panel; the href (another section) is only for a page without it
+                if (window.htmx) event.preventDefault();
                 activateTab(tab);
             });
             tab.addEventListener('keydown', function (event) {
@@ -255,6 +198,88 @@
         sections.forEach(function (section) { observer.observe(section); });
     }
 
+    // The status page (/zephyy/status): the hero badge, service cards and live heartbeat row,
+    // from zephyy-live.js's events (one Firebase connection, one heartbeat threshold);
+    // the ages re-render every minute between beats
+    function setupStatusPage() {
+        const badge = document.getElementById('st-online-text');
+        if (!badge) return;
+        const el = function (id) { return document.getElementById(id); };
+        const SERVICES = { gateway: 'svc-gateway', orb: 'svc-orb', ws: 'svc-ws', embed: 'svc-embed', aether: 'svc-aether' };
+        let latest = null;
+        let connected = true;
+        function render() {
+            const online = latest.online;
+            const data = latest.data || {};
+            const beat = data.lastHeartbeat;
+            el('st-online-dot').className = 'st-svc-dot ' + (online ? 'online' : 'offline');
+            badge.textContent = online ? 'ONLINE' : (data.online ? 'STALE' : 'OFFLINE');
+            badge.className = 'st-hero-badge ' + (online ? 'online' : 'off');
+            if (data.workingOn) el('st-working-on').textContent = data.workingOn;
+            if (data.mood) el('st-mood').textContent = data.mood;
+            const gateway = el('gw-zephyy-status');
+            gateway.textContent = online ? 'online' : 'offline';
+            gateway.className = 'st-gw-status ' + (online ? 'online' : 'offline');
+            Object.keys(SERVICES).forEach(function (key) {
+                const card = el(SERVICES[key]);
+                const value = (data.services || {})[key];
+                const up = value === 'active';
+                card.querySelector('.st-svc-dot').className = 'st-svc-dot ' + (up ? 'online' : 'offline');
+                const label = card.querySelector('.st-svc-label');
+                label.textContent = value || 'unknown';
+                label.className = 'st-svc-label' + (up ? '' : ' off');
+            });
+            el('st-updated-text').textContent = !connected
+                ? (beat ? 'Firebase offline — showing the last reading.' : 'Can\'t reach the live feed — retrying.')
+                : (beat ? 'Live via Firebase · last beat ' + formatAgo(beat) : 'No heartbeat on record yet.');
+            if (!beat) return;
+            const when = new Date(beat);
+            el('st-last-beat').textContent = formatAgo(beat);
+            el('st-beat-live-time').textContent = when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + when.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            el('st-beat-live-detail').textContent = online
+                ? 'All clear — services nominal. Heartbeat fresh.'
+                : 'Heartbeat stale — gateway may be sleeping or restarting.';
+        }
+        window.addEventListener('zephyy-status', function (event) { latest = event.detail; render(); });
+        window.addEventListener('zephyy-connection', function (event) {
+            connected = event.detail.connected;
+            if (latest) render();
+        });
+        setInterval(function () { if (latest) render(); }, 60000);
+    }
+
+    // Subpage titles reveal word by word as they scroll in; screen readers get the whole title
+    function setupTitles() {
+        const titles = document.querySelectorAll('.zp-sub-title');
+        if (prefersReducedMotion || !titles.length || !('IntersectionObserver' in window)) return;
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('zp-text-motion--visible');
+                observer.unobserve(entry.target);
+            });
+        }, { threshold: 0.35 });
+        titles.forEach(function (title) {
+            const text = title.textContent.trim();
+            if (!text) return;
+            const words = document.createElement('span');
+            words.className = 'zp-motion-words';
+            words.setAttribute('aria-hidden', 'true');
+            text.split(/\s+/).forEach(function (word, index) {
+                if (index) words.append(' ');
+                const span = document.createElement('span');
+                span.className = 'zp-motion-word';
+                span.style.setProperty('--zp-word-index', index);
+                span.textContent = word;
+                words.append(span);
+            });
+            title.setAttribute('aria-label', text);
+            title.replaceChildren(words);
+            title.classList.add('zp-text-motion');
+            observer.observe(title);
+        });
+    }
+
     function init() {
         setupGlyph();
         setupMoodButtons();
@@ -262,6 +287,11 @@
         setupStatusBridge();
         setupChatButtons();
         setupSectionNav();
+        setupTitles();
+        setupStatusPage();
+        document.querySelectorAll('.zp-sub-nav a').forEach(function (link) {
+            link.addEventListener('click', function () { haptic(6); });
+        });
     }
 
     if (document.readyState === 'loading') {

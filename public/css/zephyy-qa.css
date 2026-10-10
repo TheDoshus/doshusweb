@@ -38,12 +38,6 @@
     color: var(--text-main);
     margin: 0 0 0.5rem;
 }
-.qa-gate-desc {
-    font-size: 0.82rem;
-    line-height: 1.5;
-    color: var(--text-muted);
-    margin: 0 0 0.8rem;
-}
 .qa-gate-badge {
     font-size: 0.65rem;
     font-weight: 700;

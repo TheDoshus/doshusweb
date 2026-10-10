@@ -90,6 +90,7 @@ before you stop, ask what you left behind.
 - **Accent routing pattern** for per-section theming: one custom property set per scope, shared rules consume it. Existing examples: `--sec` (finance.css), `--node-accent` (nexus.css), `--pill-accent` (home.css), `--swap-accent` (printmon swapbtn.css — per-theme-page button, `--pm-hue1` fallback themes generated pages). Extend this pattern; don't copy-paste per-section rule blocks.
 - **CSP is strict, and stays that way** (Doshus's standard for every agent; A+ 110 on Observatory, 2026-09-26). No `'unsafe-*'`, wildcard or bare-scheme sources unless absolutely necessary; the standing exceptions are named in `CSP_EXCEPTIONS` in `scripts/check.js` (`style-src 'unsafe-inline'` because the widgets need it, already tested). Inline scripts get a hash via `csp:hashes`, never a looser policy; no inline `on*=` handlers or `javascript:` URLs: the browser refuses them, so they are dead code. Adding any external fetch/iframe/script requires updating the CSP headers in `firebase.json` — in **both** hosting targets (`main` and `zephyy`). Scope to the tightest path that works (e.g. `https://discord.com/widget`, not `https://discord.com`).
 - Fonts are self-hosted woff2 in `public/assets/fonts/` — no Google Fonts requests.
+- **The board is the page layout** (Doshus, 2026-10-10: "new standard like oklch"). New pages and sections, and any page being reworked, are a board of panels per `UI-SPEC.md` on `board.css` + `board.js`; no new bespoke card grids. Pages convert in the order of `BLUEPRINT.md` § Board rollout; until a page's turn, build its new content panel-shaped (one self-contained block: head, body, foot) so converting it is a wrap, not a rewrite.
 
 ## Layout
 
@@ -97,7 +98,8 @@ before you stop, ask what you left behind.
 |---|---|
 | `public/*.html` + `css/` + `js/` | Main site (home, financehub, thelounge, nexus, zephyy) |
 | `public/css/shared.css` | Tokens, fonts, cosmic background, shared components |
-| `public/js/main.js` | Global: WebGL star field + shooting stars (tints are the `--star-*` tokens), meme loader, collapsibles, sticky footer |
+| `public/js/main.js` | Global: WebGL sky (the drifting nebula, then the star field; colors are the `--nebula-*` and `--star-*` tokens) + shooting stars, meme loader, collapsibles, sticky footer |
+| `public/css/board.css` + `public/js/board.js` | The board engine (`UI-SPEC.md`); proving ground `/lab/nexus` |
 | `public/zephyy/` | Zephyy profile subpages |
 | `public/amazon/` | Printmon + work tools — legacy tree, don't refactor casually |
 | `public/assets/memes/` | Meme pool; regen index with `bun run memes`; shrink new ones with `bun run memes:convert` (quality-gated, report first) |
@@ -106,10 +108,11 @@ before you stop, ask what you left behind.
 
 ## Conventions
 
-- **Two kinds of code, two bars** (Doshus, 2026-09-26). Zephyy's surface is agent-written — `zephyy.html`, `public/zephyy/`, `public/css/zephyy-*.css`, `public/js/zephyy-*.js` — and agents may clean it up without line-by-line review. Everything else is Doshus's hand-crafted code: recommend improvements freely, but show him the smallest diff and get his approval before it is committed. On both, fewer lines for the same behavior wins.
+- **Two kinds of code, two bars** (Doshus, 2026-09-26). Zephyy's surface is agent-written — `zephyy.html`, `public/zephyy/`, `public/css/zephyy-*.css`, `public/js/zephyy-*.js` — and agents may clean it up without line-by-line review. Everything else is Doshus's hand-crafted code: recommend improvements freely, but show him the smallest diff and get his approval before it is committed. On both, fewer lines for the same behavior wins: skipping review is not skipping the bar.
+- **Zephyy's surface rides the site; it doesn't fork it** (Doshus, 2026-10-10). Her pages use the same sky (`main.js`), tokens, `haptic()` and shared components as his, and add only what is hers: chat, realtime status, her glyph. Extend the `zephyy-*` file shaped like the change (one script per job, `zephyy.css` as the base under per-page sheets) instead of adding a file, and never copy a shared rule or helper into her sheets.
 - **Grep before you write.** Before adding a new function, CSS token, util, or component, search `public/` for one that already does the job (`grep -rn "formatDate\|--accent-" public/`) — reuse or extend it, never spawn a parallel. A second date-helper or a duplicate token is a bug. This site's token + accent-routing system exists to be *extended*, not copy-pasted.
 - JS is vanilla: guard for missing DOM elements (scripts are shared across pages), build user-facing strings with `createElement`/`textContent` (not innerHTML), keep console quiet in production paths.
-- **No `?v=` cache-busters** on css/js references (Doshus's call 2026-07-16: low traffic, 7-day `max-age` self-heals). Don't reintroduce them; changed assets just take up to a week to propagate.
+- **No `?v=` cache-busters** on css/js references (Doshus's call 2026-07-16). css/js are served `Cache-Control: no-cache` (2026-10-10): browsers revalidate each load and get a 304 when nothing changed, so a change shows on the next load. A script whose new version can't run beside an old cached copy of another still gets a new file name in that deploy. Everything under `/assets/` (fonts, images, memes, vendored video.js) is `immutable` for a year, its rule last in `firebase.json` so it wins: change one of those by giving it a new name.
 - Respect `prefers-reduced-motion` for any new animation (CSS override exists in shared.css; JS checks `prefersReducedMotion` in main.js).
 - Random meme containers: any `.random-meme` / `.random-meme-fixed` div gets auto-filled by main.js from `meme-list.json`.
 
@@ -117,10 +120,11 @@ before you stop, ask what you left behind.
 
 ```bash
 bun run check                                  # read-only; exits 1 on any failure
+bun run test                                   # chat client + board engine in Chromium (Playwright)
 python3 -m http.server 8080 -d public          # eyeball locally
 ```
 
-`bun run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result.
+`bun run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result. It also checks every board's markup (board names unique across the site, panel ids unique, cells inside the grid, no overlapping defaults) and that a page with a Printmon orb dock links its sheet. `bun run test` drives the board in Chromium, each case a bug a review found there or a promise `UI-SPEC.md` makes; a board change lands with its case.
 
 Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
 
@@ -128,6 +132,9 @@ Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
 
 Read the newest file in `handoff/` before starting work. Every session that changes files
 appends one entry to `handoff/YYYY-MM-DD.md` (today's date; create it if you're first),
+dated and stamped on the house clock, MST (America/Phoenix, no daylight saving; OpenClaw pins
+it in `scripts/lib/localtime.py`), never UTC: `TZ=America/Phoenix date '+%F %H:%M'` gives both.
+Claude Code gets that clock by default here from `.claude/settings.json`. Entries are
 chronological and tagged with who did the work — `[claude]`, `[codex]`, `[zephyy]`,
 `[agy]`, `[gemini]`, `[doshus]` — not merely which model ran it:
 

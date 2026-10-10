@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-async function boot({authFails = false} = {}) {
+async function boot({auth = {fails: false}, chatCache = false} = {}) {
   const events = [], updates = [], listeners = new Map(), records = new Map();
   const handles = new Map();
   let serial = 0;
@@ -28,27 +28,57 @@ async function boot({authFails = false} = {}) {
   const database = () => ({ref});
   database.ServerValue = {TIMESTAMP: {'.sv': 'timestamp'}};
   const local = new Map();
-  const window = {location: {pathname: '/zephyy'},
+  const window = {location: {pathname: '/zephyy'}, zephyyHasConvo: () => chatCache,
     dispatchEvent: (event) => events.push(event)};
-  const context = {window, firebase: {initializeApp: () => {}, database,
+  const scripts = [], streams = [];
+  // Status streams over Server-Sent Events; the SDK (stubbed here) is a script the client injects
+  function EventSource(url) { this.url = url; this.handlers = {}; streams.push(this); }
+  EventSource.prototype.addEventListener = function (type, fn) { this.handlers[type] = fn; };
+  // The SDK exists once its scripts have loaded, as in a browser
+  const firebase = {apps: [], initializeApp(config) { this.apps.push(config); }, database,
     auth: () => ({signInAnonymously: async () => {
-      if (authFails) throw new Error('disabled');
+      if (auth.fails) throw new Error('disabled');
       return {user: {uid: 'alice'}};
-    }})},
-    document: {readyState: 'complete', getElementById: () => null},
+    }})};
+  const context = {window, EventSource,
+    document: {readyState: 'complete', hidden: false, addEventListener: () => {}, getElementById: () => null, createElement: () => ({}),
+      head: {appendChild: (script) => {
+        scripts.push(script.src);
+        const part = script.src.match(/firebase-(\w+)-compat/)[1]; // each script brings its own piece
+        if (part === 'app') context.firebase = {apps: firebase.apps, initializeApp: firebase.initializeApp};
+        else context.firebase[part] = firebase[part];
+        Promise.resolve().then(script.onload);
+      }}},
     localStorage: {getItem: (k) => local.get(k), setItem: (k, v) => local.set(k, v)},
     crypto: {randomUUID: () => 'session_' + (++serial)},
     CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
     fetch: async () => ({ok: true, json: async () => ({projectId: 'test'})}),
-    setTimeout: (fn) => Promise.resolve().then(fn), console,
+    setInterval: () => 0, console,
   };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-realtime.js'), 'utf8'), context);
-  for (let i = 0; i < 15; i++) await Promise.resolve();
-  return {window, events, updates, listeners, records};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-live.js'), 'utf8'), context);
+  const settle = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
+  await settle();
+  return {window, events, updates, listeners, records, scripts, streams, settle};
 }
 
 (async () => {
   const live = await boot();
+  assert.deepEqual(live.scripts, [], 'a visitor who never chats loads no SDK');
+  const [status] = live.streams;
+  assert.match(status.url, /\/zephyy\/status\.json$/);
+  const now = new Date().toISOString();
+  status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: now, mood: 'calm', services: {ws: 'active', orb: 'active'}}})});
+  status.handlers.patch({data: JSON.stringify({path: '/services', data: {ws: 'inactive'}})});
+  status.handlers.put({data: JSON.stringify({path: '/mood', data: 'focused'})});
+  const latest = live.window.__zpLatestStatus;
+  assert.equal(latest.online, true);
+  assert.deepEqual([latest.data.mood, latest.data.services.ws, latest.data.services.orb], ['focused', 'inactive', 'active'], 'puts replace, patches merge');
+  status.handlers.patch({data: JSON.stringify({path: '/services', data: {orb: null}})});
+  assert.equal('orb' in live.window.__zpLatestStatus.data.services, false, 'null removes a key, as in Firebase');
+  await live.window.__zpConnect();
+  assert.equal(live.scripts.length, 3, 'the chat loads app, database and auth once');
+  await live.window.__zpConnect();
+  assert.equal(live.scripts.length, 3);
   const api = live.window.__zpRealtime;
   assert.ok(api, 'auth success wires the real chat API');
   const base = 'zephyy/chat/ownedSessions/' + api.sessionId;
@@ -69,8 +99,13 @@ async function boot({authFails = false} = {}) {
   await assert.rejects(pending, /Session changed/);
   callback({val: () => ({rogue: {role: 'assistant', content: 'stale', timestamp: 3000}})});
   assert.equal(live.events.filter(e => e.type === 'zephyy-msg').length, 2, 'old listener cannot inject after reset');
-  const failed = await boot({authFails: true});
+  const auth = {fails: true};
+  const failed = await boot({auth, chatCache: true});
+  assert.equal(failed.scripts.length, 3, 'a conversation going connects at load');
   assert.equal(failed.window.__zpRealtime, undefined);
-  assert.ok(failed.events.some(e => e.type === 'zephyy-chat-error'));
-  console.log('PASS: auth wiring, atomic input, input limits, batched replies, dedupe, ordering, reset race, auth failure');
+  await assert.rejects(failed.window.__zpConnect(), /disabled/, 'a failed connect rejects');
+  auth.fails = false;
+  assert.ok(await failed.window.__zpConnect(), 'and the next ask tries again');
+  assert.equal(failed.scripts.length, 3, 'without loading the SDK twice');
+  console.log('PASS: no SDK until chat, status stream put/patch/null, one connection, auth wiring, atomic input, input limits, batched replies, dedupe, ordering, reset race, auth failure and retry');
 })().catch(error => { console.error(error); process.exitCode = 1; });
