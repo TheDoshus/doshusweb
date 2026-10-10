@@ -53,8 +53,8 @@
     --font-button: 'Braah One', system-ui, sans-serif;  /* buttons, fold bars */
     --font-h3: 'Jaro Regular-var', system-ui, sans-serif;
 
-    /* Lets max-height animate to fit-content — makes .collapse actually
-       ease open in supporting browsers (progressive enhancement) */
+    /* Lets sizes ease to and from auto, so the board's folds (.fold) ease open where the browser
+       can; main.js eases them elsewhere */
     interpolate-size: allow-keywords;
 }
 /* SELF-HOSTED FONTS */
@@ -153,7 +153,7 @@ body { position: relative; min-height: 100vh; background: oklch(var(--space-oled
     color: var(--text-main);
     overflow-x: clip;
 }
-button, .collapseBtn {
+button {
     font-family: var(--font-button);
 }
 h1 {
@@ -260,26 +260,6 @@ h1, h2, h3 { text-wrap: balance; }
     transform: translateY(-3px);
 }
 
-/* ─── UNIVERSAL COLLAPSIBLE SECTIONS: native <details class="collapse"><summary class="collapseBtn"> ─── */
-.collapse { background: oklch(var(--accent-finance) / 0.03); border: 1px solid oklch(var(--accent-finance) / 0.15); transition: all 0.3s ease; overflow: hidden;
-    border-radius: 12px;
-}
-.collapseBody { padding: 1rem 1.5rem 1.5rem 1.5rem; }
-.collapseBtn { width: 100%; background: oklch(var(--accent-finance) / 0.05); border: none; color: oklch(var(--accent-finance)); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease;
-    list-style: none;
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    gap: 0.5rem;
-}
-.collapseBtn::-webkit-details-marker { display: none; }
-.collapseBtn:hover { background: oklch(var(--accent-finance) / 0.1); }
-.collapse[open] { overflow: visible; }
-.collapse[open] .toggle-arrow { transform: rotate(180deg); }
-.toggle-arrow { transition: transform 0.3s ease; font-size: 0.9rem; }
-/* Eases open where the browser can animate <details> (interpolate-size on :root); opens instantly elsewhere */
-.collapse::details-content { block-size: 0; overflow: clip; transition: block-size 0.4s ease, content-visibility 0.4s allow-discrete; }
-.collapse[open]::details-content { block-size: auto; }
 
 /* Content Section */
 .content-section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;

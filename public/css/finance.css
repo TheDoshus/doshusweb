@@ -34,19 +34,15 @@
     font-weight: 600;
 }
 
-@media (max-width: 560px) {
+/* In a panel, content answers to the panel's width (@container panel); each threshold is the
+   content width the page's old window breakpoint gave it, so a phone looks as before */
+@container panel (max-width: 27.5rem) {
     .ccGrid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-    .ccGridWrap { align-self: center; }
     .ccCard { padding: 0.8rem 0.4rem; }
     .ccCard img { width: 100px; height: auto; }
 }
 
-/* ─── FINANCE INFO BOX ─── */
-.infoBox { position: relative; background: oklch(var(--accent-finance) / 0.03);
-    border: 1px solid oklch(var(--accent-finance) / 0.15); border-radius: 12px;
-    padding: 1.5rem;
-    margin-top: 1rem;
-}
+/* ─── INFO TITLE ─── */
 .infoTitle { font-size: 1.1rem;
     color: oklch(var(--accent-finance));
     margin-bottom: 1rem;
@@ -98,7 +94,7 @@
 }
 .tips-column { flex: 1; min-width: 0; /* prevents flex overflow */ }
 
-@media (max-width: 900px) {
+@container panel (max-width: 49rem) {
     .tips-columns { flex-direction: column; }
 }
 
@@ -207,17 +203,7 @@
 .crypto-ticker-wrapper { margin: 1rem 0; border-radius: 10px; overflow: hidden; border: 1px solid oklch(var(--accent-finance) / 0.15); background: oklch(var(--accent-finance) / 0.03); width: 105%; align-self: center; height: 55px;     overflow: hidden; }
 
 /* ─── UNCLAIMED MONEY BOX ─── */
-.unclaimedBox {
-    background: oklch(var(--accent-invest) / 0.05);
-    border: 2px solid oklch(var(--accent-invest) / 0.3);
-    border-radius: 12px;
-    padding: 1.5rem;
-    text-align: center; transition: all 0.3s ease;
-}
-.unclaimedBox:hover {
-    border-color: oklch(var(--accent-invest) / 0.6);
-    box-shadow: 0 8px 30px oklch(var(--accent-invest) / 0.15);
-}
+.unclaimedBox { text-align: center; } /* the eye-catcher's body; its panel (accent invest) is the frame */
 
 .unclaimed-title {
     font-size: 1.1rem;
@@ -237,10 +223,6 @@
 }
 
 /* ─── WIDGETS ROW ─── */
-.widgets-row { display: flex; margin-top: 1rem; flex-wrap: wrap; justify-content: center;
-    gap: 1.5rem;
-}
-
 /* ─── TRACKER WIDGET ─── */
 .tracker-widget {
     flex: 1; min-width: 200px; max-width: 350px; text-align: center; display: flex; flex-direction: column; align-items: center; transition: all 0.3s ease;
@@ -318,85 +300,67 @@
 }
 
 /* Mobile Optimizations*/
-@media (max-width: 560px) {
+@container panel (max-width: 30rem) {
     .credit-scores-row { align-items: center; }
     .score-card { max-width: 100%; width: 100%; }
 }
 
-@media (max-width: 900px) {
-    .collapse { overflow: hidden; }
+@container panel (max-width: 46rem) {
     .myths-grid { grid-template-columns: 1fr; }
     .banks-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
-    .widgets-row { flex-direction: column;align-items: center; }
-    .tracker-widget { max-width: 100%; width: 100%; }
 }
-@media (max-width: 500px) {
+@container panel (max-width: 24rem) {
     .banks-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
     .bank-card { padding: 0.8rem 0.5rem; }
     .bank-card img { width: 45px; height: 30px; }
-    .collapseBtn { font-size: 0.9rem; padding: 0.8rem 1rem; }
-    .unclaimedBox { padding: 1rem; }
+}
+/* The sources dialog opens over the whole screen, so it answers to the window */
+@media (max-width: 500px) {
     .sources-links { flex-direction: column;}
 }
 
 /* ─── SECTION HEADERS ─── */
-:is(.finance-box, .panel-body) h3 {
+.panel-body h3 {
     font-size: clamp(1.45rem, 3vw, 1.525rem);
     margin-bottom: 0.3rem;
 }
-:is(.finance-box, .panel-body) p {
+.panel-body p {
     font-size: 0.9rem;
     opacity: 0.7; line-height: 1.5; 
     margin-bottom: .5rem;
 }
 
 /* ─── SECTION SPACING & DIVIDERS ─── */
-.finance-box { margin-bottom: 3rem; }
-
 /* ─── SECTION ACCENT ROUTING ───
-   Each section card sets one --sec variable; the shared rules below consume it.
-   Same pattern as --node-accent on the Nexus bento grid. */
-.finance-box       { --sec: var(--accent-finance); }
+   Each slide's head sets one --sec by its id (credit's is the .slide-head default); inside a
+   board, --sec follows each panel's accent. The rules below consume it. */
 #crypto-section    { --sec: var(--accent-crypto); }
 #investing-section { --sec: var(--accent-invest); }
 #taxes-section     { --sec: var(--accent-taxes); }
 #networth-section  { --sec: var(--accent-networth); }
 
-/* Card frame */
-.finance-box { border: 1px solid oklch(var(--sec) / 0.25); }
-.finance-box:hover { border-color: oklch(var(--sec) / 0.9); box-shadow: 0 10px 40px oklch(var(--sec) / 0.15); }
-.finance-box h2 { color: oklch(var(--sec)); }
-
 /* Quick links */
-.finance-box .quickLinks { background: oklch(var(--sec) / 0.04); border: 1px solid oklch(var(--sec) / 0.3); }
-:is(.finance-box, .panel-body) .qlBtn { color: oklch(var(--sec)); background: oklch(var(--sec) / 0.1); border: 1px solid oklch(var(--sec) / 0.3); }
-:is(.finance-box, .panel-body) .qlBtn:hover { border-color: oklch(var(--sec)); box-shadow: 0 5px 15px oklch(var(--sec) / 0.2); }
+.panel-body .quickLinks { background: oklch(var(--sec) / 0.04); border: 1px solid oklch(var(--sec) / 0.3); }
+.panel-body .qlBtn { color: oklch(var(--sec)); background: oklch(var(--sec) / 0.1); border: 1px solid oklch(var(--sec) / 0.3); }
+.panel-body .qlBtn:hover { border-color: oklch(var(--sec)); box-shadow: 0 5px 15px oklch(var(--sec) / 0.2); }
 
 /* Info boxes */
-:is(.finance-box, .panel-body) .infoTitle { color: oklch(var(--sec)); }
-.finance-box .infoBox { background: oklch(var(--sec) / 0.03); border-color: oklch(var(--sec) / 0.15); border-left: 3px solid oklch(var(--sec) / 0.4); }
-:is(.finance-box, .panel-body) .tips-list li::before { color: oklch(var(--sec)); }
-
-/* Collapsibles pick up the section accent too */
-.finance-box .collapse { background: oklch(var(--sec) / 0.03); border-color: oklch(var(--sec) / 0.15); }
-.finance-box .collapseBtn { color: oklch(var(--sec)); background: oklch(var(--sec) / 0.05); }
-.finance-box .collapseBtn:hover { background: oklch(var(--sec) / 0.1); }
+.panel-body .infoTitle { color: oklch(var(--sec)); }
+.panel-body .tips-list li::before { color: oklch(var(--sec)); }
 
 /* One-off per-section touches */
 .midbtn { margin-top: 1.5rem; align-self: center; text-align: center; }
 .gov-sub-title { color: oklch(var(--accent-taxes)); font-size: 0.95rem; margin-bottom: 0.6rem; }
 .gov-desc { font-size: 0.85rem; opacity: 0.8; line-height: 1.5; margin-bottom: 0.8rem; }
-#crypto-section .cta-button { font-size: 0.95rem; }
 #crypto-section .crypto-ticker-wrapper { border-color: oklch(var(--sec) / 0.15); background: oklch(var(--sec) / 0.03); }
-#crypto-section .infoBox { margin-bottom: 1.5rem; }
 
 /* Net Worth — teal-green gradient feel */
-#networth-section .cta-button { border-color: oklch(var(--sec) / 0.825); background: oklch(var(--accent-finance) / 0.15); font-size: 0.9rem; }
-#networth-section .tracker-widget,
-#networth-section .score-card { border-color: oklch(var(--sec) / 0.25); background: oklch(var(--sec) / 0.05); }
-#networth-section .tracker-widget:hover { border-color: oklch(var(--sec)); box-shadow: 0 10px 30px oklch(var(--sec) / 0.2); }
-#networth-section .widget-value,
-#networth-section .score-value {
+#slide-networth .cta-button { border-color: oklch(var(--sec) / 0.825); background: oklch(var(--accent-finance) / 0.15); font-size: 0.9rem; }
+#slide-networth .tracker-widget,
+#slide-networth .score-card { border-color: oklch(var(--sec) / 0.25); background: oklch(var(--sec) / 0.05); }
+#slide-networth .tracker-widget:hover { border-color: oklch(var(--sec)); box-shadow: 0 10px 30px oklch(var(--sec) / 0.2); }
+#slide-networth .widget-value,
+#slide-networth .score-value {
     background: linear-gradient(45deg, oklch(var(--sec)), oklch(var(--accent-finance)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -411,6 +375,7 @@
 .slide-head > p { font-size: 0.9rem; opacity: 0.7; line-height: 1.5; margin: 0.5rem 0; }
 .slide-head > .board-bar { margin-top: 0.5rem; }
 .slide .panel { --sec: var(--accent); }
+.panel-body > .tracker-widget { max-width: none; } /* its panel sets the width */
 
 /* ─── FINANCE CARD SLIDER ─── */
 .sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: relative; overflow-x: clip; overflow-y: visible; }

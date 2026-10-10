@@ -595,19 +595,19 @@ async function loadUniversalMemes() {
 window.addEventListener('DOMContentLoaded', loadUniversalMemes);
 
 // ─── UNIVERSAL COLLAPSIBLE SECTIONS & MODALS ───
-// Collapsibles are native <details class="collapse">: the browser opens, closes and announces
+// Folds are native <details class="fold"> (board.css): the browser opens, closes and announces
 // them. `toggle` doesn't bubble, so it's caught on the way down.
 document.addEventListener('toggle', (e) => {
-    if (!e.target.matches?.('.collapse')) return;
+    if (!e.target.matches?.('.fold')) return;
     haptic();
 }, true);
 // Where CSS can't ease <details> (no interpolate-size: Firefox, Safari), the Web Animations API
-// does, for .collapse and the board's .fold: open at once and grow, or shrink and close at the end.
+// does for the board's folds: open at once and grow, or shrink and close at the end.
 // A click mid-flight turns it around from where it is
 if (!CSS.supports('interpolate-size', 'allow-keywords') && !prefersReducedMotion) {
     const closing = new WeakSet();
     document.addEventListener('click', (e) => {
-        const summary = e.target.closest?.('details:is(.collapse, .fold) > summary');
+        const summary = e.target.closest?.('details.fold > summary');
         if (!summary) return;
         e.preventDefault();
         const fold = summary.parentElement;
