@@ -12,8 +12,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 
 | File | What |
 |---|---|
-| `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy); VS Code reads it directly |
-| `CLAUDE.md` | One-line doorway that imports `AGENTS.md` for Claude Code |
+| `AGENTS.md` | Rules for every coding agent (Claude, Gemini, Codex, Zephyy); Claude Code and VS Code read it directly. Under `~/.openclaw`, Claude Code needs the user setting in its first paragraph |
 | `BLUEPRINT.md` | Site architecture and roadmap |
 | `UI-SPEC.md` | The board layout: panels visitors move, resize and hide, fluid on every screen. Layout and feel only, so it ports (Aether next); the site's look and rollout live in `BLUEPRINT.md`. First page on it: `/nexus` |
 | `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
