@@ -52,7 +52,7 @@ else (home, nexus, financehub, lounge, 404, Printmon gallery) it arrives through
 pointer on the orb, or a visitor with a conversation going). Tests: `tests/chatorb-client.cjs` (client wiring) and
 `tests/rules-emulator.py` (rules, in the Firebase emulator); both commands are in `DOSHUS.md`.
 
-**Status surfaces.** `js/zephyy-widget.js` (badge on home, nexus and the profile) and
+**Status surfaces.** `js/zephyy-widget.js` (badge on home, nexus and lab/nexus) and
 `/zephyy/status` both read `zephyy/status` in RTDB.
 
 ## Connected systems

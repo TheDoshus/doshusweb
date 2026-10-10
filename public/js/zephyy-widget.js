@@ -44,7 +44,7 @@
 
     const glyphWrap = document.createElement('span');
     glyphWrap.className = 'zephyy-glyph';
-    glyphWrap.innerHTML = window.zephyyWhorl(); // her whorl, from zephyy-chat.js
+    glyphWrap.innerHTML = window.zephyyWhorl?.() || ''; // her whorl, from zephyy-chat.js (a stale cached copy lacks it)
 
     const dot = document.createElement('span');
     dot.className = `zephyy-dot ${isOnline ? 'online' : 'offline'}`;

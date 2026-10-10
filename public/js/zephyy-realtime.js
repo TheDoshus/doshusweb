@@ -8,7 +8,7 @@
  *
  * Every page that shows Zephyy's status listens for the events this file sends instead of
  * reading Firebase itself: 'zephyy-status' {online, data} (also kept in
- * window.__zpLatestStatus), 'zephyy-online-change' {online} and 'zephyy-connection' {connected}.
+ * window.__zpLatestStatus) and 'zephyy-connection' {connected}.
  *
  * STALENESS-BASED OFFLINE:
  *   Status includes lastHeartbeat (ISO timestamp, updated by systemd pinger every 60s).
@@ -87,7 +87,7 @@
   const fresh = function (data) { return Date.now() - (data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0) < HEARTBEAT_MS; };
   function publish(data) {
     data = data || {};
-    const isOnline = fresh(data);
+    const isOnline = data.online !== false && fresh(data); // a fresh beat, unless the rig said it's going offline
 
     const dot = document.getElementById('zp-status-dot');
     const text = document.getElementById('zp-status-text');
@@ -113,7 +113,6 @@
     // Cached so scripts or HTMX fragments arriving later can hydrate
     window.__zpLatestStatus = { online: isOnline, data: data };
     window.dispatchEvent(new CustomEvent('zephyy-status', { detail: window.__zpLatestStatus }));
-    window.dispatchEvent(new CustomEvent('zephyy-online-change', { detail: { online: isOnline } }));
   }
 
   // ──────────────────────────────────────────────
@@ -148,7 +147,10 @@
       return function () { window.dispatchEvent(new CustomEvent('zephyy-connection', { detail: { connected: on } })); };
     };
     status.onopen = connected(true);
-    status.onerror = connected(false); // the browser reconnects on its own
+    status.onerror = function () { // the browser reconnects on its own
+      connected(false)();
+      if (!window.__zpLatestStatus) publish(null); // never reached: show her offline rather than nothing
+    };
     // Nothing new arrives while her pinger is silent, so the last reading turns her offline once stale
     setInterval(function () {
       const last = window.__zpLatestStatus;

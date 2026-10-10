@@ -48,6 +48,9 @@
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
+  transform-origin: center bottom;
+  transition: opacity 0.22s ease,
+              transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .zp-chat-panel.open {
@@ -256,15 +259,11 @@
   color: var(--text-main);
 }
 
-/* Generated images in chat */
-
 .zp-chat-msg-user a {
   color: var(--text-main);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-
-/* Session ended banner */
 
 .zp-chat-input-area {
   display: flex;
@@ -495,12 +494,6 @@ body.zp-motion-throttled .zp-chat-panel::before {
 
 /* Origin-aware springy open — rises from the orb with a gentle overshoot
    (transitions.dev "origin-aware open/close" pattern) */
-.zp-chat-panel {
-  transform-origin: center bottom;
-  transition: opacity 0.22s ease,
-              transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
 /* Aurora strip — paper-design mesh-gradient vibe in pure CSS.
    Clipped to the panel top by the panel's overflow:hidden. */
 .zp-chat-panel::before {
@@ -620,7 +613,7 @@ body.zp-motion-throttled .zp-chat-panel::before {
   transform-origin: 32px 32px;
 }
 
-/* Speeds are knobs: her profile glyph sets them per mood (zephyy.css) */
+/* Speeds are knobs: her profile glyph sets them per mood (zephyy-profile.css) */
 .whorl-outer { animation: whorlSpin var(--whorl-1, 16s) linear infinite; }
 .whorl-mid   { animation: whorlSpin var(--whorl-2, 11s) linear infinite; }
 .whorl-inner { animation: whorlSpin var(--whorl-3, 7s) linear infinite; }

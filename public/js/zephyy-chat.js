@@ -121,9 +121,7 @@
             if (sendBtn) sendBtn.disabled = false;
         }
     }
-    window.addEventListener('zephyy-online-change', handleOnlineChange);
-
-    /* checkOnlineStatus → replaced by zephyy-online-change event listener */
+    window.addEventListener('zephyy-status', handleOnlineChange); /* its detail carries online too */
 
     /* ================================================
      * 2. DOM HELPERS
@@ -780,9 +778,9 @@
         touchActivity(); /* don't let the idle timer instantly re-fire on the new session */
         /* A fresh session greets like a first visit: new session, rebound Firebase refs */
         localStorage.removeItem(CACHE_KEY);
-        if (window.__zpRealtime) window.__zpRealtime.resetSession();
+        connect().then(function(rt) { rt.resetSession(); }).catch(function() { /* no chat connection: nothing to reset */ });
         /* Wipe the panel back to the first-load state (keep any typed draft) */
-        messagesEl.querySelectorAll('.zp-chat-msg, .zp-chat-ended').forEach(function(el) { el.remove(); });
+        messagesEl.querySelectorAll('.zp-chat-msg').forEach(function(el) { el.remove(); });
         removeThinkingBubble();
         if (sendBtn) sendBtn.disabled = false;
         if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; }
@@ -806,23 +804,23 @@
        first tap arms the button for 3.5s, second tap actually resets. ── */
     var refreshBtn = document.getElementById("zp-chat-refresh");
     var refreshConfirmTimer = null;
+    function disarmRefresh() {
+        refreshBtn.classList.remove('confirming');
+        refreshBtn.title = '';
+        refreshBtn.setAttribute('aria-label', 'Refresh chat');
+    }
     if (refreshBtn) refreshBtn.addEventListener("click", function() {
+        clearTimeout(refreshConfirmTimer);
         if (!refreshBtn.classList.contains('confirming')) {
             refreshBtn.classList.add('confirming');
             refreshBtn.title = 'Start over? Tap again to confirm';
             refreshBtn.setAttribute('aria-label', 'Tap again to confirm starting over');
-            clearTimeout(refreshConfirmTimer);
-            refreshConfirmTimer = setTimeout(function() {
-                refreshBtn.classList.remove('confirming');
-                refreshBtn.title = '';
-                refreshBtn.setAttribute('aria-label', 'Refresh chat');
-            }, 3500);
+            refreshConfirmTimer = setTimeout(disarmRefresh, 3500);
             return;
         }
-        clearTimeout(refreshConfirmTimer);
+        disarmRefresh();
         window.haptic?.(8);
-        localStorage.removeItem(CACHE_KEY);
-        location.reload();
+        startFreshSession(); /* a new server session too, not just a cleared screen */
     });
     sendBtn.addEventListener('click', function(e) {
         if (e.isTrusted && !sendBtn.disabled && !sessionEnded && inputEl.value.trim()) {

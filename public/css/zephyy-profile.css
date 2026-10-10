@@ -3,6 +3,30 @@
  * chronicle, capabilities, systems, crew, operating code and contact sections.
  */
 
+/* ── Her status dots (hero and nav): first here, so the cascade is the base's ── */
+.zp-dot.online {
+  background: oklch(var(--brand-green));
+  box-shadow: 0 0 6px oklch(var(--brand-green) / 0.5);
+  animation: zp-dot-pulse 2s ease-in-out infinite;
+}
+
+.zp-dot.offline {
+  background: oklch(35% 0.02 0);
+  box-shadow: 0 0 3px oklch(35% 0.02 0 / 0.3);
+  opacity: 0.5;
+  animation: zp-dot-fade 4s ease-in-out infinite;
+}
+
+@keyframes zp-dot-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+@keyframes zp-dot-fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
 /* ── Hero ── */
 
 .zp-hero {
@@ -107,6 +131,7 @@
   color: var(--text-muted);
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   margin-top: 1.5rem;
+  position: relative;
 }
 
 .zp-dot {
@@ -1088,6 +1113,11 @@
   .zp-profile-v4 .zp-crew-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* The service card's two tracks (260px + 420px, gap and padding) need ~800px; below that it stacks */
+@media (max-width: 800px) {
+  .zp-service-card { grid-template-columns: 1fr; gap: 1rem; }
+}
+
 @media (max-width: 760px) {
   .zp-profile-nav {
     top: 0.6rem;
@@ -1136,11 +1166,9 @@
   .zp-section-heading h2 { font-size: clamp(2.5rem, 13vw, 4rem); }
   .zp-signal-layout,
   .zp-systems-grid,
-  .zp-service-card,
   .zp-code-grid,
   .zp-contact-grid { grid-template-columns: 1fr; }
   .zp-profile-v4 .zp-daily-card { min-height: 0; }
-  .zp-service-card { gap: 1rem; }
   .zp-profile-v4 .zp-service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .zp-profile-v4 .zp-service-item:last-child { grid-column: 1 / -1; }
   .zp-chronicle::before { left: 0.34rem; }
@@ -1205,10 +1233,6 @@
 
 /* ── Status line bounce ── */
 
-.zp-status {
-  position: relative;
-}
-
 .zp-status::before {
   content: '';
   position: absolute;
@@ -1247,8 +1271,6 @@
   padding: 0.25em 0.6em;
 }
 
-/* ── Ambient mouse-follow glow ── */
-
 /* ── Performance safety valve: when frames drop, main.js's FPS watcher flips
    this class so every ambient/decorative infinite animation on the page eases
    off (the WebGL stars are cheap enough to keep going). Presence
@@ -1256,14 +1278,9 @@
    cheap and carry real meaning, not just atmosphere. ── */
 
 body.zp-motion-throttled .zp-glyph-ring,
-body.zp-motion-throttled .zp-orb-demo,
-body.zp-motion-throttled .whorl-outer,
-body.zp-motion-throttled .whorl-mid,
-body.zp-motion-throttled .whorl-inner,
-body.zp-motion-throttled .whorl-center,
 body.zp-motion-throttled .zp-hero-bg::before {
   animation-play-state: paused;
-}
+} /* her orb (zephyy.css) and whorl (zephyy-chat.css) pause by their own rules */
 
 /* ── Daily Zephyy ── */
 
@@ -1418,19 +1435,6 @@ body.zp-motion-throttled .zp-hero-bg::before {
 .zp-crew-torgent:hover { border-color: oklch(70% 0.28 150 / 0.35); box-shadow: 0 4px 20px oklch(70% 0.28 150 / 0.08); }
 
 .zp-crew-wick:hover { border-color: oklch(78% 0.2 80 / 0.35); box-shadow: 0 4px 20px oklch(78% 0.2 80 / 0.08); }
-
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-  @keyframes zp-vt-out {
-    to { opacity: 0; }
-  }
-  @keyframes zp-vt-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-}
 
 @media (prefers-reduced-motion: no-preference) {
   /* Her avatar glyph: squish + overshoot on mood-cycle press */

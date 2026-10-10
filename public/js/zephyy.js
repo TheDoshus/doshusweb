@@ -8,7 +8,7 @@
 (function () {
     'use strict';
 
-    // Each mood's line; its glyph speeds live in zephyy.css, keyed off body[data-zp-mood]
+    // Each mood's line; its glyph speeds live in zephyy-profile.css, keyed off [data-zp-mood]
     const MOODS = {
         calm: 'Quiet orbit. Watching the whole board.',
         active: 'Pressure is up. Moving the work.',
@@ -79,7 +79,7 @@
     function setupGlyph() {
         const wrap = document.getElementById('zephyy-glyph');
         if (!wrap) return;
-        wrap.innerHTML = window.zephyyWhorl(); // zephyy-chat.js, which every page of hers loads
+        wrap.innerHTML = window.zephyyWhorl?.() || ''; // zephyy-chat.js (guarded: a week-old cached copy predates it)
         wrap.setAttribute('role', 'button');
         wrap.setAttribute('tabindex', '0');
         wrap.setAttribute('aria-label', 'Cycle profile signal state');
@@ -207,6 +207,7 @@
         const el = function (id) { return document.getElementById(id); };
         const SERVICES = { gateway: 'svc-gateway', orb: 'svc-orb', ws: 'svc-ws', embed: 'svc-embed', aether: 'svc-aether' };
         let latest = null;
+        let connected = true;
         function render() {
             const online = latest.online;
             const data = latest.data || {};
@@ -228,18 +229,21 @@
                 label.textContent = value || 'unknown';
                 label.className = 'st-svc-label' + (up ? '' : ' off');
             });
-            if (!beat) { el('st-updated-text').textContent = 'No heartbeat on record yet.'; return; }
+            el('st-updated-text').textContent = !connected
+                ? (beat ? 'Firebase offline — showing the last reading.' : 'Can\'t reach the live feed — retrying.')
+                : (beat ? 'Live via Firebase · last beat ' + formatAgo(beat) : 'No heartbeat on record yet.');
+            if (!beat) return;
             const when = new Date(beat);
             el('st-last-beat').textContent = formatAgo(beat);
             el('st-beat-live-time').textContent = when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + when.toLocaleDateString([], { month: 'short', day: 'numeric' });
             el('st-beat-live-detail').textContent = online
                 ? 'All clear — services nominal. Heartbeat fresh.'
                 : 'Heartbeat stale — gateway may be sleeping or restarting.';
-            el('st-updated-text').textContent = 'Live via Firebase · last beat ' + formatAgo(beat);
         }
         window.addEventListener('zephyy-status', function (event) { latest = event.detail; render(); });
         window.addEventListener('zephyy-connection', function (event) {
-            if (!event.detail.connected) el('st-updated-text').textContent = 'Firebase offline — showing the last reading.';
+            connected = event.detail.connected;
+            if (latest) render();
         });
         setInterval(function () { if (latest) render(); }, 60000);
     }

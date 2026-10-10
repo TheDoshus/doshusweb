@@ -100,19 +100,6 @@
   color: oklch(var(--brand-teal));
 }
 
-.zp-dot.online {
-  background: oklch(var(--brand-green));
-  box-shadow: 0 0 6px oklch(var(--brand-green) / 0.5);
-  animation: zp-dot-pulse 2s ease-in-out infinite;
-}
-
-.zp-dot.offline {
-  background: oklch(35% 0.02 0);
-  box-shadow: 0 0 3px oklch(35% 0.02 0 / 0.3);
-  opacity: 0.5;
-  animation: zp-dot-fade 4s ease-in-out infinite;
-}
-
 /* ── Chat Orb (future concept) ── */
 
 .zp-orb-demo {
@@ -138,6 +125,7 @@
   -webkit-user-select: none;
   user-select: none;
 }
+body.zp-motion-throttled .zp-orb-demo { animation-play-state: paused; } /* main.js's FPS watcher: a struggling device */
 
 .zp-orb-demo:hover {
   transform: scale(1.1);
@@ -220,6 +208,10 @@ body.zephyy-page {
   --nebula-pink: 38% 0.06 192;     /* the bright teal core */
   --star-cool: 90% 0.06 195;
   --star-glow: 70% 0.12 190;
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .zp-crew-badge {
@@ -250,13 +242,6 @@ body.zephyy-page {
    highlight on taps/drags; cursor stays default on non-interactive UI.
    Selection re-enabled only where copying genuinely matters. -- */
 
-body.zephyy-page {
-  -webkit-tap-highlight-color: transparent;
-  cursor: default;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
 body.zephyy-page .zp-chat-msg,
 body.zephyy-page .zp-chat-msg * {
   -webkit-user-select: text;
@@ -280,9 +265,20 @@ body.zephyy-page summary {
   cursor: pointer;
 }
 
-/* -- Cross-page view transitions (progressive enhancement, Chromium) -- */
+/* -- Cross-page view transitions (progressive enhancement, Chromium) --
+   Both pages of a hop have to opt in, so every page of hers carries it here */
 
 @media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  @keyframes zp-vt-out {
+    to { opacity: 0; }
+  }
+  @keyframes zp-vt-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   ::view-transition-old(root) {
     animation: zp-vt-out 0.16s ease both;
   }
@@ -323,16 +319,6 @@ body.zephyy-page summary {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-@keyframes zp-dot-pulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.3); }
-}
-
-@keyframes zp-dot-fade {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
 }
 
 @keyframes dot-pulse {
