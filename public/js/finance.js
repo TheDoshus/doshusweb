@@ -30,15 +30,6 @@ function correctScroll() {
     }
 }
 
-// Wait two frames so layout settles before measuring
-function syncSliderView(alsoCorrectScroll = false) {
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            setSliderHeight();
-            if (alsoCorrectScroll) correctScroll();
-        });
-    });
-}
 
 // ─── GO TO SLIDE FUNCTION ───
 // Handles slide navigation, nav dot updates, progress bar, and localStorage
@@ -52,8 +43,8 @@ function goToSlide(index, saveToStorage = true) {
         slide.classList.toggle('active-slide', i === currentSlide);
     });
 
+    setSliderHeight();
     correctScroll();
-    syncSliderView(true);
 
     // Update nav dots
     navDots.forEach((dot, i) => {
@@ -98,6 +89,8 @@ if (viewport && slides && totalSlides > 0) {
     }, { passive: true });
 
     slides.addEventListener('touchmove', (e) => {
+        // A finger moving a panel on a slide's board isn't swiping
+        if (slides.querySelector('.board.is-arranging')) { isSwiping = false; return; }
         const diffX = e.touches[0].clientX - startX;
         const diffY = e.touches[0].clientY - startY;
 
@@ -131,6 +124,7 @@ if (viewport && slides && totalSlides > 0) {
 
     // ─── KEYBOARD NAVIGATION ───
     document.addEventListener('keydown', (e) => {
+        if (e.defaultPrevented) return; // a panel's grip or corner took the arrow
         if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
         if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
     });
@@ -146,12 +140,27 @@ if (viewport && slides && totalSlides > 0) {
         goToSlide(0);
     }
 
-    // ─── RECALCULATE HEIGHT ON WINDOW RESIZE ───
-    // If user rotates device or resizes browser, recalculate active slide height
-    window.addEventListener('resize', () => syncSliderView());
+    // ─── HEIGHT FOLLOWS THE ACTIVE SLIDE ───
+    // Whatever changes a slide's size (a fold easing, a panel moved or resized, an image, the
+    // window) resizes the window onto it
+    const resized = new ResizeObserver(setSliderHeight);
+    allSlides.forEach((slide) => resized.observe(slide));
 }
 
-// ─── SLIDER HEIGHT SYNC (Called globally by main.js) ───
-window.syncSliderHeight = function() {
-    requestAnimationFrame(setSliderHeight);
-};
+// ─── CARD TOOLTIPS: under the card when the box they're in would cut them off above ───
+// The nearest box that clips (an open fold clips to its content, a panel body scrolls), or the screen
+function clipTop(el) {
+    for (let n = el.parentElement; n; n = n.parentElement) {
+        if (n.matches('details[open]') && getComputedStyle(n, '::details-content').overflow !== 'visible') return n.querySelector('summary').getBoundingClientRect().bottom;
+        if (getComputedStyle(n).overflow !== 'visible') return n.getBoundingClientRect().top;
+    }
+    return 0;
+}
+document.querySelectorAll('.ccCard').forEach((card) => {
+    const tip = card.querySelector('.card-tooltip');
+    card.addEventListener('pointerenter', () => {
+        card.classList.remove('tip-below');
+        // 13px for the lifts hover gives the card (5) and the tooltip (8)
+        card.classList.toggle('tip-below', tip.getBoundingClientRect().top - 13 < Math.max(0, clipTop(card)));
+    });
+});

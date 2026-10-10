@@ -19,6 +19,10 @@
 }
 .ccCard img { width: 100%; height: auto; object-fit: cover; border-radius: 8px; }
 .ccCard:hover .card-tooltip { visibility: visible; transform: translateX(-50%) translateY(-8px); }
+/* No room above inside the box that clips it (js/finance.js): under the card instead */
+.ccCard.tip-below .card-tooltip { bottom: auto; top: 100%; }
+.ccCard.tip-below:hover .card-tooltip { transform: translateX(-50%) translateY(8px); }
+.ccCard.tip-below .card-tooltip::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: oklch(var(--accent-finance) / 0.4); }
 .ccCard:hover { transform: translateY(-5px);
     border-color: oklch(var(--accent-finance));
     box-shadow: 0 8px 25px oklch(var(--accent-finance) / 0.2);

@@ -15,7 +15,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
     const panels = [...board.children].filter((el) => el.matches('.panel'));
     const title = (p) => p.querySelector('h2')?.textContent ?? p.getAttribute('aria-label') ?? p.id;
-    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: p.hidden });
+    // A panel marked data-collapsed starts as its title bar (data-h counts the bar's rows) and opens to its content
+    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: p.hidden, collapsed: 'collapsed' in p.dataset });
     const copy = (map) => new Map([...map].map(([p, r]) => [p, { ...r }]));
     // Three grids, each with its own layout and save (board.css sets their --cols): wide, placed by
     // data-x/y/w/h; mid, up to 1080px (foldables, tablets), the wide layout flowed onto half the
@@ -153,9 +154,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         // more of the wide row, so every row holds two panels or one; a meme keeps its wide height
         const media = (p) => p.matches('.panel-media');
         const width = (p) => (t === 'phone' || wide.get(p).w >= cols() * 1.5 ? cols() : Math.floor(cols() / 2));
-        const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false }]));
+        const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false, collapsed: wide.get(p).collapsed }]));
         render(flow); // at their widths, so each body's content wraps the way it will
-        flow.forEach((r, p) => { r.h = t === 'mid' && media(p) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
+        flow.forEach((r, p) => { r.h = r.collapsed ? headRows(p) : t === 'mid' && media(p) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
         // In reading order, each takes the highest free spot, leftmost first
         const placed = [];
         flow.forEach((r) => {
@@ -542,7 +543,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         collapse?.addEventListener('click', () => {
             const next = copy(layout);
             const r = next.get(p);
-            if (r.collapsed) Object.assign(r, { h: r.full, collapsed: false, full: undefined });
+            if (r.collapsed) {
+                p.classList.remove('is-collapsed'); // one that started collapsed has no height to go back to: it fits its content
+                Object.assign(r, { h: r.full ?? clamp(contentH(p, true), minH(p), maxH(p)), collapsed: false, full: undefined });
+            }
             else {
                 Object.assign(r, { full: r.h, collapsed: true });
                 p.classList.add('is-collapsed'); // measured as the title bar it becomes

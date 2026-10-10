@@ -72,7 +72,8 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
 - **Collapse.** ▾ shrinks a panel to its title bar and back. The title keeps to one line there
   (cut with … when it's long), so the bar is the same height at any width. The space below stays as it was
   (nothing floats up); opening it again pushes down whatever has moved in. A headless media
-  panel has no title bar, so no ▾.
+  panel has no title bar, so no ▾. A page can start a panel collapsed (`data-collapsed`, as a closed fold
+  converts): its `data-h` counts the title bar's rows, and it opens to fit its content.
 - **Hide and bring back.** ✕ hides a panel and leaves its gap; Add widget (shown only while a
   panel is hidden) brings it back to its spot. Reset (shown only once the layout differs from
   the default) returns to the default, then offers Undo reset until the next change.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// The board engine (UI-SPEC.md, public/js/board.js) in a real browser, on /nexus served from
-// public/. Every case here is a bug a review found or a promise the spec makes.
+// The board engine (UI-SPEC.md, public/js/board.js) in a real browser, on /nexus (a few cases on
+// /financehub) served from public/. Every case here is a bug a review found or a promise the spec makes.
 // Run: bun run test. Once per machine: bunx playwright install chromium. PW_CHROMIUM=<path to a
 // chrome binary> runs another Chromium build instead of Playwright's own.
 const assert = require('node:assert/strict');
@@ -32,7 +32,7 @@ function serve() {
 }
 
 let base;
-async function open(browser, opts = WIDE, { init, motion = 'reduce', delayBoard } = {}) {
+async function open(browser, opts = WIDE, { init, motion = 'reduce', delayBoard, path = PAGE } = {}) {
     const ctx = await browser.newContext({ ...opts, reducedMotion: motion });
     if (init) await ctx.addInitScript(init);
     await ctx.route((url) => !url.href.startsWith(base), (r) => r.abort()); // nothing leaves the machine
@@ -40,7 +40,7 @@ async function open(browser, opts = WIDE, { init, motion = 'reduce', delayBoard 
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(base + PAGE, { waitUntil: 'load' });
+    await page.goto(base + path, { waitUntil: 'load' });
     await sleep(600);
     return { ctx, page, errors };
 }
@@ -263,6 +263,78 @@ const TESTS = {
         await page.locator('.board-bar button', { hasText: 'Undo reset' }).click();
         assert.equal(await saved(page), mine);
         return errors;
+    },
+    async 'a panel marked data-collapsed starts as its title bar and opens to its content'(browser) {
+        // Mark Rig before board.js reads the markup
+        const init = () => new MutationObserver((_, mo) => { const p = document.getElementById('rig'); if (p) { p.dataset.collapsed = ''; mo.disconnect(); } })
+            .observe(document, { childList: true, subtree: true });
+        const all = [];
+        for (const opts of [WIDE, PHONE]) {
+            const { page, errors } = await open(browser, opts, { init });
+            all.push(...errors);
+            const at = `${opts.viewport.width}px`;
+            const rig = () => page.evaluate(() => {
+                const p = document.getElementById('rig'), row = parseFloat(getComputedStyle(p.parentElement).gridAutoRows);
+                const head = p.querySelector('.panel-head').offsetHeight + 2 * parseFloat(getComputedStyle(p).marginTop) + p.offsetHeight - p.clientHeight;
+                const body = p.querySelector('.panel-body');
+                return { collapsed: p.classList.contains('is-collapsed'), slack: +p.style.getPropertyValue('--h') - head / row, over: body.scrollHeight - body.clientHeight };
+            });
+            const start = await rig();
+            assert.ok(start.collapsed && start.slack >= 0 && start.slack < 1, `${at}: starts as a tight title bar ${JSON.stringify(start)}`);
+            assert.equal(await saved(page, opts === WIDE ? '' : 'phone'), null, `${at}: the default saves nothing`);
+            await page.click('#rig .panel-collapse');
+            await frames(page);
+            const opened = await rig();
+            assert.ok(!opened.collapsed && opened.over <= 0, `${at}: opens to its content ${JSON.stringify(opened)}`);
+            if (opts === WIDE) {
+                await page.locator('.board-bar button', { hasText: 'Reset layout' }).click();
+                await frames(page);
+                assert.ok((await rig()).collapsed, 'Reset puts it back collapsed');
+            }
+            await page.context().close();
+        }
+        return all;
+    },
+    async "a fold eases open and shut where CSS can't animate it (Firefox, Safari)"(browser) {
+        // Chromium playing a browser without interpolate-size
+        const init = () => { const s = CSS.supports.bind(CSS); CSS.supports = (...a) => (String(a[0]).startsWith('interpolate-size') ? false : s(...a)); };
+        const { page, errors } = await open(browser, WIDE, { init, motion: 'no-preference' });
+        // ...where <details> snaps open and shut, as it does there
+        await page.addStyleTag({ content: '::details-content { transition: none !important; }' });
+        const heights = (click) => page.evaluate(async (click) => {
+            const fold = document.querySelector('#rig details.fold'), out = [];
+            if (click) fold.querySelector('summary').click();
+            for (let t = 0; t < 6; t++) { out.push(Math.round(fold.getBoundingClientRect().height)); await new Promise((r) => setTimeout(r, 90)); }
+            return { out, open: fold.open };
+        }, click);
+        const shut = (await heights(false)).out[0];
+        const opening = await heights(true);
+        assert.ok(opening.open && opening.out.some((h) => h > shut + 5 && h < opening.out[5] - 5), `no in-between heights opening: ${opening.out}`);
+        const closing = await heights(true);
+        assert.ok(closing.out.some((h) => h < opening.out[5] - 5 && h > shut + 5), `no in-between heights closing: ${closing.out}`);
+        await sleep(200);
+        assert.equal(await page.evaluate(() => document.querySelector('#rig details.fold').open), false, 'ends closed');
+        return errors;
+    },
+    async "a card's tooltip is never cut off by the box it's in (Finance Hub)"(browser) {
+        const all = [];
+        for (const opts of [WIDE, PHONE]) {
+            const { page, errors } = await open(browser, opts, { path: '/financehub.html' });
+            all.push(...errors);
+            for (const card of (await page.locator('.ccGrid .ccCard').all()).slice(0, 8)) {
+                await card.scrollIntoViewIfNeeded();
+                await card.hover();
+                await frames(page);
+                const cut = await card.evaluate((c) => {
+                    const tip = c.querySelector('.card-tooltip').getBoundingClientRect();
+                    const box = c.closest('details').querySelector('summary').getBoundingClientRect().bottom;
+                    return Math.round(Math.max(box, 0) - tip.top);
+                });
+                assert.ok(cut <= 0, `${opts.viewport.width}px: ${await card.locator('.card-title').textContent()}'s tooltip cut by ${cut}px`);
+            }
+            await page.context().close();
+        }
+        return all;
     },
     async 'collapse to the title bar and back'(browser) {
         const { page, errors } = await open(browser);
