@@ -90,7 +90,9 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 **Board rollout** (the layout in `UI-SPEC.md`, signed off 2026-10-09): `/lab/nexus` stays the
 proving ground for each change; next the lab replaces `nexus.html` (nexus.css keeps only the
 hero and footer bits, and the board's scales move from `board.css` to `shared.css`), then
-Finance Hub, the Lounge and Zephyy's profile. The widget catalog reuses the profile's htmx
+Finance Hub, the Lounge, Zephyy's profile and the home page (Doshus, 2026-10-10: its hero stays;
+everything below it becomes the board, the Discord section included, with the same spacing
+between sections as now). Each conversion follows `UI-SPEC.md` § Converting a page. The widget catalog reuses the profile's htmx
 fragments (`zephyy/fragments/`, htmx 2.0.10, moving from `/zephyy/vendor/` to a shared vendor
 folder). Site-specific parts that stay out of the spec: the cells go through the CSSOM, so no
 `style=` attribute ever leans on the CSP's `'unsafe-inline'`; `board.css` also carries the
