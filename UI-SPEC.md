@@ -77,7 +77,8 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
 - **While moving**, the board lights up as a field of cells, a breathing ghost in the panel's
   accent shows where it will land, and the other panels glide out of the way. Near the top or
   bottom of the screen the page scrolls, faster the closer the pointer gets, and keeps going
-  while it rests there. Escape puts everything back where it was.
+  while it rests there, at the same speed on any refresh rate. Escape, or the browser cancelling
+  the pointer, puts everything back where it was. One gesture at a time: a second finger waits.
 - **Resize** from any edge or corner with a mouse, from one large corner on touch screens
   (thumbs catch thin edges by accident). The edge follows the pointer (scrolling included), the
   ghost shows the whole cells it will take, and it snaps into them on release.
