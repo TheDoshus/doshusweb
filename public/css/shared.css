@@ -180,19 +180,20 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 /* ─── COSMIC BACKGROUND ─── */
+/* The sky's two fixed layers fill the large viewport (lvh: the screen with the browser's bars
+   tucked away), so a phone scrolling its URL bar off never uncovers the black page behind them.
+   dvh would only catch up once the bar had finished moving */
+.cosmic-bg, #stars { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100lvh; }
 /* The nebula. main.js draws it drifting on the star canvas above; this is its first moment,
    still, for the first paint and for pages without WebGL */
 .cosmic-bg {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
     background: linear-gradient(135deg, oklch(var(--space-oled)) 0%, oklch(var(--nebula-purple) / 0.85) 30%, oklch(var(--nebula-blue) / 0.65) 65%, oklch(var(--space-oled)) 100%);
     z-index: -2;
 }
 
 /* ─── STARS ─── main.js draws them on a WebGL canvas, tinted by the --star-* tokens, over the
    nebula (--nebula-* tokens). --sky-nebula: none on #stars leaves the nebula to .cosmic-bg */
-#stars { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; pointer-events: none;
-    z-index: -1;
-}
+#stars { overflow: hidden; pointer-events: none; z-index: -1; }
 #stars canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 /* Shooting star: the head is the right end; main.js sets its path */
 .sky-meteor { position: absolute; top: 0; left: -140px; width: 140px; height: 1.5px; border-radius: 1px;
