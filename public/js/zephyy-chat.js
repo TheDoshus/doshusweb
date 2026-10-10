@@ -26,43 +26,34 @@
 
     if (!orb || !panel) return;
 
-    /* Replace the 💬 placeholder with the dual-vortex glyph
-       (local copy — the badge's glyphSVG lives in a separate IIFE closure) */
-    const orbGlyphSVG = `
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="orbGlyphGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="oklch(100% 0 0)" stop-opacity="0.98" />
-                <stop offset="50%" stop-color="oklch(94% 0.035 240)" stop-opacity="0.9" />
-                <stop offset="100%" stop-color="oklch(100% 0 0)" stop-opacity="0.75" />
-            </linearGradient>
-        </defs>
-        <circle cx="32" cy="32" r="29" stroke="oklch(100% 0 0)" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>
-        <g class="whorl-outer">
-            <path d="M 32 9 A 23 23 0 1 1 12 44"
-                stroke="url(#orbGlyphGrad)" stroke-width="3.2" stroke-linecap="round" opacity="0.85"/>
-            <circle cx="32" cy="9" r="2.0" fill="oklch(100% 0 0)" opacity="0.9"/>
-        </g>
-        <g class="whorl-mid">
-            <path d="M 45 40 A 15 15 0 1 1 32 17"
-                stroke="url(#orbGlyphGrad)" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/>
-            <circle cx="45" cy="40" r="1.8" fill="oklch(100% 0 0)" opacity="0.95"/>
-        </g>
-        <g class="whorl-inner">
-            <path d="M 25 36 A 8 8 0 1 1 39 36"
-                stroke="url(#orbGlyphGrad)" stroke-width="3.8" stroke-linecap="round" opacity="0.98"/>
-            <circle cx="25" cy="36" r="1.6" fill="oklch(100% 0 0)" opacity="0.98"/>
-        </g>
-        <circle cx="32" cy="32" r="3.6" fill="oklch(100% 0 0)" class="whorl-center"/>
-    </svg>
-    `;
+    /* Her whorl, the one copy every surface draws: the orb (bold), the chat header, the status
+       badge (zephyy-widget.js) and her profile (zephyy.js). Three rings spin at their own speeds
+       around a pulsing center; zephyy-chat.css colors and moves them. Each copy gets its own
+       gradient id: a page draws several, and a url(#id) into a hidden copy paints nothing */
+    const WHORL = { // per ring (outer, mid, inner): stroke width, opacity, dot radius; then the center's radius
+        fine: { w: [1, 1.2, 1.35], o: [0.55, 0.78, 0.95], dot: [1, 0.85, 0.75], center: 2, ring: 0.45 },
+        bold: { w: [3.2, 3.4, 3.8], o: [0.85, 0.9, 0.98], dot: [2, 1.8, 1.6], center: 3.6, ring: 0.8 },
+    };
+    const RINGS = [['outer', 'M 32 9 A 23 23 0 1 1 12 44', 32, 9], ['mid', 'M 45 40 A 15 15 0 1 1 32 17', 45, 40], ['inner', 'M 25 36 A 8 8 0 1 1 39 36', 25, 36]];
+    let whorls = 0;
+    window.zephyyWhorl = function (bold) {
+        const v = WHORL[bold ? 'bold' : 'fine'];
+        const id = 'zp-whorl-' + (++whorls);
+        return `<svg class="whorl${bold ? ' whorl-bold' : ''}" viewBox="0 0 64 64" fill="none" aria-hidden="true">`
+            + `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0"/><stop offset="0.55"/><stop offset="1"/></linearGradient></defs>`
+            + `<circle class="whorl-ring" cx="32" cy="32" r="29" stroke-width="${v.ring}"/>`
+            + RINGS.map(([name, d, x, y], i) => `<g class="whorl-${name}"><path d="${d}" stroke="url(#${id})" stroke-width="${v.w[i]}" stroke-linecap="round" opacity="${v.o[i]}"/><circle cx="${x}" cy="${y}" r="${v.dot[i]}"/></g>`).join('')
+            + `<circle class="whorl-center" cx="32" cy="32" r="${v.center}"/></svg>`;
+    };
     if (orb && !orb.querySelector('.zp-orb-glyph')) {
         const orbGlyph = document.createElement('span');
         orbGlyph.className = 'zp-orb-glyph';
-        orbGlyph.innerHTML = orbGlyphSVG;
+        orbGlyph.innerHTML = window.zephyyWhorl(true);
         orb.insertBefore(orbGlyph, orb.firstChild);
         orb.classList.add('has-glyph');
     }
+    const headerGlyph = document.querySelector('.zp-chat-icon-glyph');
+    if (headerGlyph) headerGlyph.innerHTML = window.zephyyWhorl();
 
     /* ── Varied first-visit greeting — the static welcome line rotates so
        returning-but-new visitors don't get the exact same open every time.

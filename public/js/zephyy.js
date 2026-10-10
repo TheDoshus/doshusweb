@@ -16,31 +16,6 @@
         heartbeat: 'Pulse check. Receipts or it did not happen.',
     };
 
-    const glyphSVG = `
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="glyphGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="oklch(var(--brand-teal))" />
-                    <stop offset="60%" stop-color="oklch(var(--brand-purple))" />
-                    <stop offset="100%" stop-color="oklch(var(--brand-green))" />
-                </linearGradient>
-            </defs>
-            <circle cx="32" cy="32" r="29" stroke="oklch(var(--zp-state) / 0.18)" stroke-width="0.45" fill="none"/>
-            <g class="whorl-outer">
-                <path d="M 32 9 A 23 23 0 1 1 12 44" stroke="url(#glyphGrad)" stroke-width="1" stroke-linecap="round" opacity="0.55"/>
-                <circle cx="32" cy="9" r="1" fill="oklch(var(--brand-teal))" opacity="0.8"/>
-            </g>
-            <g class="whorl-mid">
-                <path d="M 45 40 A 15 15 0 1 1 32 17" stroke="url(#glyphGrad)" stroke-width="1.2" stroke-linecap="round" opacity="0.78"/>
-                <circle cx="45" cy="40" r="0.85" fill="oklch(var(--brand-purple))" opacity="0.85"/>
-            </g>
-            <g class="whorl-inner">
-                <path d="M 25 36 A 8 8 0 1 1 39 36" stroke="url(#glyphGrad)" stroke-width="1.35" stroke-linecap="round" opacity="0.95"/>
-                <circle cx="25" cy="36" r="0.75" fill="oklch(var(--brand-teal))"/>
-            </g>
-            <circle cx="32" cy="32" r="2" fill="oklch(var(--zp-state))" class="whorl-center"/>
-        </svg>
-    `;
 
     let selectedMood = 'calm';
     let moodWasChosen = false;
@@ -104,7 +79,7 @@
     function setupGlyph() {
         const wrap = document.getElementById('zephyy-glyph');
         if (!wrap) return;
-        wrap.innerHTML = glyphSVG;
+        wrap.innerHTML = window.zephyyWhorl(); // zephyy-chat.js, which every page of hers loads
         wrap.setAttribute('role', 'button');
         wrap.setAttribute('tabindex', '0');
         wrap.setAttribute('aria-label', 'Cycle profile signal state');

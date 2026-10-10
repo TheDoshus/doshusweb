@@ -1,6 +1,6 @@
 /* ─── ZEPHYY ONLINE STATUS WIDGET ───
- * Vanilla JS — renders the dual-vortex glyph + status badge from the 'zephyy-status' event
- * zephyy-realtime.js sends (live, or from its fetch fallback), so the page must load it too.
+ * Vanilla JS — renders her whorl glyph + status badge from the 'zephyy-status' event
+ * zephyy-realtime.js sends, so the page must load it too, and zephyy-chat.js (the whorl).
  *
  * Usage:
  *   <div class="zephyy-badge-embed"></div>   (add inline-hero for the home hero's variant)
@@ -9,36 +9,6 @@
 
 (function () {
   'use strict';
-
-  // ─── Atmospheric whorl glyph SVG ───
-  function glyphSVG() {
-    return `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="zg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%"   stop-color="oklch(var(--brand-teal))" />
-          <stop offset="60%"  stop-color="oklch(var(--brand-purple))" />
-          <stop offset="100%" stop-color="oklch(var(--brand-green))" />
-        </linearGradient>
-      </defs>
-      <circle cx="32" cy="32" r="29" stroke="oklch(var(--brand-teal) / 0.1)" stroke-width="0.5" fill="none"/>
-      <g class="glyph-outer">
-        <path d="M 32 9 A 23 23 0 1 1 12 44"
-          stroke="url(#zg)" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>
-        <circle cx="32" cy="9" r="1.0" fill="oklch(var(--brand-teal))" opacity="0.6"/>
-      </g>
-      <g class="glyph-mid">
-        <path d="M 45 40 A 15 15 0 1 1 32 17"
-          stroke="url(#zg)" stroke-width="1.0" stroke-linecap="round" opacity="0.65"/>
-        <circle cx="45" cy="40" r="0.8" fill="oklch(var(--brand-purple))" opacity="0.7"/>
-      </g>
-      <g class="glyph-inner">
-        <path d="M 25 36 A 8 8 0 1 1 39 36"
-          stroke="url(#zg)" stroke-width="1.1" stroke-linecap="round" opacity="0.9"/>
-        <circle cx="25" cy="36" r="0.7" fill="oklch(var(--brand-teal))" opacity="0.8"/>
-      </g>
-      <circle cx="32" cy="32" r="1.8" fill="oklch(var(--brand-teal))" opacity="0.8" class="glyph-pulse"/>
-    </svg>`;
-  }
 
   function buildLabel(isOnline, mood) {
     const label = document.createElement('span');
@@ -74,7 +44,7 @@
 
     const glyphWrap = document.createElement('span');
     glyphWrap.className = 'zephyy-glyph';
-    glyphWrap.innerHTML = glyphSVG();
+    glyphWrap.innerHTML = window.zephyyWhorl(); // her whorl, from zephyy-chat.js
 
     const dot = document.createElement('span');
     dot.className = `zephyy-dot ${isOnline ? 'online' : 'offline'}`;

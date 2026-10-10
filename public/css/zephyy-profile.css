@@ -28,6 +28,7 @@
 }
 
 .zp-glyph-wrap svg {
+  --whorl-tint: var(--zp-state); /* her whorl's ring and center show her state */
   width: 100%;
   height: 100%;
   display: block;

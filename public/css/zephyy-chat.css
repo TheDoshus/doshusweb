@@ -599,6 +599,21 @@ body.zp-motion-throttled .zp-chat-panel::before {
   height: 100%;
 }
 
+/* Her whorl (zephyy-chat.js draws every copy): the brand gradient, its ring and center in
+   --whorl-tint (teal; her profile sets her state color); the orb's bold copy is white */
+.whorl stop:nth-child(1) { stop-color: oklch(var(--brand-teal)); }
+.whorl stop:nth-child(2) { stop-color: oklch(var(--brand-purple)); }
+.whorl stop:nth-child(3) { stop-color: oklch(var(--brand-green)); }
+.whorl circle { fill: oklch(var(--brand-teal)); }
+.whorl-mid circle { fill: oklch(var(--brand-purple)); }
+.whorl .whorl-ring { fill: none; stroke: oklch(var(--whorl-tint, var(--brand-teal)) / 0.18); }
+.whorl .whorl-center { fill: oklch(var(--whorl-tint, var(--brand-teal))); }
+.whorl.whorl-bold stop { stop-color: oklch(var(--star-white) / 0.9); }
+.whorl-bold circle { fill: oklch(var(--star-white)); }
+.whorl-bold .whorl-ring { stroke: oklch(var(--star-white) / 0.2); }
+.whorl-bold .whorl-center { fill: oklch(var(--star-white)); }
+.zp-chat-icon-glyph .whorl * { animation: none; } /* the header's sits still */
+
 .whorl-outer,
 .whorl-mid,
 .whorl-inner {
