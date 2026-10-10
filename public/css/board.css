@@ -123,7 +123,7 @@
    animation for as long as it runs */
 .panel.is-dragging { position: fixed; margin: 0; opacity: 0.92; scale: 1.02; cursor: grabbing; will-change: translate; }
 
-.panel-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: var(--sp-s);
+.panel-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center;
     padding: var(--sp-m) var(--sp-m) var(--sp-xs);
     position: relative; cursor: grab; touch-action: pan-y pinch-zoom;
     user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
@@ -138,20 +138,25 @@
     background: radial-gradient(circle, oklch(var(--accent)) 1.1px, transparent 1.6px) 0 0 / 6px 4px;
 }
 .panel:is(:hover, :focus-within, .is-holding, .is-dragging) .panel-dots::before { opacity: 1; }
-.panel-icon { grid-column: 1; width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 9px;
+.panel-icon { grid-column: 1; margin-right: var(--sp-s); width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 9px;
     background: oklch(var(--accent) / 0.12); border: 1px solid oklch(var(--accent) / 0.4); color: oklch(var(--accent));
 }
 .panel-icon svg { width: 1.4rem; height: 1.4rem; }
 .panel-head h2 { grid-column: 2; font-family: var(--font-title); font-size: clamp(1rem, 0.55rem + 4.75cqi, var(--fs-l));
-    line-height: 1; margin: 0; overflow-wrap: anywhere; color: oklch(var(--accent));
+    line-height: 1; margin: 0; overflow-wrap: anywhere; text-align: start; color: oklch(var(--accent));
 }
-/* The tag and the tools share the head's last slot, so whichever shows, the title keeps its room */
-.panel-head > :is(.panel-tag, .panel-tools) { grid-area: 1 / 3; justify-self: end; }
+/* The tag and the tools share the head's last slot, so whichever shows, the title keeps its room.
+   Spacing rides on the icon and that slot, so a head without an icon starts its title at the edge */
+.panel-head > :is(.panel-tag, .panel-tools) { grid-area: 1 / 3; justify-self: end; margin-left: var(--sp-s); }
+/* A narrow head drops its icon; narrower still, the title takes a line of its own under the tools */
+@container panel (max-width: 15rem) { .panel-icon { display: none; } }
+@container panel (max-width: 10rem) { .panel:not(.is-collapsed) .panel-head h2 { grid-area: 2 / 1 / auto / -1; margin-top: var(--sp-2xs); } }
 .panel-tag { font: var(--fs-xs) var(--font-mono); letter-spacing: 0.15em; color: var(--text-muted); }
 /* What a panel holds answers to the panel's own width (@container panel, cqi units), never the
-   window's, since a visitor can make any panel narrow. The head and body are the containers,
-   not the panel: Chromium 141 drops the layout inside a size container moved by moveBefore() */
-.panel-head, .panel-body { container: panel / inline-size; }
+   window's, since a visitor can make any panel narrow. The head, body and foot are the
+   containers, not the panel: Chromium 141 drops the layout inside a size container moved by
+   moveBefore() */
+.panel-head, .panel-body, .panel-foot { container: panel / inline-size; }
 /* Content scrolls inside, so a panel can be sized smaller than what it holds */
 .panel-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--sp-s);
     padding: var(--sp-2xs) var(--sp-m) var(--sp-m); position: relative; z-index: 1;
@@ -169,7 +174,7 @@
 .panel-media > .random-meme-fixed { flex: 1; min-height: 0; border: 0; border-radius: inherit; }
 .panel-media > .random-meme-fixed:hover { transform: none; box-shadow: none; }
 /* A headless panel's grab bar: an invisible strip over the top-left, stopping short of the
-   right edge where a video player keeps its buttons */
+   right edge where a video player keeps its buttons; its tools sit at the strip's end */
 .panel-grab { position: absolute; top: 0; left: 0; z-index: 3; width: max(40%, 100% - 8rem); height: 2.75rem;
     cursor: grab; touch-action: pan-y pinch-zoom; border-radius: var(--r-l) 0 0 0;
     user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
@@ -177,19 +182,22 @@
 
 /* ─── PANEL CONTROLS (added by js/board.js) ─── */
 /* The head is the grab bar. Collapse and ✕ show at its end on hover; the move button appears
-   only when a keyboard reaches it. A headless panel keeps them in its top-right corner */
-.panel-tools { display: flex; gap: var(--sp-2xs); z-index: 5; opacity: 0; transition: opacity 0.2s ease; }
-.panel > .panel-tools { position: absolute; top: var(--sp-xs); right: var(--sp-xs); }
+   only when a keyboard reaches it, beside them rather than among them, so the head never reflows */
+.panel-tools { display: flex; gap: var(--sp-2xs); position: relative; z-index: 5; opacity: 0; transition: opacity 0.2s ease; }
+.panel-grab > .panel-tools { position: absolute; top: 50%; right: var(--sp-s); translate: 0 -50%; }
 .panel-tools button { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; padding: 0; cursor: pointer;
     font-size: 0.8rem; color: oklch(var(--accent)); background: oklch(var(--space-oled) / 0.6);
     border: 1px solid oklch(var(--accent) / 0.3); border-radius: var(--r-s);
 }
 .panel-tools button:hover { border-color: oklch(var(--accent)); }
-.panel-grip:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.panel-grip { position: absolute; top: 0; right: calc(100% + var(--sp-2xs)); }
+.panel-grip:not(:focus-visible) { width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .panel:not(.panel-media):is(:hover, :focus-within) .panel-tag { visibility: hidden; }
 .panel.is-dragging :is(.panel-head, .panel-grab, .panel-dots) { cursor: grabbing; }
-/* Collapsed to its title bar: the head alone, its tools in view so it's clear how to open it */
+/* Collapsed to its title bar: the head alone, its tools in view so it's clear how to open it. The
+   title keeps to one line (cut with …), so the bar is the same height at any width */
 .panel.is-collapsed :is(.panel-body, .panel-foot, .panel-edge) { display: none; }
+.panel.is-collapsed .panel-head h2 { line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .panel.is-collapsed .panel-tools { opacity: 1; }
 .panel.is-collapsed .panel-tag { visibility: hidden; }
 .panel-collapse { transition: rotate 0.25s ease; }

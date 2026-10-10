@@ -33,7 +33,7 @@ _(none)_
 
 | Date | Change | Files touched (external) | Notes | Synced |
 |---|---|---|---|---|
-| 2026-10-10 | Zephyy's orb dock styles moved out of `css/zephyy-orb-embed.css` into a new `css/zephyy-orb-dock.css`, linked on the 32 strip pages + `template.html` + `gallery.html` (orb is external-only) | 32 pages, `template.html`, `gallery.html` | **no sync needed**: internal pages carry no Zephyy dock | n/a |
+| 2026-10-10 | Zephyy's orb dock styles moved out of `css/zephyy-orb-embed.css` into a new `css/zephyy-orb-dock.css`, linked on the 31 strip pages + `template.html` + `gallery.html` (orb is external-only) | 31 pages, `template.html`, `gallery.html` | **no sync needed**: internal pages carry no Zephyy dock | n/a |
 | 2026-10-10 | A comment in `css/swapbtn.css` names the renamed `zephyy-orb.css` (was `zephyy-chat.css`) | `css/swapbtn.css` | comment only, **no sync needed** | n/a |
 | 2026-07-17 | **Glassy orb core**: Zephyy's orb is now translucent glass (see-through gradient + sheen + backdrop blur + inset shadows) instead of the solid purple ball; hover glow keeps the insets. Gallery iframe 80% zoom is external-only (gallery never mirrors) | `css/zephyy-orb-embed.css` (core + hover + mobile-dot/expanded blocks) → internal equivalent lives in swapbtn.css orb section | synced via Quick Suite prompt (batch 3) | before 2026-09-27 (date not recorded) |
 | 2026-07-17 | Swap dropdown matches the theme: accent-tinted glass panel, pastel links, themed border/glow/scrollbar, slide-down overshoot animation; `--_swap` moved up to `.dropdown2` | `css/swapbtn.css` | synced via Quick Suite prompt (batch 2) | 2026-07-17 |

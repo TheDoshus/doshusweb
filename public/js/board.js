@@ -106,15 +106,19 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const fixed = parts(p);
         return Math.max(MIN_H, Math.ceil((fixed + gutters(p) + (fixed ? 48 : 0)) / cell().y));
     }
+    // A running glide is finished first, so what's measured is the size the panel lands at
+    const land = (p) => p.getAnimations().forEach((anim) => anim.id === 'glide' && anim.finish());
     // Collapsed to its title bar: the head alone (and the panel's border)
-    const headRows = (p) => Math.ceil((p.querySelector('.panel-head').offsetHeight + gutters(p) + p.offsetHeight - p.clientHeight) / cell().y);
+    function headRows(p) {
+        land(p);
+        return Math.ceil((p.querySelector('.panel-head').offsetHeight + gutters(p) + p.offsetHeight - p.clientHeight) / cell().y);
+    }
     // The tallest: one screen (100dvh), so a panel always fits in view
     const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y));
-    // Tall enough for everything it holds, at its current width (a running glide is finished
-    // first, so that's the width it lands at). A meme gets a little over half the screen, or
-    // with `exact` (once its picture has loaded) exactly its picture's shape
+    // Tall enough for everything it holds, at the width it lands at. A meme gets a little over
+    // half the screen, or with `exact` (once its picture has loaded) exactly its picture's shape
     function contentH(p, exact) {
-        p.getAnimations().forEach((anim) => anim.id === 'glide' && anim.finish());
+        land(p);
         if (p.matches('.panel-media')) {
             const media = exact && p.querySelector('video, img');
             const ratio = media && (media.videoHeight / media.videoWidth || media.naturalHeight / media.naturalWidth);
@@ -128,14 +132,17 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         if (exact) body?.style.removeProperty('flex');
         return Math.ceil(h / cell().y);
     }
-    // Keep every panel inside what it can be at this size: the grid's width, its own minimum
-    // height (head and foot) and one screen
+    // Keep every panel inside what it can be at this size: the grid's width, then (measured at
+    // that width) its own minimum height, head and foot, and one screen; a collapsed one, its head
     function fit(map) {
-        render(resolve(map));
-        map.forEach((r, p) => {
+        map.forEach((r) => {
             r.w = clamp(r.w, minW(), cols());
             r.x = clamp(r.x, 1, cols() - r.w + 1);
+        });
+        render(resolve(map));
+        map.forEach((r, p) => {
             if (!r.collapsed) r.h = clamp(r.h, minH(p), maxH(p));
+            else if (!r.hidden) r.h = headRows(p);
         });
         return resolve(map);
     }
@@ -144,10 +151,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const t = tier();
         if (t === 'wide') return fit(wide);
         const order = [...wide].sort(([, a], [, b]) => a.y - b.y || a.x - b.x).map(([p]) => p);
-        // Phone: full width. Mid: half its wide width and no less than half the row, so the board
-        // reads as two columns; a meme keeps its wide height
+        // Phone: full width. Mid: half the row, or all of it for a panel spanning three quarters or
+        // more of the wide row, so every row holds two panels or one; a meme keeps its wide height
         const media = (p) => p.matches('.panel-media');
-        const width = (p) => (t === 'phone' ? cols() : clamp(Math.round(wide.get(p).w / 2), cols() / 2, cols()));
+        const width = (p) => (t === 'phone' || wide.get(p).w >= cols() * 1.5 ? cols() : Math.floor(cols() / 2));
         const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false }]));
         render(flow); // at their widths, so each body's content wraps the way it will
         flow.forEach((r, p) => { r.h = t === 'mid' && media(p) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
@@ -486,7 +493,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const name = title(p);
         // The head and the grab dots move the panel (a headless panel gets a grab strip over its
         // top-left, clear of a video's own buttons); the grip is the keyboard's move control and
-        // only shows on focus. The tools sit at the head's end, or a headless panel's top right
+        // only shows on focus. The tools sit at the end of the head or grab strip
         const headed = p.querySelector('.panel-head');
         const head = headed ?? p.appendChild(el('div', 'panel-grab'));
         const tools = el('div', 'panel-tools');
@@ -494,7 +501,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const collapse = headed && button('▾', `Collapse ${name} to its title bar`, 'panel-collapse');
         const hide = button('✕', `Hide ${name}`, 'panel-close');
         tools.append(...[grip, collapse, hide].filter(Boolean));
-        (headed ?? p).append(tools);
+        head.append(tools);
         EDGES.forEach((dir) => {
             // The corner is the keyboard's way in; the other edges are pointer-only
             const edge = dir === 'se' ? button('', `Resize ${name}; Enter fits it to its content`, 'panel-edge') : el('span', 'panel-edge');
@@ -538,7 +545,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             const next = copy(layout);
             const r = next.get(p);
             if (r.collapsed) Object.assign(r, { h: r.full, collapsed: false, full: undefined });
-            else Object.assign(r, { full: r.h, h: headRows(p), collapsed: true });
+            else {
+                Object.assign(r, { full: r.h, collapsed: true });
+                p.classList.add('is-collapsed'); // measured as the title bar it becomes
+                r.h = headRows(p);
+            }
             flip(() => render(resolve(next, p)));
             commit(next);
             say(`${name} ${r.collapsed ? 'collapsed' : 'opened'}`);

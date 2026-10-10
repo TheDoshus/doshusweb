@@ -16,7 +16,10 @@ const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascrip
 const WIDE = { viewport: { width: 1440, height: 900 } };
 const FOLD = { viewport: { width: 901, height: 1000 }, isMobile: true, hasTouch: true }; // a Galaxy Z Fold7 opened
 const PHONE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
+const SMALL = { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// shared.css's reduced motion still transitions every property for a frame: wait out two frames
+const frames = (page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
 function serve() {
     const server = http.createServer((req, res) => {
@@ -109,10 +112,13 @@ const TESTS = {
         await page.mouse.move(h.x + 60, h.y + 10);
         await page.mouse.down();
         await page.mouse.move(h.x + 60, h.y + 5); // starts the drag at the top edge, then rests
-        await sleep(500);
-        const moved = y0 - (await page.evaluate(() => scrollY));
+        const t0 = Date.now();
+        let moved = 0;
+        while (moved <= 100 && Date.now() - t0 < 3000) { await sleep(100); moved = y0 - (await page.evaluate(() => scrollY)); }
+        const rate = moved / (Date.now() - t0);
         await page.mouse.up();
-        assert.ok(moved > 100 && moved < 700, `scrolled ${moved}px up in 500ms (0.68 px/ms expected)`);
+        assert.ok(moved > 100, `scrolled only ${moved}px up in 3s of resting`);
+        assert.ok(rate < 1.3, `${rate.toFixed(2)} px/ms: faster than the 1.2 px/ms cap, so not paced by time`);
         return errors;
     },
     async 'two fingers run one gesture'(browser) {
@@ -241,11 +247,12 @@ const TESTS = {
         assert.equal(await saved(page), null, 'back at the default, nothing is saved');
         return errors;
     },
-    async 'every panel body lays out after the DOM reorders (moveBefore and size containers)'(browser) {
+    async 'every panel head, body and foot lays out after the DOM reorders (moveBefore and size containers)'(browser) {
         const { page, errors } = await open(browser);
         await page.evaluate(() => document.querySelector('#rig .panel-close').click());
         await page.evaluate(() => document.querySelector('.board-menu button').click());
-        assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.panel-body')].filter((b) => getComputedStyle(b).height === 'auto').map((b) => b.closest('.panel').id)), []);
+        assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.panel > :is(.panel-head, .panel-body, .panel-foot)')]
+            .filter((b) => getComputedStyle(b).height === 'auto').map((b) => `${b.closest('.panel').id} ${b.className}`)), []);
         return errors;
     },
     async 'the mid tier: 12 columns, two panels to a row, its own save'(browser) {
@@ -253,7 +260,8 @@ const TESTS = {
         const layout = await page.evaluate(() => ({ cols: getComputedStyle(document.querySelector('.board')).getPropertyValue('--cols').trim(),
             cells: [...document.querySelectorAll('.panel')].map((p) => ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k))) }));
         assert.equal(layout.cols, '12');
-        for (const [x, , w] of layout.cells) assert.ok(w >= 6 && x + w - 1 <= 12, `cells ${x},${w}`);
+        for (const [x, , w] of layout.cells) assert.ok((w === 6 && [1, 7].includes(x)) || (w === 12 && x === 1), `cells ${x},${w}: half the row or all of it`);
+        assert.ok(layout.cells.some(([x]) => x === 7), 'two to a row');
         const overlap = (a, b) => a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
         layout.cells.forEach((a, i) => layout.cells.slice(i + 1).forEach((b) => assert.ok(!overlap(a, b), `overlap ${a} / ${b}`)));
         await page.focus('#mobile .panel-grip');
@@ -269,22 +277,122 @@ const TESTS = {
         c.slice(1).forEach(([, y], i) => assert.ok(y >= c[i][1] + c[i][3], 'stacked without overlap'));
         return errors;
     },
-    async 'a head never lets its title, tag and tools overlap'(browser) {
+    async 'a head keeps its title readable and clear of its tag and tools, at any width'(browser) {
         const all = [];
-        for (const opts of [WIDE, FOLD, PHONE]) {
+        for (const opts of [WIDE, FOLD, PHONE, SMALL]) {
             const { page, errors } = await open(browser, opts);
             all.push(...errors);
-            const bad = await page.evaluate(() => [...document.querySelectorAll('.panel')].flatMap((p) => {
+            const at = `${opts.viewport.width}px`;
+            const heads = () => page.evaluate(() => [...document.querySelectorAll('.panel')].flatMap((p) => {
                 const box = p.getBoundingClientRect(), tools = p.querySelector('.panel-tools').getBoundingClientRect(), out = [];
                 if (tools.left < box.left || tools.right > box.right + 1) out.push(`${p.id}: tools outside`);
                 const h2 = p.querySelector('.panel-head h2')?.getBoundingClientRect();
-                if (h2 && (h2.right > tools.left + 1 || h2.right > box.right)) out.push(`${p.id}: title under the tools`);
+                if (!h2) return out;
+                const hit = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+                if (hit(h2, tools)) out.push(`${p.id}: title under the tools`);
+                const tag = p.querySelector('.panel-tag')?.getBoundingClientRect();
+                if (tag && hit(h2, tag)) out.push(`${p.id}: title under the tag`);
+                if (h2.right > box.right || h2.width < 60) out.push(`${p.id}: title ${Math.round(h2.width)}px wide`);
                 return out;
             }));
-            assert.deepEqual(bad, [], `${opts.viewport.width}px`);
+            assert.deepEqual(await heads(), [], at);
+            // The narrowest a visitor can make one
+            await page.focus('#signals .panel-edge[data-dir="se"]');
+            for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowLeft');
+            await frames(page);
+            assert.deepEqual(await heads(), [], `${at}, narrowest`);
+            // The keyboard's move button shows without reflowing the head
+            const size = () => page.evaluate(() => { const h = document.querySelector('#signals .panel-head'); return [h.offsetHeight, h.querySelector('h2').offsetWidth]; });
+            const before = await size();
+            await page.focus('#signals .panel-grip');
+            await frames(page);
+            assert.ok((await page.locator('#signals .panel-grip').boundingBox()).width > 20, 'the grip shows on keyboard focus');
+            assert.deepEqual(await size(), before, `${at}: focusing the grip reflows the head`);
             await page.context().close();
         }
         return all;
+    },
+    async "a title starts at the head's edge, with no icon and at any window width"(browser) {
+        const all = [];
+        for (const opts of [WIDE, PHONE]) {
+            const { page, errors } = await open(browser, opts);
+            all.push(...errors);
+            const indent = await page.evaluate(() => {
+                const head = document.querySelector('#mobile .panel-head');
+                head.querySelector('.panel-icon').remove();
+                const text = document.createRange();
+                text.selectNodeContents(head.querySelector('h2'));
+                return text.getBoundingClientRect().left - head.getBoundingClientRect().left - parseFloat(getComputedStyle(head).paddingLeft);
+            });
+            assert.ok(Math.abs(indent) < 1, `${opts.viewport.width}px: title starts ${indent}px in`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async "a media panel's tools stay clear of its video buttons"(browser) {
+        const all = [];
+        for (const opts of [WIDE, PHONE]) {
+            const { page, errors } = await open(browser, opts);
+            all.push(...errors);
+            for (const id of await page.evaluate(() => [...document.querySelectorAll('.panel-media')].map((p) => p.id))) {
+                await center(page, id);
+                const covered = await page.evaluate((id) => {
+                    // The buttons main.js gives a video meme, shown as a hover shows them
+                    const bar = Object.assign(document.createElement('div'), { className: 'meme-video-controls' });
+                    bar.style.cssText = 'opacity: 1; pointer-events: auto; transform: none';
+                    bar.append(...['Play', 'Unmute'].map((t) => Object.assign(document.createElement('button'), { className: 'meme-video-control', textContent: t })));
+                    document.querySelector(`#${id} .random-meme-fixed`).append(bar);
+                    return [...bar.children].filter((b) => { const r = b.getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) !== b; }).map((b) => b.textContent);
+                }, id);
+                assert.deepEqual(covered, [], `${opts.viewport.width}px ${id}: something covers its video buttons`);
+            }
+            await page.context().close();
+        }
+        return all;
+    },
+    async 'a saved layout comes back on reload, collapsed panels and each tier included'(browser) {
+        const { page, errors } = await open(browser);
+        const rig = await cells(page, 'rig');
+        await page.click('#rig .panel-collapse');
+        await sleep(100);
+        const shut = await cells(page, 'rig');
+        await page.focus('#mobile .panel-grip');
+        await page.keyboard.press('ArrowRight');
+        const mobile = await cells(page, 'mobile');
+        await page.reload({ waitUntil: 'load' });
+        await sleep(600);
+        assert.equal(await page.evaluate(() => document.getElementById('rig').classList.contains('is-collapsed')), true);
+        assert.deepEqual(await cells(page, 'rig'), shut, 'still its title bar');
+        assert.deepEqual(await cells(page, 'mobile'), mobile);
+        await page.click('#rig .panel-collapse');
+        await sleep(100);
+        assert.deepEqual(await cells(page, 'rig'), rig, 'opens to the height it had');
+        await page.setViewportSize(FOLD.viewport);
+        await sleep(300);
+        await page.focus('#mobile .panel-grip');
+        await page.keyboard.press('ArrowDown');
+        const mid = await cells(page, 'mobile');
+        await page.reload({ waitUntil: 'load' });
+        await sleep(600);
+        assert.deepEqual(await cells(page, 'mobile'), mid, 'the mid layout comes back');
+        return errors;
+    },
+    async 'a collapsed panel holds its whole head, mid-glide and at any width'(browser) {
+        const { page, errors } = await open(browser, WIDE, { motion: 'no-preference' });
+        const spill = () => page.evaluate(() => [...document.querySelectorAll('.panel.is-collapsed')]
+            .filter((p) => p.querySelector('.panel-head').getBoundingClientRect().bottom > p.getBoundingClientRect().bottom + 1).map((p) => p.id));
+        await center(page, 'privacy');
+        await page.focus('#privacy .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 14; i++) await page.keyboard.press('ArrowLeft');
+        await page.evaluate(() => document.querySelector('#privacy .panel-collapse').click()); // while it still glides
+        await sleep(1300);
+        assert.deepEqual(await spill(), []);
+        for (const width of [1100, 1600]) {
+            await page.setViewportSize({ width, height: 900 });
+            await sleep(1300);
+            assert.deepEqual(await spill(), [], `${width}px`);
+        }
+        return errors;
     },
 };
 
