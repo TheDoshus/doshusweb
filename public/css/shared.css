@@ -47,7 +47,11 @@
     --fs-xs: 0.68rem; --fs-s: 0.78rem; --fs-l: 1.4rem;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
     --font-title: 'Shojumaru', system-ui, sans-serif;
+    --font-panel: var(--font-title);  /* every board panel's title, on every page */
     --font-accent: 'Fugaz One', system-ui, sans-serif;  /* link buttons, display names */
+    --font-body: 'Nata Sans', system-ui, sans-serif;
+    --font-button: 'Braah One', system-ui, sans-serif;  /* buttons, fold bars */
+    --font-h3: 'Jaro Regular-var', system-ui, sans-serif;
 
     /* Lets max-height animate to fit-content — makes .collapse actually
        ease open in supporting browsers (progressive enhancement) */
@@ -145,12 +149,12 @@
 a, button, [role="button"], label, summary { -webkit-tap-highlight-color: transparent; }
 
 body { position: relative; min-height: 100vh; background: oklch(var(--space-oled)); 
-    font-family: 'Nata Sans', system-ui, sans-serif;
+    font-family: var(--font-body);
     color: var(--text-main);
     overflow-x: clip;
 }
 button, .collapseBtn {
-    font-family: 'Braah One', system-ui, sans-serif;
+    font-family: var(--font-button);
 }
 h1 {
     font-family: 'Chango', cursive, system-ui, sans-serif;
@@ -160,7 +164,7 @@ h2 {
     font-size: 2rem;
 }
 h3 {
-    font-family: 'Jaro Regular-var', system-ui, sans-serif;
+    font-family: var(--font-h3);
 }
 h1, h2, h3 { text-wrap: balance; }
 
@@ -342,7 +346,7 @@ h1, h2, h3 { text-wrap: balance; }
     gap: 1rem;
     font-family: var(--font-accent);
 }
-.quickLinks .qlBtn { text-decoration: none; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+.qlBtns > .qlBtn { text-decoration: none; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     padding: 1.2rem 0.8rem;
     background: oklch(var(--accent-finance) / 0.08);
     border: 2px solid oklch(var(--accent-finance) / 0.25); border-radius: 12px;
@@ -353,14 +357,14 @@ h1, h2, h3 { text-wrap: balance; }
     display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;
     gap: 0.6rem;
 }
-.quickLinks .qlBtn:hover {
+.qlBtns > .qlBtn:hover {
     background: oklch(var(--accent-finance) / 0.15);
     border-color: oklch(var(--accent-finance));
     color: oklch(var(--accent-finance) / 0.8); /* Slight color pop on hover */
     transform: translateY(-4px) scale(1.02);
     box-shadow: 0 10px 25px oklch(var(--accent-finance) / 0.25);
 }
-.quickLinks .qlBtn:active {
+.qlBtns > .qlBtn:active {
     transform: translateY(0) scale(0.98);
     box-shadow: inset 0 2px 10px oklch(var(--space-oled) / 0.2);
 }
@@ -448,7 +452,7 @@ h1, h2, h3 { text-wrap: balance; }
     .finance-box h2 { margin-bottom: 1rem; }
     .quickLinks { flex-direction: column; }
     .qlBtns { flex-direction: column; }
-    .quickLinks .qlBtn { width: 100%; }
+    .qlBtns > .qlBtn { width: 100%; }
     .error-actions { flex-direction: column; width: 100%; max-width: 300px; }
     .error-button { width: 100%; }
 }
@@ -494,7 +498,7 @@ h1, h2, h3 { text-wrap: balance; }
     gap: 0.25rem;
 }
 .discord-server-name { margin: 0;
-    font-family: 'Braah One', system-ui, sans-serif;
+    font-family: var(--font-button);
     font-size: clamp(1.1rem, 3vw, 1.4rem);
     color: oklch(var(--accent-discord) / 0.95);
 }

@@ -23,7 +23,9 @@
 .board-wrap { max-width: 1440px; margin: 0 auto; padding: var(--sp-m) clamp(1rem, 3vw, 2rem) 6rem;
     position: relative; z-index: 10;
 }
-.board { --accent: var(--accent-crypto); --cols: 24; --row: 2rem; --gutter: 0.625rem;
+/* The default accent, at zero specificity so a data-accent on the board itself wins */
+:where(.board) { --accent: var(--accent-crypto); }
+.board { --cols: 24; --row: 2rem; --gutter: 0.625rem;
     /* Arranging feel, tune here: how strongly the cell field shows and the ghost's fill and
        glow (alphas, 0–1), then how long panels and the ghost glide (in ms; js/board.js reads
        both). The ghost's colors live in .board-ghost, the field's in .board::before */
@@ -135,7 +137,7 @@
     background: oklch(var(--accent) / 0.12); border: 1px solid oklch(var(--accent) / 0.4); color: oklch(var(--accent));
 }
 .panel-icon svg { width: 1.4rem; height: 1.4rem; }
-.panel-head h2 { grid-column: 2; font-family: var(--font-title); font-size: clamp(1rem, 0.55rem + 4.75cqi, var(--fs-l));
+.panel-head h2 { grid-column: 2; font-family: var(--font-panel); font-size: clamp(1rem, 0.55rem + 4.75cqi, var(--fs-l));
     line-height: 1; margin: 0; overflow-wrap: anywhere; text-align: start; color: oklch(var(--accent));
 }
 /* The tag and the tools share the head's last slot, so whichever shows, the title keeps its room.
@@ -156,7 +158,8 @@
     scrollbar-width: thin; scrollbar-color: oklch(var(--accent) / 0.45) transparent;
 }
 .panel-body > * { flex: none; }
-.panel-body > p { margin: 0; font-size: 0.82rem; line-height: 1.55; opacity: 0.8; }
+/* The kit's paragraph: a default, so a page's own class for its text wins */
+:where(.panel-body > p) { margin: 0; font-size: 0.82rem; line-height: 1.55; opacity: 0.8; }
 .panel-foot { display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: var(--sp-s); padding: var(--sp-xs) var(--sp-m);
     border-top: 1px dashed oklch(var(--star-white) / 0.08);
     font: 0.65rem var(--font-mono); letter-spacing: 0.08em; color: var(--text-muted);

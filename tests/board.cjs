@@ -327,7 +327,12 @@ const TESTS = {
                 await frames(page);
                 const cut = await card.evaluate((c) => {
                     const tip = c.querySelector('.card-tooltip').getBoundingClientRect();
-                    const box = c.closest('details').querySelector('summary').getBoundingClientRect().bottom;
+                    // The top of the nearest box that clips it: an open fold's content, a scrolling panel body
+                    let box = 0;
+                    for (let n = c.parentElement; n && !box; n = n.parentElement) {
+                        if (n.matches('details[open]') && getComputedStyle(n, '::details-content').overflow !== 'visible') box = n.querySelector('summary').getBoundingClientRect().bottom;
+                        else if (getComputedStyle(n).overflow !== 'visible') box = n.getBoundingClientRect().top;
+                    }
                     return Math.round(Math.max(box, 0) - tip.top);
                 });
                 assert.ok(cut <= 0, `${opts.viewport.width}px: ${await card.locator('.card-title').textContent()}'s tooltip cut by ${cut}px`);

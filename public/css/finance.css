@@ -340,11 +340,11 @@
 }
 
 /* ─── SECTION HEADERS ─── */
-.finance-box h3 {
+:is(.finance-box, .panel-body) h3 {
     font-size: clamp(1.45rem, 3vw, 1.525rem);
     margin-bottom: 0.3rem;
 }
-.finance-box p {
+:is(.finance-box, .panel-body) p {
     font-size: 0.9rem;
     opacity: 0.7; line-height: 1.5; 
     margin-bottom: .5rem;
@@ -369,13 +369,13 @@
 
 /* Quick links */
 .finance-box .quickLinks { background: oklch(var(--sec) / 0.04); border: 1px solid oklch(var(--sec) / 0.3); }
-.finance-box .quickLinks .qlBtn { color: oklch(var(--sec)); background: oklch(var(--sec) / 0.1); border: 1px solid oklch(var(--sec) / 0.3); }
-.finance-box .qlBtn:hover { border-color: oklch(var(--sec)); box-shadow: 0 5px 15px oklch(var(--sec) / 0.2); }
+:is(.finance-box, .panel-body) .qlBtn { color: oklch(var(--sec)); background: oklch(var(--sec) / 0.1); border: 1px solid oklch(var(--sec) / 0.3); }
+:is(.finance-box, .panel-body) .qlBtn:hover { border-color: oklch(var(--sec)); box-shadow: 0 5px 15px oklch(var(--sec) / 0.2); }
 
 /* Info boxes */
-.finance-box .infoTitle { color: oklch(var(--sec)); }
+:is(.finance-box, .panel-body) .infoTitle { color: oklch(var(--sec)); }
 .finance-box .infoBox { background: oklch(var(--sec) / 0.03); border-color: oklch(var(--sec) / 0.15); border-left: 3px solid oklch(var(--sec) / 0.4); }
-.finance-box .tips-list li::before { color: oklch(var(--sec)); }
+:is(.finance-box, .panel-body) .tips-list li::before { color: oklch(var(--sec)); }
 
 /* Collapsibles pick up the section accent too */
 .finance-box .collapse { background: oklch(var(--sec) / 0.03); border-color: oklch(var(--sec) / 0.15); }
@@ -402,6 +402,15 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
+/* ─── A SLIDE ON THE BOARD (UI-SPEC.md): its title and intro, then its board ─── */
+/* A blur on the slide would pin a dragged panel to it (a backdrop-filter is a containing block for fixed) */
+.slide:has(> .board) { backdrop-filter: none; }
+.slide-head { --sec: var(--accent-finance); margin-bottom: 0.5rem; }
+.slide-head h2 { font-size: clamp(2rem, 3vw, 2.25rem); color: oklch(var(--sec)); }
+.slide-head > p { font-size: 0.9rem; opacity: 0.7; line-height: 1.5; margin: 0.5rem 0; }
+.slide-head > .board-bar { margin-top: 0.5rem; }
+.slide .panel { --sec: var(--accent); }
 
 /* ─── FINANCE CARD SLIDER ─── */
 .sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: relative; overflow-x: clip; overflow-y: visible; }

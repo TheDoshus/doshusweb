@@ -75,7 +75,7 @@
 .discord-username { display: inline-flex; align-items: center; cursor: pointer; transition: all 0.3s ease;
     gap: 0.5rem;
     padding: 0.7rem 1.2rem;
-    font-family: 'Braah One', system-ui, sans-serif;
+    font-family: var(--font-button);
     font-size: 1rem;
     color: oklch(var(--accent-discord) / 0.95);
     background: oklch(var(--accent-discord) / 0.12);
