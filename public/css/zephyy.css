@@ -448,6 +448,10 @@
 .zp-profile-v4[data-zp-mood="active"] { --zp-state: 72% 0.2 290; }
 .zp-profile-v4[data-zp-mood="debugging"] { --zp-state: 76% 0.19 62; }
 .zp-profile-v4[data-zp-mood="heartbeat"] { --zp-state: var(--brand-green); }
+/* Her glyph spins at the mood's pace (calm is the default, in zephyy-chat.css) */
+[data-zp-mood="active"] #zephyy-glyph    { --whorl-1: 5s;   --whorl-2: 3.5s; --whorl-3: 2.2s; --whorl-4: 0.8s; }
+[data-zp-mood="debugging"] #zephyy-glyph { --whorl-1: 1.8s; --whorl-2: 1.2s; --whorl-3: 0.7s; --whorl-4: 0.4s; }
+[data-zp-mood="heartbeat"] #zephyy-glyph { --whorl-1: 8s;   --whorl-2: 5s;   --whorl-3: 3s;   --whorl-4: 1.1s; }
 
 .zp-profile-v4 main {
   position: relative;

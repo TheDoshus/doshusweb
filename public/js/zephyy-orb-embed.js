@@ -17,8 +17,8 @@
     // shy collapsed/dim idle states and present the full orb immediately.
     // ('auto' suppresses the arrival animation — it only plays on a real tap.)
     try {
-        const hasConvo = localStorage.getItem('zephyy-chat-session') &&
-            (JSON.parse(localStorage.getItem('zp-chat-cache') || '[]')).length > 0;
+        // The chat keeps its messages here and clears them when a session ends or resets
+        const hasConvo = JSON.parse(localStorage.getItem('zp-chat-cache') || '[]').length > 0;
         if (hasConvo) wrapper.classList.add('expanded', 'auto', 'has-session');
     } catch (e) { /* storage blocked — stay in idle state */ }
 

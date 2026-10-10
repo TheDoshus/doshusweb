@@ -653,10 +653,11 @@ body.zp-motion-throttled .zp-chat-panel::before {
   transform-origin: 32px 32px;
 }
 
-.whorl-outer { animation: whorlSpin 16s linear infinite; }
-.whorl-mid   { animation: whorlSpin 11s linear infinite; }
-.whorl-inner { animation: whorlSpin 7s linear infinite; }
-.whorl-center { animation: whorlPulse 2.5s ease-in-out infinite; }
+/* Speeds are knobs: her profile glyph sets them per mood (zephyy.css) */
+.whorl-outer { animation: whorlSpin var(--whorl-1, 16s) linear infinite; }
+.whorl-mid   { animation: whorlSpin var(--whorl-2, 11s) linear infinite; }
+.whorl-inner { animation: whorlSpin var(--whorl-3, 7s) linear infinite; }
+.whorl-center { animation: whorlPulse var(--whorl-4, 2.5s) ease-in-out infinite; }
 
 @keyframes whorlSpin {
   from { transform: rotate(0deg); }

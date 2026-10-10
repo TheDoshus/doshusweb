@@ -1,29 +1,19 @@
 /**
- * Zephyy profile interactions.
- * Owns the profile glyph, state lens, HTMX deck hydration, nav state, and chat CTAs.
- * Realtime data still comes from zephyy-realtime.js.
+ * Zephyy's pages: the profile glyph and mood dial, the HTMX signal deck, section nav, chat
+ * CTAs, title word reveals and nav haptics. Every part checks for its markup, so the profile
+ * and the subpages share this one file. Loads after main.js (haptic, prefersReducedMotion);
+ * realtime data comes from zephyy-realtime.js.
  */
 
 (function () {
     'use strict';
 
+    // Each mood's line; its glyph speeds live in zephyy.css, keyed off body[data-zp-mood]
     const MOODS = {
-        calm: {
-            copy: 'Quiet orbit. Watching the whole board.',
-            speeds: ['16s', '11s', '7s', '2.5s'],
-        },
-        active: {
-            copy: 'Pressure is up. Moving the work.',
-            speeds: ['5s', '3.5s', '2.2s', '0.8s'],
-        },
-        debugging: {
-            copy: 'Two race conditions in a trench coat. Cute.',
-            speeds: ['1.8s', '1.2s', '0.7s', '0.4s'],
-        },
-        heartbeat: {
-            copy: 'Pulse check. Receipts or it did not happen.',
-            speeds: ['8s', '5s', '3s', '1.1s'],
-        },
+        calm: 'Quiet orbit. Watching the whole board.',
+        active: 'Pressure is up. Moving the work.',
+        debugging: 'Two race conditions in a trench coat. Cute.',
+        heartbeat: 'Pulse check. Receipts or it did not happen.',
     };
 
     const glyphSVG = `
@@ -56,27 +46,6 @@
     let moodWasChosen = false;
     let latestStatus = null;
 
-    function getGlyphParts() {
-        const wrap = document.getElementById('zephyy-glyph');
-        if (!wrap) return null;
-        return {
-            wrap,
-            outer: wrap.querySelector('.whorl-outer'),
-            mid: wrap.querySelector('.whorl-mid'),
-            inner: wrap.querySelector('.whorl-inner'),
-            center: wrap.querySelector('.whorl-center'),
-        };
-    }
-
-    function applyGlyphSpeed(mood) {
-        const parts = getGlyphParts();
-        if (!parts) return;
-        const speeds = MOODS[mood].speeds;
-        [parts.outer, parts.mid, parts.inner, parts.center].forEach(function (part, index) {
-            if (part) part.style.animationDuration = speeds[index];
-        });
-    }
-
     function setMood(mood, chosenByVisitor) {
         if (!MOODS[mood]) return;
         selectedMood = mood;
@@ -90,8 +59,7 @@
         });
 
         const copy = document.getElementById('zp-mood-copy');
-        if (copy) copy.textContent = MOODS[mood].copy;
-        applyGlyphSpeed(mood);
+        if (copy) copy.textContent = MOODS[mood];
     }
 
     function inferMood(value) {
@@ -163,9 +131,7 @@
         document.querySelectorAll('.zp-mood-btn').forEach(function (button) {
             button.addEventListener('click', function () {
                 setMood(button.dataset.mood, true);
-                if (navigator.vibrate) {
-                    try { navigator.vibrate(8); } catch (error) { /* Optional haptic. */ }
-                }
+                haptic();
             });
         });
         setMood(selectedMood, false);
@@ -183,7 +149,9 @@
         }
 
         tabs.forEach(function (tab) {
-            tab.addEventListener('click', function () {
+            tab.addEventListener('click', function (event) {
+                // htmx swaps the panel; the href (another section) is only for a page without it
+                if (window.htmx) event.preventDefault();
                 activateTab(tab);
             });
             tab.addEventListener('keydown', function (event) {
@@ -255,6 +223,38 @@
         sections.forEach(function (section) { observer.observe(section); });
     }
 
+    // Subpage titles reveal word by word as they scroll in; screen readers get the whole title
+    function setupTitles() {
+        const titles = document.querySelectorAll('.zp-sub-title');
+        if (prefersReducedMotion || !titles.length || !('IntersectionObserver' in window)) return;
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('zp-text-motion--visible');
+                observer.unobserve(entry.target);
+            });
+        }, { threshold: 0.35 });
+        titles.forEach(function (title) {
+            const text = title.textContent.trim();
+            if (!text) return;
+            const words = document.createElement('span');
+            words.className = 'zp-motion-words';
+            words.setAttribute('aria-hidden', 'true');
+            text.split(/\s+/).forEach(function (word, index) {
+                if (index) words.append(' ');
+                const span = document.createElement('span');
+                span.className = 'zp-motion-word';
+                span.style.setProperty('--zp-word-index', index);
+                span.textContent = word;
+                words.append(span);
+            });
+            title.setAttribute('aria-label', text);
+            title.replaceChildren(words);
+            title.classList.add('zp-text-motion');
+            observer.observe(title);
+        });
+    }
+
     function init() {
         setupGlyph();
         setupMoodButtons();
@@ -262,6 +262,10 @@
         setupStatusBridge();
         setupChatButtons();
         setupSectionNav();
+        setupTitles();
+        document.querySelectorAll('.zp-sub-nav a').forEach(function (link) {
+            link.addEventListener('click', function () { haptic(6); });
+        });
     }
 
     if (document.readyState === 'loading') {
