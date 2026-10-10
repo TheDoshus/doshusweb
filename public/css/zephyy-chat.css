@@ -463,18 +463,13 @@
   animation: zp-think-pulse 1.5s ease-in-out infinite;
 }
 
-.zp-dot {
+/* The thinking row's three dots, one after another (scoped: her status dots share .zp-dot) */
+.zp-thinking-dots .zp-dot {
   font-weight: bold;
   animation: zp-dot-bounce 1.4s ease-in-out infinite;
 }
-
-.zp-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.zp-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
+.zp-thinking-dots .zp-dot + .zp-dot { animation-delay: 0.2s; }
+.zp-thinking-dots .zp-dot + .zp-dot + .zp-dot { animation-delay: 0.4s; }
 
 @keyframes zp-dot-bounce {
   0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
@@ -521,8 +516,10 @@ body.zp-motion-throttled .zp-chat-panel::before {
   filter: blur(20px);
   opacity: 0.75;
   animation: zp-aurora-drift 16s ease-in-out infinite alternate;
+  animation-play-state: paused; /* drifts only while the panel is open */
   pointer-events: none;
 }
+.zp-chat-panel.open::before { animation-play-state: running; }
 
 @keyframes zp-aurora-drift {
   from { transform: translateX(-5%) scaleY(1); }

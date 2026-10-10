@@ -232,6 +232,7 @@
     }
 
     function addMessage(role, content, timestamp) {
+        if (role === 'assistant') role = 'bot'; // her replies arrive as 'assistant' (zephyy-realtime.js)
         // Dedup Zephyy's side only (a reply can arrive twice); a visitor's repeat is a real message
         var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-of-type[data-content]');
         if (role !== 'user' && prev && prev.dataset.content === content) return prev;
