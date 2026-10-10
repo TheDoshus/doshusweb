@@ -16,11 +16,7 @@
     // An in-progress conversation follows the visitor page to page: skip the
     // shy collapsed/dim idle states and present the full orb immediately.
     // ('auto' suppresses the arrival animation — it only plays on a real tap.)
-    try {
-        // The chat keeps its messages here and clears them when a session ends or resets
-        const hasConvo = JSON.parse(localStorage.getItem('zp-chat-cache') || '[]').length > 0;
-        if (hasConvo) wrapper.classList.add('expanded', 'auto', 'has-session');
-    } catch (e) { /* storage blocked — stay in idle state */ }
+    if (window.zephyyHasConvo?.()) wrapper.classList.add('expanded', 'auto', 'has-session'); // zephyy-chat.js
 
     // Sticky-footer harmony & scroll-aware hide — both driven by the one
     // scroll signal main.js already computes (the .footer-hidden toggle).

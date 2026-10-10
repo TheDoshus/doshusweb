@@ -1,9 +1,9 @@
 /**
  * Zephyy Realtime — her status and daily thought, live, and the chat's Firebase connection.
  *
- * Status and the daily thought stream straight from the database's REST endpoint (Server-Sent
- * Events): live, with no SDK. The Firebase SDK (~340 KB of script) loads only for the chat,
- * through window.__zpConnect() when the panel opens, or at once for a visitor with a
+ * Her status streams straight from the database's REST endpoint (Server-Sent Events): live,
+ * with no SDK; the daily thought is one read. The Firebase SDK (~340 KB of script) loads only
+ * for the chat, through window.__zpConnect() when it's needed, or at once for a visitor with a
  * conversation going, so her replies still light the orb.
  *
  * Every page that shows Zephyy's status listens for the events this file sends instead of
@@ -82,17 +82,18 @@
   ];
   const SERVICES = { gateway: 'svc-dot-gateway', orb: 'svc-dot-orb', ws: 'svc-dot-ws', embed: 'svc-dot-embed', aether: 'svc-dot-aether' };
 
-  // One status reading, from the live listener or the fallback fetch: the orb's status line,
-  // the model badge and service dots, then the events every other surface listens for
+  // One status reading, from the stream or a direct read: the orb's status line (a new one only
+  // when she comes or goes), the model badge and service dots, then the event every surface hears
   const fresh = function (data) { return Date.now() - (data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0) < HEARTBEAT_MS; };
   function publish(data) {
     data = data || {};
     const isOnline = data.online !== false && fresh(data); // a fresh beat, unless the rig said it's going offline
+    const before = window.__zpLatestStatus;
 
     const dot = document.getElementById('zp-status-dot');
     const text = document.getElementById('zp-status-text');
     const msgs = isOnline ? onlineMsgs : offlineMsgs;
-    if (text) text.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+    if (text && (!before || before.online !== isOnline)) text.textContent = msgs[Math.floor(Math.random() * msgs.length)];
     if (dot) dot.className = 'zp-dot ' + (isOnline ? 'online' : 'offline');
 
     const model = window.__zpLastReplyModel || data.chatModel;
@@ -119,11 +120,20 @@
   // INIT
   // ──────────────────────────────────────────────
 
+  const read = function (path) { return fetch(RTDB_URL + '/zephyy/' + path + '.json').then(function (r) { return r.json(); }); };
+
   // One database path, live: Firebase sends its whole value first (a 'put' at /), then each
-  // change as a 'put' (replace) or 'patch' (merge) at a sub-path
-  function stream(path, render) {
+  // change as a 'put' (replace) or 'patch' (merge) at a sub-path, null meaning gone. The stream
+  // closes while the tab is hidden (a browser allows each host only a few open connections) and
+  // reopens, whole value first, when it's back. After an HTTP error, which the browser won't
+  // retry on its own, a fresh stream follows a little later
+  function stream(path, render, on) {
     let value = null;
-    const source = new EventSource(RTDB_URL + '/zephyy/' + path + '.json');
+    let source = null;
+    const prune = function (node) {
+      if (node && typeof node === 'object') Object.keys(node).forEach(function (k) { if (node[k] === null) delete node[k]; else prune(node[k]); });
+      return node;
+    };
     const apply = function (merge) {
       return function (event) {
         const change = JSON.parse(event.data);
@@ -132,38 +142,58 @@
           if (i === keys.length) return merge ? Object.assign({}, node, change.data) : change.data;
           return Object.assign({}, node, { [keys[i]]: set(node && node[keys[i]], i + 1) });
         };
-        value = set(value, 0);
+        value = prune(set(value, 0));
+        on.heard();
         render(value);
       };
     };
-    source.addEventListener('put', apply(false));
-    source.addEventListener('patch', apply(true));
-    return source;
+    const closed = function () { return source.readyState === 2 && !document.hidden; };
+    const open = function () {
+      source = new EventSource(RTDB_URL + '/zephyy/' + path + '.json');
+      source.addEventListener('put', apply(false));
+      source.addEventListener('patch', apply(true));
+      source.addEventListener('keep-alive', on.heard);
+      source.onopen = on.open;
+      source.onerror = function () {
+        on.error();
+        if (closed()) setTimeout(function () { if (closed()) open(); }, 10000);
+      };
+    };
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) source.close();
+      else if (source.readyState === 2) open();
+    });
+    open();
   }
 
   function init() {
-    const status = stream('status', publish);
-    const connected = function (on) {
-      return function () { window.dispatchEvent(new CustomEvent('zephyy-connection', { detail: { connected: on } })); };
-    };
-    status.onopen = connected(true);
-    status.onerror = function () { // the browser reconnects on its own
-      connected(false)();
-      if (!window.__zpLatestStatus) publish(null); // never reached: show her offline rather than nothing
-    };
-    // Nothing new arrives while her pinger is silent, so the last reading turns her offline once stale
+    let heard = 0; // when the status stream last brought anything, keep-alives included
+    const connected = function (on) { window.dispatchEvent(new CustomEvent('zephyy-connection', { detail: { connected: on } })); };
+    stream('status', publish, {
+      open: function () { connected(true); },
+      error: function () {
+        connected(false);
+        if (!window.__zpLatestStatus) publish(null); // never reached: show her offline rather than nothing
+      },
+      heard: function () { heard = Date.now(); },
+    });
+    // A quiet stream (a proxy can hold one back) gets a direct read instead; a live one bringing no
+    // news means her pinger fell silent, so the last reading turns her offline once it's stale
     setInterval(function () {
       const last = window.__zpLatestStatus;
-      if (last && last.online && !fresh(last.data)) publish(last.data);
+      if (document.hidden) return;
+      if (Date.now() - heard > HEARTBEAT_MS * 0.75) read('status').then(publish).catch(function () {});
+      else if (last && last.online && !fresh(last.data)) publish(last.data);
     }, HEARTBEAT_MS / 4);
-    const card = document.getElementById('zephyy-daily');
-    if (card) stream('daily', renderDaily).onerror = function () { if (!card.classList.contains('loaded')) renderDaily(null); };
-    try {
-      if (JSON.parse(localStorage.getItem('zp-chat-cache') || '[]').length) window.__zpConnect().catch(function () {});
-    } catch (e) { /* storage blocked: the chat connects when it opens */ }
+    // The daily thought changes once a day: one read is enough
+    if (document.getElementById('zephyy-daily')) read('daily').then(renderDaily).catch(function () { renderDaily(null); });
+    // A conversation going (zephyy-chat.js keeps it): connect now, so her replies light the orb
+    if (window.zephyyHasConvo?.()) window.__zpConnect().catch(function () {});
   }
 
+  // One SDK script, loaded once however often the chat retries
   function load(name) {
+    if (typeof firebase !== 'undefined' && (name === 'app' || firebase[name])) return Promise.resolve();
     return new Promise(function (resolve, reject) {
       const script = Object.assign(document.createElement('script'), { src: SDK + name + '-compat.js', integrity: SDK_HASH[name], crossOrigin: 'anonymous' });
       script.onload = resolve;
@@ -173,7 +203,8 @@
   }
 
   // The chat's connection: the SDK, an anonymous sign-in and the visitor's private session, made
-  // once, the first time anything asks. Resolves with window.__zpRealtime
+  // the first time anything asks. Resolves with window.__zpRealtime; after a failure the next ask
+  // tries again (the chat tells the visitor where they're looking)
   let connecting = null;
   window.__zpConnect = function () {
     connecting = connecting || load('app')
@@ -183,19 +214,14 @@
         return loaded[2].json();
       })
       .then(function (config) {
-        firebase.initializeApp(config);
+        if (!firebase.apps.length) firebase.initializeApp(config);
         return firebase.auth().signInAnonymously();
       })
       .then(function (credential) {
         setupChatOrb(firebase.database(), credential.user.uid);
         return window.__zpRealtime;
       })
-      .catch(function (error) {
-        window.dispatchEvent(new CustomEvent('zephyy-chat-error', {
-          detail: {message: 'Private chat could not connect. Please refresh or try again later.'}
-        }));
-        throw error;
-      });
+      .catch(function (error) { connecting = null; throw error; });
     return connecting;
   };
 
@@ -272,7 +298,6 @@
     }
     window.__zpRealtime = {
       get sessionId() { return id; },
-      get msgsRef() { return messages; },
       get controlRef() { return control; },
       get sessionEnded() { return ended; },
       set sessionEnded(value) { ended = value; },

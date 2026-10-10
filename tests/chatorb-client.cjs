@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-async function boot({authFails = false, chatCache = false} = {}) {
+async function boot({auth = {fails: false}, chatCache = false} = {}) {
   const events = [], updates = [], listeners = new Map(), records = new Map();
   const handles = new Map();
   let serial = 0;
@@ -27,20 +27,28 @@ async function boot({authFails = false, chatCache = false} = {}) {
   }
   const database = () => ({ref});
   database.ServerValue = {TIMESTAMP: {'.sv': 'timestamp'}};
-  const local = new Map(chatCache ? [['zp-chat-cache', '[{"role":"user"}]']] : []);
-  const window = {location: {pathname: '/zephyy'},
+  const local = new Map();
+  const window = {location: {pathname: '/zephyy'}, zephyyHasConvo: () => chatCache,
     dispatchEvent: (event) => events.push(event)};
   const scripts = [], streams = [];
   // Status streams over Server-Sent Events; the SDK (stubbed here) is a script the client injects
   function EventSource(url) { this.url = url; this.handlers = {}; streams.push(this); }
   EventSource.prototype.addEventListener = function (type, fn) { this.handlers[type] = fn; };
-  const context = {window, EventSource, firebase: {initializeApp: () => {}, database,
+  // The SDK exists once its scripts have loaded, as in a browser
+  const firebase = {apps: [], initializeApp(config) { this.apps.push(config); }, database,
     auth: () => ({signInAnonymously: async () => {
-      if (authFails) throw new Error('disabled');
+      if (auth.fails) throw new Error('disabled');
       return {user: {uid: 'alice'}};
-    }})},
-    document: {readyState: 'complete', getElementById: () => null, createElement: () => ({}),
-      head: {appendChild: (script) => { scripts.push(script.src); Promise.resolve().then(script.onload); }}},
+    }})};
+  const context = {window, EventSource,
+    document: {readyState: 'complete', hidden: false, addEventListener: () => {}, getElementById: () => null, createElement: () => ({}),
+      head: {appendChild: (script) => {
+        scripts.push(script.src);
+        const part = script.src.match(/firebase-(\w+)-compat/)[1]; // each script brings its own piece
+        if (part === 'app') context.firebase = {apps: firebase.apps, initializeApp: firebase.initializeApp};
+        else context.firebase[part] = firebase[part];
+        Promise.resolve().then(script.onload);
+      }}},
     localStorage: {getItem: (k) => local.get(k), setItem: (k, v) => local.set(k, v)},
     crypto: {randomUUID: () => 'session_' + (++serial)},
     CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
@@ -65,6 +73,8 @@ async function boot({authFails = false, chatCache = false} = {}) {
   const latest = live.window.__zpLatestStatus;
   assert.equal(latest.online, true);
   assert.deepEqual([latest.data.mood, latest.data.services.ws, latest.data.services.orb], ['focused', 'inactive', 'active'], 'puts replace, patches merge');
+  status.handlers.patch({data: JSON.stringify({path: '/services', data: {orb: null}})});
+  assert.equal('orb' in live.window.__zpLatestStatus.data.services, false, 'null removes a key, as in Firebase');
   await live.window.__zpConnect();
   assert.equal(live.scripts.length, 3, 'the chat loads app, database and auth once');
   await live.window.__zpConnect();
@@ -89,9 +99,13 @@ async function boot({authFails = false, chatCache = false} = {}) {
   await assert.rejects(pending, /Session changed/);
   callback({val: () => ({rogue: {role: 'assistant', content: 'stale', timestamp: 3000}})});
   assert.equal(live.events.filter(e => e.type === 'zephyy-msg').length, 2, 'old listener cannot inject after reset');
-  const failed = await boot({authFails: true, chatCache: true});
+  const auth = {fails: true};
+  const failed = await boot({auth, chatCache: true});
   assert.equal(failed.scripts.length, 3, 'a conversation going connects at load');
   assert.equal(failed.window.__zpRealtime, undefined);
-  assert.ok(failed.events.some(e => e.type === 'zephyy-chat-error'));
-  console.log('PASS: no SDK until chat, status stream put/patch, one connection, auth wiring, atomic input, input limits, batched replies, dedupe, ordering, reset race, auth failure');
+  await assert.rejects(failed.window.__zpConnect(), /disabled/, 'a failed connect rejects');
+  auth.fails = false;
+  assert.ok(await failed.window.__zpConnect(), 'and the next ask tries again');
+  assert.equal(failed.scripts.length, 3, 'without loading the SDK twice');
+  console.log('PASS: no SDK until chat, status stream put/patch/null, one connection, auth wiring, atomic input, input limits, batched replies, dedupe, ordering, reset race, auth failure and retry');
 })().catch(error => { console.error(error); process.exitCode = 1; });

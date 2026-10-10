@@ -593,7 +593,8 @@ body.zp-motion-throttled .zp-chat-panel::before {
 }
 
 /* Her whorl (zephyy-chat.js draws every copy): the brand gradient, its ring and center in
-   --whorl-tint (teal; her profile sets her state color); the orb's bold copy is white */
+   --whorl-tint (teal; her profile sets her state color); the orb's bold copy is white (the
+   fallback is for the Printmon gallery, which has no shared.css) */
 .whorl stop:nth-child(1) { stop-color: oklch(var(--brand-teal)); }
 .whorl stop:nth-child(2) { stop-color: oklch(var(--brand-purple)); }
 .whorl stop:nth-child(3) { stop-color: oklch(var(--brand-green)); }
@@ -601,10 +602,10 @@ body.zp-motion-throttled .zp-chat-panel::before {
 .whorl-mid circle { fill: oklch(var(--brand-purple)); }
 .whorl .whorl-ring { fill: none; stroke: oklch(var(--whorl-tint, var(--brand-teal)) / 0.18); }
 .whorl .whorl-center { fill: oklch(var(--whorl-tint, var(--brand-teal))); }
-.whorl.whorl-bold stop { stop-color: oklch(var(--star-white) / 0.9); }
-.whorl-bold circle { fill: oklch(var(--star-white)); }
-.whorl-bold .whorl-ring { stroke: oklch(var(--star-white) / 0.2); }
-.whorl-bold .whorl-center { fill: oklch(var(--star-white)); }
+.whorl.whorl-bold stop { stop-color: oklch(var(--star-white, 100% 0 0) / 0.9); }
+.whorl-bold circle { fill: oklch(var(--star-white, 100% 0 0)); }
+.whorl-bold .whorl-ring { stroke: oklch(var(--star-white, 100% 0 0) / 0.2); }
+.whorl-bold .whorl-center { fill: oklch(var(--star-white, 100% 0 0)); }
 .zp-chat-icon-glyph .whorl * { animation: none; } /* the header's sits still */
 
 .whorl-outer,
@@ -612,6 +613,7 @@ body.zp-motion-throttled .zp-chat-panel::before {
 .whorl-inner {
   transform-origin: 32px 32px;
 }
+.whorl-center { transform-box: fill-box; transform-origin: center; } /* pulses in place */
 
 /* Speeds are knobs: her profile glyph sets them per mood (zephyy-profile.css) */
 .whorl-outer { animation: whorlSpin var(--whorl-1, 16s) linear infinite; }

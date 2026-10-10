@@ -3,8 +3,9 @@
  * Split from zephyy.js 2026-07-12 — everything chat: panel UI, message
  * rendering (escapeHtml/renderContent), send flow, session lifecycle UX.
  *
- * Depends on zephyy-realtime.js (window.__zpRealtime API: msgsRef/controlRef,
- * loadHistory, resetSession, sessionEnded) — loaded before this file.
+ * Depends on zephyy-realtime.js, loaded before this file: its 'zephyy-status' events, and
+ * window.__zpConnect(), which connects on first use and resolves with the session API
+ * (loadHistory, sendMessage, resetSession, controlRef, sessionEnded).
  * DOM lives in zephyy.html only; all lookups guard for missing elements.
  */
 
@@ -57,9 +58,9 @@
 
     /* ── Varied first-visit greeting — the static welcome line rotates so
        returning-but-new visitors don't get the exact same open every time.
-       Repaint removes the welcome once a real conversation exists. ── */
-    (function() {
-        var welcome = document.getElementById('zp-welcome-msg');
+       Repaint removes the welcome once a real conversation exists; a fresh session puts it back. ── */
+    const welcomeMsg = document.getElementById('zp-welcome-msg');
+    (function(welcome) {
         if (!welcome) return;
         var intros = [
             "Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄",
@@ -70,7 +71,7 @@
             "Hey hey! ⚡ I'm Zephyy. I know where everything is around here — literally everything. What's your name?"
         ];
         welcome.textContent = intros[Math.floor(Math.random() * intros.length)];
-    })();
+    })(welcomeMsg);
 
     /* ── Header name → profile link (JS so all 10 stamped pages get it
        without markup surgery) ── */
@@ -91,12 +92,12 @@
         tooltip.style.display = 'none';
     }
 
-    /* Session — uses zephyy-realtime.js (Firebase native listeners, no polling) */
+    /* Session state */
     let isOpen = false;
     let quickReplied = false;
     let sessionEnded = false;
 
-    /* ── Listen for online/offline status changes from Firebase listener.
+    /* ── Her online/offline status, from zephyy-realtime.js's status events.
        Offline does NOT disable input — RTDB is always up, so messages queue
        and the orb answers them when Zephyy wakes. Just set expectations. ── */
     var zephyyOnline = true;
@@ -142,7 +143,6 @@
         if (isOpen) {
             window.haptic?.(6);
             orb.classList.remove('unread');
-            /* checkOnlineStatus handled by Firebase realtime listener */
             /* Ensure name prompt shows even if loadMessages hasn't fired yet */
             setTimeout(function() { showNamePrompt(); }, 600);
             /* Focus input once the open transition settles */
@@ -377,6 +377,8 @@
     function readMsgCache() {
         try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || []; } catch (e) { return []; }
     }
+    /* zephyy-realtime.js and -orb-embed.js ask this: a conversation going? */
+    window.zephyyHasConvo = function() { return readMsgCache().length > 0; };
     function saveMsgCache(list) {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(list.slice(-30))); } catch (e) { /* quota — skip */ }
     }
@@ -515,13 +517,16 @@
             var greet = greetings[Math.floor(Math.random() * greetings.length)];
             var userMsg = greet + caps + '!';
             quickReplied = true;
-            addMessage('user', userMsg, Date.now());
+            var nameTs = Date.now();
+            addMessage('user', userMsg, nameTs);
             addThinkingBubble();
             var timeoutId = setTimeout(function() {
                 var tb = document.getElementById('zp-chat-thinking');
                 if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
             }, 15000);
-            send(userMsg).catch(function() {
+            send(userMsg).then(function() {
+                cacheAppend('user', userMsg, nameTs); /* a conversation now: her reply finds the visitor on any page */
+            }, function() {
                 removeThinkingBubble();
                 addMessage('bot', 'That message could not be sent. Please try again.', Date.now());
             });
@@ -559,7 +564,10 @@
                 addMessage(m.role, m.content, m.timestamp);
             });
         }
-        connect().then(function(rt) { return rt.loadHistory(50); }).then(function(snap) {
+        connect().catch(function(error) {
+            addMessage('bot', 'Private chat could not connect. Please refresh or try again later.', Date.now());
+            throw error;
+        }).then(function(rt) { return rt.loadHistory(50); }).then(function(snap) {
             if (!snap.exists()) { showNamePrompt(); return; }
             var data = snap.val();
             var keys = Object.keys(data).sort(function (a, b) {
@@ -781,6 +789,8 @@
         connect().then(function(rt) { rt.resetSession(); }).catch(function() { /* no chat connection: nothing to reset */ });
         /* Wipe the panel back to the first-load state (keep any typed draft) */
         messagesEl.querySelectorAll('.zp-chat-msg').forEach(function(el) { el.remove(); });
+        if (welcomeMsg) messagesEl.prepend(welcomeMsg);
+        quickReplied = false;
         removeThinkingBubble();
         if (sendBtn) sendBtn.disabled = false;
         if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; }
