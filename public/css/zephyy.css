@@ -79,17 +79,6 @@
   position: relative;
 }
 
-.zp-hero .tagline {
-  font-size: clamp(0.8rem, 1.8vw, 0.95rem);
-  color: oklch(var(--brand-teal) / 0.7);
-  margin-top: 1.2rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  padding: 0.5rem 1.2rem;
-  border-radius: 999px;
-  border: 1px solid oklch(var(--brand-teal) / 0.2);
-  background: oklch(var(--space-oled) / 0.4);
-}
-
 /* ── Section defaults ── */
 .zp-section {
   max-width: 800px;
@@ -135,28 +124,10 @@
   color: oklch(var(--brand-pink));
 }
 
-.zp-text-margin {
-  margin-top: 1.2rem;
-}
-
-.zp-values-heading {
-  margin-top: 2rem;
-}
-
-.zp-text-italic {
-  margin-top: 1rem;
-  font-style: italic;
-  color: var(--text-muted);
-}
-
 .zp-logo-icon {
   width: 25px;
   height: 25px;
   opacity: 0.9;
-}
-
-.zp-mb-1 {
-  margin-bottom: 1rem;
 }
 
 .zp-section-header h2 {
@@ -229,12 +200,6 @@
 .zp-pill:hover {
   background: oklch(var(--brand-teal) / 0.12);
   border-color: oklch(var(--brand-teal) / 0.25);
-}
-
-.zp-pill.purple {
-  background: oklch(var(--brand-purple) / 0.06);
-  border-color: oklch(var(--brand-purple) / 0.12);
-  color: oklch(var(--brand-purple));
 }
 
 .zp-pill.purple:hover {
@@ -363,8 +328,6 @@
   50% { transform: translateY(-6px); }
 }
 
-
-
 /* ── Orb tooltip ── */
 .zp-orb-tooltip {
   position: absolute;
@@ -384,13 +347,6 @@
 }
 
 /* ── Mood switcher ── */
-.zp-mood-switch {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
 
 .zp-mood-label {
   font-size: 0.7rem;
@@ -417,12 +373,6 @@
   color: var(--text-main);
 }
 
-.zp-mood-btn.active {
-  background: oklch(var(--brand-teal) / 0.1);
-  border-color: oklch(var(--brand-teal));
-  color: oklch(var(--brand-teal));
-}
-
 @media (hover: hover) {
   .zp-orb-demo:hover .zp-orb-tooltip {
     opacity: 1;
@@ -439,7 +389,6 @@
 .zp-profile-v4 {
   --zp-state: var(--brand-teal);
   --zp-panel: oklch(13% 0.035 275 / 0.78);
-  --zp-panel-strong: oklch(9% 0.03 275 / 0.92);
   --zp-hairline: oklch(var(--star-white) / 0.1);
   --zp-copy: oklch(88% 0.025 270);
   --zp-copy-muted: oklch(70% 0.035 270);
@@ -457,8 +406,6 @@
   position: relative;
   z-index: 2;
 }
-
-.zp-profile-v4 .sticky-footer { display: none; }
 
 .zp-skip-link {
   position: fixed;
@@ -660,8 +607,6 @@
   font-weight: 650;
   letter-spacing: -0.025em;
 }
-
-.zp-profile-v4 .zp-hero .subtitle::after { display: none; }
 
 .zp-hero-lede {
   max-width: 700px;
@@ -895,9 +840,6 @@
   opacity: 0;
 }
 
-.htmx-request .zp-deck-loader,
-.zp-deck-loader.htmx-request { opacity: 1; }
-
 .zp-signal-panel {
   min-height: 270px;
   padding: 1.5rem;
@@ -1102,8 +1044,6 @@
   line-height: 1.65;
 }
 
-.zp-profile-v4 .zp-cap-card .zp-pills { margin-top: 1rem; }
-
 .zp-profile-v4 .zp-pill.purple {
   border-color: oklch(72% 0.2 290 / 0.2);
   background: oklch(72% 0.2 290 / 0.08);
@@ -1239,12 +1179,6 @@
 }
 
 .zp-profile-v4 .zp-crew-card p { min-height: 6rem; }
-
-.zp-crew-badge.autonomous {
-  border-color: oklch(var(--brand-purple) / 0.35);
-  background: oklch(var(--brand-purple) / 0.1);
-  color: oklch(78% 0.14 285);
-}
 
 .zp-inline-link {
   display: inline-block;
@@ -1499,33 +1433,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .zp-profile-v4 *,
-  .zp-profile-v4 *::before,
-  .zp-profile-v4 *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
-}
-
-.zp-hero .subtitle::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 1px;
-  background: oklch(var(--brand-teal));
-  transition: width 0.3s ease;
-}
-
-.zp-hero .subtitle:hover::after {
-  width: 80%;
-}
-
 /* ── Hero background effects ── */
 .zp-hero-bg {
   position: absolute;
@@ -1546,7 +1453,6 @@
     radial-gradient(ellipse at center, oklch(30% 0.20 195 / 0.15) 0%, oklch(28% 0.24 285 / 0.08) 40%, transparent 70%);
   animation: heroGlow 8s ease-in-out infinite;
 }
-
 
 @keyframes heroGlow {
   0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(0.95); }
@@ -1585,18 +1491,7 @@
   }
 }
 
-
-
-
-
-
-
 /* ── Pills as links (interactive) ── */
-.zp-pills a.zp-pill {
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
 
 /* ── Chapter 2: What I Do — Capability Grid ── */
 .zp-cap-grid {
@@ -1620,18 +1515,6 @@
   box-shadow: 0 6px 24px oklch(25% 0.18 195 / 0.12);
 }
 
-.zp-cap-icon {
-  font-size: 1.6rem;
-  display: block;
-  margin-bottom: 0.4rem;
-}
-
-.zp-cap-card h4 {
-  font-size: 1rem;
-  margin: 0 0 0.4rem;
-  color: var(--text-main);
-}
-
 .zp-cap-card > p {
   font-size: 0.85rem;
   line-height: 1.5;
@@ -1651,29 +1534,6 @@
 }
 
 /* ── Ambient mouse-follow glow ── */
-body.zephyy-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(
-    700px at var(--mx, 50%) var(--my, 50%),
-    oklch(28% 0.22 285 / 0.06),
-    transparent 70%
-  );
-  opacity: 0.8;
-  transition: opacity 0.3s;
-}
-
-@media (max-width: 768px) {
-  body.zephyy-page::before { display: none; }
-}
-
-.zp-pills a.zp-pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 10px oklch(var(--brand-teal) / 0.2);
-}
 
 /* ── Performance safety valve: when frames drop, main.js's FPS watcher flips
    this class so every ambient/decorative infinite animation on the page eases
@@ -1690,7 +1550,6 @@ body.zp-motion-throttled .zp-hero-bg::before {
   animation-play-state: paused;
 }
 
-
 /* ── Her sky: the site's WebGL nebula and stars (main.js) in her colors ── */
 body.zephyy-page {
   --nebula-purple: 28% 0.15 292;   /* violet */
@@ -1698,25 +1557,6 @@ body.zephyy-page {
   --nebula-pink: 38% 0.06 192;     /* the bright teal core */
   --star-cool: 90% 0.06 195;
   --star-glow: 70% 0.12 190;
-}
-
-/* ── Zephyy-specific sticky-footer colors ── */
-body.zephyy-page .sticky-footer {
-  background: linear-gradient(135deg, oklch(3% 0.01 260 / 0.92) 0%, oklch(25% 0.18 195 / 0.40) 35%, oklch(28% 0.24 285 / 0.35) 65%, oklch(3% 0.01 260 / 0.92) 100%);
-  border-top: 1px solid oklch(30% 0.20 195 / 0.20);
-  backdrop-filter: blur(12px);
-}
-
-body.zephyy-page .sticky-footer .footer-copyright {
-  color: oklch(78% 0.23 185 / 0.7);
-}
-
-body.zephyy-page .sticky-footer .footer-nav a {
-  color: oklch(78% 0.23 185 / 0.75);
-}
-
-body.zephyy-page .sticky-footer .footer-nav a:hover {
-  color: oklch(78% 0.23 185);
 }
 
 /* ── Daily Zephyy ── */
@@ -1859,19 +1699,6 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
 }
 
 /* ===== Chapter 2: Values with Icons ===== */
-.zp-value-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  margin-right: 0.3rem;
-}
-
-.zp-value-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.7rem 0;
-  border-bottom: 1px solid oklch(80% 0.25 185 / 0.08);
-}
 
 /* ===== Chapter 2: Service Health Indicators ===== */
 .zp-service-grid {
@@ -1911,27 +1738,10 @@ body.zephyy-page .sticky-footer .footer-nav a:hover {
   font-size: 0.8rem;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .zp-orb-demo,
-  .zp-orb-demo.unread::after,
-  .whorl-outer,
-  .whorl-mid,
-  .whorl-inner,
-  .whorl-center,
-  .zp-status,
-  .zp-hero-bg::before,
-  .zp-dot.online,
-  .zp-dot.offline,
-  .zp-status .zp-dot {
-    animation: none !important;
-  }
-}
-
 /* ── Per-agent crew card hover accents ── */
 .zp-crew-zephyy:hover { border-color: oklch(80% 0.25 185 / 0.35); box-shadow: 0 4px 20px oklch(80% 0.25 185 / 0.08); }
 .zp-crew-torgent:hover { border-color: oklch(70% 0.28 150 / 0.35); box-shadow: 0 4px 20px oklch(70% 0.28 150 / 0.08); }
 .zp-crew-wick:hover { border-color: oklch(78% 0.2 80 / 0.35); box-shadow: 0 4px 20px oklch(78% 0.2 80 / 0.08); }
-
 
 /* -- App-feel selection + cursor (Doshus 2026-07-15): no accidental text
    highlight on taps/drags; cursor stays default on non-interactive UI.
@@ -1982,7 +1792,6 @@ body.zephyy-page summary {
     to { opacity: 1; transform: translateY(0); }
   }
 }
-
 
 /* -- Micro-interaction springs (haptics-style, CSS only) ---------------- */
 @media (prefers-reduced-motion: no-preference) {
@@ -2037,8 +1846,7 @@ body.zephyy-page summary {
   .zp-hero h1 {
     animation: zp-title-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-  .zp-hero h1 + p,
-  .zp-hero .zp-tagline {
+  .zp-hero h1 + p {
     animation: zp-title-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
   }
   @keyframes zp-title-rise {

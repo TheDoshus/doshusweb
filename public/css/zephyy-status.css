@@ -154,7 +154,6 @@
 .st-gw-header { display: flex; align-items: center; gap: 0.5rem; }
 .st-gw-emoji { font-size: 1.3rem; }
 .st-gw-name { font-family: 'Fugaz One', system-ui, sans-serif; font-size: 0.9rem; color: var(--text-main); }
-.st-gw-port { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); margin-left: auto; }
 .st-gw-status {
     font-size: 0.7rem;
     padding: 0.2em 0.5em;
@@ -178,8 +177,3 @@
     opacity: 0.6;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-.st-svc-dot.online { animation: none; }

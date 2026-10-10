@@ -15,16 +15,10 @@
 .glyph-outer { animation: whorlSpin 16s linear infinite; }
 .glyph-mid   { animation: whorlSpin 11s linear infinite; }
 .glyph-inner { animation: whorlSpin 7s  linear infinite; }
-@keyframes glyphSpin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
 @keyframes glyphPulse {
   0%, 100% { opacity: 0.3; }
   50%       { opacity: 0.6; }
 }
-.glyph-left { transform-origin: 11px 16px; animation: glyphSpin 12s linear infinite; }
-.glyph-right { transform-origin: 21px 16px; animation: glyphSpin 12s linear infinite reverse; }
 .glyph-pulse { animation: glyphPulse 2s ease-in-out infinite; }
 
 /* ── Badge container ── */

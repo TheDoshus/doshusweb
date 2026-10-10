@@ -63,7 +63,6 @@
     font-family: 'JetBrains Mono', monospace;
 }
 .crew-spec-pill.green  { background: oklch(var(--brand-green)  / 0.06); border-color: oklch(var(--brand-green)  / 0.12); color: oklch(var(--brand-green)); }
-.crew-spec-pill.purple { background: oklch(var(--brand-purple) / 0.06); border-color: oklch(var(--brand-purple) / 0.12); color: oklch(var(--brand-purple)); }
 .crew-spec-pill.gold   { background: oklch(var(--brand-gold)   / 0.06); border-color: oklch(var(--brand-gold)   / 0.12); color: oklch(var(--brand-gold)); }
 
 /* ── Responsibility matrix ── */
@@ -92,7 +91,6 @@
 .resp-matrix tr:last-child td { border-bottom: none; }
 .resp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: oklch(var(--brand-teal)); }
 .resp-dot.green  { background: oklch(var(--brand-green)); }
-.resp-dot.purple { background: oklch(var(--brand-purple)); }
 .resp-dot.gold   { background: oklch(var(--brand-gold)); }
 .resp-dot.dim    { background: oklch(var(--star-white) / 0.1); }
 
@@ -182,7 +180,6 @@
 }
 .crew-ops dt { font-family: 'Fugaz One', system-ui, sans-serif; color: var(--text-main); }
 .crew-ops dd { margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-muted); }
-.crew-ops-note { margin: 1.2rem 0 0; }
 @media (max-width: 600px) {
     .crew-ops { grid-template-columns: 1fr; gap: 0.2rem; }
     .crew-ops dd { margin-bottom: 0.7rem; }
