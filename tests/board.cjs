@@ -118,7 +118,8 @@ const TESTS = {
         const rate = moved / (Date.now() - t0);
         await page.mouse.up();
         assert.ok(moved > 100, `scrolled only ${moved}px up in 3s of resting`);
-        assert.ok(rate < 1.3, `${rate.toFixed(2)} px/ms: faster than the 1.2 px/ms cap, so not paced by time`);
+        // Paced by time, not frames: under the 1.2 px/ms cap, and nowhere near a pixel a frame
+        assert.ok(rate < 1.3 && rate > 0.15, `${rate.toFixed(2)} px/ms`);
         return errors;
     },
     async 'two fingers run one gesture'(browser) {
@@ -376,6 +377,73 @@ const TESTS = {
         await sleep(600);
         assert.deepEqual(await cells(page, 'mobile'), mid, 'the mid layout comes back');
         return errors;
+    },
+    async 'collapsing mid-glide carries on from where the panel is'(browser) {
+        const { page, errors } = await open(browser, WIDE, { motion: 'no-preference' });
+        await page.focus('#mobile .panel-grip');
+        for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight');
+        await sleep(250);
+        const jump = await page.evaluate(() => {
+            const p = document.getElementById('mobile'), before = p.getBoundingClientRect().left;
+            p.querySelector('.panel-collapse').click();
+            return p.getBoundingClientRect().left - before;
+        });
+        assert.ok(Math.abs(jump) < 2, `jumped ${jump}px`);
+        return errors;
+    },
+    async 'a collapsed bar is exactly its title bar, and measured again on load'(browser) {
+        const { page, errors } = await open(browser, { viewport: { width: 1100, height: 900 } });
+        // How far the bar's rows overshoot its head, in rows: [0, 1) is a tight fit
+        const slack = () => page.evaluate(() => {
+            const p = document.getElementById('rig'), row = parseFloat(getComputedStyle(p.parentElement).gridAutoRows);
+            const need = p.querySelector('.panel-head').offsetHeight + 2 * parseFloat(getComputedStyle(p).marginTop) + p.offsetHeight - p.clientHeight;
+            return (+p.style.getPropertyValue('--h') * row - need) / row;
+        });
+        await page.focus('#rig .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowLeft'); // narrowest: its open title wraps
+        await page.evaluate(() => document.querySelector('#rig .panel-collapse').click());
+        await frames(page);
+        let s = await slack();
+        assert.ok(s >= 0 && s < 1, `collapsed narrow: ${s.toFixed(2)} rows of slack`);
+        await page.evaluate(() => { // a stale save: the bar recorded far too tall
+            const save = JSON.parse(localStorage.getItem('board:nexus'));
+            save.items.find((i) => i.id === 'rig').h = 40;
+            localStorage.setItem('board:nexus', JSON.stringify(save));
+        });
+        await page.reload({ waitUntil: 'load' });
+        await sleep(600);
+        s = await slack();
+        assert.ok(s >= 0 && s < 1, `after a stale save: ${s.toFixed(2)} rows of slack`);
+        return errors;
+    },
+    async "content in a panel's head, body and foot can query the panel's width"(browser) {
+        const { page, errors } = await open(browser);
+        const hits = await page.evaluate(() => {
+            document.head.append(Object.assign(document.createElement('style'), { textContent: '@container panel (min-width: 1px) { .panel > * > * { --in-panel: 1; } }' }));
+            return ['head', 'body', 'foot'].map((part) => getComputedStyle(document.querySelector(`#rig > .panel-${part} > *`)).getPropertyValue('--in-panel').trim());
+        });
+        assert.deepEqual(hits, ['1', '1', '1']);
+        return errors;
+    },
+    async "a headless panel's keyboard grip shows inside the panel, however narrow"(browser) {
+        const all = [];
+        for (const opts of [SMALL, { viewport: { width: 1100, height: 900 } }]) {
+            const { page, errors } = await open(browser, opts);
+            all.push(...errors);
+            await center(page, 'meme-1');
+            await page.focus('#meme-1 .panel-edge[data-dir="se"]');
+            for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowLeft');
+            await page.focus('#meme-1 .panel-grip');
+            await frames(page);
+            const bad = await page.evaluate(() => {
+                const g = document.querySelector('#meme-1 .panel-grip').getBoundingClientRect(), p = document.getElementById('meme-1').getBoundingClientRect();
+                const top = document.elementFromPoint(g.x + g.width / 2, g.y + g.height / 2);
+                return g.width < 20 || g.left < p.left || g.right > p.right || g.top < p.top || g.bottom > p.bottom || !top?.matches('.panel-grip');
+            });
+            assert.equal(bad, false, `${opts.viewport.width}px: the grip is hidden, outside the panel or covered`);
+            await page.context().close();
+        }
+        return all;
     },
     async 'a collapsed panel holds its whole head, mid-glide and at any width'(browser) {
         const { page, errors } = await open(browser, WIDE, { motion: 'no-preference' });

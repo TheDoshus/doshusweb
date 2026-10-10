@@ -106,19 +106,17 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const fixed = parts(p);
         return Math.max(MIN_H, Math.ceil((fixed + gutters(p) + (fixed ? 48 : 0)) / cell().y));
     }
-    // A running glide is finished first, so what's measured is the size the panel lands at
-    const land = (p) => p.getAnimations().forEach((anim) => anim.id === 'glide' && anim.finish());
-    // Collapsed to its title bar: the head alone (and the panel's border)
-    function headRows(p) {
-        land(p);
-        return Math.ceil((p.querySelector('.panel-head').offsetHeight + gutters(p) + p.offsetHeight - p.clientHeight) / cell().y);
-    }
+    // Collapsed to its title bar: the head alone (and the panel's border). A running glide carries
+    // on: the bar's one-line title keeps it one height at any width, and finishing the glide here
+    // would make the panel jump
+    const headRows = (p) => Math.ceil((p.querySelector('.panel-head').offsetHeight + gutters(p) + p.offsetHeight - p.clientHeight) / cell().y);
     // The tallest: one screen (100dvh), so a panel always fits in view
     const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y));
-    // Tall enough for everything it holds, at the width it lands at. A meme gets a little over
-    // half the screen, or with `exact` (once its picture has loaded) exactly its picture's shape
+    // Tall enough for everything it holds, at its current width (a running glide is finished
+    // first, so that's the width it lands at). A meme gets a little over half the screen, or
+    // with `exact` (once its picture has loaded) exactly its picture's shape
     function contentH(p, exact) {
-        land(p);
+        p.getAnimations().forEach((anim) => anim.id === 'glide' && anim.finish());
         if (p.matches('.panel-media')) {
             const media = exact && p.querySelector('video, img');
             const ratio = media && (media.videoHeight / media.videoWidth || media.naturalHeight / media.naturalWidth);
