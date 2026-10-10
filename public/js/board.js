@@ -100,10 +100,18 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     }
     // The tallest: one screen (100dvh), so a panel always fits in view
     const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y));
-    // Tall enough for everything it holds; a meme gets a little over half the screen
-    function contentH(p) {
+    // Tall enough for everything it holds, at its current width. A meme gets a little over half
+    // the screen, or with `fit` (once its picture has loaded) exactly its picture's shape
+    function contentH(p, fit) {
+        const media = fit && p.querySelector('video, img');
+        const ratio = media && (media.videoHeight / media.videoWidth || media.naturalHeight / media.naturalWidth);
+        if (ratio) return Math.round((p.offsetWidth * ratio + gutters(p)) / cell().y);
         if (p.matches('.panel-media')) return Math.round(innerHeight * 0.55 / cell().y);
-        return Math.ceil((parts(p) + gutters(p) + (p.querySelector('.panel-body')?.scrollHeight ?? 0)) / cell().y);
+        const body = p.querySelector('.panel-body');
+        body?.style.setProperty('flex', 'none'); // its own height, not what the panel gives it
+        const h = parts(p) + gutters(p) + (body?.scrollHeight ?? 0);
+        body?.style.removeProperty('flex');
+        return Math.ceil(h / cell().y);
     }
     // Keep every panel inside what it can be at this size: the grid's width, its own minimum
     // height (head and foot) and one screen
@@ -121,27 +129,37 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         if (!phone.matches) return fit(wide);
         const order = [...wide].sort(([, a], [, b]) => a.y - b.y || a.x - b.x).map(([p]) => p);
         const stack = new Map(order.map((p) => [p, { x: 1, y: 1, w: cols(), h: MIN_H, hidden: false }]));
-        render(stack); // full width and short, so each body's scrollHeight is its content
+        render(stack); // full width, so each body's content wraps the way it will
         let y = 1;
         stack.forEach((r, p) => { Object.assign(r, { y, h: clamp(contentH(p), minH(p), maxH(p)) }); y += r.h; });
         return fit(stack);
     }
     const same = (a, b) => [...a].every(([p, r]) => ['x', 'y', 'w', 'h', 'hidden'].every((k) => r[k] === b.get(p)[k]));
+    // The layout Reset replaced, offered back until the next change
+    let undo = null;
     // Reading order becomes DOM order, so tab order follows the layout. Add widget shows only
-    // with something to add, Reset only once the layout differs from the default
+    // with something to add, Reset only once the layout differs from the default (or as Undo
+    // right after a reset)
     function settle(next) {
         layout = next;
-        [...layout].filter(([, r]) => !r.hidden).sort(([, a], [, b]) => a.y - b.y || a.x - b.x)
-            .forEach(([p]) => place(p, ghost));
+        // Last to first, moving only a panel not already in front of the one after it: an
+        // unchanged order touches nothing (Firefox before 144 has no moveBefore, and its
+        // insertBefore rebuilds every panel it moves)
+        let after = ghost;
+        [...layout].filter(([, r]) => !r.hidden).sort(([, a], [, b]) => b.y - a.y || b.x - a.x)
+            .forEach(([p]) => { if (p.nextElementSibling !== after) place(p, after); after = p; });
         fillMenu();
         add.hidden = !panels.some((p) => layout.get(p).hidden);
-        reset.hidden = same(layout, base);
+        reset.hidden = !undo && same(layout, base);
+        reset.textContent = undo ? 'Undo reset' : 'Reset layout';
     }
-    // A visitor's change: settle it and save it (a board back at its default saves nothing)
-    function commit(next) {
+    // A visitor's change: settle it and save it (a board back at its default saves nothing).
+    // `back` is what a reset replaced; any other change drops it
+    function commit(next, back = null) {
+        undo = back;
         settle(next);
         try {
-            if (reset.hidden) localStorage.removeItem(key);
+            if (same(layout, base)) localStorage.removeItem(key);
             else localStorage.setItem(key, JSON.stringify({ v: VERSION, items: [...layout].map(([p, r]) => ({ id: p.id, ...r })) }));
         } catch { /* private mode: the layout lasts this visit */ }
     }
@@ -160,12 +178,15 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             });
         }
         render(fit(next));
+        undo = null;
         settle(next);
         return !!saved;
     }
 
     // ─── Toolbar, live region, snap ghost ───
-    const bar = el('div', 'board-bar');
+    // The bar goes where the page gives it a home (any element with data-board-bar=<name>),
+    // otherwise right above the board
+    const bar = document.querySelector(`[data-board-bar="${board.dataset.board}"]`) ?? el('div');
     const status = el('p', 'sr-only');
     const menu = el('div', 'board-menu');
     const add = button('＋ Add widget');
@@ -176,8 +197,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     menu.popover = 'auto';
     add.setAttribute('popovertarget', menu.id);
     ghost.hidden = true;
+    bar.classList.add('board-bar');
     bar.append(status, add, reset, menu);
-    board.before(bar);
+    if (!bar.isConnected) board.before(bar);
     board.append(ghost);
     const say = (msg) => { status.textContent = msg; };
     // The ghost marks where a grabbed panel will land, in that panel's accent
@@ -188,8 +210,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     };
 
     function fillMenu() {
-        const hidden = panels.filter((p) => layout.get(p).hidden);
-        menu.replaceChildren(...(hidden.length ? hidden.map((p) => {
+        // Add widget only shows while something is hidden, so the menu is never empty
+        menu.replaceChildren(...panels.filter((p) => layout.get(p).hidden).map((p) => {
             const b = button(`＋ ${title(p)}`);
             b.addEventListener('click', () => {
                 const next = copy(layout);
@@ -202,48 +224,67 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 p.querySelector('.panel-grip').focus({ preventScroll: true });
             });
             return b;
-        }) : [el('p', '', 'Every widget is already on the board.')]));
+        }));
     }
 
-    // ─── Pointer gestures: start() returns { move, done }, or nothing to ignore the press ───
+    // ─── Pointer gestures: start() returns { move, done(cancel) }, or nothing to ignore the press ───
+    // While one runs, the page scrolls when the pointer nears the top or bottom of the screen
+    // (faster the closer it gets, and on while it rests there), and Escape puts everything back
+    const EDGE = 64;
     function begin(handle, start, e) {
         const op = start(e);
         if (!op) return;
         handle.setPointerCapture(e.pointerId);
         board.classList.add('is-arranging');
         const stop = new AbortController();
-        const on = (type, fn, opts) => handle.addEventListener(type, fn, { signal: stop.signal, ...opts });
-        const end = () => { stop.abort(); board.classList.remove('is-arranging'); op.done(); haptic(); };
-        on('pointermove', op.move);
-        on('pointerup', end);
-        on('pointercancel', end);
+        const on = (type, fn, opts, target = handle) => target.addEventListener(type, fn, { signal: stop.signal, ...opts });
+        let last = e;
+        let scroll = 0;
+        const edge = () => {
+            const v = last.clientY < EDGE ? last.clientY - EDGE : Math.max(0, last.clientY - innerHeight + EDGE);
+            scroll = v && requestAnimationFrame(edge);
+            if (!v) return;
+            scrollBy({ top: clamp(v / 3, -20, 20), behavior: 'instant' }); // the page's smooth scroll would queue
+            op.move(last); // re-aim at whatever is under the pointer now
+        };
+        const end = (cancel) => { stop.abort(); cancelAnimationFrame(scroll); board.classList.remove('is-arranging'); op.done(cancel); haptic(); };
+        on('pointermove', (ev) => { last = ev; op.move(ev); scroll ||= requestAnimationFrame(edge); });
+        on('pointerup', () => end(false));
+        on('pointercancel', () => end(false));
+        on('keydown', (ev) => { if (ev.key === 'Escape') { ev.preventDefault(); end(true); } }, {}, window);
         // Once a finger has a panel, it moves the panel and not the page, and opens no menu
         on('touchmove', (ev) => { if (ev.cancelable) ev.preventDefault(); }, { passive: false });
         on('contextmenu', (ev) => ev.preventDefault());
         haptic();
+        return op;
     }
-    // With `hold`, a finger or pen has to rest on the handle for --hold (board.css) before the
-    // panel lifts, so a swipe that starts on it still scrolls the page; a mouse grabs at once
+    // A gesture starts only once it means it, so a plain click or tap costs nothing. With
+    // `hold`, a finger or pen rests on the handle for --hold (board.css) before the panel lifts,
+    // so a swipe that starts on it still scrolls the page; anything else lifts once it has
+    // moved a few px from where it pressed
     function track(handle, start, hold) {
         handle.addEventListener('pointerdown', (e) => {
             // A press on a button inside the handle (the head's ✕) is a click, not a drag
             if (e.button || cols() < 2 || (e.target !== handle && e.target.closest('button, a'))) return;
-            if (!hold || e.pointerType === 'mouse') {
-                e.preventDefault();
-                begin(handle, start, e);
-                return;
-            }
             const panel = handle.closest('.panel');
             const wait = new AbortController();
-            let latest = e;
-            const quit = () => { clearTimeout(timer); wait.abort(); panel.classList.remove('is-holding'); };
-            const timer = setTimeout(() => { quit(); begin(handle, start, latest); }, ms('--hold'));
-            panel.classList.add('is-holding');
             const on = (type, fn) => handle.addEventListener(type, fn, { signal: wait.signal });
-            on('pointermove', (ev) => { latest = ev; if (Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) > 10) quit(); });
+            const moved = (ev, px) => Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) > px;
+            let timer = 0;
+            const quit = () => { wait.abort(); if (timer) { clearTimeout(timer); panel.classList.remove('is-holding'); } };
             on('pointerup', quit);
             on('pointercancel', quit); // the page started scrolling
-            on('contextmenu', (ev) => ev.preventDefault());
+            if (hold && e.pointerType !== 'mouse') {
+                let latest = e;
+                timer = setTimeout(() => { quit(); begin(handle, start, latest); }, ms('--hold'));
+                panel.classList.add('is-holding');
+                on('pointermove', (ev) => { latest = ev; if (moved(ev, 10)) quit(); });
+                on('contextmenu', (ev) => ev.preventDefault());
+                return;
+            }
+            e.preventDefault();
+            handle.setPointerCapture(e.pointerId); // a thin edge loses a fast pointer otherwise
+            on('pointermove', (ev) => { if (moved(ev, 3)) { quit(); begin(handle, start, e)?.move(ev); } });
         });
     }
 
@@ -280,20 +321,19 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         return {
             move(ev) {
                 p.style.translate = `${ev.clientX - e.clientX}px ${ev.clientY - e.clientY}px`;
-                // instant: the page-wide smooth scroll would queue a glide on every pointer move
-                if (ev.clientY < 64) scrollBy({ top: -16, behavior: 'instant' });
-                else if (ev.clientY > innerHeight - 64) scrollBy({ top: 16, behavior: 'instant' });
                 pending = ev;
                 frame ||= requestAnimationFrame(retarget);
             },
-            done() {
+            done(cancel) {
                 cancelAnimationFrame(frame);
+                if (cancel) next = layout;
                 ghost.hidden = true;
                 flip(() => {
                     p.classList.remove('is-dragging');
                     ['width', 'height', 'left', 'top', 'translate'].forEach((k) => p.style.removeProperty(k));
                     render(next);
                 });
+                if (cancel) return say(`${title(p)} put back`);
                 commit(next);
                 const r = next.get(p);
                 say(`${title(p)} moved to column ${r.x}, row ${r.y}`);
@@ -313,6 +353,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const ceiling = maxH(p);
         const narrow = minW();
         const r0 = p.getBoundingClientRect();
+        const y0 = scrollY; // the edge follows the pointer on the page, so it keeps up while the page scrolls
         // The live edge stays between the panel's minimum and the board's edge (px, gutters out)
         const gutters = 2 * (parseFloat(getComputedStyle(p).marginTop) || 0);
         const px = (cells, size) => cells * size - gutters;
@@ -332,7 +373,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const follow = () => {
             frame = 0;
             const dx = pending.clientX - e.clientX;
-            const dy = pending.clientY - e.clientY;
+            const dy = pending.clientY - e.clientY + scrollY - y0;
             const w = dir.includes('e') ? clamp(r0.width + dx, ...limit.w) : dir.includes('w') ? clamp(r0.width - dx, ...limit.w) : r0.width;
             const h = dir.includes('s') ? clamp(r0.height + dy, ...limit.h) : dir.includes('n') ? clamp(r0.height - dy, ...limit.h) : r0.height;
             Object.assign(p.style, { width: `${w}px`, height: `${h}px`,
@@ -358,14 +399,18 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 frame ||= requestAnimationFrame(follow);
             },
             // Release: the panel glides from wherever the pointer left it into the ghost's cells
-            done() {
-                if (frame) { cancelAnimationFrame(frame); follow(); }
+            // (or, cancelled, back into its own)
+            done(cancel) {
+                cancelAnimationFrame(frame);
+                if (frame && !cancel) follow();
+                if (cancel) next = layout;
                 ghost.hidden = true;
                 flip(() => {
                     p.classList.remove('is-resizing');
                     ['width', 'height', 'translate'].forEach((k) => p.style.removeProperty(k));
                     render(next);
                 });
+                if (cancel) return say(`${title(p)} put back`);
                 commit(next);
                 const r = next.get(p);
                 say(`${title(p)} is ${r.w} columns by ${r.h} rows`);
@@ -404,10 +449,22 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         (head ?? p).append(tools);
         EDGES.forEach((dir) => {
             // The corner is the keyboard's way in; the other edges are pointer-only
-            const edge = dir === 'se' ? button('', `Resize ${name}`, 'panel-edge') : el('span', 'panel-edge');
+            const edge = dir === 'se' ? button('', `Resize ${name}; Enter fits it to its content`, 'panel-edge') : el('span', 'panel-edge');
             edge.dataset.dir = dir;
             p.append(edge);
             track(edge, resizeFrom(p, dir));
+        });
+        // Double-click the corner (or Enter on it) and the panel takes the height its content
+        // needs at this width; a meme takes its picture's shape
+        const corner = p.querySelector('.panel-edge[data-dir="se"]');
+        corner.title = 'Drag to resize, double-click to fit';
+        corner.addEventListener('click', (e) => {
+            if (e.detail === 1) return; // one click of a pair, or a click that ended a drag
+            const next = copy(layout);
+            next.get(p).h = clamp(contentH(p, true), minH(p), maxH(p));
+            flip(() => render(resolve(next, p)));
+            commit(next);
+            say(`${name} fitted to ${next.get(p).h} rows`);
         });
         const dots = el('span', 'panel-dots');
         dots.setAttribute('aria-hidden', 'true');
@@ -422,7 +479,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             const hit = [...next].find(([o, n]) => o !== p && !n.hidden && overlap(n, r))?.[1];
             if (hit && dy) r.y = dy < 0 ? hit.y : hit.y + 1;
         });
-        keyed(p.querySelector('.panel-edge[data-dir="se"]'), p, (r, dx, dy) => {
+        keyed(corner, p, (r, dx, dy) => {
             r.w = clamp(r.w + dx, minW(), cols() - r.x + 1);
             r.h = clamp(r.h + dy, minH(p), maxH(p));
         });
@@ -437,17 +494,26 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         });
     });
 
+    // A machine main.js's frame-rate watcher catches struggling (body.zp-motion-throttled) loses
+    // the panels' blur for the rest of the visit: once, so the blur can't flicker back on
+    const lean = new MutationObserver(() => {
+        if (!document.body.classList.contains('zp-motion-throttled')) return;
+        board.classList.add('is-lean');
+        lean.disconnect();
+    });
+    lean.observe(document.body, { attributeFilter: ['class'] });
+
     // Default heights are measured from the content, so measure again once the fonts are in,
     // unless the visitor has already made the layout their own
     if (!load()) document.fonts?.ready.then(() => { if (reset.hidden) load(); });
     phone.addEventListener('change', load);
 
+    // Reset, then (until the next change) Undo puts the visitor's own layout back
     reset.addEventListener('click', () => {
-        const next = copy(base);
+        const next = undo ?? copy(base);
         flip(() => render(next));
-        commit(next);
+        say(undo ? 'Layout restored' : 'Layout reset');
+        commit(next, undo ? null : copy(layout));
         haptic();
-        say('Layout reset');
-        add.focus({ preventScroll: true }); // Reset just hid itself; keep focus on the bar
     });
 });

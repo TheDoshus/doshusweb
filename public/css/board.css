@@ -38,6 +38,11 @@
     /* How long a finger rests on a grab bar before the panel lifts (a mouse grabs at once), and
        the narrowest a panel can get, in columns */
     --hold: 500ms; --min-cols: 4;
+    /* Panel glass: how dark the fill is (alpha) and what it does to the page behind it. Over the
+       live star field the blur redoes itself every frame, which costs a weak GPU more than the
+       stars do (Chromium, software GPU: 7 fps blurred, 17 without), so a machine the frame-rate
+       watcher catches struggling gets .is-lean (js/board.js): no blur, a darker fill instead */
+    --panel-fill: 0.45; --panel-backdrop: blur(5px);
     position: relative; display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
     grid-auto-rows: var(--row);
 }
@@ -50,10 +55,11 @@
           linear-gradient(to bottom, oklch(var(--space-oled)) calc(100% - 2px), transparent 0) 0 0 / var(--tile);
     mask-composite: intersect;
 }
+.board.is-lean { --panel-fill: 0.6; --panel-backdrop: none; }
 /* While arranging: room to drop below the last panel, and no backdrop blur. Blurring live
    stars behind every moving panel is the heaviest thing on the page; dark glass stands in */
 .board.is-arranging { padding-bottom: calc(var(--row) * 8); user-select: none; }
-.board.is-arranging .panel { backdrop-filter: none; background: oklch(var(--space-oled) / 0.72); will-change: translate; }
+.board.is-arranging .panel { backdrop-filter: none; background: oklch(var(--space-oled) / 0.72); }
 .board.is-arranging::before { opacity: var(--field-opacity); }
 /* The ghost: where the panel will land, in the grabbed panel's own accent. It breathes by
    fading a glow layer (opacity runs on the compositor; an animated box-shadow repaints) */
@@ -74,6 +80,8 @@
     min-height: 2.25rem; /* holds its height while its buttons come and go, so the board never jumps */
     margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); position: relative; z-index: 10;
 }
+/* A bar the page placed itself (data-board-bar) centers in its spot; the page can restyle it */
+[data-board-bar].board-bar { justify-content: center; padding: 0; }
 .board-bar button, .board-menu button {
     font: var(--fs-s) var(--font-mono); color: var(--text-main); cursor: pointer;
     padding: var(--sp-xs) var(--sp-s); border-radius: var(--r-s);
@@ -86,13 +94,12 @@
 }
 .board-menu:popover-open { display: grid; gap: var(--sp-xs); }
 .board-menu::backdrop { background: oklch(var(--space-oled) / 0.5); }
-.board-menu p { margin: 0; font-size: var(--fs-s); color: var(--text-muted); }
 
 /* ─── PANEL ─── */
 /* Without JS the panels still flow as 6×8 blocks; board.js sets --x/--y/--w/--h from data-* */
 .panel { grid-column: var(--x, auto) / span var(--w, 6); grid-row: var(--y, auto) / span var(--h, 8);
     position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; margin: var(--gutter);
-    background: oklch(var(--space-oled) / 0.45); backdrop-filter: blur(5px);
+    background: oklch(var(--space-oled) / var(--panel-fill)); backdrop-filter: var(--panel-backdrop);
     border: 1px solid oklch(var(--accent) / 0.28); border-radius: var(--r-l);
     transition: border-color 0.35s ease, box-shadow 0.35s ease, scale 0.2s ease;
 }
@@ -111,7 +118,9 @@
 .panel.is-dragging, .panel.is-resizing { z-index: 50;
     box-shadow: 0 0 0 2px oklch(var(--accent) / 0.7), 0 24px 60px oklch(var(--accent) / 0.4);
 }
-.panel.is-dragging { position: fixed; margin: 0; opacity: 0.92; scale: 1.02; cursor: grabbing; }
+/* Only the carried panel keeps a layer of its own; the ones gliding aside get one from their
+   animation for as long as it runs */
+.panel.is-dragging { position: fixed; margin: 0; opacity: 0.92; scale: 1.02; cursor: grabbing; will-change: translate; }
 
 .panel-head { display: flex; align-items: center; gap: var(--sp-s); padding: var(--sp-m) var(--sp-m) var(--sp-xs);
     position: relative; cursor: grab; touch-action: pan-y pinch-zoom;

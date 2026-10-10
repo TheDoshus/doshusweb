@@ -33,6 +33,8 @@ rules. Hosts are listed under [Implementations](#implementations).
 
 The markup holds only content. The engine adds every control (grab dots, resize handles, the
 snap ghost, ✕, Add widget, Reset), and without the engine the panels still flow as plain blocks.
+The board's bar (Add widget, Reset) sits right above the board unless the page gives it a home:
+an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it in the hero).
 
 ## Layout
 
@@ -53,9 +55,11 @@ snap ghost, ✕, Add widget, Reset), and without the engine the panels still flo
   - anything else it lands on is pushed straight down.
 - **Resizing** stops at a panel that starts above (nothing is pushed up) and pushes down
   anything else it grows into.
+- **Fit.** Double-clicking a panel's resize corner (or Enter on it) gives it the height its
+  content needs at its width; a media panel takes its picture's shape.
 - **Hide and bring back.** ✕ hides a panel and leaves its gap; Add widget (shown only while a
   panel is hidden) brings it back to its spot. Reset (shown only once the layout differs from
-  the default) returns to the default.
+  the default) returns to the default, then offers Undo reset until the next change.
 - **Saving.** Per browser, in `localStorage` under `board:<name>` (wide) and
   `board:<name>:phone` (narrow), versioned so an old save never breaks a new board. A layout at
   its default saves nothing, so a changed default reaches everyone who hasn't arranged their own.
@@ -67,21 +71,24 @@ snap ghost, ✕, Add widget, Reset), and without the engine the panels still flo
 ## Feel
 
 - **Grab** by the title bar, the grab dots at a panel's top center, or a media panel's
-  top-left strip. A mouse grabs at once. A finger or pen rests there for `--hold` (500ms; the
-  panel swells slightly while it charges) before it lifts, so a swipe that starts on a panel
-  still scrolls the page.
+  top-left strip. A mouse lifts the panel once it moves a few pixels, so a plain click does
+  nothing at all. A finger or pen rests there for `--hold` (500ms; the panel swells slightly
+  while it charges) before it lifts, so a swipe that starts on a panel still scrolls the page.
 - **While moving**, the board lights up as a field of cells, a breathing ghost in the panel's
-  accent shows where it will land, and the other panels glide out of the way.
+  accent shows where it will land, and the other panels glide out of the way. Near the top or
+  bottom of the screen the page scrolls, faster the closer the pointer gets, and keeps going
+  while it rests there. Escape puts everything back where it was.
 - **Resize** from any edge or corner with a mouse, from one large corner on touch screens
-  (thumbs catch thin edges by accident). The edge follows the pointer, the ghost shows the
-  whole cells it will take, and it snaps into them on release.
+  (thumbs catch thin edges by accident). The edge follows the pointer (scrolling included), the
+  ghost shows the whole cells it will take, and it snaps into them on release.
 - **Smooth on weak machines.** Panels glide translate-only, which the compositor runs off the
   main thread (only a panel whose size changes animates width and height). The board re-lays
-  out at most once a frame. Expensive effects behind panels (backdrop blur) switch off while
-  arranging.
+  out at most once a frame, and the DOM reorders only the panels whose place changed. Backdrop
+  blur behind panels switches off while arranging, and for the rest of the visit on a machine
+  that can't hold 25 fps (over a moving background it has to be redone every frame).
 - **Keyboard path for everything.** Arrows on the ⠿ grip (shown only to keyboard focus) move a
-  panel one cell, hopping a neighbor; arrows on the corner handle resize; a live region
-  announces each change.
+  panel one cell, hopping a neighbor; arrows on the corner handle resize and Enter fits; a live
+  region announces each change.
 - **Native first.** `<details>` for anything that folds, the Popover API for the Add widget
   menu, pointer events with capture for every gesture.
 - **Reduced motion.** Panels jump instead of gliding; nothing else changes.
@@ -99,6 +106,7 @@ these or a host stylesheet on top.
 | `--ghost-fill`, `--ghost-glow` | The landing ghost's fill and glow |
 | `--glide`, `--ghost-glide` | How long panels and the ghost glide (ms) |
 | `--hold` | How long a finger rests before a panel lifts (ms) |
+| `--panel-fill`, `--panel-backdrop` | The panel glass: fill alpha, and a backdrop filter (`blur(5px)`, or `none` over a busy background on weak hardware) |
 | `--sp-*`, `--r-*`, `--fs-*`, `--font-mono`, `--font-title` | Spacing, radius and type scales |
 | Panel surface, snap field, ghost colors | The host's own styles for `.panel`, `.board::before`, `.board-ghost` |
 

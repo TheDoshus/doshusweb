@@ -21,7 +21,7 @@ function haptic(ms = 8) {
 // One WebGL draw call a frame paints the whole sky: every star is a point that twinkles on its own
 // clock, drifts smoothly between pixels and shifts with the pointer and the scroll, and a shooting
 // star crosses now and then. Tints are the --star-* tokens in shared.css, so a monthly theme is a
-// token swap. No WebGL: the nebula shows alone. Reduced motion: one still frame, no meteors.
+// token swap. No WebGL: the nebula and the shooting stars. Reduced motion: one still frame, no meteors.
 // (Measured 2026-10-09: main-thread cost the same as no stars; the old 245-element engine took a
 // fifth of a core on /nexus.)
 const starsContainer = document.getElementById('stars');
@@ -110,8 +110,9 @@ if (starsContainer) {
         depth: false, stencil: false, powerPreference: 'low-power' });
     const at = {};
     const pointer = { x: 0, y: 0 }, eased = { x: 0, y: 0 };
-    const drift = { x: 0, y: 0 };  // in fields, so a resize keeps every star's place
-    let frame = 0, last = 0, time = 0, w = 0, h = 0;
+    // scrolled is kept by a scroll listener: reading scrollY in the frame would force a layout
+    // whenever something else on the page had just changed one
+    let frame = 0, last = 0, time = 0, w = 0, h = 0, scrolled = 0;
 
     function compile() {
         const program = gl.createProgram();
@@ -155,13 +156,13 @@ if (starsContainer) {
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.uniform2f(at.u_view, w, h);
         gl.uniform1f(at.u_dpr, canvas.width / w);
-        if (prefersReducedMotion) draw();
+        draw(); // resizing clears the buffer, and the next frame's draw comes after it's painted
     }
+    // Drift is in fields (wrapping every 100), so a resize keeps every star's place
     function draw() {
         gl.uniform1f(at.u_time, time);
-        gl.uniform2f(at.u_shift, drift.x * (w + 2 * PAD) + eased.x * PARALLAX,
-            drift.y * (h + 2 * PAD) + eased.y * PARALLAX - (prefersReducedMotion ? 0 : scrollY * SCROLL));
-        gl.clearColor(0, 0, 0, 0);
+        gl.uniform2f(at.u_shift, time * DRIFT[0] % 100 * (w + 2 * PAD) + eased.x * PARALLAX,
+            time * DRIFT[1] % 100 * (h + 2 * PAD) + eased.y * PARALLAX - scrolled * SCROLL);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.drawArrays(gl.POINTS, 0, stars.length);
     }
@@ -170,8 +171,6 @@ if (starsContainer) {
         const dt = Math.min(now - (last || now), 50) / 1000;
         last = now;
         time += dt;
-        drift.x = (drift.x + DRIFT[0] * dt) % 100;
-        drift.y = (drift.y + DRIFT[1] * dt) % 100;
         const k = 1 - Math.exp(-dt * 7.5);  // the old engine's 0.12 per 60 Hz frame, at any refresh rate
         eased.x += (pointer.x - eased.x) * k;
         eased.y += (pointer.y - eased.y) * k;
@@ -190,11 +189,12 @@ if (starsContainer) {
         const dx = side * Math.cos(heading) * run, dy = Math.sin(heading) * run;
         const turn = `rotate(${Math.atan2(dy, dx)}rad)`;
         starsContainer.append(m);
-        m.animate([
+        const streak = m.animate([
             { transform: `translate(${x}px, ${y}px) ${turn} scaleX(0.2)`, opacity: 0 },
             { opacity: 1, offset: 0.2 },
             { transform: `translate(${x + dx}px, ${y + dy}px) ${turn} scaleX(1)`, opacity: 0 },
-        ], { duration: rand(700, 1100), easing: 'cubic-bezier(.3, 0, .8, .6)' }).finished.finally(() => m.remove());
+        ], { duration: rand(700, 1100), easing: 'cubic-bezier(.3, 0, .8, .6)' });
+        streak.onfinish = streak.oncancel = () => m.remove();
     }
 
     // ─── FPS WATCHER ───
@@ -211,7 +211,7 @@ if (starsContainer) {
             if (now - start >= 2500) {
                 const fps = frames * 1000 / (now - start);
                 if (fps < 25) { throttled = true; clean = 0; }
-                else if (throttled && fps >= 30 && ++clean >= 5) { throttled = false; clean = 0; }
+                else if (throttled) { clean = fps >= 30 ? clean + 1 : 0; throttled = clean < 5; }
                 document.body.classList.toggle('zp-motion-throttled', throttled);
                 frames = 0;
                 start = now;
@@ -234,6 +234,8 @@ if (starsContainer) {
                 pointer.x = e.clientX / innerWidth - 0.5;
                 pointer.y = e.clientY / innerHeight - 0.5;
             }, { passive: true });
+            addEventListener('scroll', () => { scrolled = scrollY; }, { passive: true });
+            scrolled = scrollY;
             frame = requestAnimationFrame(tick);
         }
         // A shooting star every 20-60 s while the tab is in view
