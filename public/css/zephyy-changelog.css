@@ -109,7 +109,7 @@
 .cl-log-type.changed { background: oklch(var(--brand-purple) / 0.12); color: oklch(var(--brand-purple)); border: 1px solid oklch(var(--brand-purple) / 0.2); }
 .cl-log-type.fixed   { background: oklch(var(--brand-green)  / 0.12); color: oklch(var(--brand-green));  border: 1px solid oklch(var(--brand-green)  / 0.2); }
 .cl-log-type.removed { background: oklch(var(--brand-red,65% 0.33 30) / 0.12); color: oklch(65% 0.25 20); border: 1px solid oklch(65% 0.25 20 / 0.2); }
-.cl-log-desc { color: var(--text-main); opacity: 0.85; line-height: 1.5; }
+.cl-log-desc { min-width: 0; overflow-wrap: anywhere; opacity: 0.85; line-height: 1.5; } /* long names wrap on phones */
 
 /* ── Wounds ── */
 .cl-wounds { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }

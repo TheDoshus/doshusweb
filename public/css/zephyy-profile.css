@@ -262,6 +262,7 @@
 .zp-profile-v4 .zp-hero {
   min-height: min(860px, calc(100svh - 1rem));
   padding: 8.5rem max(5vw, 1.25rem) 4.5rem;
+  overflow-x: clip; /* the glyph's outer ring would otherwise widen the page on phones */
 }
 
 .zp-profile-v4 .zp-hero-grid {

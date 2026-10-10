@@ -36,9 +36,9 @@ Update this file when structure, a page, or a cross-repo contract changes.
 | `/financehub` | `financehub.html` | Finance card slider: credit, crypto, investing, taxes, credit report |
 | `/thelounge` | `thelounge.html` | Games, curios, memes |
 | `/bot` | `bot.html` | For site admins who find our User-Agent in their logs: the UA forms, what carries it and what doesn't, how to block it or reach us. UA forms and operator crew stamped by `sync:zephyy` |
-| `/zephyy` | `zephyy.html` | Zephyy's profile: signal deck, story, systems, crew, code, contact |
+| `/zephyy` | `zephyy.html` | Zephyy's profile: signal deck, story, systems, crew, code, contact. Styles: `zephyy.css` (the base all her pages share) + `zephyy-profile.css` (this page only); script: `zephyy.js` (also on the subpages) |
 | `/zephyy/fragments/*` | `zephyy/fragments/*.html` | HTMX panels the profile's signal deck swaps in (`now`, `identity`, `receipts`, `latest`) |
-| `/zephyy/crew` · `/qa` · `/changelog` · `/status` | `zephyy/<id>/index.html` | Subpages. Nav bar and chat orb are stamped from `zephyy.html` by `sync:zephyy`; never hand-edit inside the `zp-nav` / `zp-chat` markers. The crew page's model chains, schedules and operator crew are stamped from `data/crew-facts.json` between `crew:` markers |
+| `/zephyy/crew` · `/qa` · `/changelog` · `/status` | `zephyy/<id>/index.html` | Subpages. The nav bar is stamped from the page list in `scripts/sync-zephyy-nav.js` and the chat orb from `zephyy.html` by `sync:zephyy`; never hand-edit inside the `zp-nav` / `zp-chat` markers. The crew page's model chains, schedules and operator crew are stamped from `data/crew-facts.json` between `crew:` markers |
 | `/amazon/printmon/*` | `amazon/printmon/` | Printmon: handcrafted themed pages, the theme gallery (`gallery.html`) and themes generated from chat (`generated/`, `css/generated/`) |
 | `/amazon/aio/*`, `/amazon/tmb/*` | `amazon/aio/`, `amazon/tmb/` | Work tools: AIO pages, Tampermonkey bookmarks tutorial |
 | 404 | `404.html` | Astronaut error page |
