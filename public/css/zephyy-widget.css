@@ -147,20 +147,3 @@
   text-decoration: underline;
   opacity: 0.85;
 }
-
-/* ── Compact variant for tight spaces ── */
-.zephyy-badge.compact {
-  padding: 3px 10px 3px 5px;
-  font-size: clamp(0.6rem, 1.4vw, 0.7rem);
-  gap: 5px;
-}
-
-.zephyy-badge.compact .zephyy-dot {
-  width: 5px;
-  height: 5px;
-}
-
-.zephyy-badge.compact .zephyy-glyph {
-  width: 14px;
-  height: 14px;
-}

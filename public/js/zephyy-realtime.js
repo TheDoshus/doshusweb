@@ -4,11 +4,15 @@
  * Listens to RTDB via onValue/onChildAdded (persistent WebSocket under the hood).
  * Updates DOM directly — no polling, no setInterval data fetches.
  *
- * Covers: status, daily thought, service health, chat orb, and embed widget.
+ * Covers: status, daily thought, service health, chat orb, and embed widget. Every page that
+ * shows Zephyy's status listens for the events this file sends instead of reading Firebase
+ * itself: 'zephyy-status' {online, data} (also kept in window.__zpLatestStatus),
+ * 'zephyy-online-change' {online} and 'zephyy-connection' {connected}.
  *
  * STALENESS-BASED OFFLINE:
  *   Status includes lastHeartbeat (ISO timestamp, updated by systemd pinger every 60s).
  *   If lastHeartbeat > 120s old, status shows offline — no server-side "offline" write needed.
+ *   STALE_SEC is the one threshold every surface uses.
  */
 
 (function () {
@@ -17,6 +21,7 @@
   const RTDB_URL = 'https://doshusweb-default-rtdb.firebaseio.com';
   const STALE_SEC = 120; // seconds before heartbeat considered stale
   const HEARTBEAT_MS = STALE_SEC * 1000;
+  const FALLBACK_POLL_MS = 300000; // without the SDK, status is re-fetched every 5 min
   const DAILY_FALLBACK = 'Quiet orbit. Keeping the signal clean.';
   const PRIVATE_DAILY_PATTERN = /\b(?:doshus|armand|austin|school|class|course|canvas|assignment|exam|shift|amazon|message|texted|health|medication|doctor|finance|bank|schedule|relationship|partner|girlfriend|boyfriend|family|address|location|phoenix)\b/i;
 
@@ -34,11 +39,75 @@
     );
   }
 
-  function renderDailyFallback(moodEl, quoteEl, sourceEl, card) {
-    if (moodEl) moodEl.textContent = '🌙';
-    if (quoteEl) quoteEl.textContent = DAILY_FALLBACK;
-    if (sourceEl) sourceEl.textContent = '';
-    if (card) card.classList.add('loaded');
+  // The daily thought card (profile only): a public-safe quote, or the quiet fallback line
+  function renderDaily(data) {
+    const card = document.getElementById('zephyy-daily');
+    if (!card) return;
+    const moodEl = document.getElementById('daily-mood');
+    const quoteEl = document.getElementById('daily-quote');
+    const sourceEl = document.getElementById('daily-source');
+    const show = isPublicDaily(data);
+    if (moodEl) moodEl.textContent = show ? data.mood || '🌌' : '🌙';
+    if (quoteEl) quoteEl.textContent = show ? data.quote : DAILY_FALLBACK;
+    if (sourceEl) {
+      const date = show && data.updated ? new Date(data.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      sourceEl.textContent = date ? '· ' + date : '';
+    }
+    card.classList.add('loaded');
+  }
+
+  const onlineMsgs = [
+    'Online — Ready when you are.',
+    'Awake and watching the stars.',
+    'In the flow. Reach out.',
+    'Present. 🌌',
+    'Systems nominal. Co-pilot standing by.',
+    'Floating in orbit. Say hi.',
+    'Online — All sectors clear.',
+  ];
+  const offlineMsgs = [
+    'Offline — The stars are quiet.',
+    'Away for now. Leave a thought.',
+    'Dreaming in stardust.',
+    'Not here at the moment.',
+    'Powering down...',
+    'Offline. Catch you later.',
+    'The dashboard sleeps. 🔮',
+  ];
+  const SERVICES = { gateway: 'svc-dot-gateway', orb: 'svc-dot-orb', ws: 'svc-dot-ws', embed: 'svc-dot-embed', aether: 'svc-dot-aether' };
+
+  // One status reading, from the live listener or the fallback fetch: the orb's status line,
+  // the model badge and service dots, then the events every other surface listens for
+  function publish(data) {
+    data = data || {};
+    const lastHb = data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0;
+    const isOnline = (Date.now() - lastHb) < HEARTBEAT_MS;
+
+    const dot = document.getElementById('zp-status-dot');
+    const text = document.getElementById('zp-status-text');
+    const msgs = isOnline ? onlineMsgs : offlineMsgs;
+    if (text) text.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+    if (dot) dot.className = 'zp-dot ' + (isOnline ? 'online' : 'offline');
+
+    const model = window.__zpLastReplyModel || data.chatModel;
+    const badge = document.getElementById('zp-model-badge');
+    if (badge && model) {
+      badge.textContent = model;
+      badge.className = 'zp-model-badge';
+      if (/fallback|openrouter/i.test(data.chatModel || '')) badge.classList.add('fallback');
+    }
+
+    if (data.services) {
+      Object.keys(SERVICES).forEach(function (key) {
+        const serviceDot = document.getElementById(SERVICES[key]);
+        if (serviceDot) serviceDot.className = 'zp-service-dot ' + (data.services[key] === 'active' ? 'online' : 'offline');
+      });
+    }
+
+    // Cached so scripts or HTMX fragments arriving later can hydrate
+    window.__zpLatestStatus = { online: isOnline, data: data };
+    window.dispatchEvent(new CustomEvent('zephyy-status', { detail: window.__zpLatestStatus }));
+    window.dispatchEvent(new CustomEvent('zephyy-online-change', { detail: { online: isOnline } }));
   }
 
   // ──────────────────────────────────────────────
@@ -57,14 +126,19 @@
       firebase.initializeApp(await response.json());
       db = firebase.database();
 
-      setupConnectionMonitor();
-      watchStatus();
-      watchDaily();
+      db.ref('.info/connected').on('value', function (snap) {
+        window.dispatchEvent(new CustomEvent('zephyy-connection', { detail: { connected: snap.val() === true } }));
+      });
+      db.ref('zephyy/status').on('value', function (snap) { publish(snap.val()); });
+      if (document.getElementById('zephyy-daily')) db.ref('zephyy/daily').on('value', function (snap) { renderDaily(snap.val()); });
       try {
         if (!firebase.auth) {
           await new Promise(function (resolve, reject) {
             const script = document.createElement('script');
             script.src = 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js';
+            // Pinned like the app and database SDKs the pages load (same version, same check)
+            script.integrity = 'sha384-qPmeVjQDHzUDQlO1KgrSi2azIff7RQim//zsE3kkA2HKGuZhlhpap6Cab0xfKSXi';
+            script.crossOrigin = 'anonymous';
             script.onload = resolve;
             script.onerror = reject;
             document.head.appendChild(script);
@@ -84,124 +158,6 @@
       console.warn('[zephyy-rt] Firebase init failed:', e.message);
       initFallbacks();
     }
-  }
-
-  // ──────────────────────────────────────────────
-  // CONNECTION MONITOR
-  // ──────────────────────────────────────────────
-
-  function setupConnectionMonitor() {
-    const connRef = db.ref('.info/connected');
-    connRef.on('value', function (snap) {
-      const connected = snap.val() === true;
-      const dot = document.getElementById('zp-conn-dot');
-      if (dot) {
-        dot.className = connected ? 'zp-conn-dot live' : 'zp-conn-dot dead';
-        dot.title = connected ? 'Firebase connected' : 'Firebase disconnected';
-      }
-    });
-  }
-
-  // ──────────────────────────────────────────────
-  // STATUS WATCHER (status, services, and widget)
-  // ──────────────────────────────────────────────
-
-  function watchStatus() {
-    const statusRef = db.ref('zephyy/status');
-
-    // ── Random status messages ──
-    const onlineMsgs = [
-      'Online — Ready when you are.',
-      'Awake and watching the stars.',
-      'In the flow. Reach out.',
-      'Present. 🌌',
-      'Systems nominal. Co-pilot standing by.',
-      'Floating in orbit. Say hi.',
-      'Online — All sectors clear.',
-    ];
-    const offlineMsgs = [
-      'Offline — The stars are quiet.',
-      'Away for now. Leave a thought.',
-      'Dreaming in stardust.',
-      'Not here at the moment.',
-      'Powering down...',
-      'Offline. Catch you later.',
-      'The dashboard sleeps. 🔮',
-    ];
-
-    statusRef.on('value', function (snap) {
-      const data = snap.val() || {};
-      const dot = document.getElementById('zp-status-dot');
-      const text = document.getElementById('zp-status-text');
-
-      // ── Staleness check: lastHeartbeat > STALE_SEC = offline ──
-      const lastHb = data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0;
-      const isOnline = (Date.now() - lastHb) < HEARTBEAT_MS;
-
-      const msgs = isOnline ? onlineMsgs : offlineMsgs;
-      const msg = msgs[Math.floor(Math.random() * msgs.length)];
-
-      if (text) { text.textContent = msg; }
-      if (dot) {
-        dot.className = 'zp-dot';
-        dot.classList.add(isOnline ? 'online' : 'offline');
-      }
-
-      // ── Broadcast for profile + widget ──
-      // Cache the latest value so scripts or HTMX fragments arriving later can hydrate.
-      window.__zpLatestStatus = { online: isOnline, data: data };
-      window.dispatchEvent(new CustomEvent('zephyy-status', {
-        detail: window.__zpLatestStatus
-      }));
-
-      // ── Model badge ──
-      var badge = document.getElementById('zp-model-badge');
-      if (badge && (window.__zpLastReplyModel || data.chatModel)) {
-        badge.textContent = window.__zpLastReplyModel || data.chatModel;
-        badge.className = 'zp-model-badge';
-        if (data.chatModel.toLowerCase().includes('fallback') ||
-            data.chatModel.toLowerCase().includes('openrouter')) {
-          badge.classList.add('fallback');
-        }
-      }
-
-      // Service health dots
-      if (data.services) {
-        var map = { gateway: 'svc-dot-gateway', orb: 'svc-dot-orb', ws: 'svc-dot-ws', embed: 'svc-dot-embed', aether: 'svc-dot-aether' };
-        Object.keys(map).forEach(function (key) {
-          var dot = document.getElementById(map[key]);
-          if (dot) dot.className = 'zp-service-dot ' + (data.services[key] === 'active' ? 'online' : 'offline');
-        });
-      }
-    });
-  }
-
-  // ──────────────────────────────────────────────
-  // DAILY THOUGHT WATCHER
-  // ──────────────────────────────────────────────
-
-  function watchDaily() {
-    const dailyRef = db.ref('zephyy/daily');
-    const moodEl = document.getElementById('daily-mood');
-    const quoteEl = document.getElementById('daily-quote');
-    const sourceEl = document.getElementById('daily-source');
-    const card = document.getElementById('zephyy-daily');
-
-    dailyRef.on('value', function (snap) {
-      const data = snap.val();
-      if (!isPublicDaily(data)) {
-        renderDailyFallback(moodEl, quoteEl, sourceEl, card);
-        return;
-      }
-
-      if (moodEl) moodEl.textContent = data.mood || '🌌';
-      if (quoteEl) quoteEl.textContent = data.quote;
-      if (sourceEl) {
-        const date = data.updated ? new Date(data.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-        sourceEl.textContent = date ? '· ' + date : '';
-      }
-      if (card) card.classList.add('loaded');
-    });
   }
 
   // ──────────────────────────────────────────────
@@ -301,12 +257,6 @@
       },
       resetSession: function () { bind(crypto.randomUUID()); return id; }
     };
-    db.ref('zephyy/status').on('value', function (snap) {
-      const data = snap.val() || {};
-      window.dispatchEvent(new CustomEvent('zephyy-online-change', {detail: {
-        online: Boolean(data.lastHeartbeat && Date.now() - Date.parse(data.lastHeartbeat) < HEARTBEAT_MS)
-      }}));
-    });
     bind(id);
   }
 
@@ -317,86 +267,24 @@
   function initFallbacks() {
     // Direct fetch fallback — render status/daily even without Firebase SDK
     console.warn('[zephyy-rt] No Firebase SDK — using direct fetch fallback');
-
-    // Status
-    fetch(RTDB_URL + '/zephyy/status.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var dot = document.getElementById('zp-status-dot');
-        var text = document.getElementById('zp-status-text');
-        if (text && data) {
-          var lastHb = data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0;
-          var online = (Date.now() - lastHb) < HEARTBEAT_MS;
-          text.textContent = online ? 'Online — Ready when you are.' : 'Offline — The stars are quiet.';
-          if (dot) { dot.className = 'zp-dot ' + (online ? 'online' : 'offline'); }
-        }
-      }).catch(function(){});
-
-    // Daily thought
-    fetch(RTDB_URL + '/zephyy/daily.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var quoteEl = document.getElementById('daily-quote');
-        var sourceEl = document.getElementById('daily-source');
-        var moodEl = document.getElementById('daily-mood');
-        var card = document.getElementById('zephyy-daily');
-        if (quoteEl && isPublicDaily(data)) {
-          if (moodEl) moodEl.textContent = data.mood || '🌌';
-          quoteEl.textContent = data.quote;
-          if (sourceEl) {
-            var date = data.updated ? new Date(data.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-            sourceEl.textContent = date ? '· ' + date : '';
-          }
-          if (card) card.classList.add('loaded');
-        } else {
-          renderDailyFallback(moodEl, quoteEl, sourceEl, card);
-        }
-      }).catch(function(){});
-
-    // Service health indicators (from RTDB status)
-    fetch(RTDB_URL + '/zephyy/status.json')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (!data || !data.services) return;
-        var svcs = data.services;
-        var map = { gateway: 'svc-dot-gateway', orb: 'svc-dot-orb', ws: 'svc-dot-ws', embed: 'svc-dot-embed', aether: 'svc-dot-aether' };
-        Object.keys(map).forEach(function(key) {
-          var dot = document.getElementById(map[key]);
-          if (dot) {
-            dot.className = 'zp-service-dot ' + (svcs[key] === 'active' ? 'online' : 'offline');
-          }
-        });
-      }).catch(function(){});
+    const read = function (path) {
+      return fetch(RTDB_URL + '/zephyy/' + path + '.json').then(function (r) { return r.json(); });
+    };
+    const status = function () { read('status').then(publish).catch(function () {}); };
+    status();
+    setInterval(status, FALLBACK_POLL_MS);
+    if (document.getElementById('zephyy-daily')) read('daily').then(renderDaily).catch(function () { renderDaily(null); });
   }
 
   // ──────────────────────────────────────────────
   // ENTRY
   // ──────────────────────────────────────────────
 
-  var initAttempts = 0;
-  var MAX_ATTEMPTS = 15;
-
-  function tryInit() {
-    initAttempts++;
-    if (typeof firebase === 'undefined') {
-      if (initAttempts < MAX_ATTEMPTS) {
-        console.log('[zephyy-rt] Firebase SDK not loaded yet, retrying (' + initAttempts + '/' + MAX_ATTEMPTS + ')');
-        setTimeout(tryInit, 400);
-      } else {
-        console.warn('[zephyy-rt] Firebase SDK failed to load after ' + MAX_ATTEMPTS + ' attempts — falling back');
-        initFallbacks();
-      }
-      return;
-    }
-    init();
-  }
-
+  // After the page's own scripts (the Firebase SDK and chat.js load ahead of this point)
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(tryInit, 200);
-    });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 200); });
   } else {
-    setTimeout(tryInit, 200);
+    setTimeout(init, 200);
   }
 
   // Register chat orb setup — called by init() after db is ready

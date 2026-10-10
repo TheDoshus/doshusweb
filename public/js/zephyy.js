@@ -223,6 +223,52 @@
         sections.forEach(function (section) { observer.observe(section); });
     }
 
+    // The status page (/zephyy/status): the hero badge, service cards and live heartbeat row,
+    // from zephyy-realtime.js's events (one Firebase connection, one heartbeat threshold);
+    // the ages re-render every minute between beats
+    function setupStatusPage() {
+        const badge = document.getElementById('st-online-text');
+        if (!badge) return;
+        const el = function (id) { return document.getElementById(id); };
+        const SERVICES = { gateway: 'svc-gateway', orb: 'svc-orb', ws: 'svc-ws', embed: 'svc-embed', aether: 'svc-aether' };
+        let latest = null;
+        function render() {
+            const online = latest.online;
+            const data = latest.data || {};
+            const beat = data.lastHeartbeat;
+            el('st-online-dot').className = 'st-svc-dot ' + (online ? 'online' : 'offline');
+            badge.textContent = online ? 'ONLINE' : (data.online ? 'STALE' : 'OFFLINE');
+            badge.className = 'st-hero-badge ' + (online ? 'online' : 'off');
+            if (data.workingOn) el('st-working-on').textContent = data.workingOn;
+            if (data.mood) el('st-mood').textContent = data.mood;
+            const gateway = el('gw-zephyy-status');
+            gateway.textContent = online ? 'online' : 'offline';
+            gateway.className = 'st-gw-status ' + (online ? 'online' : 'offline');
+            Object.keys(SERVICES).forEach(function (key) {
+                const card = el(SERVICES[key]);
+                const value = (data.services || {})[key];
+                const up = value === 'active';
+                card.querySelector('.st-svc-dot').className = 'st-svc-dot ' + (up ? 'online' : 'offline');
+                const label = card.querySelector('.st-svc-label');
+                label.textContent = value || 'unknown';
+                label.className = 'st-svc-label' + (up ? '' : ' off');
+            });
+            if (!beat) { el('st-updated-text').textContent = 'No heartbeat on record yet.'; return; }
+            const when = new Date(beat);
+            el('st-last-beat').textContent = formatAgo(beat);
+            el('st-beat-live-time').textContent = when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + when.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            el('st-beat-live-detail').textContent = online
+                ? 'All clear — services nominal. Heartbeat fresh.'
+                : 'Heartbeat stale — gateway may be sleeping or restarting.';
+            el('st-updated-text').textContent = 'Live via Firebase · last beat ' + formatAgo(beat);
+        }
+        window.addEventListener('zephyy-status', function (event) { latest = event.detail; render(); });
+        window.addEventListener('zephyy-connection', function (event) {
+            if (!event.detail.connected) el('st-updated-text').textContent = 'Firebase offline — showing the last reading.';
+        });
+        setInterval(function () { if (latest) render(); }, 60000);
+    }
+
     // Subpage titles reveal word by word as they scroll in; screen readers get the whole title
     function setupTitles() {
         const titles = document.querySelectorAll('.zp-sub-title');
@@ -263,6 +309,7 @@
         setupChatButtons();
         setupSectionNav();
         setupTitles();
+        setupStatusPage();
         document.querySelectorAll('.zp-sub-nav a').forEach(function (link) {
             link.addEventListener('click', function () { haptic(6); });
         });
