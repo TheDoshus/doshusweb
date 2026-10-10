@@ -40,14 +40,14 @@ panel's content is sized by the script that owns it), not viewport media queries
 the same: a narrow one drops its icon, and narrower still the title takes a line of its own
 under the controls, so it never gets crushed.
 The board's bar (Add widget, Reset) sits right above the board unless the page gives it a home:
-an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it in the hero).
+an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it in the hero). A page with several boards (Finance Hub's slides) can home all their bars in one spot and show only the current board's: a bar marked `hidden` stays hidden.
 
 ## Layout
 
 - **Three tiers, three layouts.** Wide: 24 columns of 2rem rows. Mid (up to 1080px: foldables
   opened, tablets): 12 columns. Phone (up to 640px): 4 columns. Each tier has its own default
   and its own save, and the board swaps between them live as the window crosses a tier (a
-  foldable opening or closing). The wide default is the markup's cells, each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). The mid default flows
+  foldable opening or closing). The wide default is the markup's cells, each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing). The mid default flows
   the wide layout onto half the columns: every panel half the row, or all of it if it spans
   three quarters or more of the wide row, so a row holds two panels or one; each as tall as its
   content, media keeping its wide height, in the highest free spot in reading order (a half-width

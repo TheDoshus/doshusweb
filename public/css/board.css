@@ -76,8 +76,12 @@
     min-height: 2.25rem; /* holds its height while its buttons come and go, so the board never jumps */
     margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); position: relative; z-index: 10;
 }
-/* A bar the page placed itself (data-board-bar) centers in its spot; the page can restyle it */
+/* A bar the page placed itself (data-board-bar) centers in its spot; the page can restyle it.
+   doshus.net homes it at the foot of the hero. A page with a board per slide homes all their
+   bars there and hides all but the showing slide's */
 [data-board-bar].board-bar { justify-content: center; padding: 0; }
+.hero > .board-bar { margin-top: 1.5rem; }
+.board-bar[hidden] { display: none; }
 .board-bar button, .board-menu button {
     font: var(--fs-s) var(--font-mono); color: var(--text-main); cursor: pointer;
     padding: var(--sp-xs) var(--sp-s); border-radius: var(--r-s);
@@ -153,9 +157,12 @@
    containers, not the panel: Chromium 141 drops the layout inside a size container moved by
    moveBefore() */
 .panel-head, .panel-body, .panel-foot { container: panel / inline-size; }
-/* Content scrolls inside, so a panel can be sized smaller than what it holds */
+/* Content scrolls inside, so a panel can be sized smaller than what it holds. The body clips at
+   its top edge, so an open head hands it half its bottom padding: room for a first row's hover
+   lift and focus ring, with the content where it was (collapsed, the bar keeps its padding) */
+.panel:not(.is-collapsed) > .panel-head { padding-bottom: var(--sp-2xs); }
 .panel-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--sp-s);
-    padding: var(--sp-2xs) var(--sp-m) var(--sp-m); position: relative; z-index: 1;
+    padding: var(--sp-xs) var(--sp-m) var(--sp-m); position: relative; z-index: 1;
     scrollbar-width: thin; scrollbar-color: oklch(var(--accent) / 0.45) transparent;
 }
 .panel-body > * { flex: none; }

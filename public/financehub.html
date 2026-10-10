@@ -30,6 +30,12 @@
         <h1>Finance Hub</h1>
         <p>💸 Everything finance right here</p>
         <a href="#financebar" class="cta-button">Let's Get Into It</a>
+        <!-- Each slide's board bar (Reset, Add widget); finance.js shows the active slide's -->
+        <div data-board-bar="finance-credit"></div>
+        <div data-board-bar="finance-crypto"></div>
+        <div data-board-bar="finance-investing"></div>
+        <div data-board-bar="finance-taxes"></div>
+        <div data-board-bar="finance-networth"></div>
     </section>
 
     <!-- ─── FINANCE CARD SLIDER ─── -->
@@ -81,7 +87,6 @@
                 <header class="slide-head" id="credit-section">
                     <h2>💳 Credit & Banking</h2>
                     <p>My card collection, credit tips, and everything I've learned about building credit. Don't believe everything you hear — here's what I know matters.</p>
-                    <div data-board-bar="finance-credit"></div>
                 </header>
                 <div class="board" data-board="finance-credit" data-accent="finance">
                     <article class="panel" id="cc-cards" data-x="1" data-y="1" data-w="24" data-h="20">
@@ -530,7 +535,6 @@
                     <div class="crypto-ticker-wrapper">
                         <div class="binance-widget-marquee" data-cmc-ids="1,1027,52,3408,5426,74,5994,20947,35336,24478,3773,1839" data-theme="dark" data-transparent="true" data-locale="en" data-fiat="USD" data-layout="banner"></div>
                     </div>
-                    <div data-board-bar="finance-crypto"></div>
                 </header>
                 <div class="board" data-board="finance-crypto" data-accent="crypto">
                     <article class="panel" id="crypto-explainer" data-x="1" data-y="1" data-w="24" data-h="6">
@@ -571,7 +575,6 @@
                 <header class="slide-head" id="investing-section">
                     <h2>📈 Investing & Retirement</h2>
                     <p>Stocks, ETFs, market vibes, and the tools I use to stay informed. Whether you're researching or just watching the chaos — it's all here.</p>
-                    <div data-board-bar="finance-investing"></div>
                 </header>
                 <div class="board" data-board="finance-investing" data-accent="invest">
                     <article class="panel" id="inv-brokerage" data-x="1" data-y="1" data-w="24" data-h="5">
@@ -647,7 +650,6 @@
                 <header class="slide-head" id="taxes-section">
                     <h2>📋 Taxes & Legal</h2>
                     <p>The boring but important stuff — taxes, government resources, and money you might not know you're owed. Seriously, check the unclaimed money sites.</p>
-                    <div data-board-bar="finance-taxes"></div>
                 </header>
                 <div class="board" data-board="finance-taxes" data-accent="taxes">
                     <article class="panel" id="tax-filing" data-x="1" data-y="1" data-w="24" data-h="8">
@@ -761,7 +763,6 @@
                 <header class="slide-head" id="networth-section">
                     <h2>📊 My Credit & Budget</h2>
                     <p>Here's my credit limit, credit score, and the budget sheet I use.</p>
-                    <div data-board-bar="finance-networth"></div>
                 </header>
                 <div class="board" data-board="finance-networth" data-accent="networth">
                     <article class="panel" id="nw-limit" data-x="1" data-y="1" data-w="8" data-h="9" aria-label="Total credit limit">

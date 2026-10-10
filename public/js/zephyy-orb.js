@@ -210,7 +210,7 @@
         });
         // 5. Restore links from placeholders (escape label + url — they were captured raw before step 3)
         placeholders.forEach(function(p) {
-            var html = '<a href="' + escapeHtml(p.url) + '" target="_blank" rel="noopener">' + escapeHtml(p.label) + '</a>';
+            var html = '<a href="' + escapeHtml(p.url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(p.label) + '</a>';
             text = text.replace(p.ph, function() { return html; });
         });
         // 5. Bold: **text**

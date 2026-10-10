@@ -15,8 +15,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
     const panels = [...board.children].filter((el) => el.matches('.panel'));
     const title = (p) => p.querySelector('h2')?.textContent ?? p.getAttribute('aria-label') ?? p.id;
-    // A panel marked data-collapsed starts as its title bar (data-h counts the bar's rows) and opens to its content
-    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: p.hidden, collapsed: 'collapsed' in p.dataset && !!p.querySelector('.panel-head') });
+    // A panel marked data-collapsed starts as its title bar (data-h counts the bar's rows) and opens to its content.
+    // Hidden is the markup's too, not the DOM's now: a panel hidden in one tier's layout is still in the others'
+    const hiddenAtStart = new Set(panels.filter((p) => p.hidden));
+    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: hiddenAtStart.has(p), collapsed: 'collapsed' in p.dataset && !!p.querySelector('.panel-head') });
     const copy = (map) => new Map([...map].map(([p, r]) => [p, { ...r }]));
     // Three grids, each with its own layout and save (board.css sets their --cols): wide, placed by
     // data-x/y/w/h; mid, up to 1080px (foldables, tablets), the wide layout flowed onto half the
@@ -129,7 +131,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         if (exact) body?.style.setProperty('flex', 'none');
         const h = parts(p) + gutters(p) + p.offsetHeight - p.clientHeight + (body?.scrollHeight ?? 0); // border too
         if (exact) body?.style.removeProperty('flex');
-        return Math.ceil(h / cell().y);
+        // Each reading is whole pixels, so a panel that fits exactly can sum a pixel over: forgive it
+        return Math.ceil((h - 1) / cell().y);
     }
     // Keep every panel inside what it can be at this size: the grid's width, then (measured at
     // that width) its own minimum height, head and foot, and one screen; a collapsed one, its head
@@ -584,10 +587,17 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     lean.observe(document.body, { attributeFilter: ['class'] });
     leanOut();
 
-    // Default heights are measured from the content, so measure again once the fonts are in,
-    // unless the visitor has already made the layout their own (or is making it now). Crossing
-    // into another tier swaps layouts, ending a gesture first so it can't save into the other one
-    if (!load()) document.fonts?.ready.then(() => { if (reset.hidden && !active) load(); });
+    // Default heights are measured from the content, so measure again once the fonts are in, as
+    // pictures arrive (their load events, caught on the way down) and when the window's width
+    // changes within a tier, unless the visitor has made the layout their own (or is making it
+    // now). Height alone never re-measures: a phone's toolbar hiding mid-scroll mustn't move panels.
+    // Crossing into another tier swaps layouts, ending a gesture first so it can't save into the other one
+    let again, width = innerWidth;
+    const remeasure = () => { clearTimeout(again); again = setTimeout(() => { if (reset.hidden && !active) load(); }, 150); };
+    load();
+    document.fonts?.ready.then(remeasure);
+    board.addEventListener('load', remeasure, true);
+    addEventListener('resize', () => { if (innerWidth !== width) { width = innerWidth; remeasure(); } });
     TIERS.forEach((t) => t.mq.addEventListener('change', () => { active?.(); load(); }));
 
     // Reset, then (until the next change) Undo puts the visitor's own layout back

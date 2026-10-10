@@ -52,6 +52,9 @@
     --font-body: 'Nata Sans', system-ui, sans-serif;
     --font-button: 'Braah One', system-ui, sans-serif;  /* buttons, fold bars */
     --font-h3: 'Jaro Regular-var', system-ui, sans-serif;
+    --font-h1: 'Chango', cursive, system-ui, sans-serif;
+    --font-hero: 'Mouse Memoirs', system-ui, sans-serif;  /* a hero's tagline */
+    --font-card: 'Carter One', system-ui, sans-serif;  /* card titles, call-to-action buttons */
 
     /* Lets sizes ease to and from auto, so the board's folds (.fold) ease open where the browser
        can; main.js eases them elsewhere */
@@ -142,11 +145,11 @@
     font-style: normal;
     font-display: swap;
 }
-/* JetBrains Mono 2.304 (SIL OFL 1.1), its variable weights, trimmed to Latin, punctuation, arrows,
-   box drawing and checks (52 KB) */
+/* JetBrains Mono 2.304 (SIL OFL 1.1, its license kept in the file's name table), its variable
+   weights, trimmed to Latin, punctuation, arrows, ⌘, box drawing and checks (52 KB) */
 @font-face {
     font-family: 'JetBrains Mono';
-    src: url('../assets/fonts/JetBrainsMono-VariableFont_wght.woff2') format('woff2');
+    src: url('../assets/fonts/JetBrainsMono-VariableFont_wght-2.woff2') format('woff2');
     font-weight: 100 800;
     font-style: normal;
     font-display: swap;
@@ -166,7 +169,7 @@ button {
     font-family: var(--font-button);
 }
 h1 {
-    font-family: 'Chango', cursive, system-ui, sans-serif;
+    font-family: var(--font-h1);
 }
 h2 {
     font-family: var(--font-title);
@@ -248,14 +251,14 @@ h1, h2, h3 { text-wrap: balance; }
     50% { filter: drop-shadow(0 0 40px oklch(var(--accent-lounge) / 0.45)); }
 }
 .hero p { opacity: 0.9;
-    font-family: 'Mouse Memoirs';
+    font-family: var(--font-hero);
     font-size: clamp(1.6rem, 4vw, 2.6rem);
     margin-bottom: 2rem;
 }
 
 .cta-button { 
     cursor: pointer; text-decoration: none; border-radius: 50px; padding: 1rem 2rem;
-    font-family: 'Carter One';
+    font-family: var(--font-card);
     font-size: clamp(1rem, 3vw, 1.1rem);
     background: oklch(var(--accent-crypto) / 0.2);
     border: 2px solid oklch(var(--accent-crypto));
@@ -512,7 +515,7 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 .discord-join { margin-left: auto; text-decoration: none; white-space: nowrap; transition: all 0.3s ease;
-    font-family: 'Carter One', 'Braah One', system-ui, sans-serif;
+    font-family: var(--font-card);
     font-size: clamp(0.9rem, 2.5vw, 1rem);
     color: var(--text-main);
     background: oklch(var(--accent-discord) / 0.2);

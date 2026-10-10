@@ -10,15 +10,16 @@
 .ccGrid { display: grid; gap: 1.75rem;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
-.ccCard { position: relative; text-align: center; text-decoration: none; display: flex; flex-direction: column; align-items: center; transition: all 0.3s ease;
+/* Hovered, a card stays on top until its tooltip has slid away, or the next row's cards cover it */
+.ccCard { position: relative; z-index: 0; text-align: center; text-decoration: none; display: flex; flex-direction: column; align-items: center; transition: all 0.3s ease, z-index 0s 0.3s;
     background: oklch(var(--star-white) / 0.03); color: var(--text-main); border: 1px solid oklch(var(--accent-finance) / 0.15);
-    font-family: 'Carter One';
+    font-family: var(--font-card);
     border-radius: 12px;
     padding: 1rem 0.6rem;
     gap: 0.4rem;
 }
 .ccCard img { width: 100%; height: auto; object-fit: cover; border-radius: 8px; }
-.ccCard:hover { z-index: 1; } /* its tooltip paints over the next row's cards */
+.ccCard:hover { z-index: 1; transition-delay: 0s; } /* its tooltip paints over the next row's cards */
 .ccCard:hover .card-tooltip { visibility: visible; transform: translateX(calc(-50% + var(--tip-shift, 0px))) translateY(-8px); }
 /* No room above inside the box that clips it (js/finance.js): under the card instead */
 .ccCard.tip-below .card-tooltip { bottom: auto; top: 100%; }
@@ -96,7 +97,9 @@
     margin-top: 1.5rem;
 }
 .tips-column { flex: 1; min-width: 0; /* prevents flex overflow */ }
-.tips-column .qlBtns { grid-template-columns: repeat(3, minmax(0, 1fr)); } /* three across as before, narrowing instead of running past the column */
+/* Three across as before where they fit, else two, else one: never narrower than the longest
+   label's word (IdentityTheft.gov, MissingMoney.com: 9.4rem), so no label is cut at the button's edge */
+:is(.tips-column, .unclaimedBox) .qlBtns { grid-template-columns: repeat(auto-fill, minmax(min(100%, max(9.5rem, (100% - 2rem) / 3)), 1fr)); }
 
 @container panel (max-width: 49rem) {
     .tips-columns { flex-direction: column; }
@@ -229,18 +232,10 @@
 
 /* ─── WIDGETS ROW ─── */
 /* ─── TRACKER WIDGET ─── */
-.tracker-widget {
-    flex: 1; min-width: 200px; max-width: 350px; text-align: center; display: flex; flex-direction: column; align-items: center; transition: all 0.3s ease;
-    background: oklch(var(--accent-finance) / 0.05);
-    border: 2px solid oklch(var(--accent-finance) / 0.25);
-    border-radius: 15px;
-    padding: 1.5rem;
+/* The credit limit's body, centered in its panel: the panel (accent networth) is its frame and glow */
+.tracker-widget { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 1rem 0;
     gap: 0.5rem;
-}
-.tracker-widget:hover {
-    border-color: oklch(var(--accent-finance));
-    box-shadow: 0 10px 30px oklch(var(--accent-finance) / 0.2);
-    transform: translateY(-5px);
 }
 
 .widget-icon {
@@ -361,9 +356,7 @@
 
 /* Net Worth — teal-green gradient feel */
 #slide-networth .cta-button { border-color: oklch(var(--sec) / 0.825); background: oklch(var(--accent-finance) / 0.15); font-size: 0.9rem; }
-#slide-networth .tracker-widget,
 #slide-networth .score-card { border-color: oklch(var(--sec) / 0.25); background: oklch(var(--sec) / 0.05); }
-#slide-networth .tracker-widget:hover { border-color: oklch(var(--sec)); box-shadow: 0 10px 30px oklch(var(--sec) / 0.2); }
 #slide-networth .widget-value,
 #slide-networth .score-value {
     background: linear-gradient(45deg, oklch(var(--sec)), oklch(var(--accent-finance)));
@@ -387,10 +380,10 @@
 .slide .panel-head h2.title-fold { font: 600 1rem var(--font-button); color: oklch(var(--sec)); opacity: 1; }
 .slide .panel-head:has(> .title-fold) { background: oklch(var(--sec) / 0.05); border-radius: var(--r-l) var(--r-l) 0 0; } /* the fold bar's tint */
 .slide .panel.is-collapsed .panel-head:has(> .title-fold) { border-radius: var(--r-l); }
-.panel-body > .tracker-widget { max-width: none; } /* its panel sets the width */
 
 /* ─── FINANCE CARD SLIDER ─── */
-.sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: relative; overflow-x: clip; overflow-y: visible; }
+/* The wrap holds only the nav, so the wrap is what sticks (the page is its room); the slides scroll under it */
+.sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: sticky; top: 2rem; z-index: 50; overflow-x: clip; overflow-y: visible; }
 
 /* The Window */
 .sliderView { width: 100%; overflow: hidden; transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -408,10 +401,9 @@
 }
 
 /* ─── NAVIGATION TIMELINE BAR ─── */
-.slideNav { display: flex; background: oklch(var(--space-oled) / 0.5); backdrop-filter: blur(10px); border-top: 1px solid oklch(var(--space-oled) / 0.05); position: sticky;
+.slideNav { display: flex; background: oklch(var(--space-oled) / 0.5); backdrop-filter: blur(10px); border-top: 1px solid oklch(var(--space-oled) / 0.05);
     gap: 1.5rem;
     padding: 1.2rem 1.2rem;
-    top: 2rem; z-index: 50;
     border-radius: 0 50px;
     margin: auto 3rem;
 }

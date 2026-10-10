@@ -69,7 +69,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
-    font-family: "Amazon Ember", sans-serif;
+    font-family: "Amazon Ember", sans-serif; /* the internal Printmon site's own font, not hostable here */
 }
 .zephyy-orb-sitewide-wrapper.printmon-dock .zephyy-orb-sitewide:focus-visible .sitewide-orb-preview {
     display: block;

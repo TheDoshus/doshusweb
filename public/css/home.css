@@ -316,7 +316,7 @@ button.social-item { cursor: pointer; font: inherit; }
     --pill-accent: var(--accent-taxes);
     --pill-glow: 20px;
     padding: 0.8rem 1.5rem;
-    font-family: 'Braah One';
+    font-family: 'Braah One'; /* bare on purpose: it has no →, so the arrow falls back to the browser's own font as it always has (the token's fallback would redraw it) */
     font-size: clamp(0.9rem, 2.5vw, 1rem);
     background: oklch(var(--pill-accent) / 0.2);
     border: 2px solid oklch(var(--pill-accent) / 0.6);
@@ -446,7 +446,7 @@ button.social-item { cursor: pointer; font: inherit; }
 }
 .credit-card-item img { width: 100%; object-fit: cover; border-radius: 8px; }
 .card-title { display: flex; align-items: center; justify-content: center; text-align: center;
-    font-family: 'Carter One';
+    font-family: var(--font-card);
     font-size: 0.75rem;
     color: oklch(var(--accent-finance));
     font-weight: 600;

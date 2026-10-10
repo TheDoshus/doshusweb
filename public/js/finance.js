@@ -19,14 +19,14 @@ function setSliderHeight() {
     if (activeSlide && viewport) viewport.style.height = activeSlide.offsetHeight + 'px'; // its box: a gliding panel's overflow would inflate scrollHeight
 }
 
-// If you switch from a long card to a short card, jump up to the nav bar
-// so you don't end up stranded in empty space!
+// If you switch from a long card to a short card, jump back to the new card's top, just under
+// the nav (it sticks), so you don't end up stranded in empty space!
 function correctScroll() {
     const navBar = document.querySelector('.slideNav');
-    if (!navBar) return;
-    const navRect = navBar.getBoundingClientRect();
-    if (navRect.top < 0) {
-        window.scrollBy({ top: navRect.top - 20, behavior: 'instant' });
+    if (!navBar || !viewport) return;
+    const under = viewport.getBoundingClientRect().top - navBar.getBoundingClientRect().bottom;
+    if (under < -1) {
+        window.scrollBy({ top: under, behavior: 'instant' });
     }
 }
 
@@ -38,9 +38,11 @@ function goToSlide(index, saveToStorage = true) {
     else if (index >= totalSlides) index = 0;
     currentSlide = index;
 
-    // ─── FADE EFFECT ───
+    // ─── FADE EFFECT ─── (and the hero shows this slide's board bar: Reset, Add widget)
     allSlides.forEach((slide, i) => {
         slide.classList.toggle('active-slide', i === currentSlide);
+        const bar = document.querySelector(`[data-board-bar="${slide.querySelector('.board')?.dataset.board}"]`);
+        if (bar) bar.hidden = i !== currentSlide;
     });
 
     setSliderHeight();

@@ -14,8 +14,6 @@
 }
 .nx-stats span { display: flex; align-items: center; gap: 0.4rem; }
 .nx-stats b { color: oklch(var(--accent-finance) / 0.9); }
-/* The board's bar (Reset / Add widget) under the stats, on pages with a board */
-.hero > .board-bar { margin-top: 1.5rem; }
 
 /* ─── BOARD: the same room around it as the bento grid it replaced ─── */
 .board-wrap { margin-block: 6rem; }
