@@ -314,7 +314,7 @@
                 setTimeout(function() { URL.revokeObjectURL(objectUrl); }, 1000);
             })
             .catch(function() {
-                window.open(url, '_blank', 'noopener');
+                window.open(url, '_blank', 'noopener,noreferrer');
             });
     }
     function copyText(value) {

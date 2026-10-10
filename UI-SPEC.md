@@ -47,7 +47,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
 - **Three tiers, three layouts.** Wide: 24 columns of 2rem rows. Mid (up to 1080px: foldables
   opened, tablets): 12 columns. Phone (up to 640px): 4 columns. Each tier has its own default
   and its own save, and the board swaps between them live as the window crosses a tier (a
-  foldable opening or closing). The wide default is the markup's cells, each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing). The mid default flows
+  foldable opening or closing). The wide default is the markup's cells, each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing; one skipped while the board was arranged runs once it's back at its default), and a panel scrolled inside keeps its place. The mid default flows
   the wide layout onto half the columns: every panel half the row, or all of it if it spans
   three quarters or more of the wide row, so a row holds two panels or one; each as tall as its
   content, media keeping its wide height, in the highest free spot in reading order (a half-width
@@ -109,7 +109,8 @@ arrangeable. Customizing is opt-in, never the price of the conversion.
   while it charges) before it lifts, so a swipe that starts on a panel still scrolls the page.
 - **While moving**, the board lights up as a field of cells, a breathing ghost in the panel's
   accent shows where it will land, and the other panels glide out of the way. Near the top or
-  bottom of the screen the page scrolls, faster the closer the pointer gets, and keeps going
+  bottom of the screen (the top measured from under any sticky bar, which the page declares as
+  `scroll-padding-top` on the root) the page scrolls, faster the closer the pointer gets, and keeps going
   while it rests there, at the same speed on any refresh rate. Escape, or the browser cancelling
   the pointer, puts everything back where it was. One gesture at a time: a second finger waits.
 - **Resize** from any edge or corner with a mouse, from one large corner on touch screens

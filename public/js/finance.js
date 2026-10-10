@@ -42,7 +42,9 @@ function goToSlide(index, saveToStorage = true) {
     allSlides.forEach((slide, i) => {
         slide.classList.toggle('active-slide', i === currentSlide);
         const bar = document.querySelector(`[data-board-bar="${slide.querySelector('.board')?.dataset.board}"]`);
-        if (bar) bar.hidden = i !== currentSlide;
+        if (!bar) return;
+        bar.hidden = i !== currentSlide;
+        if (bar.hidden) bar.querySelector(':popover-open')?.hidePopover(); // its Add widget menu goes with it
     });
 
     setSliderHeight();
@@ -169,8 +171,10 @@ document.querySelectorAll('.ccCard').forEach((card) => {
         // running from the last hover would skew a measured box
         const c = card.getBoundingClientRect(), box = clipBox(card), w = tip.offsetWidth;
         const left = c.left + c.width / 2 - w / 2;
-        // Under the card when there's no room above (13px for the lifts hover gives the card and the tooltip)
-        card.classList.toggle('tip-below', c.top - tip.offsetHeight - 13 < Math.max(0, box.top));
+        // Under the card when there's no room above, below the box's top and the slide nav (13px for
+        // the lifts hover gives the card and the tooltip)
+        const nav = document.querySelector('.slideNav')?.getBoundingClientRect().bottom ?? 0;
+        card.classList.toggle('tip-below', c.top - tip.offsetHeight - 13 < Math.max(0, box.top, nav));
         // Along the card, never past the box's sides (8px in from them)
         const shift = Math.max(0, Math.max(box.left, 0) + 8 - left) - Math.max(0, left + w - Math.min(box.right, innerWidth) + 8);
         if (shift) tip.style.setProperty('--tip-shift', `${shift}px`);

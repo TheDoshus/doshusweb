@@ -10,8 +10,9 @@
 .ccGrid { display: grid; gap: 1.75rem;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
-/* Hovered, a card stays on top until its tooltip has slid away, or the next row's cards cover it */
-.ccCard { position: relative; z-index: 0; text-align: center; text-decoration: none; display: flex; flex-direction: column; align-items: center; transition: all 0.3s ease, z-index 0s 0.3s;
+/* A hovered card is on top (its tooltip paints over the next row's cards); one just left stays
+   above its neighbours while its tooltip slides away, but under the card now hovered */
+.ccCard { position: relative; z-index: 0; text-align: center; text-decoration: none; display: flex; flex-direction: column; align-items: center; transition: all 0.3s ease, z-index 0s;
     background: oklch(var(--star-white) / 0.03); color: var(--text-main); border: 1px solid oklch(var(--accent-finance) / 0.15);
     font-family: var(--font-card);
     border-radius: 12px;
@@ -19,7 +20,9 @@
     gap: 0.4rem;
 }
 .ccCard img { width: 100%; height: auto; object-fit: cover; border-radius: 8px; }
-.ccCard:hover { z-index: 1; transition-delay: 0s; } /* its tooltip paints over the next row's cards */
+.ccCard:hover { z-index: 2; }
+.ccCard:not(:hover) { animation: card-leave 0.3s; }
+@keyframes card-leave { from, to { z-index: 1; } }
 .ccCard:hover .card-tooltip { visibility: visible; transform: translateX(calc(-50% + var(--tip-shift, 0px))) translateY(-8px); }
 /* No room above inside the box that clips it (js/finance.js): under the card instead */
 .ccCard.tip-below .card-tooltip { bottom: auto; top: 100%; }
@@ -233,7 +236,8 @@
 /* ─── WIDGETS ROW ─── */
 /* ─── TRACKER WIDGET ─── */
 /* The credit limit's body, centered in its panel: the panel (accent networth) is its frame and glow */
-.tracker-widget { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
+.panel-body:has(> .tracker-widget) { justify-content: safe center; }
+.tracker-widget { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 1rem 0;
     gap: 0.5rem;
 }
@@ -382,8 +386,14 @@
 .slide .panel.is-collapsed .panel-head:has(> .title-fold) { border-radius: var(--r-l); }
 
 /* ─── FINANCE CARD SLIDER ─── */
-/* The wrap holds only the nav, so the wrap is what sticks (the page is its room); the slides scroll under it */
-.sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: sticky; top: 2rem; z-index: 50; overflow-x: clip; overflow-y: visible; }
+/* The wrap holds only the nav, so the wrap is what sticks (the page is its room); the slides
+   scroll under it. Clicks pass through the wrap's empty sides to the slide below. The page tells
+   focus and the board's drag autoscroll where the stuck nav ends (scroll-padding-top) */
+.sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: sticky; top: 2rem; z-index: 50; overflow-x: clip; overflow-y: visible; pointer-events: none; }
+.slideNav { pointer-events: auto; }
+html { scroll-padding-top: 7.5rem; }
+/* A phone on its side has no height to spare for a stuck nav */
+@media (max-height: 500px) { .sliderWrap { position: relative; } html { scroll-padding-top: 0; } }
 
 /* The Window */
 .sliderView { width: 100%; overflow: hidden; transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -481,6 +491,7 @@
         padding: .8rem 1.2rem;
         margin: 0 1rem;
     }
+    html { scroll-padding-top: 6.25rem; }
     .slide {
         padding: 1.5rem 0.8rem;
     }

@@ -431,6 +431,22 @@ const TESTS = {
             return tip.contains(top) ? 'on top' : `under ${top?.closest('.ccCard')?.textContent.trim().split('\n')[0] ?? top?.className}`;
         });
         assert.equal(r, 'on top');
+        // Back up to a card the pointer left behind: the card now hovered is on top, not the one just left
+        const below = await page.evaluate(() => { const cs = [...document.querySelectorAll('#cc-cards .ccCard')], a = cs[0].getBoundingClientRect();
+            return cs.findIndex((c) => { const r = c.getBoundingClientRect(); return Math.abs(r.left - a.left) < 2 && r.top > a.bottom; }); });
+        const lower = page.locator('#cc-cards .ccCard').nth(below);
+        await lower.hover();
+        await settled(lower);
+        await card.hover();
+        await sleep(60);
+        const mine = await card.evaluate((c) => {
+            const tip = c.querySelector('.card-tooltip'), t = tip.getBoundingClientRect();
+            tip.style.pointerEvents = 'auto';
+            const top = document.elementFromPoint(t.left + t.width / 2, t.top + t.height / 2);
+            tip.style.removeProperty('pointer-events');
+            return tip.contains(top) ? 'on top' : `under ${top?.closest('.ccCard')?.querySelector('.card-title')?.textContent ?? top?.className}`;
+        });
+        assert.equal(mine, 'on top', 'the card just hovered');
         return errors;
     },
     async 'Finance Hub: the slide nav sticks while the slides scroll under it, and a new slide starts at its top'(browser) {
@@ -438,10 +454,38 @@ const TESTS = {
         await center(page, 'cc-tools');
         const top = await page.evaluate(() => document.querySelector('.slideNav').getBoundingClientRect().top);
         assert.ok(top >= 0 && top < 40, `the nav sits at ${Math.round(top)}px`);
+        // The stuck wrap's empty sides beside the nav pass the pointer through to the slide below
+        const side = await page.evaluate(() => { const w = document.querySelector('.sliderWrap').getBoundingClientRect(), n = document.querySelector('.slideNav').getBoundingClientRect();
+            return document.elementFromPoint(w.left + (n.left - w.left) / 2, n.top + n.height / 2)?.closest('.sliderWrap') ? 'swallowed' : 'through'; });
+        assert.equal(side, 'through');
+        // A card's tooltip flips under the card rather than going under the nav
+        const card = page.locator('#cc-cards .ccCard').nth(8);
+        await card.evaluate((c) => { document.documentElement.style.scrollBehavior = 'auto'; scrollBy(0, c.getBoundingClientRect().top - 160); });
+        await card.hover();
+        await settled(card);
+        const [tipTop, navBottom] = await card.evaluate((c) => [c.querySelector('.card-tooltip').getBoundingClientRect().top, document.querySelector('.slideNav').getBoundingClientRect().bottom]);
+        assert.ok(tipTop >= navBottom - 0.5, `the tooltip starts ${Math.round(navBottom - tipTop)}px under the nav`);
         await page.click('.nav-dot[data-slide="4"]');
         await sleep(300);
         const [nav, view] = await page.evaluate(() => [document.querySelector('.slideNav').getBoundingClientRect().bottom, document.querySelector('.sliderView').getBoundingClientRect().top]);
         assert.ok(Math.abs(nav - view) < 2, `the new slide starts ${Math.round(view - nav)}px from the nav`);
+        return errors;
+    },
+    async 'Finance Hub: a drag scrolls the page up from just under the stuck nav'(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/financehub.html' });
+        await center(page, 'cc-tools');
+        const h = await page.locator('#cc-tools .panel-head').boundingBox();
+        const nav = await page.evaluate(() => document.querySelector('.slideNav').getBoundingClientRect().bottom);
+        const y0 = await page.evaluate(() => scrollY);
+        await page.mouse.move(h.x + 100, h.y + 20);
+        await page.mouse.down();
+        await page.mouse.move(h.x + 110, h.y + 30, { steps: 3 });
+        await page.mouse.move(h.x + 110, nav + 20, { steps: 8 }); // under the nav, below the bare 64px edge
+        await sleep(500);
+        const y1 = await page.evaluate(() => scrollY);
+        await page.keyboard.press('Escape');
+        await page.mouse.up();
+        assert.ok(y1 < y0 - 20, `the page didn't scroll (${y0} → ${y1})`);
         return errors;
     },
     async "Finance Hub: the hero holds the showing slide's board bar, and only that one"(browser) {
@@ -450,7 +494,26 @@ const TESTS = {
         assert.deepEqual(await shown(), ['hero:finance-credit']);
         await page.click('.nav-dot[data-slide="3"]');
         assert.deepEqual(await shown(), ['hero:finance-taxes']);
+        // A slide's Add widget menu closes with its bar
+        await page.click('#tax-filing .panel-close');
+        await page.click('[data-board-bar="finance-taxes"] button[popovertarget]');
+        await page.keyboard.press('ArrowRight');
+        assert.equal(await page.evaluate(() => !!document.querySelector('.board-menu:popover-open')), false, 'the menu stayed open');
         return errors;
+    },
+    async 'Finance Hub: no bar shows in the hero before the slider picks its slide'(browser) {
+        const ctx = await browser.newContext({ ...WIDE, reducedMotion: 'reduce' });
+        await ctx.route((url) => !url.href.startsWith(base), (r) => r.abort());
+        await ctx.route('**/js/finance.js', async (r) => { await sleep(900); r.continue(); }); // a slow second script
+        const page = await ctx.newPage();
+        page.goto(base + '/financehub.html').catch(() => {});
+        await page.waitForSelector('.board-bar', { state: 'attached' });
+        await sleep(300);
+        assert.equal(await page.evaluate(() => [...document.querySelectorAll('.board-bar')].filter((b) => b.checkVisibility()).length), 0);
+        await page.waitForLoadState('load');
+        await sleep(300);
+        assert.equal(await page.evaluate(() => [...document.querySelectorAll('.board-bar')].filter((b) => b.checkVisibility()).length), 1);
+        return [];
     },
     async 'Finance Hub: no link button cuts its label at the edge'(browser) {
         const all = [];
@@ -480,7 +543,7 @@ const TESTS = {
     },
     async 'default heights are measured again as pictures arrive'(browser) {
         const all = [];
-        for (const opts of [{ viewport: { width: 1200, height: 900 } }, PHONE]) {
+        for (const opts of [{ viewport: { width: 1200, height: 900 } }, { ...PHONE, viewport: { width: 390, height: 2400 } }]) { // tall: the cards fit under the cap
             const ctx = await browser.newContext({ ...opts, reducedMotion: 'reduce' });
             await ctx.route((url) => !url.href.startsWith(base), (r) => r.abort());
             await ctx.route('**/assets/images/**', async (r) => { await sleep(1500); r.continue(); }); // a slow connection
@@ -497,6 +560,53 @@ const TESTS = {
             assert.ok(short <= 1, `${opts.viewport.width}px: the card panel is ${short}px short of its pictures`);
             all.push(...errors);
             await ctx.close();
+        }
+        return all;
+    },
+    async 'a re-measure skipped while the layout was arranged runs once it is back at its default'(browser) {
+        const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, reducedMotion: 'reduce' });
+        await ctx.route((url) => !url.href.startsWith(base), (r) => r.abort());
+        await ctx.route('**/assets/images/**', async (r) => { await sleep(1500); r.continue(); });
+        const page = await ctx.newPage();
+        const errors = [];
+        page.on('pageerror', (e) => errors.push(e.message));
+        await page.goto(base + '/financehub.html', { waitUntil: 'domcontentloaded' });
+        await page.waitForSelector('#cc-myths .panel-close');
+        await page.evaluate(() => document.querySelector('#cc-myths .panel-close').click()); // arranged while the pictures load
+        await page.waitForLoadState('load');
+        await sleep(400);
+        await page.evaluate(() => { const bar = document.querySelector('[data-board-bar="finance-credit"]'); bar.querySelector('.board-menu').showPopover(); bar.querySelector('.board-menu button').click(); });
+        await sleep(400);
+        const short = await page.evaluate(() => { const b = document.querySelector('#cc-cards .panel-body'); return b.scrollHeight - b.clientHeight; });
+        assert.ok(short <= 0, `the card panel is ${short}px short of its pictures`);
+        return errors;
+    },
+    async 'measuring again leaves a panel scrolled inside where it was'(browser) {
+        const { page, errors } = await open(browser);
+        const top = await page.evaluate(() => { const b = document.querySelector('#dev-core .panel-body'); b.scrollTop = Math.floor((b.scrollHeight - b.clientHeight) / 2); return b.scrollTop; });
+        assert.ok(top > 20, `Dev Core barely scrolls (${top}px), so this case tests nothing`);
+        await page.evaluate(() => document.querySelector('.board').dispatchEvent(new Event('load'))); // as a picture arriving
+        await sleep(400); // past the re-measure
+        assert.equal(await page.evaluate(() => document.querySelector('#dev-core .panel-body').scrollTop), top);
+        return errors;
+    },
+    async 'no default panel body overflows by a pixel, at any width (a scrollbar on Windows)'(browser) {
+        const all = [];
+        for (const path of ['/nexus.html', '/financehub.html']) {
+            const { page, errors } = await open(browser, { viewport: { width: 1920, height: 1000 } }, { path });
+            all.push(...errors);
+            const over = [];
+            for (let width = 1920; width >= 320; width -= 40) {
+                await page.setViewportSize({ width, height: 1000 });
+                await sleep(350); // past the re-measure's debounce
+                over.push(...await page.evaluate((width) => [...document.querySelectorAll('.board > .panel:not(.panel-media):not(.is-collapsed):not([hidden])')].flatMap((p) => {
+                    const b = p.querySelector('.panel-body'), row = parseFloat(getComputedStyle(p.parentElement).gridAutoRows);
+                    const capped = +p.style.getPropertyValue('--h') >= Math.floor(innerHeight / row);
+                    return b && !capped && b.scrollHeight > b.clientHeight ? [`${width}px ${p.id} +${b.scrollHeight - b.clientHeight}`] : [];
+                }), width));
+            }
+            assert.deepEqual(over, [], path);
+            await page.context().close();
         }
         return all;
     },
@@ -787,6 +897,7 @@ const TESTS = {
     const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--disable-3d-apis'] });
     let failed = 0;
     for (const [name, test] of Object.entries(TESTS)) {
+        if (process.env.ONLY && !name.includes(process.env.ONLY)) continue; // ONLY=<part of a name> runs just those
         try {
             const errors = await test(browser);
             assert.deepEqual(errors, [], 'page errors');
