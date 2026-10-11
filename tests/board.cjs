@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The board engine (UI-SPEC.md, public/js/board.js) in a real browser, on /nexus (a few cases on
-// /financehub) served from public/. Every case here is a bug a review found or a promise the spec makes.
+// /financehub and /thelounge) served from public/. Every case here is a bug a review found or a promise the spec makes.
 // Run: bun run test. Once per machine: bunx playwright install chromium. PW_CHROMIUM=<path to a
 // chrome binary> runs another Chromium build instead of Playwright's own.
 const assert = require('node:assert/strict');
@@ -400,7 +400,8 @@ const TESTS = {
     },
     async 'a first-row card or link button lifting on hover keeps its whole border in view'(browser) {
         const all = [];
-        for (const [path, sel] of [['/financehub.html', '#cc-cards .ccCard'], ['/financehub.html', '#cc-tools .qlBtn'], ['/nexus.html', '#rig .qlBtn']]) {
+        for (const [path, sel] of [['/financehub.html', '#cc-cards .ccCard'], ['/financehub.html', '#cc-tools .qlBtn'], ['/nexus.html', '#rig .qlBtn'],
+            ['/thelounge.html', '#picks .favorite-card'], ['/thelounge.html', '#game .game-card'], ['/thelounge.html', '#sites-fun .site-link']]) {
             const { page, errors } = await open(browser, { viewport: { width: 696, height: 824 } }, { path });
             all.push(...errors);
             const first = page.locator(sel).first();
@@ -609,7 +610,7 @@ const TESTS = {
     },
     async "at a roomy window the wide default is exactly the markup's cells"(browser) {
         const all = [];
-        for (const path of ['/nexus.html', '/financehub.html']) {
+        for (const path of ['/nexus.html', '/financehub.html', '/thelounge.html']) {
             const { page, errors } = await open(browser, { viewport: { width: 1920, height: 2600 } }, { path });
             all.push(...errors);
             const moved = await page.evaluate(() => [...document.querySelectorAll('.board > .panel')].flatMap((p) => {
@@ -794,7 +795,7 @@ const TESTS = {
     },
     async 'no default panel body overflows by a pixel, at any width (a scrollbar on Windows)'(browser) {
         const all = [];
-        for (const path of ['/nexus.html', '/financehub.html']) {
+        for (const path of ['/nexus.html', '/financehub.html', '/thelounge.html']) {
             const { page, errors } = await open(browser, { viewport: { width: 1920, height: 1000 } }, { path });
             all.push(...errors);
             const over = [];
@@ -1090,6 +1091,68 @@ const TESTS = {
             assert.deepEqual(await spill(), [], `${width}px`);
         }
         return errors;
+    },
+    async 'Lounge: a resize let go over the Sandspiel frame ends there, and one let go unseen ends once the capture goes'(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
+        // Up from the panel's top edge: Sandspiel above is a wall, so the edge stops and the pointer
+        // carries on over the game's frame, another page (here an error page, out of process too)
+        const resize = async () => {
+            await center(page, 'interesting');
+            const edge = await page.locator('#interesting .panel-edge[data-dir="n"]').boundingBox();
+            const frame = await page.locator('#sandspiel iframe').boundingBox();
+            const x = edge.x + 40, y = edge.y + edge.height / 2, to = Math.max(frame.y + 40, y - 300);
+            await page.mouse.move(x, y);
+            await page.mouse.down();
+            await page.mouse.move(x, y - 6);
+            await page.mouse.move(x + 50, to, { steps: 8 });
+            assert.ok(to > frame.y && to < frame.y + frame.height, 'the pointer is over the frame');
+            assert.equal(await page.evaluate(() => document.querySelector('#interesting').classList.contains('is-resizing')), true, 'the resize began');
+            await page.mouse.up();
+            await sleep(200);
+        };
+        await resize();
+        assert.equal(await arranging(page), false, 'the resize never ended');
+        // A frame that still took the pointer: its release goes unseen, and the capture going lands it
+        await page.addStyleTag({ content: 'iframe { pointer-events: auto !important; }' });
+        await resize();
+        assert.equal(await arranging(page), true, 'the frame let the release through (the case needs one that keeps it)');
+        const box = await page.locator('#interesting .panel-body').boundingBox();
+        await page.mouse.move(box.x + 20, box.y + 20);
+        await sleep(200);
+        assert.equal(await arranging(page), false, 'the capture went with no release and left it arranging');
+        return errors;
+    },
+    async 'Lounge: Surprise Me skips the links of a panel hidden or collapsed on the board'(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html', init: () => { window.open = (url) => { (window.__opened ??= []).push(url); }; } });
+        // Hidden and collapsed: everything but Weird Internet
+        for (const id of ['sites-fun', 'sites-mind-bending', 'sites-archives']) await page.evaluate((id) => document.querySelector(`#${id} .panel-close`).click(), id);
+        for (const id of ['sites-stats', 'sites-beer']) await page.evaluate((id) => document.querySelector(`#${id} .panel-collapse`).click(), id);
+        for (let i = 0; i < 40; i++) await page.evaluate(() => document.getElementById('surpriseBtn').click());
+        const weird = await page.evaluate(() => [...document.querySelectorAll('#sites-weird .site-link')].map((a) => a.href));
+        const opened = await page.evaluate(() => window.__opened);
+        assert.equal(opened.length, 40);
+        assert.deepEqual(opened.filter((u) => !weird.includes(u)), [], 'opened a link from a panel off the board');
+        return errors;
+    },
+    async 'Lounge: a section or category title centers on its panel, clear of the tools, at any width'(browser) {
+        const all = [];
+        for (const opts of [WIDE, { viewport: { width: 1280, height: 800 } }, FOLD, PHONE, SMALL]) {
+            const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
+            all.push(...errors);
+            const off = await page.evaluate(() => [...document.querySelectorAll('.panel-head > :is(.section-title, .category-header)')].flatMap((t) => {
+                const p = t.closest('.panel').getBoundingClientRect(), tools = t.parentElement.querySelector('.panel-tools').getBoundingClientRect();
+                const r = document.createRange();
+                r.selectNodeContents(t);
+                const text = r.getBoundingClientRect(), id = t.closest('.panel').id, out = [];
+                const shift = text.left + text.width / 2 - (p.left + p.width / 2);
+                if (Math.abs(shift) > 1.5) out.push(`${id}: ${Math.round(shift)}px off center`);
+                if ([...r.getClientRects()].some((l) => l.left < tools.right - 1 && tools.left < l.right - 1 && l.top < tools.bottom - 1 && tools.top < l.bottom - 1)) out.push(`${id}: under the tools`);
+                return out;
+            }));
+            assert.deepEqual(off, [], `${opts.viewport.width}px: ${off.join('; ')}`);
+            await page.context().close();
+        }
+        return all;
     },
 };
 

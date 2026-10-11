@@ -1,33 +1,36 @@
-/* Content Sections */
-.content-section { max-width: 1400px;
-    margin: 0 auto 4rem auto;
-    padding: 4rem 2rem;
-}
-.section-title {
-    font-size: clamp(2rem, 5vw, 3rem); text-align: center;
-    margin-bottom: 1rem;
+/* ─── BOARD: each section is a panel (UI-SPEC.md). A section's title keeps its gradient and font,
+   a category box's its header; the panel is the frame, so what sat in a box sits in the panel ─── */
+.board-wrap { margin-top: 6rem; }
+.panel-head .section-title { font-size: clamp(1.6rem, 5.5cqi, 3rem); line-height: 1.2; text-align: center;
     background: linear-gradient(45deg, oklch(var(--accent-amzn) / 0.85), oklch(var(--accent-crypto) / 0.75), oklch(var(--accent-myth) / 0.9));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.section-subtitle { text-align: center;
+/* A centered title centers on the panel: a spacer as wide as the tools at the head's end (▾ ✕
+   and their margin) balances them. A head too narrow to spare that gives the title a row of its
+   own under the tools, the full width to center in */
+.panel-head:has(> :is(.section-title, .category-header))::before { content: ''; width: 4.5rem; }
+@container panel (max-width: 32rem) {
+    .panel-head::before { display: none; }
+    .panel-head > :is(.section-title, .category-header) { grid-area: 2 / 1 / auto / -1; margin-top: var(--sp-2xs); }
+}
+.section-subtitle { text-align: center; opacity: 1;
     color: var(--text-muted);
-    font-size: clamp(1rem, 3vw, 1.2rem);
-    margin-bottom: 2rem;
+    font-size: clamp(1rem, 3cqi, 1.2rem);
+    margin: 0 0 1.25rem; /* with the body's gap, the 2rem it had above the content */
 }
 
 /* FAVORITES GRID */
 .favorites-grid { display: grid;
-    grid-template-columns: repeat(4, minmax(250px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1.5rem;
-    margin-bottom: 3rem;
 }
 .favorite-card { background: oklch(var(--star-white) / 0.04); color: var(--text-main); text-align: center; text-decoration: none; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center;
     backdrop-filter: blur(10px);
     border: 2px solid oklch(var(--accent-crypto) / 0.3);
     border-radius: 15px;
-    padding: 2rem; 
+    padding: 2rem;
     gap: 1rem;
 }
 .favorite-card:hover {
@@ -52,9 +55,8 @@
 /* GAMING ZONE GRID */
 #game .section-title { background: linear-gradient(45deg, oklch(var(--accent-finance) / 0.85), oklch(var(--accent-crypto) / 0.75), oklch(var(--accent-lounge) / 0.9)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .gaming-grid { display: grid;
-    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
-    margin-bottom: 3rem;
 }
 .game-card { background: oklch(var(--star-white) / 0.04); backdrop-filter: blur(10px);
     border: 2px solid oklch(var(--accent-taxes) / 0.3);
@@ -78,18 +80,11 @@
 
 /* EMBEDDED GAME SECTION */
 #sandspiel .section-title { background: linear-gradient(45deg, oklch(var(--accent-invest) / 0.85), oklch(var(--accent-lounge) / 0.75), oklch(var(--accent-invest) / 0.9)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.embedded-game { background: oklch(var(--space-oled) / 0.05); backdrop-filter: blur(10px); overflow: hidden; width: 100%;
-    border: 2px solid oklch(var(--accent-crypto) / 0.3);
-    border-radius: 15px;
-    padding: 1rem;
-    margin-bottom: 3rem;
-}
-.embedded-game iframe { width: 100%; height: 500px; border: none; border-radius: 10px; }
+.embedded-game iframe { display: block; width: 100%; height: min(500px, 60vh); border: none; border-radius: 10px; }
 /* INTERESTING SITES SECTION */
 #interesting .section-title { background: linear-gradient(45deg, oklch(var(--accent-finance) / 0.85), oklch(var(--accent-networth) / 0.75), oklch(var(--accent-lounge) / 0.9)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.sites-controls { display: flex; flex-wrap: wrap;
+.sites-controls { display: flex; flex-wrap: wrap; justify-content: center;
     gap: 1rem;
-    margin-bottom: 1.5rem;
 }
 .surprise-btn { background: linear-gradient(45deg, oklch(var(--accent-crypto) / 0.85), oklch(var(--accent-taxes) / 0.45)); border: none; cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
     padding: 1rem 2rem;
@@ -106,7 +101,7 @@
 /* Category Filters */
 .category-filters { display: flex; flex-wrap: wrap; justify-content: center;
     gap: 0.8rem;
-    margin-bottom: 2rem;
+    margin-top: 0.75rem;
 }
 .filter-btn { background: oklch(var(--space-oled) / 0.05); color: var(--text-main); cursor: pointer; transition: all 0.3s ease;
     padding: 0.8rem 1.5rem;
@@ -123,43 +118,13 @@
     font-weight: 600;
 }
 
-/* CATEGORY BOXES LAYOUT */
-.category-boxes-container { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start;
-    gap: 2rem;
-}
-.category-box {
-    flex: 1 1 calc(50% - 1rem); /* Two boxes per row, accounting for gap */
-    min-width: 400px; /* Minimum width before wrapping */
-    background: oklch(var(--star-white) / 0.03);
-    border: 2px solid oklch(var(--accent-crypto) / 0.2);
-    border-radius: 15px;
-    padding: 1.5rem;
-    transition: all 0.3s ease; backdrop-filter: blur(5px);
-}
-.category-box h3 { font-family: var(--font-button); }
+/* CATEGORY BOXES: each a panel, its header the panel's title */
 .category-box.hidden { display: none; }
-.category-header { color: oklch(var(--accent-crypto)); text-align: center;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-}
-.category-links { display: grid; overflow-y: auto;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+.panel-head .category-header { font-family: var(--font-button); font-size: 1.5rem; line-height: normal; color: oklch(var(--accent-crypto)); text-align: center; }
+.category-links { display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr)); /* a half-width panel at 1280 keeps two across */
     gap: 1rem;
-    max-height: 400px;
-    padding: 1rem;
 }
-
-/* Custom Scrollbar for Category Links */
-.category-links::-webkit-scrollbar { width: 8px; }
-.category-links::-webkit-scrollbar-track {
-    background: oklch(var(--space-oled) / 0.05);
-    border-radius: 10px;
-}
-.category-links::-webkit-scrollbar-thumb {
-    background: oklch(var(--accent-crypto) / 0.5);
-    border-radius: 10px;
-}
-.category-links::-webkit-scrollbar-thumb:hover { background: oklch(var(--accent-crypto) / 0.7); }
 
 /* Site Links */
 .site-link { display: flex; align-items: center; background: oklch(var(--star-white) / 0.03); border: 1px solid oklch(var(--accent-crypto) / 0.2); text-decoration: none; color: var(--text-main); transition: all 0.3s ease;
@@ -185,54 +150,28 @@
 .site-link.hidden { display: none; }
 
 /* ─── DISCORD SECTION (page-specific; component lives in shared.css) ─── */
-/* Short section — trim the default .content-section air around it */
-#discord { padding-top: 1.5rem; padding-bottom: 1.5rem; margin-bottom: 1rem; }
 #discord .section-title {
     background: linear-gradient(45deg, oklch(var(--accent-discord) / 0.9), oklch(var(--accent-crypto) / 0.75), oklch(var(--accent-taxes) / 0.85));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-
-/* RANDOM MEME BOXES */
-.random-meme-fixed {
-    flex: 1 1 calc(50% - 1rem);
-    width: 250px;
-    max-width: 300px;
-    height: 350px;
-    background: oklch(var(--space-oled) / 0.05);
-    backdrop-filter: blur(10px);
-    border: 2px solid oklch(var(--accent-lounge) / 0.3);
-    border-radius: 15px;
-    padding: 0.5rem;
-    display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;
-    margin: 2rem auto;
-}
-
-.random-meme-fixed:hover { transform: scale(1.05);
-    box-shadow: 0 10px 30px oklch(var(--accent-lounge) / 0.4);
-}
-.random-meme-fixed img,
-.random-meme-fixed video { width: 100%; height: 100%; object-fit: fill;
-    border-radius: 10px;
-}
-.random-meme-fixed video { object-fit: contain; }
+/* The panel is the widget's card: shared.css's frame would draw a second one inside it */
+#discord .discord-widget { max-width: none; padding: 0; background: none; border: 0; backdrop-filter: none; box-shadow: none; }
 
 .footer-nav a.footer-active { color: oklch(var(--accent-lounge)); font-weight: 600; }
 
-/* Mobile Optimizations */
-@media (max-width: 1080px) {
-    .favorites-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
-    .gaming-grid { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
-    .category-box { min-width: 50%; }
-    .sites-container { grid-template-columns: repeat(2, minmax(200px, 1fr)); max-height: 500px; }
-    .category-links { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); max-height: 300px; }
-
-    .random-meme-fixed { width: 200px; height: 375px;
-        margin: 1rem auto;
-    }
+/* Narrow panels: what the window's widths did before, now each panel's own (@container panel) */
+/* Twelve games: as many across as the panel holds at their size, in rows that come out even */
+@container panel (min-width: 50rem) {
+    .gaming-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
-@media (max-width: 725px) {
-    .content-section { padding: 5rem 1rem; }
-    .gaming-grid { grid-template-columns: repeat(2, 1fr);
+@container panel (min-width: 70rem) {
+    .gaming-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+@container panel (max-width: 56rem) {
+    .favorites-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container panel (max-width: 30rem) {
+    .gaming-grid { grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 1rem;
     }
     .game-card{ padding: 1.5rem 1rem; }
@@ -240,8 +179,5 @@
     .surprise-btn { width: 100%; }
     .category-filters { gap: 0.5rem; }
     .filter-btn { padding: 0.6rem 1rem; font-size: 0.85rem; }
-    .sites-container { grid-template-columns: 1fr; max-height: 400px; }
-    .embedded-game iframe { height: 60vh; }
-    .category-links { grid-template-columns: 1fr; }
-    .random-meme-fixed { min-width: 45vw; }
+    .category-links { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
 }

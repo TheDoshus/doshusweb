@@ -54,11 +54,8 @@ function initSurpriseButton() {
     }
 
     surpriseBtn.addEventListener('click', function() {
-        // Get only visible links
-        const visibleLinks = Array.from(allLinks).filter(link => {
-            const parentBox = link.closest('.category-box');
-            return !parentBox || !parentBox.classList.contains('hidden');
-        });
+        // Get only visible links (not in a filtered-out category, or a panel hidden or collapsed on the board)
+        const visibleLinks = Array.from(allLinks).filter(link => link.checkVisibility());
 
         if (visibleLinks.length === 0) {
             alert('No sites available! Try selecting a different category.');

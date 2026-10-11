@@ -56,6 +56,9 @@
    stars behind every moving panel is the heaviest thing on the page; dark glass stands in */
 .board.is-arranging { padding-bottom: calc(var(--row) * 8); user-select: none; }
 .board.is-arranging .panel { backdrop-filter: none; background: oklch(var(--space-oled) / 0.72); }
+/* A frame is another page (the Lounge's game): a pointer over it leaves the gesture, its moves and
+   its release unseen, even captured. While arranging, every frame lets the pointer through */
+:root:has(.board.is-arranging) iframe { pointer-events: none; }
 .board.is-arranging::before { opacity: var(--field-opacity); }
 /* The ghost: where the panel will land, in the grabbed panel's own accent. It breathes by
    fading a glow layer (opacity runs on the compositor; an animated box-shadow repaints) */
