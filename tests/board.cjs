@@ -897,7 +897,7 @@ const TESTS = {
     async 'the phone tier: a full-width stack in reading order'(browser) {
         const { page, errors } = await open(browser, PHONE);
         const c = await page.evaluate(() => [...document.querySelectorAll('.panel')].map((p) => ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k))));
-        c.forEach(([x, , w]) => assert.deepEqual([x, w], [1, 4]));
+        c.forEach(([x, , w]) => assert.deepEqual([x, w], [1, 6]));
         c.slice(1).forEach(([, y], i) => assert.ok(y >= c[i][1] + c[i][3], 'stacked without overlap'));
         // Twice the air between stacked panels (32px), the panels as wide as before (24px in from the edge)
         const [gap, edge] = await page.evaluate(() => {
@@ -905,6 +905,22 @@ const TESTS = {
             return [b.top - a.bottom, a.left];
         });
         assert.deepEqual([Math.round(gap), Math.round(edge)], [32, 24]);
+        return errors;
+    },
+    async 'a phone layout saved on the old 4-column grid is set aside; a new save records its grid'(browser) {
+        // Every panel saved full width on 4 columns, the first moved down a row
+        const { page, errors } = await open(browser, PHONE, { init: () => {
+            if (localStorage.getItem('seeded')) return;
+            localStorage.setItem('seeded', '1');
+            const ids = ['dev-core', 'rig', 'meme-1', 'mobile', 'meme-2', 'privacy', 'stack', 'signals', 'meme-3'];
+            localStorage.setItem('board:nexus:phone', JSON.stringify({ v: 2, items: ids.map((id, i) => ({ id, x: 1, y: 3 + i * 20, w: 4, h: 20, hidden: false, collapsed: false })) }));
+        } });
+        const widths = await page.evaluate(() => [...document.querySelectorAll('.board > .panel')].map((p) => +p.style.getPropertyValue('--w')));
+        assert.ok(widths.every((w) => w === 6), `the old save was applied: widths ${widths}`);
+        await page.focus('#rig .panel-edge[data-dir="se"]');
+        await page.keyboard.press('ArrowLeft');
+        const save = JSON.parse(await saved(page, 'phone'));
+        assert.equal(save.cols, 6, 'a save without its grid');
         return errors;
     },
     async 'a head keeps its title readable and clear of its tag and tools, at any width'(browser) {

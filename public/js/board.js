@@ -250,7 +250,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         settle(next);
         try {
             if (same(layout, base)) localStorage.removeItem(key);
-            else localStorage.setItem(key, JSON.stringify({ v: VERSION, items: [...layout].map(([p, r]) => ({ id: p.id, ...r })) }));
+            else localStorage.setItem(key, JSON.stringify({ v: VERSION, cols: cols(), items: [...layout].map(([p, r]) => ({ id: p.id, ...r })) }));
         } catch { /* private mode: the layout lasts this visit */ }
     }
     // This size's layout: the default, with the visitor's saved one on top (panels added to the
@@ -264,7 +264,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const next = copy(base);
         let saved = null;
         try { saved = JSON.parse(localStorage.getItem(key)); } catch { /* no saved layout */ }
-        if (saved?.v === VERSION) {
+        // A save keeps the grid it was made on: one from another (the phone tier had 4 columns until
+        // 2026-10-11, before saves recorded theirs) would land in the wrong cells, so it's set aside
+        if (saved?.v === VERSION && (saved.cols ?? (tier() === 'phone' ? 4 : cols())) === cols()) {
             saved.items.forEach(({ id, x, y, w, h, hidden, collapsed, full }) => {
                 const p = document.getElementById(id);
                 if (next.has(p)) next.set(p, { x, y, w, h, hidden, collapsed, full });

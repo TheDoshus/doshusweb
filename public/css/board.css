@@ -18,7 +18,7 @@
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* ─── BOARD: 24 columns of 2rem rows (12 and 4 in the smaller tiers, at the end); panels inset by a
+/* ─── BOARD: 24 columns of 2rem rows (12 and 6 in the smaller tiers, at the end); panels inset by a
    gutter so cells stay exact ─── */
 .board-wrap { max-width: 1440px; margin: 0 auto; padding: var(--sp-m) clamp(1rem, 3vw, 2rem) 6rem;
     position: relative; z-index: 10;
@@ -326,10 +326,12 @@
 @media (max-width: 1080px) {
     .board { --cols: 12; --min-cols: 4; }
 }
-/* Phones: 4 columns. By default every panel is full width and as tall as its content; half
-   width is the narrowest. Stacked panels get twice the air between them (Doshus, 2026-10-10),
-   and the board's side padding gives back the extra, so the panels keep their width */
+/* Phones: 6 columns (Doshus, 2026-10-11; 4 before). By default every panel is full width and as
+   tall as its content; half the width is the narrowest (a third is too thin for a title or the
+   keyboard's grip on a 320px phone), with two thirds and five sixths between. Stacked panels get twice the air
+   between them (Doshus, 2026-10-10), and the board's side padding gives back the extra, so the
+   panels keep their width */
 @media (max-width: 640px) {
-    .board { --cols: 4; --min-cols: 2; --gutter: 1rem; }
+    .board { --cols: 6; --min-cols: 3; --gutter: 1rem; }
     .board-wrap { padding-inline: 0.5rem; }
 }

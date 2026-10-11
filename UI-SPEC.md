@@ -45,7 +45,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
 ## Layout
 
 - **Three tiers, three layouts.** Wide: 24 columns of 2rem rows. Mid (up to 1080px: foldables
-  opened, tablets): 12 columns. Phone (up to 640px): 4 columns. Each tier has its own default
+  opened, tablets): 12 columns. Phone (up to 640px): 6 columns. Each tier has its own default
   and its own save, and the board swaps between them live as the window crosses a tier (a
   foldable opening or closing). The wide default is the markup's cells (so is a smaller tier's, where the page gives every panel its `data-mid` or `data-phone` cells), each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing; one skipped while the board was arranged runs once it's back at its default), and a panel scrolled inside keeps its place. Otherwise the mid default flows
   the wide layout onto half the columns: every panel half the row, or all of it if it spans
@@ -55,7 +55,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
   default stacks every panel full width in the wide reading order, each as tall as its content,
   media a little over half the screen, with 2rem between panels (the wider tiers keep 1rem) and
   1.5rem to the screen's edge.
-- **Sizes.** No narrower than `--min-cols` (4 of 24 wide, 4 of 12 mid, 2 of 4 phone), no
+- **Sizes.** No narrower than `--min-cols` (4 of 24 wide, 4 of 12 mid, 3 of 6 phone), no
   shorter than its head and foot plus a few lines of body, no taller than one screen (on a
   `data-tall` board, than the larger of one screen and what it holds; a hidden panel keeps its height). Content scrolls inside a panel that's smaller than it.
 - **Free placement.** A panel stays wherever it's dropped, gaps and all; nothing floats up on
@@ -78,8 +78,9 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
   panel is hidden) brings it back to its spot. Reset (shown only once the layout differs from
   the default) returns to the default, then offers Undo reset until the next change.
 - **Saving.** Per browser, in `localStorage` under `board:<name>` (wide), `board:<name>:mid`
-  and `board:<name>:phone`, each panel's cells, hidden and collapsed state, versioned so an
-  old save never breaks a new board. A layout at
+  and `board:<name>:phone`, each panel's cells, hidden and collapsed state, versioned and
+  stamped with the grid's column count, so an old save never breaks a new board (one made on
+  another grid is set aside). A layout at
   its default saves nothing, so a changed default reaches everyone who hasn't arranged their own.
 - **Layout is data.** Cells live in `data-x/y/w/h`; the engine turns them into the custom
   properties `--x/--y/--w/--h`. Markup never carries inline styles.
