@@ -546,7 +546,7 @@ const TESTS = {
         assert.ok(Math.abs(at) < 3, `the CTA lands the nav at ${Math.round(at)}px`);
         return errors;
     },
-    async 'Finance Hub: a drag scrolls the page up from just under the stuck nav, a dot clicked or not'(browser) {
+    async 'Finance Hub: a drag scrolls the page up from just under the stuck nav, even with a nav dot keyboard-focused'(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/financehub.html' });
         await center(page, 'cc-tools'); // the nav stuck on screen
         const dot = await page.locator('.nav-dot.active').boundingBox();
@@ -711,9 +711,11 @@ const TESTS = {
         await page.mouse.move(h.x + 100, h.y + 20);
         await page.mouse.down();
         await page.mouse.move(h.x + 140, h.y + 60, { steps: 4 });
+        assert.ok(await page.evaluate(() => !!document.querySelector('.board.is-arranging')), 'no drag began, so this tests nothing');
         const before = await reads();
         await page.evaluate(() => document.querySelectorAll('.board').forEach((b) => b.dispatchEvent(new Event('load')))); // pictures on every slide
         await sleep(400); // the drag goes on
+        assert.deepEqual(await reads(), before, 'a board measured again mid-drag');
         await page.keyboard.press('Escape');
         await page.mouse.up();
         await sleep(400);
