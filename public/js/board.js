@@ -117,9 +117,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // has one (shared.css: 0.01ms, so transitionend still fires): a size read right after it would
     // be the old one, so what's being measured lands its transitions first
     const landed = (n) => { n.getAnimations({ subtree: true }).forEach((a) => a instanceof CSSTransition && a.finish()); return n; };
-    // A panel's fixed parts (head and foot) and the gutter around it, in px
+    // A panel's fixed parts (head and foot) and the gutter around it, in px: above and below, or
+    // (margin) any sides, since a host may inset a panel either side of its cells (--inset)
     const parts = (p) => [...p.children].filter((n) => n.matches('.panel-head, .panel-foot')).reduce((s, n) => s + tall(n), 0);
-    const gutters = (p) => 2 * (parseFloat(getComputedStyle(p).marginTop) || 0);
+    const margin = (p, ...sides) => sides.reduce((n, k) => n + (parseFloat(getComputedStyle(p)[`margin${k}`]) || 0), 0);
+    const gutters = (p) => margin(p, 'Top', 'Bottom');
     // The shortest a panel can get: its head and foot plus a few lines of body (or MIN_H)
     function minH(p) {
         const fixed = parts(p);
@@ -298,9 +300,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     if (!bar.isConnected) board.before(bar);
     board.append(ghost);
     const say = (msg) => { status.textContent = msg; };
-    // The ghost marks where a grabbed panel will land, in that panel's accent
+    // The ghost marks where a grabbed panel will land, in that panel's accent and inset
     const showGhost = (p, r) => {
-        ghost.style.setProperty('--accent', getComputedStyle(p).getPropertyValue('--accent'));
+        ['--accent', '--inset'].forEach((k) => ghost.style.setProperty(k, getComputedStyle(p).getPropertyValue(k)));
         setCell(ghost, r);
         ghost.hidden = false;
     };
@@ -413,8 +415,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const rect = p.getBoundingClientRect();
         const r0 = { width: p.offsetWidth, height: p.offsetHeight };
         Object.assign(r0, { left: rect.left + (rect.width - r0.width) / 2, top: rect.top + (rect.height - r0.height) / 2 });
-        const gutter = parseFloat(getComputedStyle(p).marginTop) || 0;
-        const off = { x: e.clientX - r0.left + gutter, y: e.clientY - r0.top + gutter };
+        const off = { x: e.clientX - r0.left + margin(p, 'Left'), y: e.clientY - r0.top + margin(p, 'Top') };
         const me = layout.get(p);
         const at = { x: me.x, y: me.y };
         let next = layout;
@@ -473,11 +474,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const r0 = p.getBoundingClientRect();
         const y0 = scrollY; // the edge follows the pointer on the page, so it keeps up while the page scrolls
         // The live edge stays between the panel's minimum and the board's edge (px, gutters out)
-        const gutters = 2 * (parseFloat(getComputedStyle(p).marginTop) || 0);
-        const px = (cells, size) => cells * size - gutters;
+        const room = { x: margin(p, 'Left', 'Right'), y: gutters(p) };
+        const px = (cells, axis) => cells * c[axis] - room[axis];
         const limit = {
-            w: [px(narrow, c.x), px(dir.includes('w') ? start.x + start.w - 1 : cols() - start.x + 1, c.x)],
-            h: [px(floor, c.y), px(dir.includes('n') ? Math.min(ceiling, start.y + start.h - 1) : ceiling, c.y)],
+            w: [px(narrow, 'x'), px(dir.includes('w') ? start.x + start.w - 1 : cols() - start.x + 1, 'x')],
+            h: [px(floor, 'y'), px(dir.includes('n') ? Math.min(ceiling, start.y + start.h - 1) : ceiling, 'y')],
         };
         const d = { c: 0, r: 0 };
         let next = layout;

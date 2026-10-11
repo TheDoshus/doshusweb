@@ -2,10 +2,12 @@
    and each section sits where it did before, as it looked. A section panel lays its content out as
    the section did (centered, each block its own width); a category box and a meme slot are panels
    dressed as their boxes were. Defaults per tier mirror the page before (data-mid / data-phone) ─── */
-/* A section's content where it was: 1400px at most, 2rem in (on phones the board's own gutter is
-   wider, so 1rem and the panel's 5px); the hero's bar takes no room from its centering */
-.board-wrap { max-width: 1400px; padding-inline: calc(1.375rem - 5px); } /* less a section panel's border and padding */
-@media (max-width: 640px) { .board-wrap { padding-inline: 0; } }
+/* A section's content where it was: 1400px at most and 2rem in, which is the board's gutter
+   (0.625rem), a section panel's edge (--edge: its 1px border and its body's 0.25rem side padding
+   below) and the rest. A phone's board has no padding and its gutter is the old 1rem, so there a
+   section panel sits out by its edge (--inset, board.css). The hero's bar takes no room from its centering */
+.board-wrap { --edge: calc(1px + 0.25rem); max-width: 1400px; padding-inline: calc(1.375rem - var(--edge)); }
+@media (max-width: 640px) { .board-wrap { padding-inline: 0; } .panel.section-panel { --inset: calc(-1 * var(--edge)); } }
 .hero > .board-bar { margin-bottom: -3.75rem; }
 .panel.section-panel { scroll-margin-top: 4.5rem; } /* a #link lands with the room it had */
 .panel.section-panel > .panel-head { padding: 0.25rem 0.5rem 0; }
@@ -152,8 +154,9 @@
 /* Reached for, as board.css's clear surface has it; held or carried, the board's glow and a full border */
 .panel.category-box:has(:focus-visible) { border-color: oklch(var(--accent-crypto) / 0.7); }
 @media (hover: hover) { .panel.category-box:hover { border-color: oklch(var(--accent-crypto) / 0.7); } }
-/* Its frame where the box's was: the board's edge sits 5px out for the sections' content */
-@media (min-width: 641px) { .panel:is(.category-box, .panel-media):not(.is-dragging) { margin-inline: calc(var(--gutter) + 5px); } }
+/* Its frame where the box's was, in line with the sections' content: above a phone the board's
+   edge sits a section panel's edge out */
+@media (width > 640px) { .panel:is(.category-box, .panel-media) { --inset: var(--edge); } }
 .panel.category-box > .panel-head { padding: 1.5rem 1.5rem 0; }
 .panel.category-box > .panel-body { gap: 0; padding: 1rem 1.5rem; }
 .category-box.hidden { visibility: hidden; pointer-events: none; }
@@ -163,7 +166,7 @@
     line-height: 1.3;
 }
 .category-links { display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); /* 280px before: the board's cells round a box a little wider */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
     gap: 1rem;
     padding: 1rem;
 }
@@ -262,8 +265,9 @@
 /* A category box's links followed the window's tiers, as the board's tiers do now */
 @media (max-width: 1080px) {
     .category-links { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
-    /* a half-width box comes out a little narrower than it was: it keeps its two across */
-    @container panel (max-width: 28rem) { .category-links { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); } }
+    /* a half-width box comes out a little narrower than it was: it keeps its two across (28rem and
+       its 8px scrollbar, which Chromium leaves in the width it queries) */
+    @container panel (max-width: 28.5rem) { .category-links { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); } }
 }
 @media (max-width: 725px) {
     .category-links { grid-template-columns: 1fr; }

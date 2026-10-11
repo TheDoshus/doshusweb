@@ -144,6 +144,7 @@ these or a host stylesheet on top.
 |---|---|
 | `--accent` (from `data-accent`) | A panel's border, glow, title, ghost and controls |
 | `--cols`, `--row`, `--gutter`, `--min-cols` | Grid density and spacing |
+| `--inset` on a panel | How far in from its cells' sides the panel's frame sits, past the gutter (negative sits out): a host lines a panel up with content of its own. Its ghost frames the same spot, and a drag or resize reads from the frame |
 | `--field-opacity` | How strongly the cell field shows while arranging |
 | `--ghost-fill`, `--ghost-glow` | The landing ghost's fill and glow |
 | `--glide`, `--ghost-glide` | How long panels and the ghost glide (ms) |

@@ -2,7 +2,9 @@
 // The board engine (UI-SPEC.md, public/js/board.js) in a real browser, on /nexus (a few cases on
 // /financehub and /thelounge) served from public/. Every case here is a bug a review found or a promise the spec makes.
 // Run: bun run test. Once per machine: bunx playwright install chromium. PW_CHROMIUM=<path to a
-// chrome binary> runs another Chromium build instead of Playwright's own.
+// chrome binary> runs another Chromium build instead of Playwright's own. It runs the full build,
+// not the headless shell Playwright launches by default: the shell keeps a cross-site frame in its
+// page's process, so the Sandspiel frame never takes the pointer away as it does in a browser.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
@@ -17,6 +19,7 @@ const WIDE = { viewport: { width: 1440, height: 900 } };
 const FOLD = { viewport: { width: 901, height: 1000 }, isMobile: true, hasTouch: true }; // a Galaxy Z Fold7 opened
 const PHONE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
 const SMALL = { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true };
+const LAUNCH = { channel: 'chromium', executablePath: process.env.PW_CHROMIUM || undefined, args: ['--disable-3d-apis'] };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // shared.css's reduced motion still transitions every property for a frame: wait out two frames
 const frames = (page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
@@ -755,7 +758,7 @@ const TESTS = {
         return errors;
     },
     async 'with scrollbars that take room (Windows), Fit gives a squeezed panel its content, no more and no less'(browser) {
-        const classic = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--disable-3d-apis'], ignoreDefaultArgs: ['--hide-scrollbars'] });
+        const classic = await chromium.launch({ ...LAUNCH, ignoreDefaultArgs: ['--hide-scrollbars'] });
         try {
             const { page, errors } = await open(classic, WIDE, { path: '/financehub.html' });
             const bad = [];
@@ -1305,8 +1308,9 @@ const TESTS = {
         const { page, errors } = await open(browser, FOLD, { path: '/thelounge.html', init: () => {
             new MutationObserver((records) => records.forEach((r) => r.addedNodes.forEach((n) => n.matches?.('.panel') && n.removeAttribute('data-mid')))).observe(document, { childList: true, subtree: true });
         } });
-        const got = await page.evaluate(() => ['sites-fun', 'sites-beer'].map((id) => { const p = document.getElementById(id); return [+p.style.getPropertyValue('--h'), +p.dataset.h, p.hasAttribute('data-mid')]; }));
-        assert.deepEqual(got, [[16, 16, false], [15, 15, false]]);
+        const got = await page.evaluate(() => ['sites-fun', 'sites-beer'].map((id) => { const p = document.getElementById(id); return `${id} ${p.style.getPropertyValue('--h')} ${p.hasAttribute('data-mid') ? 'mid' : ''}`; }));
+        const want = await page.evaluate(() => ['sites-fun', 'sites-beer'].map((id) => `${id} ${document.getElementById(id).dataset.h} `));
+        assert.deepEqual(got, want);
         return errors;
     },
     async "a list panel (data-scroll) keeps its cells' height, shows more when made taller, and Fit shows it all"(browser) {
@@ -1413,11 +1417,13 @@ const TESTS = {
         const old = { 1440: '4 3 311334', 1080: '2 4 242424', 901: '2 4 232323', 800: '2 4 131313', 725: '2 2 111111', 390: '2 2 111111' };
         // Where the old page's section content and boxes began; and the board's own breakpoint edges
         // (four games from 737px, four picks from 1137px, the narrow layout up to 725px)
-        const edges = { 1440: [52, 52], 901: [32, 32], 390: [21, 16] };
+        const edges = { 1440: [52, 52], 901: [32, 32], 390: [16, 16] };
+        // The lists the old page showed whole (every other one scrolled in its box)
+        const whole = { 1000: 'mind-bending', 1080: 'mind-bending', 1340: 'beer', 1380: 'weird beer', 1440: 'weird beer', 1920: 'weird beer' };
         const bounds = { 725: '2 2 narrow', 726: '2 2 wide', 736: '2 2 wide', 737: '2 4 wide', 1080: '2 4 wide', 1081: '2 3 wide', 1136: '2 3 wide', 1137: '4 3 wide' };
         const { ctx, page, errors } = await open(browser, { viewport: { width: 1440, height: 800 } }, { path: '/thelounge.html' });
         all.push(...errors);
-        for (const width of [320, 360, 390, 520, 640, 641, 700, 725, 726, 730, 736, 737, 746, 800, 901, 1000, 1080, 1081, 1136, 1137, 1280, 1440, 1920]) {
+        for (const width of [320, 360, 390, 520, 640, 641, 700, 725, 726, 730, 736, 737, 746, 800, 901, 1000, 1080, 1081, 1136, 1137, 1280, 1340, 1380, 1440, 1920]) {
             await page.setViewportSize({ width, height: 800 });
             await sleep(350);
             const got = await page.evaluate(() => {
@@ -1426,14 +1432,54 @@ const TESTS = {
                 const spill = [...document.querySelectorAll('.favorite-card, .game-card')].filter((c) => { const r = c.getBoundingClientRect(); return [...c.children].some((k) => { const q = k.getBoundingClientRect(); return q.left < r.left - 0.5 || q.right > r.right + 0.5; }); }).map((c) => c.textContent.trim().split('\n')[0]);
                 const edges = [Math.round(document.querySelector('.embedded-game').getBoundingClientRect().left), Math.round(document.getElementById('sites-fun').getBoundingClientRect().left)];
                 const narrow = getComputedStyle(document.querySelector('.sites-controls')).flexDirection === 'column' ? 'narrow' : 'wide';
-                return { side, spill, edges, narrow, cols: `${cols(document.querySelector('.favorites-grid'))} ${cols(document.querySelector('.gaming-grid'))} ${[...document.querySelectorAll('.category-links')].map(cols).join('')}` };
+                const whole = [...document.querySelectorAll('.category-box')].filter((p) => { const b = p.querySelector('.panel-body'); return b.scrollHeight - b.clientHeight <= 1; }).map((p) => p.dataset.category).join(' ');
+                return { side, spill, edges, narrow, whole, cols: `${cols(document.querySelector('.favorites-grid'))} ${cols(document.querySelector('.gaming-grid'))} ${[...document.querySelectorAll('.category-links')].map(cols).join('')}` };
             });
             assert.deepEqual([got.side, got.spill], [[], []], `${width}px: sideways or spilling`);
             if (old[width]) assert.equal(got.cols, old[width], `${width}px: columns`);
             if (edges[width]) assert.deepEqual(got.edges, edges[width], `${width}px: where the content and a box start`);
             if (bounds[width]) assert.equal(`${got.cols.split(' ').slice(0, 2).join(' ')} ${got.narrow}`, bounds[width], `${width}px: picks, games, narrow`);
+            assert.equal(got.whole, whole[width] ?? '', `${width}px: lists shown whole`);
         }
         await ctx.close();
+        return all;
+    },
+    async "a panel the page sets in from its cells (--inset): the ghost frames it, a drag reads from its frame, a resize stops at its landing edge"(browser) {
+        const all = [];
+        const rect = (page, sel) => page.evaluate((sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; }, sel);
+        // A Lounge box sits in by a section panel's edge above a phone, a section panel out by it on one
+        for (const [opts, id] of [[WIDE, 'sites-fun'], [{ viewport: { width: 390, height: 844 } }, 'interesting']]) {
+            const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
+            all.push(...errors);
+            await center(page, id);
+            const start = await cells(page, id), frame = await rect(page, `#${id}`);
+            const h = await page.locator(`#${id} .panel-head`).boundingBox();
+            const cw = await page.evaluate(() => { const b = document.querySelector('.board'); return b.clientWidth / +getComputedStyle(b).getPropertyValue('--cols'); });
+            await page.mouse.move(h.x + 40, h.y + 20);
+            await page.mouse.down();
+            await page.mouse.move(h.x + 44, h.y + 20);
+            await frames(page);
+            assert.deepEqual(await rect(page, '.board-ghost'), frame, `${opts.viewport.width}px: the ghost frames ${id} where it sits`);
+            await page.mouse.move(h.x + 40 + cw * 0.55, h.y + 20, { steps: 4 }); // just past half a cell: no snap yet
+            await frames(page);
+            await page.mouse.up();
+            await sleep(300);
+            assert.deepEqual(await cells(page, id), start, `${opts.viewport.width}px: a drag of 0.55 of a cell moved ${id}`);
+            await page.context().close();
+        }
+        // Resized past the board's edge: the live edge stops where the ghost ends and the panel lands
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
+        all.push(...errors);
+        await center(page, 'sites-fun');
+        const e = await page.locator('#sites-fun .panel-edge[data-dir="e"]').boundingBox();
+        await page.mouse.move(e.x + e.width / 2, e.y + e.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(e.x + 2000, e.y + e.height / 2, { steps: 6 });
+        await frames(page);
+        const during = [(await rect(page, '#sites-fun'))[1], (await rect(page, '.board-ghost'))[1]];
+        await page.mouse.up();
+        await sleep(400);
+        assert.deepEqual([...during, (await rect(page, '#sites-fun'))[1]], Array(3).fill(during[1]), 'live edge, ghost and landed edge');
         return all;
     },
     async 'Lounge: a section or category title centers on its panel, clear of the tools, at any width'(browser) {
@@ -1470,7 +1516,7 @@ const TESTS = {
 (async () => {
     const server = await serve();
     base = `http://127.0.0.1:${server.address().port}`;
-    const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--disable-3d-apis'] });
+    const browser = await chromium.launch(LAUNCH);
     let failed = 0, ran = 0;
     for (const [name, test] of Object.entries(TESTS)) {
         if (process.env.ONLY && !name.includes(process.env.ONLY)) continue; // ONLY=<part of a name> runs just those
