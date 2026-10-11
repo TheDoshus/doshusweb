@@ -36,6 +36,7 @@
             <li>Discord's API and webhooks: alerts, task updates and agent messages, in Discord's own bot format above.</li>
             <li>Documentation fetched to keep local copies current: vendor documentation sites, and raw files on GitHub.</li>
             <li>This site's own database (Firebase), behind the chat orb.</li>
+            <li>Our ops dashboard: its GitHub status checks and its reads of this site's database.</li>
             <li>Smaller jobs: usage checks with services we pay for, vulnerability-database lookups, file uploads, and the Instagram Graph API.</li>
         </ul>
 
@@ -45,9 +46,7 @@
             <li><strong>Browser automation.</strong> For sites that only work in a browser, the agents drive a stealth browser (CloakBrowser). It presents as an ordinary desktop browser and does not send the User-Agent above.</li>
             <li><strong>Link previews.</strong> When someone pastes a link into the chat orb, the preview fetch presents as a browser or a common crawler, so that social sites return their preview tags.</li>
             <li><strong>One conversion site.</strong> A media-conversion service (ezgif) is used through its browser forms, under a browser User-Agent.</li>
-            <li><strong>Other people's software.</strong> The agent runtime (OpenClaw) and the coding agents listed below talk to their model providers and to Discord with their own User-Agents, not ours.</li>
-            <li><strong>Not yet migrated.</strong> Our ops dashboard still sends <code>AETHER-Mission-Control/1.0</code> to GitHub and Node's default User-Agent elsewhere.</li>
-        </ul>
+            <li><strong>Other people's software.</strong> The agent runtime (OpenClaw) and the coding agents listed below talk to their model providers and to Discord with their own User-Agents, not ours.</li>        </ul>
 
         <h2>Blocking us, or reaching us</h2>
         <p>To block our identified traffic, match the token above in your User-Agent rules and return 403 or 429. To ask us to stop or slow down, or to report a problem, email <strong>doshusbizz@gmail.com</strong> (<a href="mailto:doshusbizz@gmail.com">open in your mail app</a>). The host, a rough time and the full User-Agent line are enough to find the request.</p>
