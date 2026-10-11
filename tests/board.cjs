@@ -1451,6 +1451,7 @@ const TESTS = {
             for (const [width, want] of [[965, '232323 '], [1355, '211224 beer']]) {
                 await page.setViewportSize({ width, height: 800 });
                 await sleep(350);
+                assert.ok(await page.evaluate(() => innerWidth - document.documentElement.clientWidth > 0), `${width}px: no scrollbar taking room, so it tests nothing`);
                 assert.equal(await page.evaluate(() => `${[...document.querySelectorAll('.category-links')].map((q) => getComputedStyle(q).gridTemplateColumns.split(' ').length).join('')} ${[...document.querySelectorAll('.category-box')]
                     .filter((p) => { const b = p.querySelector('.panel-body'); return b.scrollHeight - b.clientHeight <= 1; }).map((p) => p.dataset.category).join(' ')}`), want, `${width}px with classic scrollbars: link columns, lists shown whole`);
             }
