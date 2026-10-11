@@ -71,7 +71,7 @@ below means the numbered coding Rules, which say how to meet them.
 - **Agents get capabilities, not caution.** If the house already has a way to do a job (a
   script, a tool, a CLI), the agent uses it. A gate or "do not" an operator invents goes to
   Doshus as a proposal, never into an agent's files as a rule: *"I don't need or want such baby
-  restrictions on my agents"* (2026-10-11). The Safety Boundaries above still hold.
+  restrictions on my agents"* (2026-10-11). The Safety Boundaries below still hold.
 - **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
   different model where a free lane is available, and every finding is fixed or answered; a
   reviewer he names is part of done, and a command he runs as root is reviewed before he
