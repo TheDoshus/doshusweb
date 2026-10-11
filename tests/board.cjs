@@ -1096,10 +1096,12 @@ const TESTS = {
         // Up from the panel's top edge: Sandspiel above is a wall, so the edge stops and the pointer
         // carries on over the game's frame, another page (here an error page, out of process too)
         const resize = async () => {
-            await center(page, 'interesting');
+            // Its top edge low on the screen (short of the edge that scrolls), the frame above it in view
+            await page.evaluate(() => scrollBy(0, document.getElementById('interesting').getBoundingClientRect().top - 760));
+            await sleep(150);
             const edge = await page.locator('#interesting .panel-edge[data-dir="n"]').boundingBox();
             const frame = await page.locator('#sandspiel iframe').boundingBox();
-            const x = edge.x + 40, y = edge.y + edge.height / 2, to = Math.max(frame.y + 40, y - 300);
+            const x = edge.x + 40, y = edge.y + edge.height / 2, to = Math.max(frame.y + 40, Math.min(frame.y + frame.height - 40, y - 300));
             await page.mouse.move(x, y);
             await page.mouse.down();
             await page.mouse.move(x, y - 6);
@@ -1143,6 +1145,53 @@ const TESTS = {
         const filtered = await page.evaluate(() => window.__opened);
         assert.equal(filtered.length, 40);
         assert.deepEqual(filtered.filter((u) => !archives.includes(u)), [], 'opened a link from a filtered-out category');
+        return errors;
+    },
+    async 'a page that lays out a smaller tier itself gets those cells there, each grown to its content'(browser) {
+        const all = [];
+        for (const [opts, tier] of [[FOLD, 'mid'], [PHONE, 'phone']]) {
+            const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
+            all.push(...errors);
+            const off = await page.evaluate((tier) => [...document.querySelectorAll('.board > .panel')].flatMap((p) => {
+                const want = p.dataset[tier].split(' ').map(Number), got = ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k));
+                return got.slice(0, 3).join() === want.slice(0, 3).join() && got[3] >= want[3] ? [] : [`${p.id} ${want} → ${got}`];
+            }), tier);
+            assert.deepEqual(off, [], `${tier}`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async "on a tall board a panel is as tall as what it holds, past one screen, so nothing scrolls inside it"(browser) {
+        const { page, errors } = await open(browser, PHONE, { path: '/thelounge.html' });
+        const picks = await page.evaluate(() => { const p = document.getElementById('picks'), b = p.querySelector('.panel-body'); return { tall: p.offsetHeight > innerHeight, over: b.scrollHeight - b.clientHeight }; });
+        assert.ok(picks.tall, 'Picks is no taller than the screen');
+        assert.ok(picks.over <= 1, `Picks scrolls ${picks.over}px inside`);
+        return errors;
+    },
+    async 'a clear board shows the sky at rest, a frame when a panel is reached for, and a glow while one is held'(browser) {
+        const { ctx, page, errors } = await open(browser, { viewport: { width: 1300, height: 900 }, hasTouch: true }, { path: '/thelounge.html' });
+        await center(page, 'game');
+        const look = () => page.evaluate(() => { const s = getComputedStyle(document.getElementById('game')); return { fill: s.backgroundColor, border: s.borderTopColor, glow: s.boxShadow }; });
+        await page.mouse.move(2, 2);
+        await settled(page.locator('#game'), false);
+        const rest = await look();
+        assert.match(rest.fill, /\/ 0\)$|, 0\)$|transparent/, `a fill at rest: ${rest.fill}`);
+        assert.match(rest.border, /\/ 0\)$|, 0\)$|transparent/, `a frame at rest: ${rest.border}`);
+        const head = await page.locator('#game .panel-head').boundingBox();
+        await page.mouse.move(head.x + 300, head.y + 20);
+        await settled(page.locator('#game'), false);
+        const hovered = await look();
+        assert.doesNotMatch(hovered.border, /\/ 0\)$|, 0\)$|transparent/, 'no frame when hovered');
+        // A finger resting on the head: the panel charges a glow as it swells
+        const cdp = await ctx.newCDPSession(page);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: head.x + 300, y: head.y + 20 }] });
+        await sleep(250);
+        const held = await page.evaluate(() => document.getElementById('game').classList.contains('is-holding'));
+        await settled(page.locator('#game'), false);
+        const glow = (await look()).glow;
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        assert.ok(held, 'the hold never began');
+        assert.ok(glow !== 'none' && glow !== hovered.glow, `no glow of its own while held: ${glow}`);
         return errors;
     },
     async "a finger resting on a panel's title, wobbling as fingers do, still lifts it"(browser) {

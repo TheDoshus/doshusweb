@@ -174,7 +174,9 @@ const CHECKS = {
     // of its board, as board.js reads it, so the markup is walked tag by tag (comments blanked)
     'boards are well-formed': () => {
         const css = fs.readFileSync(path.join(ROOT, 'public/css/board.css'), 'utf8');
-        const [, cols, minCols] = css.match(/\.board \{[^}]*--cols:\s*(\d+)[^}]*--min-cols:\s*(\d+)/).map(Number);
+        // Each tier's grid, wide first, then mid and phone (board.css sets them in that order)
+        const grids = [...css.matchAll(/\.board \{[^}]*--cols:\s*(\d+)[^}]*--min-cols:\s*(\d+)/g)].map((m) => ({ cols: +m[1], minCols: +m[2] }));
+        const tiers = { '': grids[0], mid: grids[1], phone: grids[2] };
         const VOID = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)$/i;
         const TAG = /<(\/?)([a-z][\w-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*)\s*\/?>/gi;
         const attrs = (s) => Object.fromEntries([...s.matchAll(/([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)]
@@ -191,14 +193,21 @@ const CHECKS = {
                 // A panel body's content sits in elements: the engine reads its height off theirs
                 if (board?.body && board.body === board.depth && html.slice(board.at, m.index).trim()) problems.push(`${line}: bare text in a panel body (wrap it in an element)`);
                 if (board) board.at = m.index + m[0].length;
-                if (close) { if (board && --board.depth === 0) board = null; else if (board?.depth < board?.body) board.body = 0; continue; }
+                if (close) {
+                    if (board && --board.depth === 0) {
+                        // A tier the page lays out itself names every panel's cells, or the engine flows it
+                        for (const tier of ['mid', 'phone']) if (board.named[tier] && board.named[tier] < board.count) problems.push(`${board.line}: ${board.named[tier]} of ${board.count} panels have data-${tier}; give every panel its ${tier} cells or none`);
+                        board = null;
+                    } else if (board?.depth < board?.body) board.body = 0;
+                    continue;
+                }
                 if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
                 const a = attrs(rest);
                 if (!board) {
                     if (!('data-board' in a)) continue;
                     if (names.has(a['data-board'])) problems.push(`${line}: board "${a['data-board']}" also in ${names.get(a['data-board'])}`);
                     names.set(a['data-board'], line);
-                    board = { depth: 1, cells: [] };
+                    board = { depth: 1, line, cells: { '': [], mid: [], phone: [] }, named: { mid: 0, phone: 0 }, count: 0 };
                     continue;
                 }
                 if (a.class?.split(/\s+/).includes('panel-body')) board.body = board.depth + 1;
@@ -206,16 +215,26 @@ const CHECKS = {
                 const id = a.id;
                 if (!id || ids.has(id)) problems.push(`${line}: panel id ${id ? `"${id}" repeats` : 'missing'}`);
                 ids.add(id);
-                const [x, y, w, h] = ['data-x', 'data-y', 'data-w', 'data-h'].map((k) => Number(a[k]));
-                if (![x, y, w, h].every((n) => Number.isInteger(n) && n > 0) || w < minCols || x + w - 1 > cols) {
-                    problems.push(`${line}: ${id} cells ${x},${y},${w},${h} outside a ${cols}-column grid (≥ ${minCols} wide)`);
-                    continue;
+                board.count++;
+                // The wide cells (data-x/y/w/h), and a smaller tier's where the page lays it out itself
+                // (data-mid / data-phone: "x y w h")
+                for (const [tier, { cols, minCols }] of Object.entries(tiers)) {
+                    const raw = tier ? a[`data-${tier}`] : ['x', 'y', 'w', 'h'].map((k) => a[`data-${k}`]).join(' ');
+                    if (tier && raw === undefined) continue;
+                    if (tier) board.named[tier]++;
+                    const [x, y, w, h] = raw.trim().split(/\s+/).map(Number);
+                    const at = tier ? `${tier} cells` : 'cells';
+                    if (![x, y, w, h].every((n) => Number.isInteger(n) && n > 0) || w < minCols || x + w - 1 > cols) {
+                        problems.push(`${line}: ${id} ${at} ${raw} outside a ${cols}-column grid (≥ ${minCols} wide)`);
+                        continue;
+                    }
+                    for (const o of board.cells[tier]) {
+                        if (x < o.x + o.w && o.x < x + w && y < o.y + o.h && o.y < y + h) problems.push(`${line}: ${id} overlaps ${o.id}${tier && ` in the ${tier} tier`}`);
+                    }
+                    board.cells[tier].push({ id, x, y, w, h });
                 }
-                for (const o of board.cells) {
-                    if (x < o.x + o.w && o.x < x + w && y < o.y + o.h && o.y < y + h) problems.push(`${line}: ${id} overlaps ${o.id}`);
-                }
-                board.cells.push({ id, x, y, w, h });
             }
+            if (board) problems.push(`${rel(f)}: a board is never closed`);
         }
         return problems;
     },

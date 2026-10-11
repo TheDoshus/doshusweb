@@ -25,8 +25,8 @@ rules. Hosts are listed under [Implementations](#implementations).
 
 | Part | Job |
 |---|---|
-| `.board[data-board]` | The grid. Its name keys the saved layouts |
-| `.panel[id]` | One widget. `data-x`/`data-y` place it and `data-w`/`data-h` size it, in cells, for the wide layout. The `id` is how a saved layout finds it, so never rename one casually |
+| `.board[data-board]` | The grid. Its name keys the saved layouts. `data-surface="clear"`: no glass and no frame until a panel is reached for (a page that floated on its background); `data-tall`: a panel may be as tall as what it holds, past one screen (a page that reads top to bottom) |
+| `.panel[id]` | One widget. `data-x`/`data-y` place it and `data-w`/`data-h` size it, in cells, for the wide layout; `data-mid` and `data-phone` ("x y w h") do the same for those tiers, on every panel of the board or none. The `id` is how a saved layout finds it, so never rename one casually |
 | `data-accent` | Picks the panel's accent from the host's palette; everything in the panel reads `--accent` |
 | `.panel-head` / `-body` / `-foot` | Title row (a grab bar), content that scrolls when the panel is smaller than it, status line. All optional. A body's content sits in elements stacked in flow, top to bottom (no bare text, `display: contents`, `order` or reversed flow, auto margins or stretched children): the engine reads the body's height off their extent |
 | `.panel-media` | A headless panel whose content another script owns; it gets a grab strip over its top-left, clear of the player's own buttons |
@@ -47,7 +47,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
 - **Three tiers, three layouts.** Wide: 24 columns of 2rem rows. Mid (up to 1080px: foldables
   opened, tablets): 12 columns. Phone (up to 640px): 4 columns. Each tier has its own default
   and its own save, and the board swaps between them live as the window crosses a tier (a
-  foldable opening or closing). The wide default is the markup's cells, each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing; one skipped while the board was arranged runs once it's back at its default), and a panel scrolled inside keeps its place. The mid default flows
+  foldable opening or closing). The wide default is the markup's cells (so is a smaller tier's, where the page gives every panel its `data-mid` or `data-phone` cells), each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing; one skipped while the board was arranged runs once it's back at its default), and a panel scrolled inside keeps its place. Otherwise the mid default flows
   the wide layout onto half the columns: every panel half the row, or all of it if it spans
   three quarters or more of the wide row, so a row holds two panels or one; each as tall as its
   content, media keeping its wide height, in the highest free spot in reading order (a half-width
@@ -56,8 +56,8 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
   media a little over half the screen, with 2rem between panels (the wider tiers keep 1rem) and
   1.5rem to the screen's edge.
 - **Sizes.** No narrower than `--min-cols` (4 of 24 wide, 4 of 12 mid, 2 of 4 phone), no
-  shorter than its head and foot plus a few lines of body, no taller than one screen. Content
-  scrolls inside a panel that's smaller than it.
+  shorter than its head and foot plus a few lines of body, no taller than one screen (on a
+  `data-tall` board, than what it holds). Content scrolls inside a panel that's smaller than it.
 - **Free placement.** A panel stays wherever it's dropped, gaps and all; nothing floats up on
   its own. Where it lands decides what moves:
   - dragged upward onto a panel with free space above it, that panel rises out of the way;
@@ -95,7 +95,10 @@ arrangeable. Customizing is opt-in, never the price of the conversion.
   Everything below the hero becomes the board: each section or card group a panel, in the same
   order, at about the same widths, the same spacing between them as before (the board's
   `--gutter` matches the page's rhythm). Accents come from the page's existing routing, as
-  `data-accent`.
+  `data-accent`. A page whose sections floated on its background (no boxes, wide gaps, its own
+  layout per window size) converts to a clear, tall board: each section a full-width panel laid
+  out inside as it was, its box-shaped blocks panels dressed as their boxes, every tier's cells
+  measured from the old page at that tier's size (the Lounge, 2026-10-11).
 - **Content answers to its panel.** A page's own styles for what goes inside a panel use
   container queries, never viewport media queries.
 - **Proof.** Before/after screenshots at desktop and phone width, the host's markup lint and
@@ -105,7 +108,7 @@ arrangeable. Customizing is opt-in, never the price of the conversion.
 
 - **Grab** by the title bar, the grab dots at a panel's top center, or a media panel's
   top-left strip. A mouse lifts the panel once it moves a few pixels, so a plain click does
-  nothing at all. A finger or pen rests there for `--hold` (500ms; the panel swells slightly
+  nothing at all. A finger or pen rests there for `--hold` (500ms; the panel swells and glows
   while it charges) before it lifts, so a swipe that starts on a panel still scrolls the page.
 - **While moving**, the board lights up as a field of cells, a breathing ghost in the panel's
   accent shows where it will land, and the other panels glide out of the way. Near the top or
@@ -145,6 +148,7 @@ these or a host stylesheet on top.
 | `--glide`, `--ghost-glide` | How long panels and the ghost glide (ms) |
 | `--hold` | How long a finger rests before a panel lifts (ms) |
 | `--panel-fill`, `--panel-backdrop` | The panel glass: fill alpha, and a backdrop filter (`blur(5px)`, or `none` over a busy background on weak hardware) |
+| `data-surface="clear"` on the board | No glass and no frame at rest; a faint frame when a panel is hovered or focused, a glow when held or carried, every panel's frame while arranging; on touch screens the controls stay faint until a panel is reached for |
 | `--sp-*`, `--r-*`, `--fs-*`, `--font-mono`, `--font-title` | Spacing, radius and type scales |
 | Panel surface, snap field, ghost colors | The host's own styles for `.panel`, `.board::before`, `.board-ghost` |
 

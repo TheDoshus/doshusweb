@@ -118,8 +118,23 @@
     border-color: oklch(var(--accent) / 0.85);
     box-shadow: 0 12px 38px oklch(var(--accent) / 0.25), 0 0 0 1px oklch(var(--accent) / 0.4) inset;
 }
-.panel.is-holding { scale: 1.02; transition-duration: var(--hold); }
-.panel.is-dragging, .panel.is-resizing { z-index: 50;
+/* A clear board (data-surface="clear") keeps the page's sky as every panel's back: no glass and no
+   frame at rest, so the page reads as it did before it was a board. Reached for (hovered, focused) a
+   panel shows a faint frame; held, carried or resized it glows; while arranging, every panel shows
+   where it is. A page can still dress a panel itself (the Lounge's category boxes) */
+.board[data-surface="clear"] { --panel-fill: 0; --panel-backdrop: none; }
+:where(.board[data-surface="clear"]) .panel { border-color: transparent; }
+:where(.board[data-surface="clear"]) .panel:is(:hover, :focus-within) { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
+:where(.board[data-surface="clear"]) .panel:not(:hover, :focus-within, .is-holding, .is-dragging, .is-resizing)::before,
+:where(.board[data-surface="clear"]) .panel:not(:hover, :focus-within, .is-holding, .is-dragging, .is-resizing)::after { opacity: 0; }
+.board[data-surface="clear"] .panel::before, .board[data-surface="clear"] .panel::after { transition: opacity 0.35s ease; }
+.board[data-surface="clear"].is-arranging .panel { background: oklch(var(--space-oled) / 0.35); border-color: oklch(var(--accent) / 0.5); }
+.board[data-surface="clear"].is-arranging .panel::before, .board[data-surface="clear"].is-arranging .panel::after { opacity: 1; }
+/* A finger resting on a panel charges a glow as it swells, so the hold reads as a grab */
+.panel.is-holding { scale: 1.02; transition-duration: var(--hold);
+    border-color: oklch(var(--accent)); box-shadow: 0 0 0 2px oklch(var(--accent) / 0.55), 0 0 44px oklch(var(--accent) / 0.45);
+}
+.panel.is-dragging, .panel.is-resizing { z-index: 50; border-color: oklch(var(--accent));
     box-shadow: 0 0 0 2px oklch(var(--accent) / 0.7), 0 24px 60px oklch(var(--accent) / 0.4);
 }
 /* Only the carried panel keeps a layer of its own; the ones gliding aside get one from their
@@ -237,6 +252,8 @@
 @media (hover: none) {
     .panel-tools, .panel-edge[data-dir="se"] { opacity: 1; }
     .panel:not(.panel-media) .panel-tag { visibility: hidden; }
+    /* A clear board's controls stay faint until a panel is reached for, so the page reads as before */
+    :where(.board[data-surface="clear"]) .panel:not(:focus-within, .is-holding) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 0.35; }
 }
 /* Touch: one big corner to resize by, instead of eight thin edges a thumb catches by accident */
 @media (pointer: coarse) {

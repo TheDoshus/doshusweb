@@ -19,6 +19,12 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // Hidden is the markup's too, not the DOM's now: a panel hidden in one tier's layout is still in the others'
     const hiddenAtStart = new Set(panels.filter((p) => p.hidden));
     const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: hiddenAtStart.has(p), collapsed: 'collapsed' in p.dataset && !!p.querySelector('.panel-head') });
+    // A page can lay out a smaller tier itself: data-mid / data-phone hold that tier's cells, "x y w h",
+    // on every panel of the board (else the tier flows the wide layout)
+    const cellsIn = (t) => t !== 'wide' && panels.every((p) => p.dataset[t]) && new Map(panels.map((p) => {
+        const [x, y, w, h] = p.dataset[t].trim().split(/\s+/).map(Number);
+        return [p, { ...read(p), x, y, w, h }];
+    }));
     const copy = (map) => new Map([...map].map(([p, r]) => [p, { ...r }]));
     // Three grids, each with its own layout and save (board.css sets their --cols): wide, placed by
     // data-x/y/w/h; mid, up to 1080px (foldables, tablets), the wide layout flowed onto half the
@@ -121,8 +127,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // on: the bar's one-line title keeps it one height at any width, and finishing the glide here
     // would make the panel jump
     const headRows = (p) => rows(tall(landed(p.querySelector('.panel-head'))) + gutters(p) + p.offsetHeight - p.clientHeight);
-    // The tallest: one screen (100dvh), so a panel always fits in view
-    const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y));
+    // The tallest: one screen (100dvh), so a panel always fits in view. A board marked data-tall (a
+    // page that reads top to bottom, like the Lounge) lets a panel be as tall as what it holds
+    const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y), 'tall' in board.dataset && !p.matches('.panel-media') ? contentH(p) : 0);
     // Tall enough for everything it holds, at its current width (a running glide is finished
     // first, so that's the width it lands at). A meme gets a little over half the screen, or
     // with `exact` (once its picture has loaded) exactly its picture's shape
@@ -174,15 +181,16 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const wide = new Map(panels.map((p) => [p, read(p)]));
         const t = tier();
         const media = (p) => p.matches('.panel-media');
-        if (t === 'wide') {
+        const own = t === 'wide' ? wide : cellsIn(t);
+        if (own) {
             // The markup's cells, each row grown to its tallest content where this window wraps it
             // taller than the cells allow; panels sharing a row's top and height grow together
-            render(wide);
+            render(own);
             const row = (r) => `${r.y}/${r.h}`;
             const need = new Map();
-            wide.forEach((r, p) => { if (!r.collapsed && !r.hidden && !media(p)) need.set(row(r), Math.max(need.get(row(r)) ?? 0, clamp(contentH(p), minH(p), maxH(p)))); });
-            wide.forEach((r) => { if (!r.collapsed) r.h = Math.max(r.h, need.get(row(r)) ?? 0); });
-            return fit(wide);
+            own.forEach((r, p) => { if (!r.collapsed && !r.hidden && !media(p)) need.set(row(r), Math.max(need.get(row(r)) ?? 0, clamp(contentH(p), minH(p), maxH(p)))); });
+            own.forEach((r) => { if (!r.collapsed) r.h = Math.max(r.h, need.get(row(r)) ?? 0); });
+            return fit(own);
         }
         const order = [...wide].sort(([, a], [, b]) => a.y - b.y || a.x - b.x).map(([p]) => p);
         // Phone: full width. Mid: half the row, or all of it for a panel spanning three quarters or
