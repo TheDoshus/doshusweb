@@ -15,7 +15,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
     const panels = [...board.children].filter((el) => el.matches('.panel'));
     const title = (p) => p.querySelector('h2')?.textContent ?? p.getAttribute('aria-label') ?? p.id;
-    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: p.hidden });
+    // A panel marked data-collapsed starts as its title bar (data-h counts the bar's rows) and opens to its content.
+    // Hidden is the markup's too, not the DOM's now: a panel hidden in one tier's layout is still in the others'
+    const hiddenAtStart = new Set(panels.filter((p) => p.hidden));
+    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: hiddenAtStart.has(p), collapsed: 'collapsed' in p.dataset && !!p.querySelector('.panel-head') });
     const copy = (map) => new Map([...map].map(([p, r]) => [p, { ...r }]));
     // Three grids, each with its own layout and save (board.css sets their --cols): wide, placed by
     // data-x/y/w/h; mid, up to 1080px (foldables, tablets), the wide layout flowed onto half the
@@ -98,8 +101,12 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // Snap with hysteresis: the target only changes once the pointer is well into the next cell,
     // so hovering on a cell boundary doesn't flicker
     const snap = (raw, current) => (Math.abs(raw - current) > 0.6 ? Math.round(raw) : current);
+    // Heights in fractional px: whole-pixel readings (offsetHeight, scrollHeight) summed can land a
+    // pixel either side of a row, an empty row or a body a pixel short (a scrollbar on Windows)
+    const tall = (n) => n.getBoundingClientRect().height;
+    const rows = (px) => Math.ceil(px / cell().y - 1e-3); // float noise isn't a row
     // A panel's fixed parts (head and foot) and the gutter around it, in px
-    const parts = (p) => [...p.children].filter((n) => n.matches('.panel-head, .panel-foot')).reduce((s, n) => s + n.offsetHeight, 0);
+    const parts = (p) => [...p.children].filter((n) => n.matches('.panel-head, .panel-foot')).reduce((s, n) => s + tall(n), 0);
     const gutters = (p) => 2 * (parseFloat(getComputedStyle(p).marginTop) || 0);
     // The shortest a panel can get: its head and foot plus a few lines of body (or MIN_H)
     function minH(p) {
@@ -109,7 +116,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // Collapsed to its title bar: the head alone (and the panel's border). A running glide carries
     // on: the bar's one-line title keeps it one height at any width, and finishing the glide here
     // would make the panel jump
-    const headRows = (p) => Math.ceil((p.querySelector('.panel-head').offsetHeight + gutters(p) + p.offsetHeight - p.clientHeight) / cell().y);
+    const headRows = (p) => rows(tall(p.querySelector('.panel-head')) + gutters(p) + p.offsetHeight - p.clientHeight);
     // The tallest: one screen (100dvh), so a panel always fits in view
     const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y));
     // Tall enough for everything it holds, at its current width (a running glide is finished
@@ -122,13 +129,27 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             const ratio = media && (media.videoHeight / media.videoWidth || media.naturalHeight / media.naturalWidth);
             return Math.round((ratio ? p.offsetWidth * ratio + gutters(p) : innerHeight * 0.55) / cell().y);
         }
-        // A panel taller than its content: measure the body at its own height, not the panel's
-        // (the default stack is measured at its minimum, where the body already overflows)
         const body = p.querySelector('.panel-body');
-        if (exact) body?.style.setProperty('flex', 'none');
-        const h = parts(p) + gutters(p) + p.offsetHeight - p.clientHeight + (body?.scrollHeight ?? 0); // border too
-        if (exact) body?.style.removeProperty('flex');
-        return Math.ceil(h / cell().y);
+        return rows(parts(p) + gutters(p) + p.offsetHeight - p.clientHeight + (body ? bodyH(body) : 0)); // border too
+    }
+    // A body's content end to end, whatever height the body has now: its padding and the extent of
+    // its in-flow children, margins in. Read off the layout as it stands, so nothing moves and a
+    // body scrolled (or being swiped) keeps its place. Its children sit in elements stacked in flow
+    // and don't stretch (UI-SPEC.md § Markup). A classic scrollbar (Windows) narrows the body and
+    // makes its content taller than it will be once the panel fits it, so it goes for the reading
+    // (overlay scrollbars, the touch screens that swipe, take no room and are left alone)
+    function bodyH(body) {
+        const bar = body.offsetWidth > body.clientWidth;
+        if (bar) body.style.setProperty('overflow', 'hidden');
+        const css = getComputedStyle(body);
+        const kids = [...body.children].filter((n) => { const k = getComputedStyle(n); return k.display !== 'none' && k.position !== 'absolute' && k.position !== 'fixed'; });
+        let h = parseFloat(css.paddingTop) + parseFloat(css.paddingBottom);
+        if (kids.length) {
+            const [a, z] = [kids[0], kids.at(-1)];
+            h += z.getBoundingClientRect().bottom + parseFloat(getComputedStyle(z).marginBottom) - a.getBoundingClientRect().top + parseFloat(getComputedStyle(a).marginTop);
+        }
+        if (bar) body.style.removeProperty('overflow');
+        return h;
     }
     // Keep every panel inside what it can be at this size: the grid's width, then (measured at
     // that width) its own minimum height, head and foot, and one screen; a collapsed one, its head
@@ -147,15 +168,24 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     function defaults() {
         const wide = new Map(panels.map((p) => [p, read(p)]));
         const t = tier();
-        if (t === 'wide') return fit(wide);
+        const media = (p) => p.matches('.panel-media');
+        if (t === 'wide') {
+            // The markup's cells, each row grown to its tallest content where this window wraps it
+            // taller than the cells allow; panels sharing a row's top and height grow together
+            render(wide);
+            const row = (r) => `${r.y}/${r.h}`;
+            const need = new Map();
+            wide.forEach((r, p) => { if (!r.collapsed && !r.hidden && !media(p)) need.set(row(r), Math.max(need.get(row(r)) ?? 0, clamp(contentH(p), minH(p), maxH(p)))); });
+            wide.forEach((r) => { if (!r.collapsed) r.h = Math.max(r.h, need.get(row(r)) ?? 0); });
+            return fit(wide);
+        }
         const order = [...wide].sort(([, a], [, b]) => a.y - b.y || a.x - b.x).map(([p]) => p);
         // Phone: full width. Mid: half the row, or all of it for a panel spanning three quarters or
         // more of the wide row, so every row holds two panels or one; a meme keeps its wide height
-        const media = (p) => p.matches('.panel-media');
         const width = (p) => (t === 'phone' || wide.get(p).w >= cols() * 1.5 ? cols() : Math.floor(cols() / 2));
-        const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false }]));
+        const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false, collapsed: wide.get(p).collapsed }]));
         render(flow); // at their widths, so each body's content wraps the way it will
-        flow.forEach((r, p) => { r.h = t === 'mid' && media(p) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
+        flow.forEach((r, p) => { r.h = r.collapsed ? headRows(p) : t === 'mid' && media(p) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
         // In reading order, each takes the highest free spot, leftmost first
         const placed = [];
         flow.forEach((r) => {
@@ -189,6 +219,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         add.hidden = !panels.some((p) => layout.get(p).hidden);
         reset.hidden = !undo && same(layout, base);
         reset.textContent = undo ? 'Undo reset' : 'Reset layout';
+        if (stale && same(layout, base)) remeasure();
     }
     // A visitor's change: settle it and save it (a board back at its default saves nothing).
     // `back` is what a reset replaced; any other change drops it
@@ -202,7 +233,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     }
     // This size's layout: the default, with the visitor's saved one on top (panels added to the
     // page since keep their default spot). Runs again when the window crosses into another tier
-    function load() {
+    function load(keep = null) {
+        // Measuring renders the markup's cells for a moment, which can clamp a body scrolled
+        // inside: each keeps its place
+        const scrolled = panels.flatMap((p) => { const b = p.querySelector('.panel-body'); return b?.scrollTop ? [[b, b.scrollTop]] : []; });
         key = `board:${board.dataset.board}${tier() === 'wide' ? '' : `:${tier()}`}`;
         base = defaults();
         const next = copy(base);
@@ -215,8 +249,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             });
         }
         render(fit(next));
-        undo = null;
+        undo = keep; // a re-measure right after a Reset keeps Undo on offer (and its focus)
         settle(next);
+        scrolled.forEach(([b, top]) => { if (b.scrollTop !== top) b.scrollTop = top; });
         return !!saved;
     }
 
@@ -268,7 +303,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // While one runs, the page scrolls when the pointer nears the top or bottom of the screen
     // (faster the closer it gets, the same speed at any refresh rate, and on while it rests
     // there), and Escape or a cancelled pointer puts everything back. Only the pointer that
-    // started it drives it
+    // started it drives it. A page with a sticky bar on top says so the standard way
+    // (scroll-padding-top on the root), and the top edge starts below it
     const EDGE = 64;
     // The handle a drag ran from since the last press: the click its release fires is no double-click
     let dragged = null;
@@ -285,8 +321,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         let last = e;
         let scroll = 0;
         let then = 0;
+        const pad = getComputedStyle(document.documentElement).scrollPaddingTop;
+        const top = EDGE + (pad.endsWith('%') ? innerHeight * parseFloat(pad) / 100 : parseFloat(pad) || 0);
         const edge = (now) => {
-            const v = last.clientY < EDGE ? last.clientY - EDGE : Math.max(0, last.clientY - innerHeight + EDGE);
+            const v = last.clientY < top ? last.clientY - top : Math.max(0, last.clientY - innerHeight + EDGE);
             const dt = Math.min(now - (then || now), 50); // ms since the last step
             then = v && now;
             scroll = v && requestAnimationFrame(edge);
@@ -542,7 +580,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         collapse?.addEventListener('click', () => {
             const next = copy(layout);
             const r = next.get(p);
-            if (r.collapsed) Object.assign(r, { h: r.full, collapsed: false, full: undefined });
+            if (r.collapsed) {
+                p.classList.remove('is-collapsed'); // one that started collapsed has no height to go back to: it fits its content
+                Object.assign(r, { h: r.full ?? clamp(contentH(p, true), minH(p), maxH(p)), collapsed: false, full: undefined });
+            }
             else {
                 Object.assign(r, { full: r.h, collapsed: true });
                 p.classList.add('is-collapsed'); // measured as the title bar it becomes
@@ -571,16 +612,33 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     lean.observe(document.body, { attributeFilter: ['class'] });
     leanOut();
 
-    // Default heights are measured from the content, so measure again once the fonts are in,
-    // unless the visitor has already made the layout their own (or is making it now). Crossing
-    // into another tier swaps layouts, ending a gesture first so it can't save into the other one
-    if (!load()) document.fonts?.ready.then(() => { if (reset.hidden && !active) load(); });
+    // Default heights are measured from the content, so measure again once the fonts are in, as
+    // pictures arrive (their load events, caught on the way down) and when the window's width
+    // changes within a tier, unless the visitor has made the layout their own (or is making it
+    // now). Height alone never re-measures: a phone's toolbar hiding mid-scroll mustn't move panels.
+    // Crossing into another tier swaps layouts, ending a gesture first so it can't save into the other one
+    let again, stale = false, width = innerWidth;
+    const remeasure = () => {
+        clearTimeout(again);
+        // Arranged, it waits: settle() asks again once the layout is back at its default
+        again = setTimeout(() => {
+            // Mid-gesture on any board, or a finger resting on a panel (it swells): once it ends
+            if (active || board.querySelector('.is-holding')) return remeasure();
+            stale = !same(layout, base);
+            if (!stale) load(undo);
+        }, 150);
+    };
+    load();
+    document.fonts?.ready.then(remeasure);
+    board.addEventListener('load', remeasure, true);
+    addEventListener('resize', () => { if (innerWidth !== width) { width = innerWidth; remeasure(); } });
     TIERS.forEach((t) => t.mq.addEventListener('change', () => { active?.(); load(); }));
 
     // Reset, then (until the next change) Undo puts the visitor's own layout back
     reset.addEventListener('click', () => {
-        const next = undo ?? copy(base);
-        flip(() => render(next));
+        let next = undo;
+        // A measure skipped while the board was arranged runs now, so Reset lands on today's default
+        flip(() => { if (!next && stale) { stale = false; base = defaults(); } next ??= copy(base); render(next); });
         say(undo ? 'Layout restored' : 'Layout reset');
         commit(next, undo ? null : copy(layout));
         haptic();

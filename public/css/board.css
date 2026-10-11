@@ -1,16 +1,9 @@
 /* ===========================================================
    BOARD: the Doshus UI spec primitives (UI-SPEC.md)
    .board > .panel on a fine grid, placed by data-x/y/w/h, arranged by js/board.js.
-   Every color reads --accent (an L C H triple), set once per scope.
+   Every color reads --accent (an L C H triple), set once per scope. Spacing, radius, type and
+   font scales live in shared.css.
    =========================================================== */
-:root {
-    /* Scales: move to shared.css when a second page adopts the board */
-    --sp-2xs: 0.25rem; --sp-xs: 0.5rem; --sp-s: 0.75rem; --sp-m: 1rem; --sp-l: 1.5rem;
-    --r-s: 8px; --r-m: 10px; --r-l: 14px;
-    --fs-xs: 0.68rem; --fs-s: 0.78rem; --fs-l: 1.4rem;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-    --font-title: 'Shojumaru', system-ui, sans-serif;
-}
 
 /* Accent routing: one attribute picks the accent, everything inside follows */
 [data-accent="finance"]  { --accent: var(--accent-finance); }
@@ -30,7 +23,9 @@
 .board-wrap { max-width: 1440px; margin: 0 auto; padding: var(--sp-m) clamp(1rem, 3vw, 2rem) 6rem;
     position: relative; z-index: 10;
 }
-.board { --accent: var(--accent-crypto); --cols: 24; --row: 2rem; --gutter: 0.5rem;
+/* The default accent, at zero specificity so a data-accent on the board itself wins */
+:where(.board) { --accent: var(--accent-crypto); }
+.board { --cols: 24; --row: 2rem; --gutter: 0.625rem;
     /* Arranging feel, tune here: how strongly the cell field shows and the ghost's fill and
        glow (alphas, 0–1), then how long panels and the ghost glide (in ms; js/board.js reads
        both). The ghost's colors live in .board-ghost, the field's in .board::before */
@@ -81,15 +76,20 @@
     min-height: 2.25rem; /* holds its height while its buttons come and go, so the board never jumps */
     margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); position: relative; z-index: 10;
 }
-/* A bar the page placed itself (data-board-bar) centers in its spot; the page can restyle it */
+/* A bar the page placed itself (data-board-bar) centers in its spot; the page can restyle it.
+   doshus.net homes it at the foot of the hero. A page with a board per slide homes all their
+   bars there and hides all but the showing slide's */
 [data-board-bar].board-bar { justify-content: center; padding: 0; }
+.hero > .board-bar { margin-top: 1.5rem; }
+.board-bar[hidden] { display: none; }
 .board-bar button, .board-menu button {
     font: var(--fs-s) var(--font-mono); color: var(--text-main); cursor: pointer;
     padding: var(--sp-xs) var(--sp-s); border-radius: var(--r-s);
     background: oklch(var(--space-oled) / 0.5); border: 1px solid oklch(var(--accent-crypto) / 0.4);
 }
 .board-bar button:hover, .board-menu button:hover { border-color: oklch(var(--accent-crypto)); }
-.board-menu { padding: var(--sp-m); border-radius: var(--r-l); color: var(--text-main);
+.board-menu { margin: auto; /* a popover centers by margin: auto, which a page's * { margin: 0 } reset zeroes */
+    padding: var(--sp-m); border-radius: var(--r-l); color: var(--text-main);
     background: oklch(var(--space-oled) / 0.85); backdrop-filter: blur(12px);
     border: 1px solid oklch(var(--accent-crypto) / 0.5);
 }
@@ -142,7 +142,7 @@
     background: oklch(var(--accent) / 0.12); border: 1px solid oklch(var(--accent) / 0.4); color: oklch(var(--accent));
 }
 .panel-icon svg { width: 1.4rem; height: 1.4rem; }
-.panel-head h2 { grid-column: 2; font-family: var(--font-title); font-size: clamp(1rem, 0.55rem + 4.75cqi, var(--fs-l));
+.panel-head h2 { grid-column: 2; font-family: var(--font-panel); font-size: clamp(1rem, 0.55rem + 4.75cqi, var(--fs-l));
     line-height: 1; margin: 0; overflow-wrap: anywhere; text-align: start; color: oklch(var(--accent));
 }
 /* The tag and the tools share the head's last slot, so whichever shows, the title keeps its room.
@@ -157,22 +157,35 @@
    containers, not the panel: Chromium 141 drops the layout inside a size container moved by
    moveBefore() */
 .panel-head, .panel-body, .panel-foot { container: panel / inline-size; }
-/* Content scrolls inside, so a panel can be sized smaller than what it holds */
+/* Content scrolls inside, so a panel can be sized smaller than what it holds. The body clips at
+   its top edge, so an open head hands it half its bottom padding: room for a first row's hover
+   lift and focus ring, with the content where it was (collapsed, the bar keeps its padding) */
+.panel:not(.is-collapsed) > .panel-head { padding-bottom: var(--sp-2xs); }
 .panel-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--sp-s);
-    padding: var(--sp-2xs) var(--sp-m) var(--sp-m); position: relative; z-index: 1;
+    padding: var(--sp-xs) var(--sp-m) var(--sp-m); position: relative; z-index: 1;
     scrollbar-width: thin; scrollbar-color: oklch(var(--accent) / 0.45) transparent;
 }
 .panel-body > * { flex: none; }
-.panel-body > p { margin: 0; font-size: var(--fs-s); line-height: 1.55; opacity: 0.8; }
+/* The kit's paragraph: a default, so a page's own class for its text wins */
+:where(.panel-body > p) { margin: 0; font-size: 0.82rem; line-height: 1.55; opacity: 0.8; }
 .panel-foot { display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: var(--sp-s); padding: var(--sp-xs) var(--sp-m);
     border-top: 1px dashed oklch(var(--star-white) / 0.08);
-    font: var(--fs-xs) var(--font-mono); letter-spacing: 0.08em; color: var(--text-muted);
+    font: 0.65rem var(--font-mono); letter-spacing: 0.08em; color: var(--text-muted);
 }
 .panel-foot b { color: oklch(var(--accent)); font-weight: 600; }
 
-/* Media panel: a meme slot main.js fills (it owns the inner div's children) */
-.panel-media > .random-meme-fixed { flex: 1; min-height: 0; border: 0; border-radius: inherit; }
-.panel-media > .random-meme-fixed:hover { transform: none; box-shadow: none; }
+/* Media panel: a meme slot main.js fills (it owns the inner div's children), labeled since it
+   has no head */
+.panel-media > .random-meme-fixed { flex: 1; min-height: 0; position: relative; overflow: hidden; border-radius: inherit;
+    background: oklch(var(--space-oled) / 0.6);
+}
+.panel-media > .random-meme-fixed::before { content: 'MEDIA / NODE'; position: absolute; top: 0.55rem; left: 0.65rem;
+    z-index: 2; pointer-events: none; padding: 2px 6px; border-radius: 4px;
+    font: 0.6rem var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: oklch(var(--accent) / 0.7);
+    background: oklch(var(--space-oled) / 0.55); border: 1px solid oklch(var(--accent) / 0.35); backdrop-filter: blur(4px);
+}
+.panel-media > .random-meme-fixed :is(img, video) { display: block; width: 100%; height: 100%; object-fit: fill; }
+.panel-media > .random-meme-fixed video { object-fit: contain; }
 /* A headless panel's grab bar: an invisible strip over the top-left, stopping short of the
    right edge where a video player keeps its buttons; its tools sit at the strip's end */
 .panel-grab { position: absolute; top: 0; left: 0; z-index: 3; width: max(40%, 100% - 8rem); height: 2.75rem;
@@ -230,27 +243,18 @@
 }
 
 /* ─── CONTENT PRIMITIVES ─── */
-/* group: a titled cluster, e.g. a set of link chips */
+/* group: a titled cluster, e.g. a grid of the site's link buttons (.qlBtns, shared.css) */
 .group { display: grid; gap: var(--sp-xs); padding: var(--sp-s);
     background: oklch(var(--accent) / 0.04); border: 1px solid oklch(var(--accent) / 0.25); border-radius: var(--r-m);
 }
-.group > h3 { margin: 0; font: 600 var(--fs-xs) var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: oklch(var(--accent)); }
+.group > h3 { margin: 0; font: 600 0.72rem var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: oklch(var(--accent)); }
 .group > p { margin: 0; font-size: var(--fs-s); line-height: 1.5; color: var(--text-muted); }
-
-/* chips: a wrap of link buttons */
-.chips { display: flex; flex-wrap: wrap; gap: var(--sp-xs); }
-.chips > a { display: inline-flex; align-items: center; min-height: 2rem; padding: var(--sp-2xs) var(--sp-s);
-    font-size: var(--fs-s); line-height: 1.25; text-decoration: none; color: oklch(var(--accent));
-    background: oklch(var(--accent) / 0.08); border: 1px solid oklch(var(--accent) / 0.3); border-radius: var(--r-s);
-    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.chips > a:hover { background: oklch(var(--accent) / 0.16); border-color: oklch(var(--accent)); box-shadow: 0 5px 15px oklch(var(--accent) / 0.25); }
 
 /* fold: native <details> accordion that eases open */
 .fold { background: oklch(var(--accent) / 0.04); border: 1px solid oklch(var(--accent) / 0.22); border-radius: var(--r-m); }
 .fold > summary { display: flex; justify-content: space-between; cursor: pointer; list-style: none;
     padding: var(--sp-s) var(--sp-m); border-radius: var(--r-m);
-    font: var(--fs-s) var(--font-mono); letter-spacing: 0.04em; color: oklch(var(--accent)); background: oklch(var(--accent) / 0.06);
+    font: 600 var(--fs-s) var(--font-mono); letter-spacing: 0.04em; color: oklch(var(--accent)); background: oklch(var(--accent) / 0.06);
 }
 .fold > summary::-webkit-details-marker { display: none; }
 .fold > summary::after { content: '▾'; transition: rotate 0.3s ease; }
@@ -279,7 +283,7 @@
 
 /* One focus ring for every control in the system */
 .board-bar button:focus-visible, .board-menu button:focus-visible, .panel-tools button:focus-visible,
-.panel-edge:focus-visible, .chips > a:focus-visible, .fold > summary:focus-visible, .tip > a:focus-visible {
+.panel-edge:focus-visible, .fold > summary:focus-visible, .tip > a:focus-visible {
     outline: 2px solid oklch(var(--accent)); outline-offset: 2px; opacity: 1;
 }
 
@@ -290,7 +294,9 @@
     .board { --cols: 12; --min-cols: 4; }
 }
 /* Phones: 4 columns. By default every panel is full width and as tall as its content; half
-   width is the narrowest */
+   width is the narrowest. Stacked panels get twice the air between them (Doshus, 2026-10-10),
+   and the board's side padding gives back the extra, so the panels keep their width */
 @media (max-width: 640px) {
-    .board { --cols: 4; --min-cols: 2; }
+    .board { --cols: 4; --min-cols: 2; --gutter: 1rem; }
+    .board-wrap { padding-inline: 0.5rem; }
 }

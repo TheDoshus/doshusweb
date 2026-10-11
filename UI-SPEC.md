@@ -28,7 +28,7 @@ rules. Hosts are listed under [Implementations](#implementations).
 | `.board[data-board]` | The grid. Its name keys the saved layouts |
 | `.panel[id]` | One widget. `data-x`/`data-y` place it and `data-w`/`data-h` size it, in cells, for the wide layout. The `id` is how a saved layout finds it, so never rename one casually |
 | `data-accent` | Picks the panel's accent from the host's palette; everything in the panel reads `--accent` |
-| `.panel-head` / `-body` / `-foot` | Title row (a grab bar), content that scrolls when the panel is smaller than it, status line. All optional |
+| `.panel-head` / `-body` / `-foot` | Title row (a grab bar), content that scrolls when the panel is smaller than it, status line. All optional. A body's content sits in elements stacked in flow, top to bottom (no bare text, `display: contents`, `order` or reversed flow, auto margins or stretched children): the engine reads the body's height off their extent |
 | `.panel-media` | A headless panel whose content another script owns; it gets a grab strip over its top-left, clear of the player's own buttons |
 
 The markup holds only content. The engine adds every control (grab dots, resize handles, the
@@ -40,20 +40,21 @@ panel's content is sized by the script that owns it), not viewport media queries
 the same: a narrow one drops its icon, and narrower still the title takes a line of its own
 under the controls, so it never gets crushed.
 The board's bar (Add widget, Reset) sits right above the board unless the page gives it a home:
-an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it in the hero).
+an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it in the hero). A page with several boards (Finance Hub's slides) can home all their bars in one spot and show only the current board's: a bar marked `hidden` stays hidden.
 
 ## Layout
 
 - **Three tiers, three layouts.** Wide: 24 columns of 2rem rows. Mid (up to 1080px: foldables
   opened, tablets): 12 columns. Phone (up to 640px): 4 columns. Each tier has its own default
   and its own save, and the board swaps between them live as the window crosses a tier (a
-  foldable opening or closing). The wide default is the markup's cells. The mid default flows
+  foldable opening or closing). The wide default is the markup's cells, each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing; one skipped while the board was arranged runs once it's back at its default), and a panel scrolled inside keeps its place. The mid default flows
   the wide layout onto half the columns: every panel half the row, or all of it if it spans
   three quarters or more of the wide row, so a row holds two panels or one; each as tall as its
   content, media keeping its wide height, in the highest free spot in reading order (a half-width
   panel can fill the gap beside an earlier one, so it may read one place early). The phone
   default stacks every panel full width in the wide reading order, each as tall as its content,
-  media a little over half the screen.
+  media a little over half the screen, with 2rem between panels (the wider tiers keep 1rem) and
+  1.5rem to the screen's edge.
 - **Sizes.** No narrower than `--min-cols` (4 of 24 wide, 4 of 12 mid, 2 of 4 phone), no
   shorter than its head and foot plus a few lines of body, no taller than one screen. Content
   scrolls inside a panel that's smaller than it.
@@ -71,7 +72,8 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
 - **Collapse.** ▾ shrinks a panel to its title bar and back. The title keeps to one line there
   (cut with … when it's long), so the bar is the same height at any width. The space below stays as it was
   (nothing floats up); opening it again pushes down whatever has moved in. A headless media
-  panel has no title bar, so no ▾.
+  panel has no title bar, so no ▾. A page can start a panel collapsed (`data-collapsed`, as a closed fold
+  converts): its `data-h` counts the title bar's rows (what the markup lint checks for overlaps; the engine measures the bar itself), and it opens to fit its content. A panel with no title bar ignores it.
 - **Hide and bring back.** ✕ hides a panel and leaves its gap; Add widget (shown only while a
   panel is hidden) brings it back to its spot. Reset (shown only once the layout differs from
   the default) returns to the default, then offers Undo reset until the next change.
@@ -107,7 +109,8 @@ arrangeable. Customizing is opt-in, never the price of the conversion.
   while it charges) before it lifts, so a swipe that starts on a panel still scrolls the page.
 - **While moving**, the board lights up as a field of cells, a breathing ghost in the panel's
   accent shows where it will land, and the other panels glide out of the way. Near the top or
-  bottom of the screen the page scrolls, faster the closer the pointer gets, and keeps going
+  bottom of the screen (the top measured from under any sticky bar, which the page declares as
+  `scroll-padding-top` on the root) the page scrolls, faster the closer the pointer gets, and keeps going
   while it rests there, at the same speed on any refresh rate. Escape, or the browser cancelling
   the pointer, puts everything back where it was. One gesture at a time: a second finger waits.
 - **Resize** from any edge or corner with a mouse, from one large corner on touch screens
@@ -161,5 +164,5 @@ these or a host stylesheet on top.
 
 | Host | Where | Status |
 |---|---|---|
-| doshus.net | `public/css/board.css` + `public/js/board.js`; proving ground `/lab/nexus` | Reference implementation, signed off by Doshus 2026-10-09 ("this is the spec to keep improvin on"). Site rollout and theming: `BLUEPRINT.md` § Roadmap. Guarded by `bun run check` (board markup lint) and `bun run test` (`tests/board.cjs`, Chromium). Host deltas: the panel's head, body and foot are its size containers, not the panel, since Chromium 141 drops the layout inside a size container moved with `moveBefore()`; `content-visibility: auto` on panels measured 2026-10-10 on /lab/nexus (about 10–15 ms of style work saved per load, and it clips the resize edges), not taken; measure again on a longer page |
+| doshus.net | `public/css/board.css` + `public/js/board.js`; first page on it `/nexus` (2026-10-10), the lab copy it was proven on retired | Reference implementation, signed off by Doshus 2026-10-09 ("this is the spec to keep improvin on"). Site rollout and theming: `BLUEPRINT.md` § Roadmap. Guarded by `bun run check` (board markup lint) and `bun run test` (`tests/board.cjs`, Chromium). Host deltas: the panel's head, body and foot are its size containers, not the panel, since Chromium 141 drops the layout inside a size container moved with `moveBefore()`; `content-visibility: auto` on panels measured 2026-10-10 on /lab/nexus (about 10–15 ms of style work saved per load, and it clips the resize edges), not taken; measure again on a longer page |
 | Aether (OpenClaw mission control) | `projects/aether` in the OpenClaw repo | Planned: the same layout, rebuilt with bun and htmx, with Aether's own look |

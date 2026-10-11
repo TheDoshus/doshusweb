@@ -75,7 +75,7 @@
 .discord-username { display: inline-flex; align-items: center; cursor: pointer; transition: all 0.3s ease;
     gap: 0.5rem;
     padding: 0.7rem 1.2rem;
-    font-family: 'Braah One', system-ui, sans-serif;
+    font-family: var(--font-button);
     font-size: 1rem;
     color: oklch(var(--accent-discord) / 0.95);
     background: oklch(var(--accent-discord) / 0.12);
@@ -146,7 +146,7 @@
 }
 
 .promo-text {
-    font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif; text-align: center;
+    font-family: var(--font-accent); text-align: center;
     font-size: clamp(0.75rem, 6vw, 1.5rem);
     color: oklch(var(--accent-taxes));
     opacity: 0.9;
@@ -316,7 +316,7 @@ button.social-item { cursor: pointer; font: inherit; }
     --pill-accent: var(--accent-taxes);
     --pill-glow: 20px;
     padding: 0.8rem 1.5rem;
-    font-family: 'Braah One';
+    font-family: var(--font-button);
     font-size: clamp(0.9rem, 2.5vw, 1rem);
     background: oklch(var(--pill-accent) / 0.2);
     border: 2px solid oklch(var(--pill-accent) / 0.6);
@@ -446,7 +446,7 @@ button.social-item { cursor: pointer; font: inherit; }
 }
 .credit-card-item img { width: 100%; object-fit: cover; border-radius: 8px; }
 .card-title { display: flex; align-items: center; justify-content: center; text-align: center;
-    font-family: 'Carter One';
+    font-family: var(--font-card);
     font-size: 0.75rem;
     color: oklch(var(--accent-finance));
     font-weight: 600;

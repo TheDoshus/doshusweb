@@ -72,7 +72,7 @@
   pointer-events: none;
 }
 
-.zp-hero h1 { font-family: 'Fugaz One', 'Braah One', system-ui, sans-serif; padding: 10px; }
+.zp-hero h1 { font-family: var(--font-accent); padding: 10px; }
 
 .zp-hero .subtitle {
   cursor: pointer;
@@ -93,7 +93,7 @@
   padding: 0.35rem 0.9rem;
   border-radius: 999px;
   font-size: 0.8rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   background: oklch(var(--brand-teal) / 0.06);
   border: 1px solid oklch(var(--brand-teal) / 0.12);
   color: oklch(var(--brand-teal));
@@ -129,7 +129,7 @@
   gap: 6px;
   font-size: 0.75rem;
   color: var(--text-muted);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   margin-top: 1.5rem;
   position: relative;
 }
@@ -144,14 +144,14 @@
 
 .zp-mood-label {
   font-size: 0.7rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   margin-right: 0.25rem;
 }
 
 .zp-mood-btn {
   border-radius: 999px;
   font-size: 0.75rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   border: 1px solid oklch(var(--brand-teal) / 0.2);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -205,7 +205,7 @@
   border-radius: 0.55rem;
   background: oklch(var(--space-oled) / 0.96);
   color: oklch(var(--brand-teal));
-  font: 700 0.8rem/1 var(--font-mono, monospace);
+  font: 700 0.8rem/1 var(--font-mono);
   transform: translateY(-180%);
   transition: transform 0.2s ease;
 }
@@ -243,7 +243,7 @@
   gap: 0.55rem;
   align-items: center;
   padding-right: 1rem;
-  font: 800 0.72rem/1 var(--font-mono, monospace);
+  font: 800 0.72rem/1 var(--font-mono);
   letter-spacing: 0.13em;
 }
 
@@ -259,7 +259,7 @@
 .zp-profile-status-link {
   padding: 0.68rem 0.72rem;
   border-radius: 0.65rem;
-  font: 650 0.73rem/1 var(--font-mono, monospace);
+  font: 650 0.73rem/1 var(--font-mono);
   letter-spacing: 0.04em;
   transition: color 0.18s ease, background 0.18s ease;
 }
@@ -354,7 +354,7 @@
   border-radius: 999px;
   background: oklch(var(--space-oled) / 0.7);
   color: oklch(var(--zp-state));
-  font: 700 0.65rem/1 var(--font-mono, monospace);
+  font: 700 0.65rem/1 var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -371,7 +371,7 @@
 .zp-deck-eyebrow {
   margin: 0 0 0.75rem;
   color: oklch(var(--zp-state));
-  font: 750 0.7rem/1.4 var(--font-mono, monospace);
+  font: 750 0.7rem/1.4 var(--font-mono);
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
@@ -420,7 +420,7 @@
   padding: 0.8rem 1.15rem;
   border: 1px solid oklch(var(--zp-state) / 0.35);
   border-radius: 0.75rem;
-  font: 750 0.77rem/1 var(--font-mono, monospace);
+  font: 750 0.77rem/1 var(--font-mono);
   letter-spacing: 0.035em;
   text-decoration: none;
   cursor: pointer;
@@ -600,7 +600,7 @@
   border: 1px solid transparent;
   border-radius: 0.65rem;
   color: var(--zp-copy-muted);
-  font: 700 0.72rem/1 var(--font-mono, monospace);
+  font: 700 0.72rem/1 var(--font-mono);
   letter-spacing: 0.04em;
   text-decoration: none;
 }
@@ -674,7 +674,7 @@
 .zp-deck-facts dt,
 .zp-system-facts dt {
   color: var(--zp-copy-muted);
-  font: 700 0.68rem/1.4 var(--font-mono, monospace);
+  font: 700 0.68rem/1.4 var(--font-mono);
   text-transform: uppercase;
 }
 
@@ -706,7 +706,7 @@
 .zp-receipt-row > span,
 .zp-latest-row > time {
   color: oklch(var(--zp-state));
-  font: 750 0.68rem/1.4 var(--font-mono, monospace);
+  font: 750 0.68rem/1.4 var(--font-mono);
 }
 
 .zp-receipt-row strong,
@@ -777,7 +777,7 @@
 .zp-chronicle-entry time {
   padding-top: 0.35rem;
   color: oklch(var(--zp-state));
-  font: 750 0.72rem/1.4 var(--font-mono, monospace);
+  font: 750 0.72rem/1.4 var(--font-mono);
   text-align: right;
 }
 
@@ -819,7 +819,7 @@
 
 .zp-cap-index {
   color: oklch(var(--zp-state));
-  font: 750 0.7rem/1 var(--font-mono, monospace);
+  font: 750 0.7rem/1 var(--font-mono);
 }
 
 .zp-profile-v4 .zp-cap-card h3 {
@@ -864,7 +864,7 @@
 
 .zp-workbench-card span {
   color: oklch(var(--zp-state));
-  font: 700 0.68rem/1 var(--font-mono, monospace);
+  font: 700 0.68rem/1 var(--font-mono);
   text-transform: uppercase;
 }
 
@@ -925,7 +925,7 @@
 
 .zp-loop li > span {
   color: oklch(var(--zp-state));
-  font: 700 0.68rem/1 var(--font-mono, monospace);
+  font: 700 0.68rem/1 var(--font-mono);
 }
 
 .zp-loop strong,
@@ -977,7 +977,7 @@
   display: inline-block;
   margin: 1rem 0.2rem 0.25rem;
   color: oklch(var(--brand-teal));
-  font: 700 0.78rem/1.4 var(--font-mono, monospace);
+  font: 700 0.78rem/1.4 var(--font-mono);
   text-decoration: none;
 }
 
@@ -1011,7 +1011,7 @@
 
 .zp-code-list li > span {
   color: oklch(var(--zp-state));
-  font: 750 0.68rem/1.4 var(--font-mono, monospace);
+  font: 750 0.68rem/1.4 var(--font-mono);
 }
 
 .zp-code-list strong {
@@ -1315,7 +1315,7 @@ body.zp-motion-throttled .zp-hero-bg::before {
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: oklch(78% 0.23 185 / 0.6);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
 }
 
 .zp-daily-quote {
@@ -1328,7 +1328,7 @@ body.zp-motion-throttled .zp-hero-bg::before {
   font-size: 0.85rem;
   color: oklch(78% 0.23 185 / 0.6);
   margin: 0;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
 }
 
 @media (max-width: 700px) {
@@ -1378,7 +1378,7 @@ body.zp-motion-throttled .zp-hero-bg::before {
 .zp-crew-role {
   font-size: 0.8rem;
   color: oklch(78% 0.23 185 / 0.6);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   text-align: center;
 }
 
@@ -1424,7 +1424,7 @@ body.zp-motion-throttled .zp-hero-bg::before {
 }
 
 .zp-service-name {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
 }
 

@@ -595,17 +595,32 @@ async function loadUniversalMemes() {
 window.addEventListener('DOMContentLoaded', loadUniversalMemes);
 
 // ─── UNIVERSAL COLLAPSIBLE SECTIONS & MODALS ───
-// Collapsibles are native <details class="collapse">: the browser opens, closes and announces
+// Folds are native <details class="fold"> (board.css): the browser opens, closes and announces
 // them. `toggle` doesn't bubble, so it's caught on the way down.
 document.addEventListener('toggle', (e) => {
-    if (!e.target.matches?.('.collapse')) return;
+    if (!e.target.matches?.('.fold')) return;
     haptic();
-    // Inside the Finance Hub slider: keep resizing it while the section eases open or closed
-    if (typeof syncSliderHeight !== 'function') return;
-    const easing = new ResizeObserver(() => syncSliderHeight());
-    easing.observe(e.target);
-    setTimeout(() => easing.disconnect(), 600);
 }, true);
+// Where CSS can't ease <details> (no interpolate-size: Firefox, Safari), the Web Animations API
+// does for the board's folds: open at once and grow, or shrink and close at the end.
+// A click mid-flight turns it around from where it is
+if (!CSS.supports('interpolate-size', 'allow-keywords') && !prefersReducedMotion) {
+    const closing = new WeakSet();
+    document.addEventListener('click', (e) => {
+        const summary = e.target.closest?.('details.fold > summary');
+        if (!summary) return;
+        e.preventDefault();
+        const fold = summary.parentElement;
+        const from = fold.getBoundingClientRect().height;
+        fold.getAnimations().forEach((a) => a.cancel());
+        const opening = !fold.open || closing.has(fold);
+        closing.delete(fold);
+        fold.open = true;
+        const to = opening ? fold.offsetHeight : summary.offsetHeight + fold.offsetHeight - fold.clientHeight;
+        const ease = fold.animate({ height: [`${from}px`, `${to}px`], overflow: ['clip', 'clip'] }, { duration: 400, easing: 'ease' });
+        if (!opening) { closing.add(fold); ease.onfinish = () => { closing.delete(fold); fold.open = false; }; }
+    });
+}
 
 // Modals are native <dialog class="srcOverlay">: showModal() brings focus trapping, the Escape
 // key and an inert page behind it for free. The ✕ sits in a <form method="dialog">, which closes

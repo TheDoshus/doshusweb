@@ -33,7 +33,7 @@
     const heroVariant = container.classList.contains('inline-hero');
 
     const link = document.createElement('a');
-    link.href = '/zephyy'; // absolute: the badge also sits on pages in subfolders (/lab)
+    link.href = '/zephyy'; // absolute, so it holds from a page in any folder
     link.target = '_self';
     link.className = 'zephyy-badge-link';
     link.setAttribute('aria-label', `Zephyy: ${isOnline ? 'Online' : 'Offline'} — Click to visit profile`);

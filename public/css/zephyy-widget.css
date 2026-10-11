@@ -14,7 +14,7 @@
   background: oklch(var(--space-oled) / 0.4);
   backdrop-filter: blur(12px);
   border: 1px solid oklch(var(--accent-crypto) / 0.5);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: clamp(0.7rem, 1.8vw, 0.8rem);
   color: var(--text-main);
   transition: all 0.3s ease;

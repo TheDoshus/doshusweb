@@ -98,7 +98,7 @@
     padding: 6px 12px;
     border-radius: 12px;
     font-size: 13px;
-    font-family: 'Nata Sans', system-ui, sans-serif;
+    font-family: var(--font-body, system-ui, sans-serif); /* the Printmon pages have no shared.css */
     font-weight: 600;
     box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3);
     border: 1px solid oklch(52% 0.21 302 / 0.4);

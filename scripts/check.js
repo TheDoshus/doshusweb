@@ -188,7 +188,10 @@ const CHECKS = {
             for (const m of html.matchAll(TAG)) {
                 const [, close, tag, rest] = m;
                 const line = `${rel(f)}:${lineOf(html, m.index)}`;
-                if (close) { if (board && --board.depth === 0) board = null; continue; }
+                // A panel body's content sits in elements: the engine reads its height off theirs
+                if (board?.body && board.body === board.depth && html.slice(board.at, m.index).trim()) problems.push(`${line}: bare text in a panel body (wrap it in an element)`);
+                if (board) board.at = m.index + m[0].length;
+                if (close) { if (board && --board.depth === 0) board = null; else if (board?.depth < board?.body) board.body = 0; continue; }
                 if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
                 const a = attrs(rest);
                 if (!board) {
@@ -198,6 +201,7 @@ const CHECKS = {
                     board = { depth: 1, cells: [] };
                     continue;
                 }
+                if (a.class?.split(/\s+/).includes('panel-body')) board.body = board.depth + 1;
                 if (board.depth++ !== 1 || !a.class?.split(/\s+/).includes('panel')) continue;
                 const id = a.id;
                 if (!id || ids.has(id)) problems.push(`${line}: panel id ${id ? `"${id}" repeats` : 'missing'}`);

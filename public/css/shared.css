@@ -41,8 +41,23 @@
     --accent-myth: var(--brand-red);
     --accent-discord: var(--brand-blurple);
 
-    /* Lets max-height animate to fit-content — makes .collapse actually
-       ease open in supporting browsers (progressive enhancement) */
+    /* ─── SCALES: spacing, radius, type and font stacks (the board's, UI-SPEC.md) ─── */
+    --sp-2xs: 0.25rem; --sp-xs: 0.5rem; --sp-s: 0.75rem; --sp-m: 1rem; --sp-l: 1.5rem;
+    --r-s: 8px; --r-m: 10px; --r-l: 14px;
+    --fs-xs: 0.68rem; --fs-s: 0.78rem; --fs-l: 1.4rem;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-title: 'Shojumaru', system-ui, sans-serif;
+    --font-panel: var(--font-title);  /* a board panel's title (Finance Hub keeps its own header styles) */
+    --font-accent: 'Fugaz One', system-ui, sans-serif;  /* link buttons, display names */
+    --font-body: 'Nata Sans', system-ui, sans-serif;
+    --font-button: 'Braah One', system-ui, sans-serif;  /* buttons, fold bars */
+    --font-h3: 'Jaro Regular-var', system-ui, sans-serif;
+    --font-h1: 'Chango', cursive, system-ui, sans-serif;
+    --font-hero: 'Mouse Memoirs', system-ui, sans-serif;  /* a hero's tagline */
+    --font-card: 'Carter One', system-ui, sans-serif;  /* card titles, call-to-action buttons */
+
+    /* Lets sizes ease to and from auto, so the board's folds (.fold) ease open where the browser
+       can; main.js eases them elsewhere */
     interpolate-size: allow-keywords;
 }
 /* SELF-HOSTED FONTS */
@@ -63,7 +78,7 @@
 @font-face {
     font-family: 'Nata Sans';
     src: url('../assets/fonts/NataSans-VariableFont_wght.woff2') format('woff2');
-    font-weight: 400;
+    font-weight: 100 900; /* a variable font: bold and semibold are its own weights, not synthesized */
     font-style: normal;
     font-display: swap;
 }
@@ -130,6 +145,15 @@
     font-style: normal;
     font-display: swap;
 }
+/* JetBrains Mono 2.304 (SIL OFL 1.1, its license kept in the file's name table), its variable
+   weights, trimmed to Latin, punctuation, arrows, ⌘, box drawing and checks (52 KB) */
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('../assets/fonts/JetBrainsMono-VariableFont_wght-2.woff2') format('woff2');
+    font-weight: 100 800;
+    font-style: normal;
+    font-display: swap;
+}
 
 /* Defaults */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -137,22 +161,22 @@
 a, button, [role="button"], label, summary { -webkit-tap-highlight-color: transparent; }
 
 body { position: relative; min-height: 100vh; background: oklch(var(--space-oled)); 
-    font-family: 'Nata Sans', system-ui, sans-serif;
+    font-family: var(--font-body);
     color: var(--text-main);
     overflow-x: clip;
 }
-button, .collapseBtn {
-    font-family: 'Braah One', system-ui, sans-serif;
+button {
+    font-family: var(--font-button);
 }
 h1 {
-    font-family: 'Chango', cursive, system-ui, sans-serif;
+    font-family: var(--font-h1);
 }
 h2 {
-    font-family: 'Shojumaru', system-ui, sans-serif;
+    font-family: var(--font-title);
     font-size: 2rem;
 }
 h3 {
-    font-family: 'Jaro Regular-var', system-ui, sans-serif;
+    font-family: var(--font-h3);
 }
 h1, h2, h3 { text-wrap: balance; }
 
@@ -227,14 +251,14 @@ h1, h2, h3 { text-wrap: balance; }
     50% { filter: drop-shadow(0 0 40px oklch(var(--accent-lounge) / 0.45)); }
 }
 .hero p { opacity: 0.9;
-    font-family: 'Mouse Memoirs';
+    font-family: var(--font-hero);
     font-size: clamp(1.6rem, 4vw, 2.6rem);
     margin-bottom: 2rem;
 }
 
 .cta-button { 
     cursor: pointer; text-decoration: none; border-radius: 50px; padding: 1rem 2rem;
-    font-family: 'Carter One';
+    font-family: var(--font-card);
     font-size: clamp(1rem, 3vw, 1.1rem);
     background: oklch(var(--accent-crypto) / 0.2);
     border: 2px solid oklch(var(--accent-crypto));
@@ -248,26 +272,6 @@ h1, h2, h3 { text-wrap: balance; }
     transform: translateY(-3px);
 }
 
-/* ─── UNIVERSAL COLLAPSIBLE SECTIONS: native <details class="collapse"><summary class="collapseBtn"> ─── */
-.collapse { background: oklch(var(--accent-finance) / 0.03); border: 1px solid oklch(var(--accent-finance) / 0.15); transition: all 0.3s ease; overflow: hidden;
-    border-radius: 12px;
-}
-.collapseBody { padding: 1rem 1.5rem 1.5rem 1.5rem; }
-.collapseBtn { width: 100%; background: oklch(var(--accent-finance) / 0.05); border: none; color: oklch(var(--accent-finance)); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease;
-    list-style: none;
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    gap: 0.5rem;
-}
-.collapseBtn::-webkit-details-marker { display: none; }
-.collapseBtn:hover { background: oklch(var(--accent-finance) / 0.1); }
-.collapse[open] { overflow: visible; }
-.collapse[open] .toggle-arrow { transform: rotate(180deg); }
-.toggle-arrow { transition: transform 0.3s ease; font-size: 0.9rem; }
-/* Eases open where the browser can animate <details> (interpolate-size on :root); opens instantly elsewhere */
-.collapse::details-content { block-size: 0; overflow: clip; transition: block-size 0.4s ease, content-visibility 0.4s allow-discrete; }
-.collapse[open]::details-content { block-size: auto; }
 
 /* Content Section */
 .content-section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -329,30 +333,31 @@ h1, h2, h3 { text-wrap: balance; }
     opacity: 0.9;
 }
 
-.qlBtns { display: grid;
+/* Link buttons: one style site-wide. A board panel's accent colors them (--accent), finance green elsewhere */
+.qlBtns { display: grid; --btn-accent: var(--accent, var(--accent-finance));
     grid-template-columns: repeat(3, minmax(125px, 1fr));
     gap: 1rem;
-    font-family: 'Fugaz One';
+    font-family: var(--font-accent);
 }
-.quickLinks .qlBtn { text-decoration: none; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+.qlBtns > .qlBtn { text-decoration: none; text-align: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     padding: 1.2rem 0.8rem;
-    background: oklch(var(--accent-finance) / 0.08);
-    border: 2px solid oklch(var(--accent-finance) / 0.25); border-radius: 12px;
-    color: oklch(var(--accent-finance));
+    background: oklch(var(--btn-accent) / 0.08);
+    border: 2px solid oklch(var(--btn-accent) / 0.25); border-radius: 12px;
+    color: oklch(var(--btn-accent));
     font-size: 0.85rem; font-weight: 600;
     
     /* Flex setup for internal alignment */
     display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;
     gap: 0.6rem;
 }
-.quickLinks .qlBtn:hover {
-    background: oklch(var(--accent-finance) / 0.15);
-    border-color: oklch(var(--accent-finance));
-    color: oklch(var(--accent-finance) / 0.8); /* Slight color pop on hover */
+.qlBtns > .qlBtn:hover {
+    background: oklch(var(--btn-accent) / 0.15);
+    border-color: oklch(var(--btn-accent));
+    color: oklch(var(--btn-accent) / 0.8); /* Slight color pop on hover */
     transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 10px 25px oklch(var(--accent-finance) / 0.25);
+    box-shadow: 0 10px 25px oklch(var(--btn-accent) / 0.25);
 }
-.quickLinks .qlBtn:active {
+.qlBtns > .qlBtn:active {
     transform: translateY(0) scale(0.98);
     box-shadow: inset 0 2px 10px oklch(var(--space-oled) / 0.2);
 }
@@ -433,6 +438,10 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 /* Tab & Phone Optimizations */
+/* In a board panel the grid answers to the panel's width, not the window's */
+@container panel (max-width: 26rem) { .qlBtns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container panel (max-width: 14rem) { .qlBtns { grid-template-columns: 1fr; } }
+
 @media (max-width: 900px) {
     h2 { text-align: center; }
     .content-section { padding: 3rem 0.5rem; }
@@ -440,7 +449,7 @@ h1, h2, h3 { text-wrap: balance; }
     .finance-box h2 { margin-bottom: 1rem; }
     .quickLinks { flex-direction: column; }
     .qlBtns { flex-direction: column; }
-    .quickLinks .qlBtn { width: 100%; }
+    .qlBtns > .qlBtn { width: 100%; }
     .error-actions { flex-direction: column; width: 100%; max-width: 300px; }
     .error-button { width: 100%; }
 }
@@ -486,7 +495,7 @@ h1, h2, h3 { text-wrap: balance; }
     gap: 0.25rem;
 }
 .discord-server-name { margin: 0;
-    font-family: 'Braah One', system-ui, sans-serif;
+    font-family: var(--font-button);
     font-size: clamp(1.1rem, 3vw, 1.4rem);
     color: oklch(var(--accent-discord) / 0.95);
 }
@@ -506,7 +515,7 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 .discord-join { margin-left: auto; text-decoration: none; white-space: nowrap; transition: all 0.3s ease;
-    font-family: 'Carter One', 'Braah One', system-ui, sans-serif;
+    font-family: var(--font-card);
     font-size: clamp(0.9rem, 2.5vw, 1rem);
     color: var(--text-main);
     background: oklch(var(--accent-discord) / 0.2);
