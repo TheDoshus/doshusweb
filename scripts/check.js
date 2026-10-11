@@ -235,6 +235,7 @@ const CHECKS = {
                     board.cells[tier].push({ id, x, y, w, h });
                 }
             }
+            if (board) problems.push(`${rel(f)}: a board is never closed (the file ends inside it)`);
         }
         return problems;
     },

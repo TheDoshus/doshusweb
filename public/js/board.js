@@ -187,6 +187,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const wide = new Map(panels.map((p) => [p, read(p)]));
         const t = tier();
         const media = (p) => p.matches('.panel-media');
+        // A meme, or a list marked data-scroll (a window onto what it holds, as tall as its cells, the
+        // rest scrolling inside), keeps its height: only what the panel holds in full is measured
+        const kept = (p) => media(p) || 'scroll' in p.dataset;
         const own = t === 'wide' ? wide : cellsIn(t);
         if (own) {
             // The markup's cells, each row grown to its tallest content where this window wraps it
@@ -194,7 +197,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             render(own);
             const row = (r) => `${r.y}/${r.h}`;
             const need = new Map();
-            own.forEach((r, p) => { if (!r.collapsed && !r.hidden && !media(p)) need.set(row(r), Math.max(need.get(row(r)) ?? 0, clamp(contentH(p), minH(p), maxH(p)))); });
+            own.forEach((r, p) => { if (!r.collapsed && !r.hidden && !kept(p)) need.set(row(r), Math.max(need.get(row(r)) ?? 0, clamp(contentH(p), minH(p), maxH(p)))); });
             own.forEach((r) => { if (!r.collapsed) r.h = Math.max(r.h, need.get(row(r)) ?? 0); });
             return fit(own);
         }
@@ -204,7 +207,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const width = (p) => (t === 'phone' || wide.get(p).w >= cols() * 1.5 ? cols() : Math.floor(cols() / 2));
         const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false, collapsed: wide.get(p).collapsed }]));
         render(flow); // at their widths, so each body's content wraps the way it will
-        flow.forEach((r, p) => { r.h = r.collapsed ? headRows(p) : t === 'mid' && media(p) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
+        flow.forEach((r, p) => { r.h = r.collapsed ? headRows(p) : (t === 'mid' && media(p)) || (kept(p) && !media(p)) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
         // In reading order, each takes the highest free spot, leftmost first
         const placed = [];
         flow.forEach((r) => {

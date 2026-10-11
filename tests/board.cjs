@@ -801,7 +801,7 @@ const TESTS = {
             for (let width = 1920; width >= 320; width -= 40) {
                 await page.setViewportSize({ width, height: 1000 });
                 await sleep(350); // past the re-measure's debounce
-                over.push(...await page.evaluate((width) => [...document.querySelectorAll('.board > .panel:not(.panel-media):not(.is-collapsed):not([hidden])')].flatMap((p) => {
+                over.push(...await page.evaluate((width) => [...document.querySelectorAll('.board > .panel:not(.panel-media):not([data-scroll]):not(.is-collapsed):not([hidden])')].flatMap((p) => {
                     const b = p.querySelector('.panel-body'), row = parseFloat(getComputedStyle(p.parentElement).gridAutoRows);
                     const capped = +p.style.getPropertyValue('--h') >= Math.floor(innerHeight / row);
                     return b && !capped && b.scrollHeight > b.clientHeight ? [`${width}px ${p.id} +${b.scrollHeight - b.clientHeight}`] : [];
@@ -1185,12 +1185,13 @@ const TESTS = {
     async 'on a tall board, a resize while the panel still glides carries on from where it is'(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html', motion: 'no-preference' });
         await center(page, 'sandspiel');
-        await page.focus('#sandspiel .panel-edge[data-dir="se"]');
-        await page.keyboard.press('ArrowLeft');
-        await sleep(100);
-        const before = await page.evaluate(() => document.getElementById('sandspiel').getBoundingClientRect().width);
-        await page.keyboard.press('ArrowLeft');
-        const after = await page.evaluate(() => document.getElementById('sandspiel').getBoundingClientRect().width);
+        // Both presses and both readings in the page, so a busy machine can't stretch the gap between them
+        const [before, after] = await page.evaluate(() => new Promise((done) => {
+            const corner = document.querySelector('#sandspiel .panel-edge[data-dir="se"]'), width = () => document.getElementById('sandspiel').getBoundingClientRect().width;
+            const press = () => corner.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true }));
+            press();
+            setTimeout(() => { const a = width(); press(); done([a, width()]); }, 100);
+        }));
         assert.ok(Math.abs(after - before) < 8, `it jumped ${Math.round(before - after)}px`);
         return errors;
     },
@@ -1253,7 +1254,8 @@ const TESTS = {
         return errors;
     },
     async 'a clear board shows the sky at rest, a frame when a panel is reached for, and a glow while one is held'(browser) {
-        const { ctx, page, errors } = await open(browser, { viewport: { width: 1300, height: 900 }, hasTouch: true }, { path: '/thelounge.html' });
+        const { ctx, page, errors } = await open(browser, { viewport: { width: 1300, height: 900 }, isMobile: true, hasTouch: true }, { path: '/thelounge.html' });
+        assert.equal(await page.evaluate(() => matchMedia('(hover: none)').matches), true, 'not a touch screen');
         await center(page, 'game');
         const look = () => page.evaluate(() => { const s = getComputedStyle(document.getElementById('game')); return { fill: s.backgroundColor, border: s.borderTopColor, glow: s.boxShadow }; });
         await page.mouse.move(2, 2);
@@ -1261,10 +1263,15 @@ const TESTS = {
         const rest = await look();
         assert.match(rest.fill, /\/ 0\)$|, 0\)$|transparent/, `a fill at rest: ${rest.fill}`);
         assert.match(rest.border, /\/ 0\)$|, 0\)$|transparent/, `a frame at rest: ${rest.border}`);
+        // At rest on a touch screen the controls and grab dots are faint
+        const faint = await page.evaluate(() => ['.panel-tools', '.panel-edge[data-dir="se"]'].map((q) => getComputedStyle(document.querySelector(`#game ${q}`)).opacity).concat(getComputedStyle(document.querySelector('#game .panel-dots'), '::before').opacity));
+        assert.deepEqual(faint, ['0.35', '0.35', '0.35'], 'touch controls at rest');
+        // A tap leaves no frame (its hover would stick)
         const head = await page.locator('#game .panel-head').boundingBox();
-        await page.mouse.move(head.x + 300, head.y + 20); // on a touch screen, no hover frame: a tap would leave it stuck
+        await page.touchscreen.tap(head.x + 300, head.y + 20);
         await settled(page.locator('#game'), false);
         const hovered = await look();
+        assert.match(hovered.border, /\/ 0\)$|, 0\)$|transparent/, `a frame left by a tap: ${hovered.border}`);
         // A finger resting on the head: the panel charges a glow as it swells
         const cdp = await ctx.newCDPSession(page);
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: head.x + 300, y: head.y + 20 }] });
@@ -1275,6 +1282,24 @@ const TESTS = {
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
         assert.ok(held, 'the hold never began');
         assert.ok(glow !== 'none' && glow !== hovered.glow, `no glow of its own while held: ${glow}`);
+        return errors;
+    },
+    async "a list panel (data-scroll) keeps its cells' height, shows more when made taller, and Fit shows it all"(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
+        await center(page, 'sites-fun');
+        const look = () => page.evaluate(() => { const p = document.getElementById('sites-fun'), b = p.querySelector('.panel-body'), box = b.getBoundingClientRect();
+            return { h: +p.style.getPropertyValue('--h'), over: b.scrollHeight - b.clientHeight, shown: [...b.querySelectorAll('.site-link')].filter((a) => a.getBoundingClientRect().top < box.bottom).length }; });
+        const start = await look();
+        assert.equal(start.h, await page.evaluate(() => +document.getElementById('sites-fun').dataset.h), 'grown past its cells');
+        assert.ok(start.over > 0, 'it holds no more than it shows');
+        await page.focus('#sites-fun .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowDown');
+        await frames(page);
+        const taller = await look();
+        assert.ok(taller.shown > start.shown, `taller, it shows ${taller.shown} links (${start.shown} before)`);
+        await page.keyboard.press('Enter'); // Fit: everything it holds
+        await frames(page);
+        assert.ok((await look()).over <= 1, 'Fit leaves links scrolled out of view');
         return errors;
     },
     async "a finger resting on a panel's title, wobbling as fingers do, still lifts it"(browser) {
@@ -1339,6 +1364,44 @@ const TESTS = {
         assert.equal(await page.evaluate(() => scrollY), 0);
         assert.equal(await page.evaluate(() => document.getElementById('sites-stats').hidden), false, 'it came back');
         return errors;
+    },
+    async "Lounge: a collapsed section's title is cut short of its controls on a phone"(browser) {
+        const all = [];
+        for (const opts of [SMALL, PHONE]) {
+            const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
+            all.push(...errors);
+            const ids = await page.evaluate(() => [...document.querySelectorAll('.section-panel')].map((p) => p.id));
+            for (const id of ids) await page.evaluate((id) => document.querySelector(`#${id} .panel-collapse`).click(), id);
+            await frames(page);
+            const hit = await page.evaluate((ids) => ids.flatMap((id) => {
+                const head = document.querySelector(`#${id} .panel-head`), t = head.querySelector('h2').getBoundingClientRect(), tools = head.querySelector('.panel-tools').getBoundingClientRect();
+                return t.right > tools.left + 1 || head.scrollWidth > head.clientWidth + 1 ? [`${id}: title to ${Math.round(t.right)}, tools from ${Math.round(tools.left)}`] : [];
+            }), ids);
+            assert.deepEqual(hit, [], `${opts.viewport.width}px`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async "Lounge: nothing scrolls sideways or spills its card at any width, and the grids take the old page's columns"(browser) {
+        const all = [];
+        // The old page's columns (picks, games, each category's links) where the board must match them
+        const old = { 1440: '4 3 311334', 1080: '2 4 242424', 901: '2 4 232323', 800: '2 4 131313', 725: '2 2 111111', 390: '2 2 111111' };
+        const { ctx, page, errors } = await open(browser, { viewport: { width: 1440, height: 800 } }, { path: '/thelounge.html' });
+        all.push(...errors);
+        for (const width of [320, 360, 390, 520, 640, 641, 700, 725, 726, 730, 736, 737, 746, 800, 901, 1000, 1080, 1081, 1136, 1137, 1280, 1440, 1920]) {
+            await page.setViewportSize({ width, height: 800 });
+            await sleep(350);
+            const got = await page.evaluate(() => {
+                const cols = (q) => getComputedStyle(q).gridTemplateColumns.split(' ').length;
+                const side = [...document.querySelectorAll('.panel-body')].filter((b) => b.scrollWidth > b.clientWidth + 1).map((b) => b.parentElement.id);
+                const spill = [...document.querySelectorAll('.favorite-card, .game-card')].filter((c) => { const r = c.getBoundingClientRect(); return [...c.children].some((k) => { const q = k.getBoundingClientRect(); return q.left < r.left - 0.5 || q.right > r.right + 0.5; }); }).map((c) => c.textContent.trim().split('\n')[0]);
+                return { side, spill, cols: `${cols(document.querySelector('.favorites-grid'))} ${cols(document.querySelector('.gaming-grid'))} ${[...document.querySelectorAll('.category-links')].map(cols).join('')}` };
+            });
+            assert.deepEqual([got.side, got.spill], [[], []], `${width}px: sideways or spilling`);
+            if (old[width]) assert.equal(got.cols, old[width], `${width}px: columns`);
+        }
+        await ctx.close();
+        return all;
     },
     async 'Lounge: a section or category title centers on its panel, clear of the tools, at any width'(browser) {
         const all = [];
