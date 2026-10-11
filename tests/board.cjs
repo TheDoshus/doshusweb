@@ -1149,12 +1149,13 @@ const TESTS = {
     },
     async 'a page that lays out a smaller tier itself gets those cells there, each grown to its content'(browser) {
         const all = [];
-        for (const [opts, tier] of [[FOLD, 'mid'], [PHONE, 'phone']]) {
+        // At the windows the Lounge's cells were measured for (a game frame is 60% of a phone's height)
+        for (const [opts, tier] of [[{ ...FOLD, viewport: { width: 901, height: 700 } }, 'mid'], [{ ...PHONE, viewport: { width: 390, height: 700 } }, 'phone']]) {
             const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
             all.push(...errors);
             const off = await page.evaluate((tier) => [...document.querySelectorAll('.board > .panel')].flatMap((p) => {
                 const want = p.dataset[tier].split(' ').map(Number), got = ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k));
-                return got.slice(0, 3).join() === want.slice(0, 3).join() && got[3] >= want[3] ? [] : [`${p.id} ${want} → ${got}`];
+                return got.join() === want.join() ? [] : [`${p.id} ${want} → ${got}`]; // measured at this width, so exactly
             }), tier);
             assert.deepEqual(off, [], `${tier}`);
             await page.context().close();
@@ -1162,10 +1163,93 @@ const TESTS = {
         return all;
     },
     async "on a tall board a panel is as tall as what it holds, past one screen, so nothing scrolls inside it"(browser) {
-        const { page, errors } = await open(browser, PHONE, { path: '/thelounge.html' });
-        const picks = await page.evaluate(() => { const p = document.getElementById('picks'), b = p.querySelector('.panel-body'); return { tall: p.offsetHeight > innerHeight, over: b.scrollHeight - b.clientHeight }; });
-        assert.ok(picks.tall, 'Picks is no taller than the screen');
-        assert.ok(picks.over <= 1, `Picks scrolls ${picks.over}px inside`);
+        const all = [];
+        for (const opts of [PHONE, { ...FOLD, viewport: { width: 901, height: 700 } }]) {
+            const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
+            all.push(...errors);
+            const picks = await page.evaluate(() => { const p = document.getElementById('picks'), b = p.querySelector('.panel-body'); return { tall: p.offsetHeight > innerHeight, over: b.scrollHeight - b.clientHeight }; });
+            assert.ok(picks.tall, `${opts.viewport.width}px: Picks is no taller than the screen`);
+            assert.ok(picks.over <= 1, `${opts.viewport.width}px: Picks scrolls ${picks.over}px inside`);
+            // Hidden, then the page reloaded, then brought back: still as tall as what it holds
+            await page.evaluate(() => document.querySelector('#picks .panel-close').click());
+            await page.reload({ waitUntil: 'load' });
+            await sleep(600);
+            await page.evaluate(() => [...document.querySelectorAll('.board-menu button')].find((b) => b.textContent.includes('Picks')).click());
+            await sleep(300);
+            const back = await page.evaluate(() => { const b = document.querySelector('#picks .panel-body'); return b.scrollHeight - b.clientHeight; });
+            assert.ok(back <= 1, `${opts.viewport.width}px: brought back after a reload, Picks scrolls ${back}px inside`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async 'on a tall board, a resize while the panel still glides carries on from where it is'(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html', motion: 'no-preference' });
+        await center(page, 'sandspiel');
+        await page.focus('#sandspiel .panel-edge[data-dir="se"]');
+        await page.keyboard.press('ArrowLeft');
+        await sleep(100);
+        const before = await page.evaluate(() => document.getElementById('sandspiel').getBoundingClientRect().width);
+        await page.keyboard.press('ArrowLeft');
+        const after = await page.evaluate(() => document.getElementById('sandspiel').getBoundingClientRect().width);
+        assert.ok(Math.abs(after - before) < 8, `it jumped ${Math.round(before - after)}px`);
+        return errors;
+    },
+    async 'Lounge: the hero sits where it did, the bar under it taking none of its room, and a #link lands with room above'(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
+        const top = () => page.evaluate(() => document.querySelector('.hero h1').getBoundingClientRect().top);
+        const withBar = await top();
+        await page.evaluate(() => document.querySelector('[data-board-bar="lounge"]').style.setProperty('display', 'none'));
+        assert.equal(withBar, await top(), 'the bar moves the hero');
+        await page.goto(base + '/thelounge.html#discord', { waitUntil: 'load' });
+        await sleep(400);
+        const room = await page.evaluate(() => document.querySelector('#discord .section-title').getBoundingClientRect().top);
+        assert.ok(room >= 48, `#discord's title lands ${Math.round(room)}px from the top`);
+        return errors;
+    },
+    async "a malformed smaller tier's cells flow that tier instead"(browser) {
+        // Spoilt as the parser adds it, before board.js reads it
+        const { page, errors } = await open(browser, FOLD, { path: '/thelounge.html', init: () => {
+            new MutationObserver((_, o) => { const d = document.getElementById('discord'); if (d) { d.setAttribute('data-mid', '1 2 12'); o.disconnect(); } }).observe(document, { childList: true, subtree: true });
+        } });
+        const bad = await page.evaluate(() => [...document.querySelectorAll('.board > .panel')].filter((p) => ['x', 'y', 'w', 'h'].some((k) => !(+p.style.getPropertyValue('--' + k) > 0))).map((p) => p.id));
+        assert.deepEqual(bad, [], 'cells that are not numbers');
+        const half = await page.evaluate(() => ['sites-mind-bending', 'sites-archives'].map((id) => +document.getElementById(id).style.getPropertyValue('--w')));
+        assert.deepEqual(half, [6, 6], 'the tier did not flow');
+        return errors;
+    },
+    async "a clear board frames a hovered panel, leaves nothing behind a click, hides its grab dots at rest, and a carried panel the page dressed still glows"(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
+        const state = (id) => page.evaluate((id) => { const p = document.getElementById(id), s = getComputedStyle(p);
+            return { border: s.borderTopColor, glow: s.boxShadow, tools: getComputedStyle(p.querySelector('.panel-tools')).opacity, dots: getComputedStyle(p.querySelector('.panel-dots'), '::before').opacity }; }, id);
+        await center(page, 'interesting');
+        await page.click('#interesting .filter-btn[data-category="all"]'); // a click: focus without a visible ring
+        await page.mouse.move(2, 2);
+        await settled(page.locator('#interesting'), true);
+        const after = await state('interesting');
+        assert.match(after.border, /\/ 0\)$|, 0\)$|transparent/, `a frame left behind by a click: ${after.border}`);
+        assert.equal(after.tools, '0', 'controls left behind by a click');
+        assert.equal(after.dots, '0', 'grab dots at rest');
+        const head = await page.locator('#interesting .panel-head').boundingBox();
+        await page.mouse.move(head.x + 200, head.y + 20);
+        await settled(page.locator('#interesting'), true);
+        const hovered = await state('interesting');
+        assert.doesNotMatch(hovered.border, /\/ 0\)$|, 0\)$|transparent/, 'no frame when hovered');
+        assert.equal(hovered.tools, '1', 'no controls when hovered');
+        await page.mouse.move(2, 2);
+        // Carried, a box the page dressed (a category, a meme) takes the board's full border and glow
+        for (const id of ['sites-weird', 'meme-3']) {
+            await center(page, id);
+            const box = await page.locator(`#${id}`).boundingBox();
+            await page.mouse.move(box.x + 60, box.y + 14);
+            await page.mouse.down();
+            await page.mouse.move(box.x + 70, box.y + 24);
+            await page.mouse.move(box.x + 90, box.y + 60, { steps: 4 });
+            const held = await state(id);
+            await page.keyboard.press('Escape');
+            await page.mouse.up();
+            assert.match(held.glow, /0px 0px 0px 2px/, `${id}: no ring while carried: ${held.glow}`);
+            assert.doesNotMatch(held.border, /\/ 0\.\d+\)$/, `${id}: a faint border while carried: ${held.border}`);
+        }
         return errors;
     },
     async 'a clear board shows the sky at rest, a frame when a panel is reached for, and a glow while one is held'(browser) {
@@ -1178,10 +1262,9 @@ const TESTS = {
         assert.match(rest.fill, /\/ 0\)$|, 0\)$|transparent/, `a fill at rest: ${rest.fill}`);
         assert.match(rest.border, /\/ 0\)$|, 0\)$|transparent/, `a frame at rest: ${rest.border}`);
         const head = await page.locator('#game .panel-head').boundingBox();
-        await page.mouse.move(head.x + 300, head.y + 20);
+        await page.mouse.move(head.x + 300, head.y + 20); // on a touch screen, no hover frame: a tap would leave it stuck
         await settled(page.locator('#game'), false);
         const hovered = await look();
-        assert.doesNotMatch(hovered.border, /\/ 0\)$|, 0\)$|transparent/, 'no frame when hovered');
         // A finger resting on the head: the panel charges a glow as it swells
         const cdp = await ctx.newCDPSession(page);
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: head.x + 300, y: head.y + 20 }] });
@@ -1277,6 +1360,8 @@ const TESTS = {
                 const one = r.getBoundingClientRect().width;
                 t.style.removeProperty('white-space');
                 if (room <= 512 && one <= room && lines > 1) out.push(`${id}: ${lines} lines though ${Math.round(one)}px fits in ${Math.round(room)}px`);
+                // A section's title is as wide as its words, so its gradient runs across them
+                if (t.matches('.section-title') && lines === 1 && t.getBoundingClientRect().width - text.width > 2) out.push(`${id}: title ${Math.round(t.getBoundingClientRect().width)}px wide for ${Math.round(text.width)}px of words`);
                 return out;
             }));
             assert.deepEqual(off, [], `${opts.viewport.width}px: ${off.join('; ')}`);

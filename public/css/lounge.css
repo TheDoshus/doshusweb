@@ -2,9 +2,16 @@
    and each section sits where it did before, as it looked. A section panel lays its content out as
    the section did (centered, each block its own width); a category box and a meme slot are panels
    dressed as their boxes were. Defaults per tier mirror the page before (data-mid / data-phone) ─── */
+/* The board's edges where the sections' content was: 1400px at most, 2rem in (1rem on phones,
+   where the board's own gutter is wider); the hero's bar takes no room from its centering */
+.board-wrap { max-width: 1400px; padding-inline: 1.375rem; }
+@media (max-width: 640px) { .board-wrap { padding-inline: 0; } }
+.hero > .board-bar { margin-bottom: -3.75rem; }
+.panel.section-panel { scroll-margin-top: 4.5rem; } /* a #link lands with the room it had */
 .panel.section-panel > .panel-head { padding: 0.25rem 0.5rem 0; }
 .panel.section-panel > .panel-body { align-items: center; gap: 0; padding: 1rem 0.25rem 0; }
-.panel-head > .section-title { font-size: clamp(2rem, 5.5cqi, 3rem); line-height: 1.2; text-align: center;
+.panel-head > .section-title { justify-self: center; /* as wide as its words, so its gradient runs across them */
+    font-size: clamp(2rem, 5.5cqi, 3rem); line-height: 1.2; text-align: center;
     background: linear-gradient(45deg, oklch(var(--accent-amzn) / 0.85), oklch(var(--accent-crypto) / 0.75), oklch(var(--accent-myth) / 0.9));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -141,7 +148,9 @@
     border-radius: 15px;
     backdrop-filter: blur(5px);
 }
-.panel.category-box:is(:hover, :focus-within, .is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent-crypto) / 0.7); }
+/* Reached for, as board.css's clear surface has it; held or carried, the board's glow and a full border */
+.panel.category-box:has(:focus-visible) { border-color: oklch(var(--accent-crypto) / 0.7); }
+@media (hover: hover) { .panel.category-box:hover { border-color: oklch(var(--accent-crypto) / 0.7); } }
 .panel.category-box > .panel-head { padding: 1.5rem 1.5rem 0; }
 .panel.category-box > .panel-body { gap: 0; padding: 1rem 1.5rem; }
 .category-box.hidden { visibility: hidden; pointer-events: none; }
@@ -203,7 +212,9 @@
     border-radius: 15px;
     padding: 0.5rem;
 }
-.panel.panel-media:is(:hover, :focus-within, .is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent-lounge) / 0.7); box-shadow: 0 10px 30px oklch(var(--accent-lounge) / 0.4); }
+.panel.panel-media:not(.is-holding, .is-dragging, .is-resizing):has(:focus-visible) { border-color: oklch(var(--accent-lounge) / 0.7); box-shadow: 0 10px 30px oklch(var(--accent-lounge) / 0.4); }
+@media (hover: hover) { .panel.panel-media:not(.is-holding, .is-dragging, .is-resizing):hover { border-color: oklch(var(--accent-lounge) / 0.7); box-shadow: 0 10px 30px oklch(var(--accent-lounge) / 0.4); } }
+.panel:is(.category-box, .panel-media):is(.is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent)); }
 .panel-media > .random-meme-fixed { background: none; border-radius: 10px; }
 .panel-media > .random-meme-fixed::before { content: none; }
 
@@ -215,17 +226,21 @@
 .footer-nav a.footer-active { color: oklch(var(--accent-lounge)); font-weight: 600; }
 
 /* What the window's widths did before, now each panel's own (@container panel): a section panel
-   spans the board, so these are the old breakpoints (1080px, 725px) less the board's margins */
+   spans the board, so these are the old breakpoints (1080px, 725px) less the board's margins
+   (74px). Four picks across wait until they fit (the old page squeezed them past its edge from
+   1081px), as do four games (from 746px) */
 @container panel (max-width: 67rem) {
     .favorites-grid { grid-template-columns: repeat(2, minmax(min(150px, 50% - 0.75rem), 1fr)); }
 }
-@container panel (max-width: 61.5rem) {
+@container panel (max-width: 62.9rem) {
     .gaming-grid { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
 }
-@container panel (max-width: 40.7rem) {
+@container panel (max-width: 42rem) {
     .gaming-grid { grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
+}
+@container panel (max-width: 40.7rem) {
     .game-card{ padding: 1.5rem 1rem; }
     /* A phone's picks share the panel's width, each name inside its card (it spilled out before) */
     .favorites-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -243,7 +258,9 @@
 }
 /* A category box's links followed the window's tiers, as the board's tiers do now */
 @media (max-width: 1080px) {
-    .category-links { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); max-height: 300px; } /* 200px before, as above */
+    .category-links { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); max-height: 300px; }
+    /* a half-width box comes out a little narrower than it was: it keeps its two across */
+    @container panel (max-width: 28rem) { .category-links { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); } }
 }
 @media (max-width: 725px) {
     .category-links { grid-template-columns: 1fr; }

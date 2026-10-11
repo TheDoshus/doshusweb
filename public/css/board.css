@@ -114,21 +114,36 @@
 .panel::after { content: ''; position: absolute; inset: 0 var(--r-l) auto; height: 1px; pointer-events: none;
     background: linear-gradient(90deg, transparent, oklch(var(--accent) / 0.7), transparent);
 }
-.panel:hover, .panel:focus-within {
+:where(.board:not([data-surface="clear"])) .panel:is(:hover, :focus-within) {
     border-color: oklch(var(--accent) / 0.85);
     box-shadow: 0 12px 38px oklch(var(--accent) / 0.25), 0 0 0 1px oklch(var(--accent) / 0.4) inset;
 }
-/* A clear board (data-surface="clear") keeps the page's sky as every panel's back: no glass and no
-   frame at rest, so the page reads as it did before it was a board. Reached for (hovered, focused) a
-   panel shows a faint frame; held, carried or resized it glows; while arranging, every panel shows
-   where it is. A page can still dress a panel itself (the Lounge's category boxes) */
+/* A clear board (data-surface="clear") keeps the page's sky as every panel's back: no glass, frame,
+   grab dots or controls at rest, so the page reads as it did before it was a board (on touch
+   screens the controls and dots stay faint). Reached for, a panel shows a faint frame and its
+   controls: keyboard focus inside it (a click's focus leaves nothing behind), a pointer on it where
+   pointers hover, a finger holding it (which glows, as on every board). While arranging, every panel
+   shows where it is. A page can still dress a panel itself (the Lounge's category boxes) */
 .board[data-surface="clear"] { --panel-fill: 0; --panel-backdrop: none; }
 :where(.board[data-surface="clear"]) .panel { border-color: transparent; }
-:where(.board[data-surface="clear"]) .panel:is(:hover, :focus-within) { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
-:where(.board[data-surface="clear"]) .panel:not(:hover, :focus-within, .is-holding, .is-dragging, .is-resizing)::before,
-:where(.board[data-surface="clear"]) .panel:not(:hover, :focus-within, .is-holding, .is-dragging, .is-resizing)::after { opacity: 0; }
-.board[data-surface="clear"] .panel::before, .board[data-surface="clear"] .panel::after { transition: opacity 0.35s ease; }
-.board[data-surface="clear"].is-arranging .panel { background: oklch(var(--space-oled) / 0.35); border-color: oklch(var(--accent) / 0.5); }
+:where(.board[data-surface="clear"]) .panel::before, :where(.board[data-surface="clear"]) .panel::after { opacity: 0; transition: opacity 0.35s ease; }
+:where(.board[data-surface="clear"]) .panel .panel-dots::before { opacity: 0; }
+@media (hover: none) {
+    :where(.board[data-surface="clear"]) .panel:not(.is-collapsed) :is(.panel-tools, .panel-edge[data-dir="se"]),
+    :where(.board[data-surface="clear"]) .panel .panel-dots::before { opacity: 0.35; }
+}
+:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
+:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing)::before,
+:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing)::after,
+:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) :is(.panel-tools, .panel-edge[data-dir="se"]),
+:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) .panel-dots::before { opacity: 1; }
+@media (hover: hover) {
+    :where(.board[data-surface="clear"]) .panel:hover { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
+    :where(.board[data-surface="clear"]) .panel:hover::before, :where(.board[data-surface="clear"]) .panel:hover::after,
+    :where(.board[data-surface="clear"]) .panel:hover :is(.panel-tools, .panel-edge[data-dir="se"]),
+    :where(.board[data-surface="clear"]) .panel:hover .panel-dots::before { opacity: 1; }
+}
+.board[data-surface="clear"].is-arranging .panel:not(.is-dragging, .is-resizing) { background: oklch(var(--space-oled) / 0.35); border-color: oklch(var(--accent) / 0.5); }
 .board[data-surface="clear"].is-arranging .panel::before, .board[data-surface="clear"].is-arranging .panel::after { opacity: 1; }
 /* A finger resting on a panel charges a glow as it swells, so the hold reads as a grab */
 .panel.is-holding { scale: 1.02; transition-duration: var(--hold);
@@ -155,7 +170,7 @@
     opacity: 0.5; transition: opacity 0.2s ease;
     background: radial-gradient(circle, oklch(var(--accent)) 1.1px, transparent 1.6px) 0 0 / 6px 4px;
 }
-.panel:is(:hover, :focus-within, .is-holding, .is-dragging) .panel-dots::before { opacity: 1; }
+:where(.board:not([data-surface="clear"])) .panel:is(:hover, :focus-within, .is-holding, .is-dragging) .panel-dots::before { opacity: 1; }
 .panel-icon { grid-column: 1; margin-right: var(--sp-s); width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 9px;
     background: oklch(var(--accent) / 0.12); border: 1px solid oklch(var(--accent) / 0.4); color: oklch(var(--accent));
 }
@@ -248,12 +263,10 @@
 .panel-edge[data-dir="se"] { right: 0; bottom: 0; width: 1.3rem; height: 1.3rem; opacity: 0; border-radius: 0 0 var(--r-l) 0;
     background: linear-gradient(135deg, transparent 55%, oklch(var(--accent) / 0.7) 55% 62%, transparent 62% 72%, oklch(var(--accent) / 0.7) 72% 79%, transparent 79%);
 }
-.panel:is(:hover, :focus-within) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 1; }
+:where(.board:not([data-surface="clear"])) .panel:is(:hover, :focus-within) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 1; }
 @media (hover: none) {
-    .panel-tools, .panel-edge[data-dir="se"] { opacity: 1; }
+    :where(.board:not([data-surface="clear"])) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 1; }
     .panel:not(.panel-media) .panel-tag { visibility: hidden; }
-    /* A clear board's controls stay faint until a panel is reached for, so the page reads as before */
-    :where(.board[data-surface="clear"]) .panel:not(:focus-within, .is-holding) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 0.35; }
 }
 /* Touch: one big corner to resize by, instead of eight thin edges a thumb catches by accident */
 @media (pointer: coarse) {

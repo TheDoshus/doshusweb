@@ -57,7 +57,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
   1.5rem to the screen's edge.
 - **Sizes.** No narrower than `--min-cols` (4 of 24 wide, 4 of 12 mid, 2 of 4 phone), no
   shorter than its head and foot plus a few lines of body, no taller than one screen (on a
-  `data-tall` board, than what it holds). Content scrolls inside a panel that's smaller than it.
+  `data-tall` board, than the larger of one screen and what it holds; a hidden panel keeps its height). Content scrolls inside a panel that's smaller than it.
 - **Free placement.** A panel stays wherever it's dropped, gaps and all; nothing floats up on
   its own. Where it lands decides what moves:
   - dragged upward onto a panel with free space above it, that panel rises out of the way;
@@ -148,7 +148,7 @@ these or a host stylesheet on top.
 | `--glide`, `--ghost-glide` | How long panels and the ghost glide (ms) |
 | `--hold` | How long a finger rests before a panel lifts (ms) |
 | `--panel-fill`, `--panel-backdrop` | The panel glass: fill alpha, and a backdrop filter (`blur(5px)`, or `none` over a busy background on weak hardware) |
-| `data-surface="clear"` on the board | No glass and no frame at rest; a faint frame when a panel is hovered or focused, a glow when held or carried, every panel's frame while arranging; on touch screens the controls stay faint until a panel is reached for |
+| `data-surface="clear"` on the board | No glass, frame, grab dots or controls at rest; a faint frame and the controls when a panel is reached for (hovered where pointers hover, or holding keyboard focus: a click's focus leaves nothing behind), a glow when held or carried, every panel's frame while arranging; on touch screens the controls and dots stay faint |
 | `--sp-*`, `--r-*`, `--fs-*`, `--font-mono`, `--font-title` | Spacing, radius and type scales |
 | Panel surface, snap field, ghost colors | The host's own styles for `.panel`, `.board::before`, `.board-ghost` |
 

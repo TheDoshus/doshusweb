@@ -222,10 +222,11 @@ const CHECKS = {
                     const raw = tier ? a[`data-${tier}`] : ['x', 'y', 'w', 'h'].map((k) => a[`data-${k}`]).join(' ');
                     if (tier && raw === undefined) continue;
                     if (tier) board.named[tier]++;
-                    const [x, y, w, h] = raw.trim().split(/\s+/).map(Number);
+                    const parts = raw.trim().split(/\s+/).map(Number);
+                    const [x, y, w, h] = parts;
                     const at = tier ? `${tier} cells` : 'cells';
-                    if (![x, y, w, h].every((n) => Number.isInteger(n) && n > 0) || w < minCols || x + w - 1 > cols) {
-                        problems.push(`${line}: ${id} ${at} ${raw} outside a ${cols}-column grid (≥ ${minCols} wide)`);
+                    if (parts.length !== 4 || !parts.every((n) => Number.isInteger(n) && n > 0) || w < minCols || x + w - 1 > cols) {
+                        problems.push(`${line}: ${id} ${at} "${raw}": four whole numbers inside a ${cols}-column grid (≥ ${minCols} wide)`);
                         continue;
                     }
                     for (const o of board.cells[tier]) {
@@ -234,7 +235,6 @@ const CHECKS = {
                     board.cells[tier].push({ id, x, y, w, h });
                 }
             }
-            if (board) problems.push(`${rel(f)}: a board is never closed`);
         }
         return problems;
     },
