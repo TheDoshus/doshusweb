@@ -105,6 +105,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // pixel either side of a row, an empty row or a body a pixel short (a scrollbar on Windows)
     const tall = (n) => n.getBoundingClientRect().height;
     const rows = (px) => Math.ceil(px / cell().y - 1e-3); // float noise isn't a row
+    // A class change (collapsed, open) starts transitions, and under reduced motion every property
+    // has one (shared.css: 0.01ms, so transitionend still fires): a size read right after it would
+    // be the old one, so what's being measured lands its transitions first
+    const landed = (n) => { n.getAnimations({ subtree: true }).forEach((a) => a instanceof CSSTransition && a.finish()); return n; };
     // A panel's fixed parts (head and foot) and the gutter around it, in px
     const parts = (p) => [...p.children].filter((n) => n.matches('.panel-head, .panel-foot')).reduce((s, n) => s + tall(n), 0);
     const gutters = (p) => 2 * (parseFloat(getComputedStyle(p).marginTop) || 0);
@@ -116,7 +120,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // Collapsed to its title bar: the head alone (and the panel's border). A running glide carries
     // on: the bar's one-line title keeps it one height at any width, and finishing the glide here
     // would make the panel jump
-    const headRows = (p) => rows(tall(p.querySelector('.panel-head')) + gutters(p) + p.offsetHeight - p.clientHeight);
+    const headRows = (p) => rows(tall(landed(p.querySelector('.panel-head'))) + gutters(p) + p.offsetHeight - p.clientHeight);
     // The tallest: one screen (100dvh), so a panel always fits in view
     const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y));
     // Tall enough for everything it holds, at its current width (a running glide is finished
@@ -124,6 +128,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // with `exact` (once its picture has loaded) exactly its picture's shape
     function contentH(p, exact) {
         p.getAnimations().forEach((anim) => anim.id === 'glide' && anim.finish());
+        landed(p);
         if (p.matches('.panel-media')) {
             const media = exact && p.querySelector('video, img');
             const ratio = media && (media.videoHeight / media.videoWidth || media.naturalHeight / media.naturalWidth);
@@ -292,6 +297,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 commit(next);
                 menu.hidePopover();
                 say(`${title(p)} added back`);
+                if (getComputedStyle(p).visibility === 'hidden') return; // one the page keeps out of view (the Lounge's filter) isn't gone to
                 p.scrollIntoView({ block: 'nearest' });
                 p.querySelector('.panel-grip').focus({ preventScroll: true });
             });

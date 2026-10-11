@@ -148,8 +148,6 @@
     font-weight: 500;
 }
 
-/* Hidden state for filtering */
-.site-link.hidden { display: none; }
 
 /* ─── DISCORD SECTION (page-specific; component lives in shared.css) ─── */
 #discord .section-title {
@@ -158,8 +156,10 @@
 }
 /* The panel is the widget's card: shared.css's frame would draw a second one inside it */
 #discord .discord-widget { max-width: none; padding: 0; background: none; border: 0; backdrop-filter: none; box-shadow: none; }
-/* The cards' frosted glass goes with the panels' while arranging and on a struggling machine (board.css) */
+/* The cards' frosted glass goes with the panels' while arranging and on a struggling machine (board.css),
+   at once while arranging (their `transition: all` would ease it out) */
 .board:is(.is-arranging, .is-lean) :is(.favorite-card, .game-card) { backdrop-filter: none; }
+.board.is-arranging :is(.favorite-card, .game-card) { transition: none; }
 
 .footer-nav a.footer-active { color: oklch(var(--accent-lounge)); font-weight: 600; }
 
@@ -185,8 +185,8 @@
     .filter-btn { padding: 0.6rem 1rem; font-size: 0.85rem; }
     .category-links { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
 }
-/* The narrowest phones (320–340px): a pick's name fits its card */
-@container panel (max-width: 17rem) {
+/* The narrowest phones (320–360px): a pick's name fits its card */
+@container panel (max-width: 18rem) {
     .favorites-grid { gap: 1rem; }
     .favorite-card h3 { font-size: 1.1rem; }
 }

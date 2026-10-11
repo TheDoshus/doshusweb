@@ -1120,6 +1120,7 @@ const TESTS = {
         await sleep(200);
         assert.equal(await arranging(page), false, 'the capture went with no release and left it arranging');
         assert.deepEqual(await page.evaluate(() => { const p = document.getElementById('interesting'); return [p.classList.contains('is-resizing'), p.style.width, p.style.height]; }), [false, '', ''], 'it never landed');
+        assert.match(await page.evaluate(() => document.querySelector('[data-board-bar="lounge"] [aria-live]').textContent), /columns by/, 'it was put back, not dropped');
         return errors;
     },
     async 'Lounge: Surprise Me skips the links of a panel hidden or collapsed on the board'(browser) {
@@ -1168,19 +1169,44 @@ const TESTS = {
     async 'Lounge: a category the filter left out is measured like the rest, so Show All brings it back whole'(browser) {
         const all = [];
         for (const opts of [PHONE, FOLD, { viewport: { width: 1100, height: 800 } }]) {
+            // Read once its cells hold still: content arriving (the roster's fallback, the game's frame) re-measures
+            const steady = async (page) => { let last = '', same = 0; for (let i = 0; i < 40 && same < 4; i++) { const now = String(await cells(page, 'sites-fun')); same = now === last ? same + 1 : 0; last = now; await sleep(100); } return cells(page, 'sites-fun'); };
             const fresh = await open(browser, opts, { path: '/thelounge.html' });
-            const want = await cells(fresh.page, 'sites-fun');
+            const want = await steady(fresh.page);
             await fresh.ctx.close();
             // A visitor who left it on Weird Internet: the filter applies at load, before the board measures again
             const { page, errors } = await open(browser, opts, { path: '/thelounge.html', init: () => { try { localStorage.setItem('loungeFilter', 'weird'); } catch { /* the game's frame, an error page here */ } } });
             all.push(fresh.errors, ...errors);
             await page.evaluate(() => document.querySelector('.filter-btn[data-category="all"]').click());
             // Its own width and height (where it sits also follows panels above it, measured as their content arrives)
-            const [, , ...got] = await cells(page, 'sites-fun');
+            const [, , ...got] = await steady(page);
             assert.deepEqual(got, want.slice(2), `${opts.viewport.width}px`);
             await page.context().close();
         }
         return all.flat();
+    },
+    async "Lounge: a big title's collapsed bar holds its whole head, under reduced motion too"(browser) {
+        // Reduced motion gives every property a 0.01ms transition, so the head reads its open size right after the class
+        const { page, errors } = await open(browser, FOLD, { path: '/thelounge.html' });
+        await page.evaluate(() => ['picks', 'sandspiel', 'sites-fun'].forEach((id) => document.querySelector(`#${id} .panel-collapse`).click()));
+        await frames(page);
+        const spill = await page.evaluate(() => ['picks', 'sandspiel', 'sites-fun'].flatMap((id) => {
+            const p = document.getElementById(id), head = p.querySelector('.panel-head').getBoundingClientRect(), box = p.getBoundingClientRect();
+            return head.bottom > box.bottom - 1 ? [`${id}: head ${(head.bottom - box.bottom + 1).toFixed(1)}px past its bar`] : [];
+        }));
+        assert.deepEqual(spill, []);
+        return errors;
+    },
+    async "Lounge: bringing back a category the filter leaves out doesn't scroll to it"(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
+        await page.evaluate(() => document.querySelector('#sites-stats .panel-close').click());
+        await page.evaluate(() => { document.querySelector('.filter-btn[data-category="fun"]').click(); scrollTo(0, 0); });
+        await sleep(100);
+        await page.evaluate(() => [...document.querySelectorAll('.board-menu button')].find((b) => b.textContent.includes('Stats')).click());
+        await sleep(200);
+        assert.equal(await page.evaluate(() => scrollY), 0);
+        assert.equal(await page.evaluate(() => document.getElementById('sites-stats').hidden), false, 'it came back');
+        return errors;
     },
     async 'Lounge: a section or category title centers on its panel, clear of the tools, at any width'(browser) {
         const all = [];
