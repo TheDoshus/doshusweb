@@ -114,8 +114,8 @@ arrangeable. Customizing is opt-in, never the price of the conversion.
   while it rests there, at the same speed on any refresh rate. Escape, or the browser cancelling
   the pointer, puts everything back where it was. One gesture at a time: a second finger waits.
   A frame on the page (an embedded game) is another page, deaf to the gesture: while arranging,
-  frames let the pointer through, and a release the page never saw (its capture lost) lands the
-  panel where it was.
+  frames let the pointer through, and a release the page never saw (its capture lost) drops the
+  panel where its ghost last stood.
 - **Resize** from any edge or corner with a mouse, from one large corner on touch screens
   (thumbs catch thin edges by accident). The edge follows the pointer (scrolling included), the
   ghost shows the whole cells it will take, and it snaps into them on release.

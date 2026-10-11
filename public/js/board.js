@@ -337,8 +337,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         active = () => end(true);
         on('pointermove', mine((ev) => { last = ev; op.move(ev); scroll ||= requestAnimationFrame(edge); }));
         on('pointerup', mine(() => end(false)));
-        // Capture lost with no release seen: it was let go where this page couldn't see, so it lands
-        on('lostpointercapture', mine(() => end(false)));
+        // Capture lost with no release seen: it was let go where this page couldn't see, so it lands.
+        // The handle's own loss only: a finger's implicit capture on the title, handed to the handle
+        // as the hold lifts the panel, bubbles up as one too
+        on('lostpointercapture', mine((ev) => ev.target === handle && end(false)));
         on('pointercancel', mine(() => end(true)));
         on('keydown', (ev) => { if (ev.key === 'Escape') { ev.preventDefault(); end(true); } }, {}, window);
         // Once a finger has a panel, it moves the panel and not the page, and opens no menu

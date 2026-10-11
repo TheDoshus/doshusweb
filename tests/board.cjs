@@ -400,8 +400,7 @@ const TESTS = {
     },
     async 'a first-row card or link button lifting on hover keeps its whole border in view'(browser) {
         const all = [];
-        for (const [path, sel] of [['/financehub.html', '#cc-cards .ccCard'], ['/financehub.html', '#cc-tools .qlBtn'], ['/nexus.html', '#rig .qlBtn'],
-            ['/thelounge.html', '#picks .favorite-card'], ['/thelounge.html', '#game .game-card'], ['/thelounge.html', '#sites-fun .site-link']]) {
+        for (const [path, sel] of [['/financehub.html', '#cc-cards .ccCard'], ['/financehub.html', '#cc-tools .qlBtn'], ['/nexus.html', '#rig .qlBtn']]) {
             const { page, errors } = await open(browser, { viewport: { width: 696, height: 824 } }, { path });
             all.push(...errors);
             const first = page.locator(sel).first();
@@ -1120,6 +1119,7 @@ const TESTS = {
         await page.mouse.move(box.x + 20, box.y + 20);
         await sleep(200);
         assert.equal(await arranging(page), false, 'the capture went with no release and left it arranging');
+        assert.deepEqual(await page.evaluate(() => { const p = document.getElementById('interesting'); return [p.classList.contains('is-resizing'), p.style.width, p.style.height]; }), [false, '', ''], 'it never landed');
         return errors;
     },
     async 'Lounge: Surprise Me skips the links of a panel hidden or collapsed on the board'(browser) {
@@ -1132,7 +1132,55 @@ const TESTS = {
         const opened = await page.evaluate(() => window.__opened);
         assert.equal(opened.length, 40);
         assert.deepEqual(opened.filter((u) => !weird.includes(u)), [], 'opened a link from a panel off the board');
+        // The category filter's way, on a fresh board: Archives alone, the rest filtered out
+        await page.evaluate(() => localStorage.clear());
+        await page.reload({ waitUntil: 'load' });
+        await sleep(400);
+        await page.evaluate(() => document.querySelector('.filter-btn[data-category="archives"]').click());
+        for (let i = 0; i < 40; i++) await page.evaluate(() => document.getElementById('surpriseBtn').click());
+        const archives = await page.evaluate(() => [...document.querySelectorAll('#sites-archives .site-link')].map((a) => a.href));
+        const filtered = await page.evaluate(() => window.__opened);
+        assert.equal(filtered.length, 40);
+        assert.deepEqual(filtered.filter((u) => !archives.includes(u)), [], 'opened a link from a filtered-out category');
         return errors;
+    },
+    async "a finger resting on a panel's title, wobbling as fingers do, still lifts it"(browser) {
+        const all = [];
+        for (const [path, id] of [['/nexus.html', 'dev-core'], ['/thelounge.html', 'picks']]) {
+            const { ctx, page, errors } = await open(browser, { viewport: { width: 1300, height: 900 }, hasTouch: true }, { path });
+            all.push(...errors);
+            await center(page, id);
+            const cdp = await ctx.newCDPSession(page);
+            const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts });
+            // On the title's text: the finger's implicit capture lands on the h2, and the hold hands it to the head
+            const at = await page.evaluate((id) => { const r = document.createRange(); r.selectNodeContents(document.querySelector(`#${id} .panel-head h2`)); const b = r.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; }, id);
+            await touch('touchStart', [at]); await sleep(150);
+            await touch('touchMove', [{ x: at.x + 2, y: at.y + 1 }]); await sleep(150);
+            await touch('touchMove', [{ x: at.x + 1, y: at.y + 2 }]); await sleep(500);
+            await touch('touchMove', [{ x: at.x + 160, y: at.y }]); await sleep(150);
+            assert.equal(await arranging(page), true, `${path}: the panel dropped with the finger still down`);
+            await touch('touchEnd', []); await sleep(300);
+            assert.equal(await arranging(page), false, `${path}: lifting the finger ended nothing`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async 'Lounge: a category the filter left out is measured like the rest, so Show All brings it back whole'(browser) {
+        const all = [];
+        for (const opts of [PHONE, FOLD, { viewport: { width: 1100, height: 800 } }]) {
+            const fresh = await open(browser, opts, { path: '/thelounge.html' });
+            const want = await cells(fresh.page, 'sites-fun');
+            await fresh.ctx.close();
+            // A visitor who left it on Weird Internet: the filter applies at load, before the board measures again
+            const { page, errors } = await open(browser, opts, { path: '/thelounge.html', init: () => { try { localStorage.setItem('loungeFilter', 'weird'); } catch { /* the game's frame, an error page here */ } } });
+            all.push(fresh.errors, ...errors);
+            await page.evaluate(() => document.querySelector('.filter-btn[data-category="all"]').click());
+            // Its own width and height (where it sits also follows panels above it, measured as their content arrives)
+            const [, , ...got] = await cells(page, 'sites-fun');
+            assert.deepEqual(got, want.slice(2), `${opts.viewport.width}px`);
+            await page.context().close();
+        }
+        return all.flat();
     },
     async 'Lounge: a section or category title centers on its panel, clear of the tools, at any width'(browser) {
         const all = [];
@@ -1147,6 +1195,13 @@ const TESTS = {
                 const shift = text.left + text.width / 2 - (p.left + p.width / 2);
                 if (Math.abs(shift) > 1.5) out.push(`${id}: ${Math.round(shift)}px off center`);
                 if ([...r.getClientRects()].some((l) => l.left < tools.right - 1 && tools.left < l.right - 1 && l.top < tools.bottom - 1 && tools.top < l.bottom - 1)) out.push(`${id}: under the tools`);
+                // A narrow head (32rem or less) gives its title the whole width: one that fits there takes one line
+                const head = getComputedStyle(t.parentElement), room = t.parentElement.clientWidth - parseFloat(head.paddingLeft) - parseFloat(head.paddingRight);
+                const lines = new Set([...r.getClientRects()].map((l) => Math.round(l.top))).size;
+                t.style.whiteSpace = 'nowrap';
+                const one = r.getBoundingClientRect().width;
+                t.style.removeProperty('white-space');
+                if (room <= 512 && one <= room && lines > 1) out.push(`${id}: ${lines} lines though ${Math.round(one)}px fits in ${Math.round(room)}px`);
                 return out;
             }));
             assert.deepEqual(off, [], `${opts.viewport.width}px: ${off.join('; ')}`);

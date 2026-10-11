@@ -55,10 +55,10 @@ function initSurpriseButton() {
 
     surpriseBtn.addEventListener('click', function() {
         // Get only visible links (not in a filtered-out category, or a panel hidden or collapsed on the board)
-        const visibleLinks = Array.from(allLinks).filter(link => link.checkVisibility());
+        const visibleLinks = Array.from(allLinks).filter(link => link.getClientRects().length && getComputedStyle(link).visibility === 'visible');
 
         if (visibleLinks.length === 0) {
-            alert('No sites available! Try selecting a different category.');
+            alert('No sites showing! Try a different category, or bring one back from Add widget.');
             return;
         }
 
