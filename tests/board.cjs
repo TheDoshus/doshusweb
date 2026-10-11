@@ -1300,6 +1300,15 @@ const TESTS = {
         assert.ok(glow !== 'none' && glow !== hovered.glow, `no glow of its own while held: ${glow}`);
         return errors;
     },
+    async "in a tier the engine flows, a list panel keeps its wide height"(browser) {
+        // The Lounge without its own mid cells, as the parser adds each panel and before board.js reads it
+        const { page, errors } = await open(browser, FOLD, { path: '/thelounge.html', init: () => {
+            new MutationObserver((records) => records.forEach((r) => r.addedNodes.forEach((n) => n.matches?.('.panel') && n.removeAttribute('data-mid')))).observe(document, { childList: true, subtree: true });
+        } });
+        const got = await page.evaluate(() => ['sites-fun', 'sites-beer'].map((id) => { const p = document.getElementById(id); return [+p.style.getPropertyValue('--h'), +p.dataset.h, p.hasAttribute('data-mid')]; }));
+        assert.deepEqual(got, [[16, 16, false], [15, 15, false]]);
+        return errors;
+    },
     async "a list panel (data-scroll) keeps its cells' height, shows more when made taller, and Fit shows it all"(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
         await center(page, 'sites-fun');
@@ -1402,6 +1411,10 @@ const TESTS = {
         const all = [];
         // The old page's columns (picks, games, each category's links) where the board must match them
         const old = { 1440: '4 3 311334', 1080: '2 4 242424', 901: '2 4 232323', 800: '2 4 131313', 725: '2 2 111111', 390: '2 2 111111' };
+        // Where the old page's section content and boxes began; and the board's own breakpoint edges
+        // (four games from 737px, four picks from 1137px, the narrow layout up to 725px)
+        const edges = { 1440: [52, 52], 901: [32, 32], 390: [21, 16] };
+        const bounds = { 725: '2 2 narrow', 726: '2 2 wide', 736: '2 2 wide', 737: '2 4 wide', 1080: '2 4 wide', 1081: '2 3 wide', 1136: '2 3 wide', 1137: '4 3 wide' };
         const { ctx, page, errors } = await open(browser, { viewport: { width: 1440, height: 800 } }, { path: '/thelounge.html' });
         all.push(...errors);
         for (const width of [320, 360, 390, 520, 640, 641, 700, 725, 726, 730, 736, 737, 746, 800, 901, 1000, 1080, 1081, 1136, 1137, 1280, 1440, 1920]) {
@@ -1411,10 +1424,14 @@ const TESTS = {
                 const cols = (q) => getComputedStyle(q).gridTemplateColumns.split(' ').length;
                 const side = [...document.querySelectorAll('.panel-body')].filter((b) => b.scrollWidth > b.clientWidth + 1).map((b) => b.parentElement.id);
                 const spill = [...document.querySelectorAll('.favorite-card, .game-card')].filter((c) => { const r = c.getBoundingClientRect(); return [...c.children].some((k) => { const q = k.getBoundingClientRect(); return q.left < r.left - 0.5 || q.right > r.right + 0.5; }); }).map((c) => c.textContent.trim().split('\n')[0]);
-                return { side, spill, cols: `${cols(document.querySelector('.favorites-grid'))} ${cols(document.querySelector('.gaming-grid'))} ${[...document.querySelectorAll('.category-links')].map(cols).join('')}` };
+                const edges = [Math.round(document.querySelector('.embedded-game').getBoundingClientRect().left), Math.round(document.getElementById('sites-fun').getBoundingClientRect().left)];
+                const narrow = getComputedStyle(document.querySelector('.sites-controls')).flexDirection === 'column' ? 'narrow' : 'wide';
+                return { side, spill, edges, narrow, cols: `${cols(document.querySelector('.favorites-grid'))} ${cols(document.querySelector('.gaming-grid'))} ${[...document.querySelectorAll('.category-links')].map(cols).join('')}` };
             });
             assert.deepEqual([got.side, got.spill], [[], []], `${width}px: sideways or spilling`);
             if (old[width]) assert.equal(got.cols, old[width], `${width}px: columns`);
+            if (edges[width]) assert.deepEqual(got.edges, edges[width], `${width}px: where the content and a box start`);
+            if (bounds[width]) assert.equal(`${got.cols.split(' ').slice(0, 2).join(' ')} ${got.narrow}`, bounds[width], `${width}px: picks, games, narrow`);
         }
         await ctx.close();
         return all;

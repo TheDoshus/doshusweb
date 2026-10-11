@@ -207,7 +207,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const width = (p) => (t === 'phone' || wide.get(p).w >= cols() * 1.5 ? cols() : Math.floor(cols() / 2));
         const flow = new Map(order.map((p) => [p, { x: 1, y: 1, w: width(p), h: MIN_H, hidden: false, collapsed: wide.get(p).collapsed }]));
         render(flow); // at their widths, so each body's content wraps the way it will
-        flow.forEach((r, p) => { r.h = r.collapsed ? headRows(p) : (t === 'mid' && media(p)) || (kept(p) && !media(p)) ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
+        flow.forEach((r, p) => { r.h = r.collapsed ? headRows(p) : (t === 'mid' && media(p)) || 'scroll' in p.dataset ? wide.get(p).h : clamp(contentH(p), minH(p), maxH(p)); });
         // In reading order, each takes the highest free spot, leftmost first
         const placed = [];
         flow.forEach((r) => {

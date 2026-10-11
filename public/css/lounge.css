@@ -152,6 +152,8 @@
 /* Reached for, as board.css's clear surface has it; held or carried, the board's glow and a full border */
 .panel.category-box:has(:focus-visible) { border-color: oklch(var(--accent-crypto) / 0.7); }
 @media (hover: hover) { .panel.category-box:hover { border-color: oklch(var(--accent-crypto) / 0.7); } }
+/* Its frame where the box's was: the board's edge sits 5px out for the sections' content */
+@media (min-width: 641px) { .panel:is(.category-box, .panel-media):not(.is-dragging) { margin-inline: calc(var(--gutter) + 5px); } }
 .panel.category-box > .panel-head { padding: 1.5rem 1.5rem 0; }
 .panel.category-box > .panel-body { gap: 0; padding: 1rem 1.5rem; }
 .category-box.hidden { visibility: hidden; pointer-events: none; }
