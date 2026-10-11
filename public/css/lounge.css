@@ -3,15 +3,15 @@
    the section did (centered, each block its own width); a category box and a meme slot are panels
    dressed as their boxes were. Defaults per tier mirror the page before (data-mid / data-phone) ─── */
 /* A section's content where it was: 1400px at most and 2rem in, which is the board's gutter
-   (0.625rem), a section panel's edge (--edge: its 1px border and its body's 0.25rem side padding
-   below) and the rest. A phone's board has no padding and its gutter is the old 1rem, so there a
-   section panel sits out by its edge (--inset, board.css). The hero's bar takes no room from its centering */
-.board-wrap { --edge: calc(1px + 0.25rem); max-width: 1400px; padding-inline: calc(1.375rem - var(--edge)); }
+   (0.625rem), a section panel's edge (--edge: board.css's 1px panel border and its body's side
+   padding, --pad) and the rest. A phone's board has no padding and its gutter is the old 1rem, so
+   there a section panel sits out by its edge (--inset, board.css). The hero's bar takes no room from its centering */
+.board-wrap { --pad: 0.25rem; --edge: calc(1px + var(--pad)); max-width: 1400px; padding-inline: calc(1.375rem - var(--edge)); }
 @media (max-width: 640px) { .board-wrap { padding-inline: 0; } .panel.section-panel { --inset: calc(-1 * var(--edge)); } }
 .hero > .board-bar { margin-bottom: -3.75rem; }
 .panel.section-panel { scroll-margin-top: 4.5rem; } /* a #link lands with the room it had */
 .panel.section-panel > .panel-head { padding: 0.25rem 0.5rem 0; }
-.panel.section-panel > .panel-body { align-items: center; gap: 0; padding: 1rem 0.25rem 0; }
+.panel.section-panel > .panel-body { align-items: center; gap: 0; padding: 1rem var(--pad) 0; }
 .panel-head > .section-title { justify-self: center; max-width: 100%; /* as wide as its words (its gradient runs across them), no wider than its room (a collapsed bar cuts it with …) */
     font-size: clamp(2rem, 5.5cqi, 3rem); line-height: 1.2; text-align: center;
     background: linear-gradient(45deg, oklch(var(--accent-amzn) / 0.85), oklch(var(--accent-crypto) / 0.75), oklch(var(--accent-myth) / 0.9));
@@ -155,7 +155,8 @@
 .panel.category-box:has(:focus-visible) { border-color: oklch(var(--accent-crypto) / 0.7); }
 @media (hover: hover) { .panel.category-box:hover { border-color: oklch(var(--accent-crypto) / 0.7); } }
 /* Its frame where the box's was, in line with the sections' content: above a phone the board's
-   edge sits a section panel's edge out */
+   edge sits a section panel's edge out (range syntax: the phone tier's max-width: 640px exactly
+   complemented, with no gap at a fractional width) */
 @media (width > 640px) { .panel:is(.category-box, .panel-media) { --inset: var(--edge); } }
 .panel.category-box > .panel-head { padding: 1.5rem 1.5rem 0; }
 .panel.category-box > .panel-body { gap: 0; padding: 1rem 1.5rem; }

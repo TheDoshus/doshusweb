@@ -300,7 +300,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     if (!bar.isConnected) board.before(bar);
     board.append(ghost);
     const say = (msg) => { status.textContent = msg; };
-    // The ghost marks where a grabbed panel will land, in that panel's accent and inset
+    // The ghost marks where a grabbed panel will land, in that panel's accent and inset (computed to
+    // a length, board.css; a carried panel's own margins are 0, so they can't be read instead)
     const showGhost = (p, r) => {
         ['--accent', '--inset'].forEach((k) => ghost.style.setProperty(k, getComputedStyle(p).getPropertyValue(k)));
         setCell(ghost, r);

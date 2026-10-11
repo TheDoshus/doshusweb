@@ -1442,29 +1442,72 @@ const TESTS = {
             assert.equal(got.whole, whole[width] ?? '', `${width}px: lists shown whole`);
         }
         await ctx.close();
+        // With scrollbars that take room (Windows), as the old page had them: a half-width box keeps
+        // its two link columns at 965px, and Beer shows whole in the band a 1366px laptop falls in
+        const classic = await chromium.launch({ ...LAUNCH, ignoreDefaultArgs: ['--hide-scrollbars'] });
+        try {
+            const { page, errors } = await open(classic, { viewport: { width: 965, height: 800 } }, { path: '/thelounge.html' });
+            all.push(...errors);
+            for (const [width, want] of [[965, '232323 '], [1355, '211224 beer']]) {
+                await page.setViewportSize({ width, height: 800 });
+                await sleep(350);
+                assert.equal(await page.evaluate(() => `${[...document.querySelectorAll('.category-links')].map((q) => getComputedStyle(q).gridTemplateColumns.split(' ').length).join('')} ${[...document.querySelectorAll('.category-box')]
+                    .filter((p) => { const b = p.querySelector('.panel-body'); return b.scrollHeight - b.clientHeight <= 1; }).map((p) => p.dataset.category).join(' ')}`), want, `${width}px with classic scrollbars: link columns, lists shown whole`);
+            }
+        } finally {
+            await classic.close();
+        }
         return all;
     },
     async "a panel the page sets in from its cells (--inset): the ghost frames it, a drag reads from its frame, a resize stops at its landing edge"(browser) {
         const all = [];
         const rect = (page, sel) => page.evaluate((sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; }, sel);
-        // A Lounge box sits in by a section panel's edge above a phone, a section panel out by it on one
-        for (const [opts, id] of [[WIDE, 'sites-fun'], [{ viewport: { width: 390, height: 844 } }, 'interesting']]) {
+        // Grabs a panel by its head and starts carrying it (dir: which way the nudge goes)
+        const grab = async (page, id, dir = 1) => {
+            const h = await page.locator(`#${id} .panel-head`).boundingBox();
+            await page.mouse.move(h.x + 40, h.y + 20);
+            await page.mouse.down();
+            await page.mouse.move(h.x + 40 + 4 * dir, h.y + 20);
+            await frames(page);
+            return h;
+        };
+        // A Lounge box sits in by a section panel's edge above a phone, a section panel out by it on
+        // one. A drag that read a frame's side off by that edge would take 0.55 of a cell past half
+        // toward the board's edge (a box rightward, a section panel leftward, so it starts at the right)
+        for (const [opts, id, dir] of [[WIDE, 'sites-fun', 1], [{ viewport: { width: 390, height: 844 } }, 'interesting', -1]]) {
             const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
             all.push(...errors);
             await center(page, id);
+            if (dir < 0) { // half width, at the right
+                await page.focus(`#${id} .panel-edge[data-dir="se"]`);
+                for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowLeft');
+                await page.focus(`#${id} .panel-grip`);
+                for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight');
+                await sleep(300);
+                await center(page, id);
+            }
             const start = await cells(page, id), frame = await rect(page, `#${id}`);
-            const h = await page.locator(`#${id} .panel-head`).boundingBox();
+            if (dir < 0) assert.deepEqual([start[0], start[2]], [4, 3], `${id} made half width at the right`);
             const cw = await page.evaluate(() => { const b = document.querySelector('.board'); return b.clientWidth / +getComputedStyle(b).getPropertyValue('--cols'); });
-            await page.mouse.move(h.x + 40, h.y + 20);
-            await page.mouse.down();
-            await page.mouse.move(h.x + 44, h.y + 20);
-            await frames(page);
+            const h = await grab(page, id, dir);
             assert.deepEqual(await rect(page, '.board-ghost'), frame, `${opts.viewport.width}px: the ghost frames ${id} where it sits`);
-            await page.mouse.move(h.x + 40 + cw * 0.55, h.y + 20, { steps: 4 }); // just past half a cell: no snap yet
+            await page.mouse.move(h.x + 40 + cw * 0.55 * dir, h.y + 20, { steps: 4 }); // just past half a cell: no snap yet
             await frames(page);
             await page.mouse.up();
             await sleep(300);
             assert.deepEqual(await cells(page, id), start, `${opts.viewport.width}px: a drag of 0.55 of a cell moved ${id}`);
+            await page.context().close();
+        }
+        // An inset in a font's units frames the same spot too (the ghost copies it computed, in px)
+        {
+            const { page, errors } = await open(browser);
+            all.push(...errors);
+            await page.evaluate(() => { const p = document.getElementById('stack'); p.style.fontSize = '24px'; p.style.setProperty('--inset', '1em'); });
+            await center(page, 'stack');
+            const frame = await rect(page, '#stack');
+            await grab(page, 'stack');
+            assert.deepEqual(await rect(page, '.board-ghost'), frame, 'an inset of 1em: the ghost frames the panel where it sits');
+            await page.mouse.up();
             await page.context().close();
         }
         // Resized past the board's edge: the live edge stops where the ghost ends and the panel lands
