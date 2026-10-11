@@ -550,8 +550,10 @@ const TESTS = {
         const { page, errors } = await open(browser, WIDE, { path: '/financehub.html' });
         await center(page, 'cc-tools'); // the nav stuck on screen
         const dot = await page.locator('.nav-dot.active').boundingBox();
-        await page.mouse.click(dot.x + dot.width / 2, dot.y + dot.height / 2); // a mouse click leaves the dot focused (not focus-visible)
-        assert.ok(await page.evaluate(() => !!document.activeElement?.closest('.slideNav')), 'the click left no focus on the nav, so that part tests nothing');
+        await page.mouse.click(dot.x + dot.width / 2, dot.y + dot.height / 2); // a mouse click leaves the dot focused
+        await page.keyboard.press('ArrowRight'); // and a key there makes that focus visible (over and back, to the same slide)
+        await page.keyboard.press('ArrowLeft');
+        assert.ok(await page.evaluate(() => !!document.querySelector('.slideNav :focus-visible')), 'no visible focus on the nav, so that part tests nothing');
         await center(page, 'cc-tools');
         const h = await page.locator('#cc-tools .panel-head').boundingBox();
         const nav = await page.evaluate(() => document.querySelector('.slideNav').getBoundingClientRect().bottom);
@@ -698,6 +700,26 @@ const TESTS = {
             return [b.scrollHeight - b.clientHeight, !!r && !r.hidden]; });
         assert.ok(over <= 0, `the card panel is ${over}px short of its pictures`);
         assert.equal(offer, true, 'Undo reset went away');
+        return errors;
+    },
+    async 'Finance Hub: pictures arriving mid-drag are measured on every board once the drag ends'(browser) {
+        const init = () => { window.__reads = {}; const get = Storage.prototype.getItem; Storage.prototype.getItem = function (k) { window.__reads[k] = (window.__reads[k] ?? 0) + 1; return get.call(this, k); }; };
+        const { page, errors } = await open(browser, WIDE, { path: '/financehub.html', init });
+        const reads = () => page.evaluate(() => Object.fromEntries(Object.entries(window.__reads).filter(([k]) => k.startsWith('board:'))));
+        await center(page, 'cc-tools');
+        const h = await page.locator('#cc-tools .panel-head').boundingBox();
+        await page.mouse.move(h.x + 100, h.y + 20);
+        await page.mouse.down();
+        await page.mouse.move(h.x + 140, h.y + 60, { steps: 4 });
+        const before = await reads();
+        await page.evaluate(() => document.querySelectorAll('.board').forEach((b) => b.dispatchEvent(new Event('load')))); // pictures on every slide
+        await sleep(400); // the drag goes on
+        await page.keyboard.press('Escape');
+        await page.mouse.up();
+        await sleep(400);
+        const after = await reads();
+        const missed = Object.keys(before).filter((k) => !(after[k] > before[k]));
+        assert.deepEqual(missed, [], 'boards never measured again');
         return errors;
     },
     async 'a re-measure right after Reset keeps Undo on offer and keyboard focus on it'(browser) {

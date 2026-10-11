@@ -333,7 +333,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             op.move(last); // re-aim at whatever is under the pointer now
         };
         // The panel lands before the board drops its arranging room, so the page can't lose its scroll
-        const end = (cancel) => { stop.abort(); cancelAnimationFrame(scroll); active = null; op.done(cancel); board.classList.remove('is-arranging'); haptic(); if (stale) remeasure(); };
+        const end = (cancel) => { stop.abort(); cancelAnimationFrame(scroll); active = null; op.done(cancel); board.classList.remove('is-arranging'); haptic(); };
         active = () => end(true);
         on('pointermove', mine((ev) => { last = ev; op.move(ev); scroll ||= requestAnimationFrame(edge); }));
         on('pointerup', mine(() => end(false)));
@@ -620,10 +620,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     let again, stale = false, width = innerWidth;
     const remeasure = () => {
         clearTimeout(again);
-        // Arranged or mid-gesture, it waits: settle() asks again once the layout is back at its default
+        // Arranged, it waits: settle() asks again once the layout is back at its default
         again = setTimeout(() => {
-            if (board.querySelector('.is-holding')) return remeasure(); // a finger resting on a panel (it swells): once it lifts or lets go
-            stale = !!active || !same(layout, base);
+            // Mid-gesture on any board, or a finger resting on a panel (it swells): once it ends
+            if (active || board.querySelector('.is-holding')) return remeasure();
+            stale = !same(layout, base);
             if (!stale) load(undo);
         }, 150);
     };
