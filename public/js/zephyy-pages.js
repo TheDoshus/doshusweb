@@ -204,8 +204,7 @@
     function setupStatusPage() {
         const badge = document.getElementById('st-online-text');
         if (!badge) return;
-        // 120 s (120,000 ms) staleness threshold, matching STALE_SEC in zephyy-live.js and zephyy-widget.js
-        const STALE_MS = 120000;
+        // Staleness threshold is defined once in zephyy-live.js (STALE_SEC, exported as window.__zpStaleMs)
         const el = function (id) { return document.getElementById(id); };
         const SERVICES = { gateway: 'svc-gateway', orb: 'svc-orb', ws: 'svc-ws', embed: 'svc-embed', aether: 'svc-aether' };
         let latest = null;
@@ -214,15 +213,21 @@
             if (!latest) return;
             const data = latest.data || {};
             const beat = data.lastHeartbeat;
-            const staleMs = window.__zpStaleMs || STALE_MS;
-            const isFresh = Boolean(beat && (Date.now() - new Date(beat).getTime() < staleMs));
+            const staleMs = window.__zpStaleMs;
+            const isFresh = Boolean(beat && staleMs && (Date.now() - new Date(beat).getTime() < staleMs));
             const online = Boolean(data.online !== false && isFresh);
             const dot = el('st-online-dot');
             if (dot) dot.className = 'st-svc-dot ' + (online ? 'online' : 'offline');
             badge.textContent = online ? 'ONLINE' : (data.online ? 'STALE' : 'OFFLINE');
             badge.className = 'st-hero-badge ' + (online ? 'online' : 'off');
-            if (data.workingOn) el('st-working-on').textContent = data.workingOn;
-            if (data.mood) el('st-mood').textContent = data.mood;
+            const workingEl = el('st-working-on');
+            if (workingEl) {
+                workingEl.textContent = isFresh ? (data.workingOn || '—') : (data.workingOn ? data.workingOn + ' (stale)' : '—');
+            }
+            const moodEl = el('st-mood');
+            if (moodEl) {
+                moodEl.textContent = isFresh ? (data.mood || '—') : (data.mood ? data.mood + ' (stale)' : '—');
+            }
             const gateway = el('gw-zephyy-status');
             if (gateway) {
                 gateway.textContent = online ? 'online' : (data.online ? 'stale' : 'offline');
@@ -241,17 +246,34 @@
                     label.className = 'st-svc-label' + (up ? '' : ' off');
                 }
             });
-            el('st-updated-text').textContent = !connected
-                ? (beat ? 'Firebase offline — showing the last reading.' : 'Can\'t reach the live feed — retrying.')
-                : (beat ? 'Live via Firebase · last beat ' + formatAgo(beat) : 'No heartbeat on record yet.');
+            const updatedEl = el('st-updated-text');
+            if (updatedEl) {
+                updatedEl.textContent = !connected
+                    ? (beat ? 'Firebase offline — showing the last reading.' : 'Can\'t reach the live feed — retrying.')
+                    : (beat ? 'Live via Firebase · last beat ' + formatAgo(beat) : 'No heartbeat on record yet.');
+            }
             if (!beat) return;
             const when = new Date(beat);
-            el('st-last-beat').textContent = formatAgo(beat);
-            el('st-beat-live-time').textContent = when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + when.toLocaleDateString([], { month: 'short', day: 'numeric' });
-            el('st-beat-live-detail').textContent = online
-                ? 'All clear — services nominal. Heartbeat fresh.'
-                : 'Heartbeat stale — gateway may be sleeping or restarting.';
+            const lastBeatEl = el('st-last-beat');
+            if (lastBeatEl) lastBeatEl.textContent = formatAgo(beat);
+            const liveTimeEl = el('st-beat-live-time');
+            if (liveTimeEl) liveTimeEl.textContent = when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + when.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const liveDetailEl = el('st-beat-live-detail');
+            if (liveDetailEl) {
+                const services = data.services || {};
+                const hasInactive = Object.keys(SERVICES).some(function (key) { return services[key] !== 'active'; });
+                if (!isFresh) {
+                    liveDetailEl.textContent = 'Heartbeat stale — gateway may be sleeping or restarting.';
+                } else if (data.online === false) {
+                    liveDetailEl.textContent = 'Gateway offline — heartbeat fresh.';
+                } else if (hasInactive) {
+                    liveDetailEl.textContent = 'Degraded — one or more services inactive. Heartbeat fresh.';
+                } else {
+                    liveDetailEl.textContent = 'All clear — services nominal. Heartbeat fresh.';
+                }
+            }
         }
+        window.__zpApplyStatus = applyStatus;
         window.addEventListener('zephyy-status', function (event) { latest = event.detail; applyStatus(); });
         window.addEventListener('zephyy-connection', function (event) {
             connected = event.detail.connected;

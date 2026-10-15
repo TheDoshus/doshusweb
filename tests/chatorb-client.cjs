@@ -28,9 +28,20 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
   const database = () => ({ref});
   database.ServerValue = {TIMESTAMP: {'.sv': 'timestamp'}};
   const local = new Map();
-  const window = {location: {pathname: '/zephyy'}, zephyyHasConvo: () => chatCache,
-    dispatchEvent: (event) => events.push(event)};
-  const scripts = [], streams = [];
+  const windowListeners = new Map();
+  const window = {
+    location: {pathname: '/zephyy'},
+    zephyyHasConvo: () => chatCache,
+    addEventListener: (type, fn) => {
+      if (!windowListeners.has(type)) windowListeners.set(type, []);
+      windowListeners.get(type).push(fn);
+    },
+    dispatchEvent: (event) => {
+      events.push(event);
+      (windowListeners.get(event.type) || []).forEach(fn => fn(event));
+    },
+  };
+  const scripts = [], streams = [], intervals = [];
   // Status streams over Server-Sent Events; the SDK (stubbed here) is a script the client injects
   function EventSource(url) { this.url = url; this.handlers = {}; streams.push(this); }
   EventSource.prototype.addEventListener = function (type, fn) { this.handlers[type] = fn; };
@@ -42,11 +53,51 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
     }})};
   const elements = new Map();
   const getElementById = (id) => {
-    if (!elements.has(id)) elements.set(id, {id, className: '', classList: {add: () => {}}});
+    if (!elements.has(id)) {
+      const el = {
+        id,
+        className: '',
+        textContent: '',
+        dataset: {},
+        setAttribute: () => {},
+        getAttribute: () => null,
+        addEventListener: () => {},
+        classList: {
+          add: (c) => { el.className = (el.className ? el.className + ' ' : '') + c; },
+          remove: (c) => { el.className = el.className.replace(new RegExp('\\b' + c + '\\b', 'g'), '').trim(); },
+          toggle: (c, force) => {},
+        },
+        querySelector: (sel) => {
+          if (sel === '.st-svc-dot') {
+            if (!el._dot) el._dot = { className: 'st-svc-dot loading' };
+            return el._dot;
+          }
+          if (sel === '.st-svc-label') {
+            if (!el._label) el._label = { className: 'st-svc-label loading', textContent: '—' };
+            return el._label;
+          }
+          return null;
+        },
+      };
+      elements.set(id, el);
+    }
     return elements.get(id);
   };
   const context = {window, EventSource,
-    document: {readyState: 'complete', hidden: false, addEventListener: () => {}, getElementById, createElement: () => ({}),
+    document: {
+      readyState: 'complete',
+      hidden: false,
+      body: { dataset: {}, addEventListener: () => {} },
+      addEventListener: () => {},
+      getElementById,
+      querySelectorAll: () => [],
+      createElement: () => ({
+        append: () => {},
+        appendChild: () => {},
+        setAttribute: () => {},
+        classList: { add: () => {} },
+        style: { setProperty: () => {} },
+      }),
       head: {appendChild: (script) => {
         scripts.push(script.src);
         const part = script.src.match(/firebase-(\w+)-compat/)[1]; // each script brings its own piece
@@ -58,12 +109,20 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
     crypto: {randomUUID: () => 'session_' + (++serial)},
     CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
     fetch: async () => ({ok: true, json: async () => ({projectId: 'test'})}),
-    setInterval: () => 0, console,
+    prefersReducedMotion: false,
+    haptic: () => {},
+    setInterval: (fn, ms) => {
+      intervals.push({ fn, ms });
+      return intervals.length;
+    },
+    Date,
+    console,
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-live.js'), 'utf8'), context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-pages.js'), 'utf8'), context);
   const settle = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
   await settle();
-  return {window, events, updates, listeners, records, scripts, streams, settle, elements};
+  return {window, events, updates, listeners, records, scripts, streams, settle, elements, intervals};
 }
 
 (async () => {
@@ -73,9 +132,37 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
   const [status] = live.streams;
   assert.match(status.url, /\/zephyy\/status\.json$/);
   const now = new Date().toISOString();
-  status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: now, mood: 'calm', services: {ws: 'active', orb: 'active'}}})});
-  assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot online', 'fresh service is online');
+  status.handlers.put({data: JSON.stringify({path: '/', data: {
+    lastHeartbeat: now,
+    online: true,
+    mood: 'calm',
+    workingOn: 'Building tests',
+    services: {ws: 'active', orb: 'active', gateway: 'active', embed: 'active', aether: 'active'},
+  }})});
+  assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot online', 'fresh service is online in profile');
+  const wsCard = live.elements.get('svc-ws');
+  assert.equal(wsCard.querySelector('.st-svc-dot').className, 'st-svc-dot online', 'fresh service is online on status page');
+  assert.equal(wsCard.querySelector('.st-svc-label').textContent, 'active', 'fresh service label is active on status page');
+  assert.equal(wsCard.querySelector('.st-svc-label').className, 'st-svc-label', 'fresh service label has no off class');
+  assert.equal(live.elements.get('st-online-text').textContent, 'ONLINE');
+  assert.equal(live.elements.get('gw-zephyy-status').textContent, 'online');
+  assert.equal(live.elements.get('st-working-on').textContent, 'Building tests');
+  assert.equal(live.elements.get('st-mood').textContent, 'calm');
+  assert.equal(live.elements.get('st-beat-live-detail').textContent, 'All clear — services nominal. Heartbeat fresh.');
+
+  // SHOULD 3: fresh beat with an inactive service reports degraded
   status.handlers.patch({data: JSON.stringify({path: '/services', data: {ws: 'inactive'}})});
+  assert.equal(wsCard.querySelector('.st-svc-dot').className, 'st-svc-dot offline');
+  assert.equal(wsCard.querySelector('.st-svc-label').textContent, 'inactive');
+  assert.equal(live.elements.get('st-beat-live-detail').textContent, 'Degraded — one or more services inactive. Heartbeat fresh.', 'inactive service reports degraded, not all clear');
+
+  // SHOULD 3: fresh beat with online:false reports gateway offline, not heartbeat stale
+  status.handlers.patch({data: JSON.stringify({path: '/', data: {online: false}})});
+  assert.equal(live.elements.get('st-beat-live-detail').textContent, 'Gateway offline — heartbeat fresh.', 'online:false reports gateway offline');
+  assert.equal(live.elements.get('st-online-text').textContent, 'OFFLINE');
+
+  // Restore online state and update mood
+  status.handlers.patch({data: JSON.stringify({path: '/', data: {online: true}})});
   status.handlers.put({data: JSON.stringify({path: '/mood', data: 'focused'})});
   const latest = live.window.__zpLatestStatus;
   assert.equal(latest.online, true);
@@ -83,11 +170,49 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
   assert.deepEqual([latest.data.mood, latest.data.services.ws, latest.data.services.orb], ['focused', 'inactive', 'active'], 'puts replace, patches merge');
   status.handlers.patch({data: JSON.stringify({path: '/services', data: {orb: null}})});
   assert.equal('orb' in live.window.__zpLatestStatus.data.services, false, 'null removes a key, as in Firebase');
+
+  // SHOULD 1 & 2: Stale document marks status card stale (offline dot, 'stale' text, 'off' class) and workingOn/mood stale
   const stale = new Date(Date.now() - 300000).toISOString();
-  status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: stale, online: true, services: {ws: 'active'}}})});
+  status.handlers.put({data: JSON.stringify({path: '/', data: {
+    lastHeartbeat: stale,
+    online: true,
+    mood: 'focused',
+    workingOn: 'Building tests',
+    services: {ws: 'active', gateway: 'active'},
+  }})});
   assert.equal(live.window.__zpLatestStatus.online, false, 'stale heartbeat marks offline');
   assert.equal(live.window.__zpLatestStatus.fresh, false, 'stale heartbeat marks fresh false');
   assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot offline', 'service dot gates on freshness');
+  assert.equal(wsCard.querySelector('.st-svc-dot').className, 'st-svc-dot offline', 'stale status card dot is offline (fails if isFresh removed)');
+  assert.equal(wsCard.querySelector('.st-svc-label').textContent, 'stale', 'stale status card label is stale (fails if isFresh removed)');
+  assert.equal(wsCard.querySelector('.st-svc-label').className, 'st-svc-label off', 'stale status card label has off class (fails if isFresh removed)');
+  assert.equal(live.elements.get('st-online-text').textContent, 'STALE');
+  assert.equal(live.elements.get('gw-zephyy-status').textContent, 'stale');
+  assert.equal(live.elements.get('st-working-on').textContent, 'Building tests (stale)', 'stale workingOn marked stale');
+  assert.equal(live.elements.get('st-mood').textContent, 'focused (stale)', 'stale mood marked stale');
+  assert.equal(live.elements.get('st-beat-live-detail').textContent, 'Heartbeat stale — gateway may be sleeping or restarting.');
+
+  // NIT 3: Stale document without services leaves/sets profile dots offline
+  status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: stale, online: true}})});
+  assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot offline', 'profile dot gates on freshness even without data.services');
+
+  // SHOULD 1: Minute timer in zephyy-pages.js re-runs applyStatus and marks newly expired service stale
+  const nearExpiry = new Date(Date.now() - 100000).toISOString(); // 100s old (< 120s threshold)
+  status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: nearExpiry, online: true, services: {ws: 'active'}}})});
+  assert.equal(wsCard.querySelector('.st-svc-dot').className, 'st-svc-dot online', 'active service is online initially before expiry');
+  assert.equal(wsCard.querySelector('.st-svc-label').textContent, 'active');
+  const origNow = Date.now;
+  Date.now = () => origNow() + 30000; // advance clock by 30s => 130s old (> 120s threshold)
+  try {
+    const minuteTimer = live.intervals.find(i => i.ms === 60000);
+    assert.ok(minuteTimer, 'minute timer registered at 60 s interval');
+    minuteTimer.fn(); // fires the 60s timer which re-runs applyStatus()
+    assert.equal(wsCard.querySelector('.st-svc-dot').className, 'st-svc-dot offline', 'minute timer transitions expired service dot to offline');
+    assert.equal(wsCard.querySelector('.st-svc-label').textContent, 'stale', 'minute timer transitions expired service label to stale');
+  } finally {
+    Date.now = origNow;
+  }
+
   status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: now, online: true, services: {ws: 'active'}}})});
   await live.window.__zpConnect();
   assert.equal(live.scripts.length, 3, 'the chat loads app, database and auth once');

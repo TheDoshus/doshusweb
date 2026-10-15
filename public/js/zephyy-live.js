@@ -13,15 +13,15 @@
  * STALENESS-BASED OFFLINE:
  *   Status includes lastHeartbeat (ISO timestamp, updated by systemd pinger every 60s).
  *   If lastHeartbeat > 120s old, status shows offline — no server-side "offline" write needed,
- *   and a pinger that falls silent turns the page offline too. STALE_SEC is the one threshold
- *   every surface uses.
+ *   and a pinger that falls silent turns the page offline too. STALE_SEC is the single threshold
+ *   defined here and exported via window.__zpStaleMs for other scripts (zephyy-pages.js).
  */
 
 (function () {
   'use strict';
 
   const RTDB_URL = 'https://doshusweb-default-rtdb.firebaseio.com';
-  const STALE_SEC = 120; // seconds before heartbeat considered stale (120 s; matches zephyy-pages.js and zephyy-widget.js)
+  const STALE_SEC = 120; // single staleness threshold in the codebase; exported via window.__zpStaleMs
   const HEARTBEAT_MS = STALE_SEC * 1000;
   window.__zpStaleMs = HEARTBEAT_MS;
   const DAILY_FALLBACK = 'Quiet orbit. Keeping the signal clean.';
@@ -106,12 +106,11 @@
       if (/fallback|openrouter/i.test(data.chatModel || '')) badge.classList.add('fallback');
     }
 
-    if (data.services) {
-      Object.keys(SERVICES).forEach(function (key) {
-        const serviceDot = document.getElementById(SERVICES[key]);
-        if (serviceDot) serviceDot.className = 'zp-service-dot ' + (isFresh && data.services[key] === 'active' ? 'online' : 'offline');
-      });
-    }
+    const services = data.services || {};
+    Object.keys(SERVICES).forEach(function (key) {
+      const serviceDot = document.getElementById(SERVICES[key]);
+      if (serviceDot) serviceDot.className = 'zp-service-dot ' + (isFresh && services[key] === 'active' ? 'online' : 'offline');
+    });
 
     // Cached so scripts or HTMX fragments arriving later can hydrate
     window.__zpLatestStatus = { online: isOnline, fresh: isFresh, data: data };
