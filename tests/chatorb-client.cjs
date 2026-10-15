@@ -40,8 +40,13 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
       if (auth.fails) throw new Error('disabled');
       return {user: {uid: 'alice'}};
     }})};
+  const elements = new Map();
+  const getElementById = (id) => {
+    if (!elements.has(id)) elements.set(id, {id, className: '', classList: {add: () => {}}});
+    return elements.get(id);
+  };
   const context = {window, EventSource,
-    document: {readyState: 'complete', hidden: false, addEventListener: () => {}, getElementById: () => null, createElement: () => ({}),
+    document: {readyState: 'complete', hidden: false, addEventListener: () => {}, getElementById, createElement: () => ({}),
       head: {appendChild: (script) => {
         scripts.push(script.src);
         const part = script.src.match(/firebase-(\w+)-compat/)[1]; // each script brings its own piece
@@ -58,23 +63,32 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-live.js'), 'utf8'), context);
   const settle = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
   await settle();
-  return {window, events, updates, listeners, records, scripts, streams, settle};
+  return {window, events, updates, listeners, records, scripts, streams, settle, elements};
 }
 
 (async () => {
   const live = await boot();
+  assert.equal(live.window.__zpStaleMs, 120000, 'exports unified STALE_MS');
   assert.deepEqual(live.scripts, [], 'a visitor who never chats loads no SDK');
   const [status] = live.streams;
   assert.match(status.url, /\/zephyy\/status\.json$/);
   const now = new Date().toISOString();
   status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: now, mood: 'calm', services: {ws: 'active', orb: 'active'}}})});
+  assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot online', 'fresh service is online');
   status.handlers.patch({data: JSON.stringify({path: '/services', data: {ws: 'inactive'}})});
   status.handlers.put({data: JSON.stringify({path: '/mood', data: 'focused'})});
   const latest = live.window.__zpLatestStatus;
   assert.equal(latest.online, true);
+  assert.equal(latest.fresh, true);
   assert.deepEqual([latest.data.mood, latest.data.services.ws, latest.data.services.orb], ['focused', 'inactive', 'active'], 'puts replace, patches merge');
   status.handlers.patch({data: JSON.stringify({path: '/services', data: {orb: null}})});
   assert.equal('orb' in live.window.__zpLatestStatus.data.services, false, 'null removes a key, as in Firebase');
+  const stale = new Date(Date.now() - 300000).toISOString();
+  status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: stale, online: true, services: {ws: 'active'}}})});
+  assert.equal(live.window.__zpLatestStatus.online, false, 'stale heartbeat marks offline');
+  assert.equal(live.window.__zpLatestStatus.fresh, false, 'stale heartbeat marks fresh false');
+  assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot offline', 'service dot gates on freshness');
+  status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: now, online: true, services: {ws: 'active'}}})});
   await live.window.__zpConnect();
   assert.equal(live.scripts.length, 3, 'the chat loads app, database and auth once');
   await live.window.__zpConnect();

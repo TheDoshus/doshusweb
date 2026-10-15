@@ -2,6 +2,9 @@
  * Vanilla JS — renders her whorl glyph + status badge from the 'zephyy-status' event
  * zephyy-live.js sends, so the page must load it too, and zephyy-orb.js (the whorl).
  *
+ * Heartbeat staleness threshold is unified at 120 s (STALE_SEC in zephyy-live.js,
+ * STALE_MS in zephyy-pages.js); zephyy-widget receives resolved status & freshness.
+ *
  * Usage:
  *   <div class="zephyy-badge-embed"></div>   (add inline-hero for the home hero's variant)
  *   <script src="/js/zephyy-widget.js"></script>

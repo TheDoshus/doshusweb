@@ -21,8 +21,9 @@
   'use strict';
 
   const RTDB_URL = 'https://doshusweb-default-rtdb.firebaseio.com';
-  const STALE_SEC = 120; // seconds before heartbeat considered stale
+  const STALE_SEC = 120; // seconds before heartbeat considered stale (120 s; matches zephyy-pages.js and zephyy-widget.js)
   const HEARTBEAT_MS = STALE_SEC * 1000;
+  window.__zpStaleMs = HEARTBEAT_MS;
   const DAILY_FALLBACK = 'Quiet orbit. Keeping the signal clean.';
   const PRIVATE_DAILY_PATTERN = /\b(?:doshus|armand|austin|school|class|course|canvas|assignment|exam|shift|amazon|message|texted|health|medication|doctor|finance|bank|schedule|relationship|partner|girlfriend|boyfriend|family|address|location|phoenix)\b/i;
   // The chat's SDK, pinned like every other script here: one version, checked against these hashes
@@ -87,7 +88,8 @@
   const fresh = function (data) { return Date.now() - (data.lastHeartbeat ? new Date(data.lastHeartbeat).getTime() : 0) < HEARTBEAT_MS; };
   function publish(data) {
     data = data || {};
-    const isOnline = data.online !== false && fresh(data); // a fresh beat, unless the rig said it's going offline
+    const isFresh = fresh(data);
+    const isOnline = data.online !== false && isFresh; // a fresh beat, unless the rig said it's going offline
     const before = window.__zpLatestStatus;
 
     const dot = document.getElementById('zp-status-dot');
@@ -107,12 +109,12 @@
     if (data.services) {
       Object.keys(SERVICES).forEach(function (key) {
         const serviceDot = document.getElementById(SERVICES[key]);
-        if (serviceDot) serviceDot.className = 'zp-service-dot ' + (data.services[key] === 'active' ? 'online' : 'offline');
+        if (serviceDot) serviceDot.className = 'zp-service-dot ' + (isFresh && data.services[key] === 'active' ? 'online' : 'offline');
       });
     }
 
     // Cached so scripts or HTMX fragments arriving later can hydrate
-    window.__zpLatestStatus = { online: isOnline, data: data };
+    window.__zpLatestStatus = { online: isOnline, fresh: isFresh, data: data };
     window.dispatchEvent(new CustomEvent('zephyy-status', { detail: window.__zpLatestStatus }));
   }
 

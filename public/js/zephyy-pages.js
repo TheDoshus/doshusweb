@@ -200,34 +200,46 @@
 
     // The status page (/zephyy/status): the hero badge, service cards and live heartbeat row,
     // from zephyy-live.js's events (one Firebase connection, one heartbeat threshold);
-    // the ages re-render every minute between beats
+    // the status and ages re-render every minute between beats
     function setupStatusPage() {
         const badge = document.getElementById('st-online-text');
         if (!badge) return;
+        // 120 s (120,000 ms) staleness threshold, matching STALE_SEC in zephyy-live.js and zephyy-widget.js
+        const STALE_MS = 120000;
         const el = function (id) { return document.getElementById(id); };
         const SERVICES = { gateway: 'svc-gateway', orb: 'svc-orb', ws: 'svc-ws', embed: 'svc-embed', aether: 'svc-aether' };
         let latest = null;
         let connected = true;
-        function render() {
-            const online = latest.online;
+        function applyStatus() {
+            if (!latest) return;
             const data = latest.data || {};
             const beat = data.lastHeartbeat;
-            el('st-online-dot').className = 'st-svc-dot ' + (online ? 'online' : 'offline');
+            const staleMs = window.__zpStaleMs || STALE_MS;
+            const isFresh = Boolean(beat && (Date.now() - new Date(beat).getTime() < staleMs));
+            const online = Boolean(data.online !== false && isFresh);
+            const dot = el('st-online-dot');
+            if (dot) dot.className = 'st-svc-dot ' + (online ? 'online' : 'offline');
             badge.textContent = online ? 'ONLINE' : (data.online ? 'STALE' : 'OFFLINE');
             badge.className = 'st-hero-badge ' + (online ? 'online' : 'off');
             if (data.workingOn) el('st-working-on').textContent = data.workingOn;
             if (data.mood) el('st-mood').textContent = data.mood;
             const gateway = el('gw-zephyy-status');
-            gateway.textContent = online ? 'online' : 'offline';
-            gateway.className = 'st-gw-status ' + (online ? 'online' : 'offline');
+            if (gateway) {
+                gateway.textContent = online ? 'online' : (data.online ? 'stale' : 'offline');
+                gateway.className = 'st-gw-status ' + (online ? 'online' : 'offline');
+            }
             Object.keys(SERVICES).forEach(function (key) {
                 const card = el(SERVICES[key]);
+                if (!card) return;
                 const value = (data.services || {})[key];
-                const up = value === 'active';
-                card.querySelector('.st-svc-dot').className = 'st-svc-dot ' + (up ? 'online' : 'offline');
+                const up = Boolean(isFresh && value === 'active');
+                const dotEl = card.querySelector('.st-svc-dot');
+                if (dotEl) dotEl.className = 'st-svc-dot ' + (up ? 'online' : 'offline');
                 const label = card.querySelector('.st-svc-label');
-                label.textContent = value || 'unknown';
-                label.className = 'st-svc-label' + (up ? '' : ' off');
+                if (label) {
+                    label.textContent = up ? (value || 'unknown') : (value === 'active' ? 'stale' : (value || 'unknown'));
+                    label.className = 'st-svc-label' + (up ? '' : ' off');
+                }
             });
             el('st-updated-text').textContent = !connected
                 ? (beat ? 'Firebase offline — showing the last reading.' : 'Can\'t reach the live feed — retrying.')
@@ -240,12 +252,16 @@
                 ? 'All clear — services nominal. Heartbeat fresh.'
                 : 'Heartbeat stale — gateway may be sleeping or restarting.';
         }
-        window.addEventListener('zephyy-status', function (event) { latest = event.detail; render(); });
+        window.addEventListener('zephyy-status', function (event) { latest = event.detail; applyStatus(); });
         window.addEventListener('zephyy-connection', function (event) {
             connected = event.detail.connected;
-            if (latest) render();
+            if (latest) applyStatus();
         });
-        setInterval(function () { if (latest) render(); }, 60000);
+        if (window.__zpLatestStatus) {
+            latest = window.__zpLatestStatus;
+            applyStatus();
+        }
+        setInterval(function () { if (latest) applyStatus(); }, 60000);
     }
 
     // Subpage titles reveal word by word as they scroll in; screen readers get the whole title
