@@ -192,9 +192,11 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
   assert.equal(live.elements.get('st-mood').textContent, 'focused (stale)', 'stale mood marked stale');
   assert.equal(live.elements.get('st-beat-live-detail').textContent, 'Heartbeat stale — gateway may be sleeping or restarting.');
 
-  // NIT 3: Stale document without services leaves/sets profile dots offline
+  // NIT 3: Stale document without services transitions a green profile dot offline
+  status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: now, online: true, services: {ws: 'active'}}})});
+  assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot online', 'service dot is online when fresh');
   status.handlers.put({data: JSON.stringify({path: '/', data: {lastHeartbeat: stale, online: true}})});
-  assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot offline', 'profile dot gates on freshness even without data.services');
+  assert.equal(live.elements.get('svc-dot-ws').className, 'zp-service-dot offline', 'stale document without services transitions green dot offline (fails if guarded by data.services)');
 
   // SHOULD 1: Minute timer in zephyy-pages.js re-runs applyStatus and marks newly expired service stale
   const nearExpiry = new Date(Date.now() - 100000).toISOString(); // 100s old (< 120s threshold)
