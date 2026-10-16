@@ -152,14 +152,23 @@
    is the box's width, and a block holds its content as the box's body did */
 .panel.home-box > .panel-body > .board { --gutter: 0.25rem; --row: 1rem; margin: calc(-1 * var(--gutter) - 1px); }
 .panel.home-box > .panel-body > .board > .panel > .panel-body { padding: 0; gap: 1rem; }
-/* The Finance box's: the chart beside the links above 770.5px of box, everything stacked below it,
-   a phone's grid from 468.5px, where its content flipped */
-@container box (max-width: 1080px) { #finance .board { --cols: 24; } }
-@container box (max-width: 770.5px) { #finance .board { --cols: 12; } }
-@container box (max-width: 468.5px) { #finance .board { --cols: 6; --min-cols: 3; } }
+/* Their tiers flip where the boxes' content did: side by side above 770.5px of box, stacked below
+   it, a phone's grid from 468.5px */
+@container box (max-width: 1080px) { .home-box .board { --cols: 24; } }
+@container box (max-width: 770.5px) { .home-box .board { --cols: 12; } }
+@container box (max-width: 468.5px) { .home-box .board { --cols: 6; --min-cols: 3; } }
+/* The Finance box's: the chart beside the links, the cards and freeze buttons under them */
 #fin-intro .category-tags { width: auto; } /* it kept clear of the chart at 55% of the box, now beside it */
 #fin-chart .btc-chart-widget { position: static; width: auto; margin: 0; }
 #fin-cards .credit-card-carousel { margin: 0; }
+/* The Lounge box's: Spotify beside the meme (each a block of its own, so no flex row caps them),
+   the meme a square at 48% of the box as it was (96% of its half), 48% centered once stacked, 95%
+   on a phone; its hover zoom spills past its block as it did past its row */
+#lg-spotify .spotify-section { flex: none; max-width: none; } /* its own height, not its block's (a floor that's its own height never lets go) */
+#lg-meme > .panel-body { overflow: visible; }
+#lg-meme .random-meme { width: 96%; margin: 0 auto; }
+@container box (max-width: 770.5px) { #lg-meme .random-meme { width: 48%; } }
+@container box (max-width: 468.5px) { #lg-meme .random-meme { width: 95%; } }
 .panel.home-box p { opacity: 0.9; line-height: 1.6; font-size: clamp(0.9rem, 2.5vw, 1rem); }
 .panel.finance-box > .panel-head > h2 { font-size: clamp(2rem, 3vw, 2.25rem); }
 .panel.home-box h3 { margin-bottom: 0.5rem; font-size: clamp(1.2rem, 4vw, 1.5rem); } /* the Finance box's quick-link header */

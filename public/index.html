@@ -204,9 +204,12 @@
                 </div>
             </aside>
 
-            <article class="panel home-box coworkers-spot" id="amazonian" data-accent="amzn" data-x="1" data-y="59" data-w="24" data-h="17" data-mid="1 59 12 17" data-phone="1 51 6 24">
+            <article class="panel home-box coworkers-spot" id="amazonian" data-accent="amzn" data-x="1" data-y="59" data-w="24" data-h="17" data-mid="1 59 12 18" data-phone="1 51 6 24">
                 <header class="panel-head"><h2>📦 Amazonian Spot</h2></header>
                 <div class="panel-body">
+                    <div class="board" data-board="home-amazonian" data-surface="clear" data-tall>
+                        <section class="panel" id="az-intro" aria-label="Amazonian intro" data-x="1" data-y="1" data-w="24" data-h="3" data-mid="1 1 12 4" data-phone="1 1 6 5">
+                            <div class="panel-body">
                     <!-- Toggle Switch -->
                     <div class="link-toggle-container">
                         <label class="toggle-label">
@@ -217,12 +220,18 @@
                     </div>
 
                     <p>Useful tools and resource pages I've created for my Amazon team that makes our work life easier.</p>
-
+                            </div>
+                        </section>
+                        <section class="panel" id="az-slack" aria-label="Slack" data-x="1" data-y="4" data-w="24" data-h="4" data-mid="1 5 12 4" data-phone="1 6 6 4">
+                            <div class="panel-body">
                     <div class="work-email">
                         <img src="assets/icons/slackcon.svg" alt="Slack" class="slack-icon">
                         <span id="slackText" class="email-hidden">•••••••@••••••••••</span>
                     </div>
-
+                            </div>
+                        </section>
+                        <section class="panel" id="az-tools" aria-label="Work tools" data-x="1" data-y="8" data-w="24" data-h="18" data-mid="1 9 12 22" data-phone="1 10 6 27">
+                            <div class="panel-body">
                     <div class="tool-description">
                         <strong>Doshus Printmon:</strong> Access the printmon version I've put together and host on Amazons internal network.
                     </div>
@@ -242,24 +251,37 @@
                     <!-- Pills are built at runtime by home.js from RTDB /config/worklinks
                          (keeps corp URLs and the work email out of the repo) -->
                     <div class="button-group" id="workLinks"></div>
+                            </div>
+                        </section>
+                    </div>
                 </div>
             </article>
 
-            <article class="panel home-box lounge-box" id="lounge" data-accent="lounge" data-x="1" data-y="78" data-w="24" data-h="34" data-mid="1 79 12 36" data-phone="1 76 6 61">
+            <article class="panel home-box lounge-box" id="lounge" data-accent="lounge" data-x="1" data-y="78" data-w="24" data-h="34" data-mid="1 80 12 37" data-phone="1 76 6 62">
                 <header class="panel-head"><h2>🎬 Lounge</h2></header>
                 <div class="panel-body">
+                    <div class="board" data-board="home-lounge" data-surface="clear" data-tall>
+                        <section class="panel" id="lg-intro" aria-label="Lounge intro" data-x="1" data-y="1" data-w="24" data-h="4" data-mid="1 1 12 4" data-phone="1 1 6 6">
+                            <div class="panel-body">
                     <p>My collection of things I find kinda entertaining 🙄</p>
-
-                    <div class="lounge-content">
+                            </div>
+                        </section>
+                        <section class="panel" id="lg-spotify" aria-label="Spotify player" data-x="1" data-y="5" data-w="12" data-h="33" data-mid="1 5 12 33" data-phone="1 7 6 33">
+                            <div class="panel-body">
                         <div class="spotify-section">
                             <div class="spotify-embed">
                                 <iframe title="Spotify Player" id="spotify-embed" height="500" loading="lazy" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
                             </div>
                         </div>
-
+                            </div>
+                        </section>
+                        <section class="panel" id="lg-meme" aria-label="Random meme" data-x="13" data-y="5" data-w="12" data-h="34" data-mid="1 38 12 21" data-phone="1 40 6 19">
+                            <div class="panel-body">
                         <div class="random-meme" id="meme-container"></div>
-                    </div>
-
+                            </div>
+                        </section>
+                        <section class="panel" id="lg-sites" aria-label="Interesting sites" data-x="1" data-y="39" data-w="24" data-h="16" data-mid="1 59 12 33" data-phone="1 59 6 34">
+                            <div class="panel-body">
                     <p>A few interesting sites:</p>
                     <div class="featured-sites">
                         <a href="https://dos.zone/" class="site-card" target="_blank" rel="noreferrer">
@@ -287,7 +309,10 @@
                             <span>Cursor Dance Party!</span>
                         </a>
                     </div>
-
+                            </div>
+                        </section>
+                        <section class="panel" id="lg-links" aria-label="Lounge links" data-x="1" data-y="55" data-w="24" data-h="5" data-mid="1 92 12 22" data-phone="1 93 6 22">
+                            <div class="panel-body">
                     <div class="button-group">
                         <a href="thelounge.html" class="pillBtn lounge">
                             <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M500-120v-440q-14-18-34.5-29T420-600q-25 0-45.5 10.5T340-560h-80q0-117 81.5-198.5T540-840q117 0 198.5 81.5T820-560h-80q-14-19-34.5-29.5T660-600q-25 0-45.5 11T580-560v440h-80Zm33-520h14q23-19 52.5-29.5T661-680q11 0 21.5 1.5T704-675q-27-39-70-62t-94-23q-51 0-94 23t-70 62q11-2 21.5-3.5T419-680q32 0 61.5 10.5T533-640Zm107 520v-240h240v240h-80v-160h-80v160h-80Zm-480 0v-122q-18-5-30-19t-14-34L80-680h25q23 0 40.5 16t19.5 39l24 265h171q33 0 56.5 23.5T440-280v40h-40v120h-60v-120H220v120h-60Zm380-520Z"/></svg>
@@ -306,10 +331,13 @@
                             <img src="assets/icons/instagramcon.svg" alt="" class="btn-icon"> My meme page →
                         </a>
                     </div>
+                            </div>
+                        </section>
+                    </div>
                 </div>
             </article>
 
-            <article class="panel home-box finance-box" id="finance" data-accent="finance" data-x="1" data-y="115" data-w="24" data-h="28" data-mid="1 118 12 28" data-phone="1 141 6 43">
+            <article class="panel home-box finance-box" id="finance" data-accent="finance" data-x="1" data-y="115" data-w="24" data-h="28" data-mid="1 120 12 28" data-phone="1 142 6 43">
                 <header class="panel-head"><h2>💰 Finance</h2></header>
                 <div class="panel-body">
                     <div class="board" data-board="home-finance" data-surface="clear" data-tall>

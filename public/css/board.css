@@ -152,8 +152,9 @@
 }
 .board[data-surface="clear"].is-arranging > .panel:not(.is-dragging, .is-resizing) { background: oklch(var(--space-oled) / 0.35); border-color: oklch(var(--accent) / 0.5); }
 .board[data-surface="clear"].is-arranging > .panel::before, .board[data-surface="clear"].is-arranging > .panel::after { opacity: 1; }
-/* A finger resting on a panel charges a glow as it swells, so the hold reads as a grab */
-.panel.is-holding { scale: 1.02; transition-duration: var(--hold);
+/* A finger resting on a panel charges a glow as it swells, so the hold reads as a grab; it selects no
+   text and opens no picture menu meanwhile (a block is held by what it holds, not a strip) */
+.panel.is-holding { scale: 1.02; transition-duration: var(--hold); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
     border-color: oklch(var(--accent)); box-shadow: 0 0 0 2px oklch(var(--accent) / 0.55), 0 0 44px oklch(var(--accent) / 0.45);
 }
 .panel.is-dragging, .panel.is-resizing { z-index: 50; border-color: oklch(var(--accent));
@@ -178,6 +179,9 @@
     background: radial-gradient(circle, oklch(var(--accent)) 1.1px, transparent 1.6px) 0 0 / 6px 4px;
 }
 :where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within, .is-holding, .is-dragging) > .panel-dots::before { opacity: 1; }
+/* Pressed, they light up: which also tells Chromium they answer a press, so a finger on them isn't
+   moved onto a link beside or under them (its touch adjustment), as on a block of links */
+.panel-dots:active::before { opacity: 1; }
 .panel-icon { grid-column: 1; margin-right: var(--sp-s); width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 9px;
     background: oklch(var(--accent) / 0.12); border: 1px solid oklch(var(--accent) / 0.4); color: oklch(var(--accent));
 }
@@ -352,6 +356,18 @@
 /* Its Reset and Add widget sit with its panel's tools, as they are */
 .panel-tools > .board-tools { display: contents; }
 .panel-tools > .board-tools > button[hidden] { display: none; }
+/* A block's grab strip covers nothing it holds: the block answers the strip's presses itself
+   (board.js). Its ✕ and corner still sit on what it holds (it has no head, and its content runs to
+   its edges): a pointer sees them as it reaches the block, but on a touch screen they'd be live at
+   rest, so there they wait unseen and untouchable until the block is picked: a finger holding it,
+   or having set it down, until a press lands elsewhere. Its dots stay as the cue */
+.panel .board > .panel > .panel-grab { pointer-events: none; }
+.panel .board > .panel > .panel-grab > .panel-tools { pointer-events: auto; }
+.panel .board > .panel.is-picked > .panel-grab > .panel-tools, .panel .board > .panel.is-picked > .panel-edge[data-dir="se"] { opacity: 1; }
+@media (hover: none) {
+    .panel .board > .panel:not(.is-picked, .is-holding, .is-dragging, .is-resizing, :has(:focus-visible)) > .panel-grab > .panel-tools,
+    .panel .board > .panel:not(.is-picked, .is-holding, .is-dragging, .is-resizing, :has(:focus-visible)) > .panel-edge { opacity: 0; pointer-events: none; }
+}
 /* While its blocks are arranged, its room below them shows past its panel's bottom, over what's there */
 .panel:has(> .panel-body > .board.is-arranging) { z-index: 40; }
 .panel-body:has(> .board.is-arranging) { overflow: visible; }

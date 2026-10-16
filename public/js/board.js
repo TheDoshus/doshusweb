@@ -428,6 +428,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const EDGE = 64;
     // The handle a drag ran from since the last press: the click its release fires is no double-click
     let dragged = null;
+    // A block a finger has set down stays picked, its ✕ and corner live (board.css), until a press lands outside it
+    function pick(p) {
+        if (p.classList.contains('is-picked')) return;
+        p.classList.add('is-picked');
+        const off = new AbortController();
+        addEventListener('pointerdown', (ev) => { if (!p.contains(ev.target)) { p.classList.remove('is-picked'); off.abort(); } }, { capture: true, signal: off.signal });
+    }
     function begin(handle, start, e) {
         if (active) return;
         handle.setPointerCapture(e.pointerId);
@@ -453,7 +460,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             op.move(last); // re-aim at whatever is under the pointer now
         };
         // The panel lands before the board drops its arranging room, so the page can't lose its scroll
-        const end = (cancel) => { stop.abort(); cancelAnimationFrame(scroll); active = null; op.done(cancel); board.classList.remove('is-arranging'); haptic(); };
+        const end = (cancel) => {
+            stop.abort(); cancelAnimationFrame(scroll); active = null; op.done(cancel); board.classList.remove('is-arranging'); haptic();
+            if (host && e.pointerType !== 'mouse') pick(handle.closest('.panel'));
+        };
         active = () => end(true);
         on('pointermove', mine((ev) => { last = ev; op.move(ev); scroll ||= requestAnimationFrame(edge); }));
         on('pointerup', mine(() => end(false)));
@@ -474,11 +484,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // `hold`, a finger or pen rests on the handle for --hold (board.css) before the panel lifts,
     // so a swipe that starts on it still scrolls the page; anything else lifts once it has
     // moved a few px from where it pressed
-    function track(handle, start, hold) {
+    // `where` narrows a handle to the presses it answers (a block answers on its strip's band only)
+    function track(handle, start, hold, where) {
         handle.addEventListener('pointerdown', (e) => {
             dragged = null;
-            // A press on a button inside the handle (the head's ✕), or in a board-in-the-panel's menu, is a click, not a drag
-            if (e.button || cols() < 2 || (e.target !== handle && e.target.closest('button, a, .board-menu'))) return;
+            // A press on a control inside the handle (the head's ✕, a block's link or toggle), or in a
+            // board-in-the-panel's menu, is a click, not a drag
+            if (e.button || cols() < 2 || (where && !where(e)) || (e.target !== handle && e.target.closest('button, a, input, label, select, textarea, summary, .board-menu'))) return;
             const panel = handle.closest('.panel');
             const wait = new AbortController();
             const on = (type, fn) => handle.addEventListener(type, fn, { signal: wait.signal });
@@ -496,7 +508,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 return;
             }
             e.preventDefault();
-            handle.setPointerCapture(e.pointerId); // a thin edge loses a fast pointer otherwise
+            // A thin edge loses a fast pointer otherwise; a block is captured only once it moves, so a click lands on what it pressed
+            if (!where) handle.setPointerCapture(e.pointerId);
             on('pointermove', (ev) => { if (moved(ev, 3)) { quit(); begin(handle, start, e)?.move(ev); } });
         });
     }
@@ -707,7 +720,15 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const dots = el('span', 'panel-dots');
         dots.setAttribute('aria-hidden', 'true');
         p.append(dots);
-        [head, dots].forEach((handle) => track(handle, moveFrom(p), true));
+        // A block (a headless panel on a board in a panel) holds content up to its top, links and all: its
+        // strip only holds its tools, and the block answers a press on the strip's band itself unless
+        // it's on a control, so nothing it holds is covered (an embed keeps its own presses; the dots move it)
+        const band = !headed && host && ((e) => {
+            const r = head.getBoundingClientRect();
+            return own(p, '.panel-body')?.contains(e.target) && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        });
+        track(band ? p : head, moveFrom(p), true, band);
+        track(dots, moveFrom(p), true);
 
         keyed(grip, p, (r, dx, dy, next) => {
             r.x = clamp(r.x + dx, 1, cols() - r.w + 1);
@@ -767,16 +788,14 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // Height alone never re-measures: a phone's toolbar hiding mid-scroll mustn't move panels.
     // Crossing into another tier swaps layouts, ending a gesture first so it can't save into the other one
     let again, stale = false, width = innerWidth;
-    const remeasure = () => {
-        clearTimeout(again);
-        // Arranged, it waits: settle() asks again once the layout is back at its default
-        again = setTimeout(() => {
-            // Mid-gesture on any board, or a finger resting on a panel (it swells): once it ends
-            if (active || board.querySelector('.is-holding')) return remeasure();
-            stale = arranged && !same(layout, base); // a measure skipped: the visitor's own layout this visit
-            if (!stale) load(undo);
-        }, 150);
+    // Arranged, it waits: settle() asks again once the layout is back at its default
+    const measure = () => {
+        // Mid-gesture on any board, or a finger resting on a panel (it swells): once it ends
+        if (active || board.querySelector('.is-holding')) return remeasure();
+        stale = arranged && !same(layout, base); // a measure skipped: the visitor's own layout this visit
+        if (!stale) load(undo);
     };
+    const remeasure = () => { clearTimeout(again); again = setTimeout(measure, 150); };
     load();
     document.fonts?.ready.then(remeasure);
     board.addEventListener('load', remeasure, true);
@@ -789,7 +808,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const widthChanged = () => {
         if (board.clientWidth === across) return;
         across = board.clientWidth;
-        if (keyFor() === key) return remeasure();
+        if (keyFor() === key) return measure(); // what moved its panel already waited out its own changes
         if (active) { render(fit(copy(layout))); tell(); } // meanwhile the old layout, fitted into the new grid
         swap();
     };

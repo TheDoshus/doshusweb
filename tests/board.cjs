@@ -1241,7 +1241,9 @@ const TESTS = {
             all.push(...errors);
             const off = await page.evaluate(() => [...document.querySelectorAll('.board > .panel')].flatMap((p) => {
                 // Each at its own board's tier: the page's by the window, a board in a panel's by its own width
+                // (a board in a panel at its wide tier was measured at a roomy window: the case above)
                 const tier = ({ 6: 'phone', 12: 'mid' })[getComputedStyle(p.parentElement).getPropertyValue('--cols').trim()] ?? 'wide';
+                if (tier === 'wide' && p.parentElement.closest('.panel')) return [];
                 const want = (tier === 'wide' ? ['x', 'y', 'w', 'h'].map((k) => p.dataset[k]) : p.dataset[tier].split(' ')).map(Number), got = ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k));
                 return got.join() === want.join() ? [] : [`${p.id} ${want} → ${got}`]; // measured at this width, so exactly
             }));
@@ -1658,6 +1660,155 @@ const TESTS = {
             await sw.context().close();
         }
         return all.concat(errors);
+    },
+    async "Home: the Lounge box's blocks sit where its content did, and move within it"(browser) {
+        const all = [];
+        // Tops of what each block holds, from the box's content edge, on the page before
+        const was = { 1440: [24, 64, 64, 633, 884], 901: [24, 64, 64, 608, 865], 390: [24, 89, 609, 941, 1480] };
+        for (const opts of [{ viewport: { width: 1440, height: 900 } }, { ...FOLD, viewport: { width: 901, height: 700 } }, { ...PHONE, viewport: { width: 390, height: 700 } }]) {
+            const { page, errors } = await open(browser, opts, { path: '/' });
+            all.push(...errors);
+            const w = opts.viewport.width;
+            const got = await page.evaluate(() => { const b = document.querySelector('#lounge > .panel-body'), top = b.getBoundingClientRect().top + parseFloat(getComputedStyle(b).paddingTop);
+                const at = (q) => Math.round(document.querySelector(q).getBoundingClientRect().top - top);
+                const meme = document.querySelector('#lg-meme .random-meme').getBoundingClientRect(), spot = document.querySelector('#lg-spotify .spotify-section').getBoundingClientRect(), frame = document.querySelector('#lg-spotify iframe').getBoundingClientRect();
+                return { tops: ['#lg-intro p', '#lg-spotify .spotify-section', '#lg-meme .random-meme', '#lg-sites p', '#lg-links .button-group'].map(at), meme: [Math.round(meme.width), Math.round(meme.height)], spotify: Math.round(spot.height - frame.height),
+                    zoom: getComputedStyle(document.querySelector('#lg-meme > .panel-body')).overflowY };
+            });
+            // Each block within 16px of its old spot; the meme a square at 48% of the box (95% on a phone); Spotify its own height, not its
+            // block's (a floor that's its own height never lets go); the meme's hover zoom free to spill past its block
+            assert.deepEqual([got.tops.map((t, i) => Math.abs(t - was[w][i]) <= 16), Math.abs(got.meme[0] - { 1440: 529, 901: 370, 390: 293 }[w]) <= 8, got.meme[0] === got.meme[1], got.spotify < 10, got.zoom],
+                [[true, true, true, true, true], true, true, true, 'visible'], `${w}px: ${JSON.stringify(got)} (tops were ${was[w]})`);
+            await page.context().close();
+        }
+        // The meme carried by its strip to the box's left: it lands, the box holds its blocks, the move is saved
+        const { page, errors } = await open(browser, WIDE, { path: '/' });
+        all.push(...errors);
+        await center(page, 'lounge');
+        const cw = await page.evaluate(() => document.querySelector('#lounge .board').clientWidth / 24);
+        await drag(page, '#lg-meme > .panel-grab', -12 * cw, 0);
+        await sleep(400);
+        const held = () => page.evaluate(() => { const b = document.querySelector('#lounge > .panel-body'); return b.scrollHeight - b.clientHeight; });
+        assert.deepEqual([(await cells(page, 'lg-meme'))[0], await held() <= 1, !!await page.evaluate(() => localStorage.getItem('board:home-lounge'))], [1, true, true], `meme carried left: ${await cells(page, 'lg-meme')}`);
+        // Narrowed past 770.5px of box, its blocks stack: Spotify, the meme, the sites, the links
+        await page.evaluate(() => localStorage.clear());
+        await page.reload();
+        await sleep(600);
+        await page.focus('#lounge > .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowLeft');
+        await sleep(800);
+        const stack = await page.evaluate(() => ['lg-intro', 'lg-spotify', 'lg-meme', 'lg-sites', 'lg-links'].map((id) => +document.getElementById(id).style.getPropertyValue('--y')));
+        assert.deepEqual([stack.every((y, i) => !i || y > stack[i - 1]), await page.evaluate(() => getComputedStyle(document.querySelector('#lounge .board')).getPropertyValue('--cols').trim()), await held() <= 1], [true, '12', true], `narrowed: rows ${stack}`);
+        return all.concat(errors);
+    },
+    async "Home: a block's links take their presses, its strip covering nothing, and on a touch screen its ✕ and corner wait for a finger to pick it"(browser) {
+        const all = [];
+        // Every control a block holds answers a press anywhere on it: no block's strip or dots are over it,
+        // and on a touch screen, at rest, nothing of the board's (a pointer sees a ✕ or corner as it reaches the block)
+        const covered = (page, touch) => page.evaluate(async (touch) => {
+            const out = [];
+            for (const n of document.querySelectorAll('.panel .board > .panel > .panel-body :is(a, button, input, label, #slackText)')) {
+                n.scrollIntoView({ block: 'center' });
+                await new Promise(requestAnimationFrame);
+                const r = n.getBoundingClientRect();
+                if (!r.width || !r.height) continue;
+                for (const [fx, fy] of [[0.5, 0.5], [0.1, 0.15], [0.9, 0.15], [0.1, 0.85], [0.9, 0.85]]) {
+                    const hit = document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy);
+                    const chrome = hit && !n.contains(hit) && (hit.matches('.panel-grab') ? hit : hit.closest(touch ? '.panel-dots, .panel-tools, .panel-edge' : '.panel-dots'));
+                    if (chrome) { out.push(`${n.closest('.panel').id} "${n.textContent.trim().slice(0, 16)}" under its ${chrome.className.split(' ')[0]}`); break; }
+                }
+            }
+            return out;
+        }, touch);
+        for (const [opts, touch] of [[WIDE, false], [{ viewport: { width: 900, height: 800 } }, false], [FOLD, true], [PHONE, true]]) {
+            const { page, errors } = await open(browser, opts, { path: '/' });
+            all.push(...errors);
+            assert.deepEqual(await covered(page, touch), [], `${opts.viewport.width}px`);
+            await page.context().close();
+        }
+        // A pointer: a click on the Slack line (a plain span, clickable) and on a link at the top of their blocks lands on them;
+        // a drag from the strip's band on a block's text moves it; one starting below the band selects text, as it did
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/' });
+            all.push(...errors);
+            await page.evaluate(() => { window.__clicked = []; addEventListener('click', (e) => { window.__clicked.push(e.target.closest('#slackText') ? 'slack' : e.target.closest('a') ? 'link' : e.target.className); e.preventDefault(); }, true); });
+            for (const q of ['#slackText', '#lg-links a']) {
+                await page.evaluate((q) => document.querySelector(q).scrollIntoView({ block: 'center' }), q);
+                await sleep(150);
+                const b = await page.locator(q).first().boundingBox();
+                await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+                await sleep(100);
+            }
+            assert.deepEqual(await page.evaluate(() => window.__clicked), ['slack', 'link'], 'clicks on a block\'s content');
+            await center(page, 'amazonian');
+            const intro = await cells(page, 'az-intro');
+            await drag(page, '#az-intro p', 0, 120);
+            assert.ok((await cells(page, 'az-intro'))[1] > intro[1], `the Amazonian intro dragged down by its text: ${intro} -> ${await cells(page, 'az-intro')}`);
+            const tools = await cells(page, 'az-tools');
+            const t = await page.locator('#az-tools .tool-description').nth(2).boundingBox();
+            await page.mouse.move(t.x + 10, t.y + t.height / 2);
+            await page.mouse.down();
+            await page.mouse.move(t.x + 200, t.y + t.height / 2, { steps: 8 });
+            await page.mouse.up();
+            await sleep(200);
+            assert.deepEqual([await cells(page, 'az-tools'), (await page.evaluate(() => getSelection().toString())).length > 5], [tools, true], 'a drag on the tool notes below the band selects their text');
+            await page.context().close();
+        }
+        // A finger: held on a block it lifts (selecting nothing meanwhile); let go, the block is picked, its ✕ shown
+        // and live, and a tap on it hides the block. A press elsewhere unpicks one
+        {
+            const { ctx, page, errors } = await open(browser, PHONE, { path: '/' });
+            all.push(...errors);
+            const cdp = await ctx.newCDPSession(page);
+            const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts });
+            const close = (id) => page.evaluate((id) => {
+                const p = document.getElementById(id), c = p.querySelector(':scope > .panel-grab .panel-close'), r = c.getBoundingClientRect(), hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                return { picked: p.classList.contains('is-picked'), shown: getComputedStyle(c.parentElement).opacity, live: !!hit?.closest('.panel-close') && p.contains(hit), at: { x: r.left + r.width / 2, y: r.top + r.height / 2 } };
+            }, id);
+            // A finger-sized touch (Chromium moves one onto whatever answers a press nearby); a link it ends on doesn't navigate
+            const hold = async (at, mid) => { await touch('touchStart', [{ ...at, radiusX: 12, radiusY: 12 }]); await sleep(200); const during = await mid?.(); await sleep(500); await touch('touchEnd', []); await sleep(300); return during; };
+            await page.evaluate(() => addEventListener('click', (e) => e.target.closest('a') && e.preventDefault(), true));
+            await center(page, 'lg-links');
+            const rest = await close('lg-links');
+            const dots = await page.evaluate(() => { const r = document.querySelector('#lg-links > .panel-dots').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+            const selecting = await hold(dots, () => page.evaluate(() => getComputedStyle(document.getElementById('lg-links')).userSelect));
+            const picked = await close('lg-links');
+            await touch('touchStart', [picked.at]);
+            await touch('touchEnd', []);
+            await sleep(400);
+            const hidden = await page.evaluate(() => !document.getElementById('lg-links').checkVisibility());
+            assert.deepEqual([rest.picked, rest.shown, rest.live, selecting, picked.picked, picked.shown, picked.live, hidden], [false, '0', false, 'none', true, '1', true, true], 'the Lounge links at rest, held, picked, then their ✕ tapped');
+            // The Slack line, held by its icon and let go, then a press on the page's hero
+            await center(page, 'az-slack');
+            const icon = await page.locator('#az-slack .slack-icon').boundingBox();
+            await hold({ x: icon.x + icon.width / 2, y: icon.y + icon.height / 2 });
+            const slack = await close('az-slack');
+            await page.evaluate(() => scrollTo(0, 0));
+            await sleep(200);
+            await touch('touchStart', [{ x: 20, y: 200 }]);
+            await touch('touchEnd', []);
+            await sleep(200);
+            await center(page, 'az-slack');
+            const after = await close('az-slack');
+            assert.deepEqual([slack.picked, slack.live, after.picked, after.live], [true, true, false, false], 'the Slack line picked, then a press elsewhere');
+            await page.context().close();
+        }
+        return all;
+    },
+    async "Home: the Amazonian box's blocks sit where its content did"(browser) {
+        const all = [];
+        // Tops of the intro, the Slack line and the tools from the box's content edge, on the page before (its toggle hidden: no work links here)
+        const was = { 1440: [0, 42, 105], 901: [0, 42, 105], 390: [0, 85, 147] };
+        for (const opts of [{ viewport: { width: 1440, height: 900 } }, { ...FOLD, viewport: { width: 901, height: 700 } }, { ...PHONE, viewport: { width: 390, height: 700 } }]) {
+            const { page, errors } = await open(browser, opts, { path: '/' });
+            all.push(...errors);
+            const w = opts.viewport.width;
+            const got = await page.evaluate(() => { const b = document.querySelector('#amazonian > .panel-body'), top = b.getBoundingClientRect().top + parseFloat(getComputedStyle(b).paddingTop);
+                return { tops: ['#az-intro p', '#az-slack .work-email', '#az-tools .tool-description'].map((q) => Math.round(document.querySelector(q).getBoundingClientRect().top - top)), inside: b.scrollHeight - b.clientHeight }; });
+            assert.deepEqual([got.tops.map((t, i) => Math.abs(t - was[w][i]) <= 8), got.inside <= 1], [[true, true, true], true], `${w}px: ${JSON.stringify(got)} (tops were ${was[w]})`);
+            await page.context().close();
+        }
+        return all;
     },
     async "Home: a box can't be made smaller than what it holds, and the card's frame follows its cells as it's resized"(browser) {
         const { page, errors } = await open(browser, { viewport: { width: 1440, height: 900 } }, { path: '/' });
