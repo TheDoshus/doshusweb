@@ -200,7 +200,25 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             const row = (r) => `${r.y}/${r.h}`;
             const need = new Map();
             own.forEach((r, p) => { if (!r.collapsed && !r.hidden && !kept(p)) need.set(row(r), Math.max(need.get(row(r)) ?? 0, clamp(contentH(p), minH(p), maxH(p)))); });
-            own.forEach((r) => { if (!r.collapsed) r.h = Math.max(r.h, need.get(row(r)) ?? 0); });
+            if (!('tall' in board.dataset)) {
+                own.forEach((r) => { if (!r.collapsed) r.h = Math.max(r.h, need.get(row(r)) ?? 0); });
+                return fit(own);
+            }
+            // A tall board reads top to bottom, as the page it came from flowed: a row is as tall as
+            // what it holds at this width, shorter too, and each panel keeps the gap its cells give
+            // it under the panels right above it in its columns (so the cells are exact where they
+            // were measured, and a box never holds a blank band)
+            const was = new Map([...own].map(([p, r]) => [p, { ...r }]));
+            const shown = [...own].filter(([, r]) => !r.hidden).sort(([, a], [, b]) => a.y - b.y);
+            const over = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w;
+            const under = (a, b) => a.y + a.h <= b.y && over(a, b); // a ends above b, in some of its columns
+            shown.forEach(([p, r]) => {
+                const o = was.get(p);
+                if (!r.collapsed) r.h = need.get(row(o)) ?? r.h;
+                const above = shown.map(([q]) => q).filter((q) => under(was.get(q), o));
+                const right = above.filter((q) => !above.some((m) => m !== q && under(was.get(q), was.get(m))));
+                if (right.length) r.y = Math.max(...right.map((q) => own.get(q).y + own.get(q).h + o.y - (was.get(q).y + was.get(q).h)));
+            });
             return fit(own);
         }
         const order = [...wide].sort(([, a], [, b]) => a.y - b.y || a.x - b.x).map(([p]) => p);

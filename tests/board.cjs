@@ -822,11 +822,14 @@ const TESTS = {
         const whole = await devcore();
         await page.focus('#stack .panel-grip');
         await page.keyboard.press('ArrowRight'); // saved: the layout is the visitor's
-        await ctx.route('**/*.woff2', async (r) => { await sleep(800); r.continue(); });
+        let release;
+        const held = new Promise((r) => { release = r; });
+        await ctx.route('**/*.woff2', async (r) => { await held; r.continue(); }); // the fonts land only after the key press
         await page.reload({ waitUntil: 'domcontentloaded' });
         await page.focus('#dev-core .panel-grip');
         assert.equal(await page.evaluate(() => document.fonts.status), 'loading', 'the fonts landed before the move, so this case tests nothing');
         await page.keyboard.press('ArrowLeft'); // Dev Core is at the left edge already: nothing moves, and nothing is saved over
+        release();
         await page.evaluate(() => document.fonts.ready);
         await sleep(600);
         assert.deepEqual(await devcore(), whole, 'Dev Core after a reload and a move into the edge: [rows, shows all it holds]');
@@ -1292,6 +1295,17 @@ const TESTS = {
         await page.waitForFunction(() => document.querySelectorAll('#workLinks .pillBtn').length === 4);
         await sleep(500);
         assert.equal(await page.evaluate(() => { const b = document.querySelector('#amazonian .panel-body'); return b.scrollHeight - b.clientHeight; }), 0, 'Amazonian scrolls inside once its links are in');
+        // The database unreachable, but only after the fonts are in: the toggle hides and the box shrinks to fit
+        const slow = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+        await slow.route((url) => !url.href.startsWith(base), async (r) => { if (r.request().url().endsWith('/config/worklinks.json')) await sleep(1500); r.abort(); });
+        const sp = await slow.newPage();
+        sp.on('pageerror', (e) => all.push(e.message));
+        await sp.goto(base + '/', { waitUntil: 'load' });
+        await sp.waitForFunction(() => getComputedStyle(document.querySelector('.link-toggle-container')).display === 'none', null, { timeout: 5000 });
+        await sleep(500);
+        assert.ok(await sp.evaluate(() => { const b = document.querySelector('#amazonian .panel-body'), z = b.lastElementChild;
+            return b.getBoundingClientRect().bottom - z.getBoundingClientRect().bottom - parseFloat(getComputedStyle(b).paddingBottom) <= parseFloat(getComputedStyle(document.querySelector('.board')).gridAutoRows); }), 'Amazonian keeps a blank band where its hidden toggle was');
+        await slow.close();
         // The narrowest phones: nothing in a panel runs sideways (the boxes clipped it before)
         for (const width of [320, 330, 360, 375]) {
             await page.setViewportSize({ width, height: 700 });
@@ -1300,6 +1314,55 @@ const TESTS = {
         }
         await ctx.close();
         return all;
+    },
+    async "Home: at any width a box holds no blank band and keeps its gaps, the promo is a link edge to edge, the chart isn't cut, the card is 900px, and a title that fits takes one line"(browser) {
+        const { ctx, page, errors } = await open(browser, { viewport: { width: 1440, height: 900 } }, { path: '/' });
+        // (the work links' fetch fails here, so the toggle hides after the first measure, and says so)
+        for (const width of [1440, 1200, 1100, 1000, 901, 800, 700, 650, 641, 640, 600, 480, 430, 390, 320]) {
+            await page.setViewportSize({ width, height: 800 });
+            await sleep(350);
+            const got = await page.evaluate(() => {
+                const panels = [...document.querySelectorAll('.board > .panel')], row = parseFloat(getComputedStyle(document.querySelector('.board')).gridAutoRows);
+                // A body's content end to its bottom edge: under a row means the box is as tall as what it holds
+                const blank = panels.filter((p) => { const b = p.querySelector('.panel-body'), kids = [...b.children].filter((k) => getComputedStyle(k).position !== 'absolute');
+                    const end = Math.max(...kids.map((k) => k.getBoundingClientRect().bottom + parseFloat(getComputedStyle(k).marginBottom))) + parseFloat(getComputedStyle(b).paddingBottom);
+                    return b.getBoundingClientRect().bottom - end > row; }).map((p) => p.id);
+                // The gaps between panels, in rows: the ones their cells give them, at any width
+                const tier = innerWidth <= 640 ? 'phone' : innerWidth <= 1080 ? 'mid' : 'wide';
+                const cells = (p) => (tier === 'wide' ? ['x', 'y', 'w', 'h'].map((k) => +p.dataset[k]) : p.dataset[tier].split(' ').map(Number));
+                const gaps = panels.slice(1).map((p, i) => { const a = panels[i], s = (q) => ['y', 'h'].map((k) => +q.style.getPropertyValue('--' + k)), [ay, ah] = s(a), [by] = s(p), [, cy, , ch] = cells(a), [, dy] = cells(p);
+                    return (by - ay - ah) - (dy - cy - ch); }).filter(Boolean);
+                // Every point of the promo's link is the link
+                const link = document.querySelector('.promo-link'), lr = link.getBoundingClientRect(), top = lr.top + scrollY;
+                const dead = [[0.5, 0.08], [0.15, 0.08], [0.85, 0.08], [0.5, 0.5]].filter(([fx, fy]) => {
+                    scrollTo({ top: top + lr.height * fy - innerHeight / 2, behavior: 'instant' });
+                    const r = link.getBoundingClientRect();
+                    return !link.contains(document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy));
+                });
+                const chart = document.querySelector('.btc-chart-widget').getBoundingClientRect(), fb = document.querySelector('#finance .panel-body').getBoundingClientRect();
+                // A title that fits its head's room on one line takes one line
+                const wraps = [...document.querySelectorAll('.board .panel-head > h2')].filter((t) => { const r = document.createRange(); r.selectNodeContents(t);
+                    const lines = new Set([...r.getClientRects()].map((l) => Math.round(l.top))).size, head = t.parentElement, cs = getComputedStyle(head);
+                    t.style.whiteSpace = 'nowrap'; const one = r.getBoundingClientRect().width; t.style.removeProperty('white-space');
+                    return lines > 1 && one <= head.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); }).map((t) => t.closest('.panel').id);
+                return { blank, gaps, dead: dead.length, cut: Math.round(fb.top - chart.top), card: Math.round(document.getElementById('socials').getBoundingClientRect().width), wraps };
+            });
+            assert.deepEqual([got.blank, got.gaps, got.dead, got.wraps], [[], [], 0, []], `${width}px: boxes with a blank band, gaps off their cells', dead spots on the promo, titles wrapped that fit: ${JSON.stringify(got)}`);
+            assert.ok(got.cut <= 0, `${width}px: the chart starts ${got.cut}px above its box's body, cut off`);
+            if ([1440, 1200, 1000].includes(width)) assert.equal(got.card, 900, `${width}px: the card's width`);
+        }
+        // A weak machine's lean board (and an arranging one) drops the dressed panels' blur
+        await page.evaluate(() => document.querySelector('.board').classList.add('is-lean'));
+        assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.home-card, .home-box')].map((p) => getComputedStyle(p).backdropFilter)), Array(4).fill('none'), 'blur on a lean board');
+        // Finance made as narrow as a panel gets: its freeze buttons stack, one to a row
+        await page.setViewportSize({ width: 1440, height: 800 });
+        await page.evaluate(() => document.querySelector('.board').classList.remove('is-lean'));
+        await page.focus('#finance .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowLeft');
+        await sleep(300);
+        assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('#finance .qlBtns')).gridTemplateColumns.split(' ').length), 1, 'freeze buttons across in the narrowest Finance');
+        await ctx.close();
+        return errors;
     },
     async "a panel marked data-tall on a board that isn't is as tall as what it holds, and a visitor can stretch it there past the screen"(browser) {
         const all = [];

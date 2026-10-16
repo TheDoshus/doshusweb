@@ -112,17 +112,17 @@
 /* Titles keep the page's: its title font at each box's size and color (board.css gives a panel's its own) */
 .board[data-board="home"] .panel-head > h2 { font-family: var(--font-title); font-size: 2rem; line-height: normal; color: oklch(var(--accent)); }
 
-/* The socials card: a glass card 900px across, so its panel sits out from its cells to that width
-   (and, on smaller screens, a little past the boxes' edges, as it did) */
+/* The socials card: a glass card 900px across at most, so its panel sits in from its cells to that
+   width, or out past them by up to 1rem (half of that on phones) where they're narrower, as it sat
+   past the boxes' edges (a percentage inset is of its cells' width, UI-SPEC) */
 .panel.home-card {
     background: oklch(var(--space-oled) / 0.02);
     backdrop-filter: blur(6px);
     border: 1px solid oklch(var(--star-white) / 0.05);
     border-radius: 20px;
     box-shadow: 0 8px 32px oklch(var(--star-white) / 0.05);
-    --inset: -14.5px;
+    --inset: max(-1rem, 50% - 450px - var(--gutter));
 }
-@media (max-width: 1080px) { .panel.home-card { --inset: -1rem; } }
 @media (max-width: 640px) { .panel.home-card { --inset: -0.5rem; } }
 .panel.home-card > .panel-head { padding: clamp(2rem, 5vw, 3rem) clamp(2rem, 5vw, 3rem) 0; }
 .panel.home-card > .panel-body { gap: 0; padding: 2rem clamp(2rem, 5vw, 3rem) clamp(2rem, 5vw, 3rem); }
@@ -140,6 +140,7 @@
 }
 @media (hover: hover) { .panel.home-box:hover { border-color: oklch(var(--accent)); box-shadow: 0 10px 40px oklch(var(--accent) / 0.2); } }
 .panel.home-box:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent)); box-shadow: 0 10px 40px oklch(var(--accent) / 0.2); }
+.board:is(.is-arranging, .is-lean) .panel:is(.home-card, .home-box) { backdrop-filter: none; } /* board.css's weak-GPU and arranging modes */
 .panel.home-box > .panel-head { padding: clamp(1.5rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem) 0; }
 .panel.home-box > .panel-body { gap: 1rem; padding: 1rem clamp(1.5rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem); }
 .panel.home-box p { opacity: 0.9; line-height: 1.6; font-size: clamp(0.9rem, 2.5vw, 1rem); }
@@ -149,11 +150,10 @@
 @container panel (max-width: 770.5px) {
     .panel.home-box > .panel-head::before { display: block; }
     .panel.home-box > .panel-head > h2 { justify-self: center; text-align: center; }
-    .panel.finance-box > .panel-head { padding-bottom: 1rem; }
 }
 /* A head too narrow to spare the spacers gives its title the whole width, as the box did, and the
    tools sit in its top corner, in the padding above the title (collapsed, the bar keeps them beside it) */
-@container panel (max-width: 32rem) {
+@container panel (max-width: 34rem) {
     .panel:is(.home-card, .home-box) > .panel-head::before { display: none; }
     .panel:is(.home-card, .home-box):not(.is-collapsed) > .panel-head > .panel-tools { position: absolute; grid-area: auto; top: 0; right: var(--sp-xs); margin: 0; }
     .panel:is(.home-card, .home-box):not(.is-collapsed) > .panel-head > h2 { grid-column: 1 / -1; }
@@ -161,7 +161,8 @@
 }
 
 /* ─── DESERT DIAMOND PROMO SPOT ─── */
-.panel.promo-panel > .panel-body { align-items: center; justify-content: center; padding: 0; overflow: visible; } /* no box: the link alone, breathing past its edges */
+.panel.promo-panel > .panel-body { align-items: center; justify-content: center; padding: 2.75rem 0 0; overflow: visible; } /* no box: the link alone, breathing past its edges, under the grab strip (board.css) */
+@media (max-width: 640px) { .panel.promo-panel { --inset: -0.5rem; } } /* the whole width the section gave it, as the card has */
 
 .promo-link {
     text-decoration: none;
@@ -292,16 +293,6 @@ button.social-item { cursor: pointer; font: inherit; }
 
 /* Coworkers Spot - Amazon Themed */
 
-.coworkers-spot {
-    border: 1px solid oklch(var(--accent-amzn) / 0.2);
-}
-.coworkers-spot:hover {
-    border-color: oklch(var(--accent-amzn));
-    box-shadow: 0 10px 40px oklch(var(--accent-amzn) / 0.2);
-}
-.coworkers-spot h2 {
-    color: oklch(var(--accent-amzn));
-}
 
 .work-email { display: flex; align-items: center; cursor: pointer; transition: all 0.3s ease;
     gap: 0.5rem;
@@ -377,9 +368,6 @@ button.social-item { cursor: pointer; font: inherit; }
 .pillBtn.fin    { --pill-accent: var(--accent-finance); --pill-glow: 15px; font-weight: 600; }
 
 /* lounge Box */
-.lounge-box { border: 1px solid oklch(var(--accent-lounge) / 0.2); }
-.lounge-box:hover { border-color: oklch(var(--accent-lounge)); box-shadow: 0 10px 40px oklch(var(--accent-lounge) / 0.2); }
-.lounge-box h2 { color: oklch(var(--accent-lounge)); }
 .lounge-box .random-meme { 
     display: flex; height: auto; width: 48%; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease; flex-shrink: 0;
     aspect-ratio: 1;
@@ -450,7 +438,6 @@ button.social-item { cursor: pointer; font: inherit; }
 .btc-chart-widget gecko-coin-price-chart-widget { display: block; width: 100%; }
 
 /* Finance Box */
-#finance.grid-item { margin-bottom: 1rem; }
 .finance-box .category-tag { border-color: oklch(var(--accent-finance) / 0.3); }
 
 /* Credit Card Carousel */
@@ -510,7 +497,7 @@ button.social-item { cursor: pointer; font: inherit; }
 @container panel (max-width: 770.5px) {
     .category-tags { width: 100%; }
     .site-card span { font-size: 1rem; }
-    .btc-chart-widget { margin-bottom: 1rem; position: static; width: 100%; }
+    .btc-chart-widget { margin-bottom: 1rem; position: static; width: 100%; margin-top: -1rem; } /* flush with the body's top: the body clips what rises past it */
     .button-group { flex-direction: column; }
     .pillBtn { width: 100%; }
 
@@ -544,5 +531,5 @@ button.social-item { cursor: pointer; font: inherit; }
     .card-title { font-size: 0.65rem; min-height: 2rem; }
     .lounge-box .random-meme { width: 95%; }
 
-    .qlBtns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+@container panel (14rem < width <= 468.5px) { .qlBtns { grid-template-columns: repeat(3, minmax(0, 1fr)); } } /* shared.css stacks them under 14rem */
