@@ -616,7 +616,7 @@ const TESTS = {
     },
     async "at a roomy window the wide default is exactly the markup's cells"(browser) {
         const all = [];
-        for (const path of ['/nexus.html', '/financehub.html', '/thelounge.html']) {
+        for (const path of ['/nexus.html', '/financehub.html', '/thelounge.html', '/']) {
             const { page, errors } = await open(browser, { viewport: { width: 1920, height: 2600 } }, { path });
             all.push(...errors);
             const moved = await page.evaluate(() => [...document.querySelectorAll('.board > .panel')].flatMap((p) => {
@@ -860,7 +860,7 @@ const TESTS = {
     },
     async 'no default panel body overflows by a pixel, at any width (a scrollbar on Windows)'(browser) {
         const all = [];
-        for (const path of ['/nexus.html', '/financehub.html', '/thelounge.html']) {
+        for (const path of ['/nexus.html', '/financehub.html', '/thelounge.html', '/']) {
             const { page, errors } = await open(browser, { viewport: { width: 1920, height: 1000 } }, { path });
             all.push(...errors);
             const over = [];
@@ -1231,17 +1231,74 @@ const TESTS = {
     },
     async 'a page that lays out a smaller tier itself gets those cells there, each grown to its content'(browser) {
         const all = [];
-        // At the windows the Lounge's cells were measured for (a game frame is 60% of a phone's height)
-        for (const [opts, tier] of [[{ ...FOLD, viewport: { width: 901, height: 700 } }, 'mid'], [{ ...PHONE, viewport: { width: 390, height: 700 } }, 'phone']]) {
-            const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
+        // At the windows the Lounge's and the home page's cells were measured for (a game frame is 60% of a phone's height)
+        for (const [opts, tier, path] of ['/thelounge.html', '/'].flatMap((path) => [[{ ...FOLD, viewport: { width: 901, height: 700 } }, 'mid', path], [{ ...PHONE, viewport: { width: 390, height: 700 } }, 'phone', path]])) {
+            const { page, errors } = await open(browser, opts, { path });
             all.push(...errors);
             const off = await page.evaluate((tier) => [...document.querySelectorAll('.board > .panel')].flatMap((p) => {
                 const want = p.dataset[tier].split(' ').map(Number), got = ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k));
                 return got.join() === want.join() ? [] : [`${p.id} ${want} → ${got}`]; // measured at this width, so exactly
             }), tier);
-            assert.deepEqual(off, [], `${tier}`);
+            assert.deepEqual(off, [], `${path} ${tier}`);
             await page.context().close();
         }
+        return all;
+    },
+    async "Home: each box where it was and as wide, the hero untouched, Let's Vibe landing with room, late work links held, and titles clear of the tools"(browser) {
+        const all = [];
+        // Frames [left, width] and the hero's title top, as the page before had them
+        const was = { 1440: { socials: [270, 900], box: [136, 1168], hero: 327 }, 901: { socials: [16, 869], box: [32, 837], hero: 197 }, 390: { socials: [8, 374], box: [16, 358], hero: 245 } };
+        for (const opts of [{ viewport: { width: 1440, height: 900 } }, { ...FOLD, viewport: { width: 901, height: 700 } }, { ...PHONE, viewport: { width: 390, height: 700 } }]) {
+            const w = opts.viewport.width;
+            const { page, errors } = await open(browser, opts, { path: '/' });
+            all.push(...errors);
+            const got = await page.evaluate(() => {
+                const frame = (id) => { const r = document.getElementById(id).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width)]; };
+                return { socials: frame('socials'), box: ['amazonian', 'lounge', 'finance'].map(frame), hero: Math.round(document.querySelector('.hero h1').getBoundingClientRect().top) };
+            });
+            assert.deepEqual(got, { ...was[w], box: Array(3).fill(was[w].box) }, `${w}px: frames and hero`);
+            // Let's Vibe's buttons land each box 4.5rem down
+            const lands = [];
+            for (const t of ['socials', 'amazonian', 'lounge', 'finance']) {
+                await page.evaluate(() => scrollTo(0, 0));
+                await page.click('#openctaPopup');
+                await page.click(`.ctaPopup-btn[data-target="${t}"]`);
+                await page.waitForFunction((t) => Math.abs(document.getElementById(t).getBoundingClientRect().top - 72) < 2, t, { timeout: 3000 }).catch(() => {});
+                lands.push(Math.round(await page.evaluate((t) => document.getElementById(t).getBoundingClientRect().top, t)));
+            }
+            assert.ok(lands.every((y) => Math.abs(y - 72) <= 1.5), `${w}px: where Let's Vibe lands each box: ${lands}`);
+            // Titles: centered where the page centered them (the card always, a box up to 900px), clear of the tools
+            const titles = await page.evaluate(() => [...document.querySelectorAll('.board .panel-head > h2')].flatMap((t) => {
+                const p = t.closest('.panel'), pr = p.getBoundingClientRect(), tools = t.parentElement.querySelector('.panel-tools').getBoundingClientRect(), r = document.createRange();
+                r.selectNodeContents(t);
+                const text = r.getBoundingClientRect(), centered = Math.abs(text.left + text.width / 2 - (pr.left + pr.width / 2)) <= 1.5, out = [];
+                if (centered !== (p.id === 'socials' || innerWidth <= 900)) out.push(`${p.id} ${centered ? 'centered' : 'not centered'}`);
+                if ([...r.getClientRects()].some((l) => l.left < tools.right - 1 && tools.left < l.right - 1 && l.top < tools.bottom - 1 && tools.top < l.bottom - 1)) out.push(`${p.id} under the tools`);
+                return out;
+            }));
+            assert.deepEqual(titles, [], `${w}px: titles`);
+            await page.context().close();
+        }
+        // The Amazon work links arrive from the database after the board measured: the box grows to hold them
+        const ctx = await browser.newContext({ ...PHONE, reducedMotion: 'reduce' });
+        await ctx.route((url) => !url.href.startsWith(base), async (r) => {
+            if (!r.request().url().endsWith('/config/worklinks.json')) return r.abort();
+            await sleep(800);
+            r.fulfill({ contentType: 'application/json', body: JSON.stringify({ pills: [1, 2, 3, 4].map((i) => ({ internal: `https://a.example/${i}`, external: `https://b.example/${i}`, internalText: `Internal ${i} →`, externalText: `External ${i} →` })) }) });
+        });
+        const page = await ctx.newPage();
+        page.on('pageerror', (e) => all.push(e.message));
+        await page.goto(base + '/', { waitUntil: 'load' });
+        await page.waitForFunction(() => document.querySelectorAll('#workLinks .pillBtn').length === 4);
+        await sleep(500);
+        assert.equal(await page.evaluate(() => { const b = document.querySelector('#amazonian .panel-body'); return b.scrollHeight - b.clientHeight; }), 0, 'Amazonian scrolls inside once its links are in');
+        // The narrowest phones: nothing in a panel runs sideways (the boxes clipped it before)
+        for (const width of [320, 330, 360, 375]) {
+            await page.setViewportSize({ width, height: 700 });
+            await sleep(300);
+            assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.board > .panel')].filter((p) => { const b = p.querySelector('.panel-body'); return b.scrollWidth > b.clientWidth + 1; }).map((p) => p.id)), [], `${width}px: sideways`);
+        }
+        await ctx.close();
         return all;
     },
     async "a panel marked data-tall on a board that isn't is as tall as what it holds, and a visitor can stretch it there past the screen"(browser) {

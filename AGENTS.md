@@ -103,7 +103,7 @@ before you stop, ask what you left behind.
 | `public/*.html` + `css/` + `js/` | Main site (home, financehub, thelounge, nexus, zephyy) |
 | `public/css/shared.css` | Tokens, fonts, cosmic background, shared components |
 | `public/js/main.js` | Global: WebGL sky (the drifting nebula, then the star field; colors are the `--nebula-*` and `--star-*` tokens) + shooting stars, meme loader, collapsibles, sticky footer |
-| `public/css/board.css` + `public/js/board.js` | The board engine (`UI-SPEC.md`); first page on it: `/nexus` |
+| `public/css/board.css` + `public/js/board.js` | The board engine (`UI-SPEC.md`); on `/nexus` (the first), `/financehub`, `/thelounge` and `/` |
 | `public/zephyy/` | Zephyy profile subpages |
 | `public/amazon/` | Printmon + work tools — hands off unless Doshus says so (Doshus, 2026-10-10); he hand-syncs it to an internal host (`AMZN-INTERNAL-SYNC.md`) |
 | `public/assets/memes/` | Meme pool; regen index with `bun run memes`; shrink new ones with `bun run memes:convert` (quality-gated, report first) |

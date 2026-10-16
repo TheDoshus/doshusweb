@@ -100,31 +100,68 @@
     opacity: 0.7;
 }
 
-.glass-card {
+/* ─── BOARD: the home page is a clear, tall board (UI-SPEC.md, board.css): the sky behind every
+   panel, each box where it was and dressed as it was. Defaults per tier mirror the page before
+   (data-mid / data-phone, measured at 1440×900, 901×700 and 390×700) ─── */
+/* The boxes' edges where they were: 1200px at most and 2rem in, which is the board's gutter
+   (0.625rem) and the rest; a phone's board has no padding and its gutter is the old 1rem */
+.board-wrap { max-width: calc(1200px + 2rem); padding-inline: 1.375rem; }
+@media (max-width: 640px) { .board-wrap { padding-inline: 0; } }
+.hero > .board-bar { margin-bottom: -3.75rem; } /* the bar takes none of the hero's centering */
+.board[data-board="home"] > .panel { scroll-margin-top: 4.5rem; } /* Let's Vibe's buttons land with the room they had */
+/* Titles keep the page's: its title font at each box's size and color (board.css gives a panel's its own) */
+.board[data-board="home"] .panel-head > h2 { font-family: var(--font-title); font-size: 2rem; line-height: normal; color: oklch(var(--accent)); }
+
+/* The socials card: a glass card 900px across, so its panel sits out from its cells to that width
+   (and, on smaller screens, a little past the boxes' edges, as it did) */
+.panel.home-card {
     background: oklch(var(--space-oled) / 0.02);
     backdrop-filter: blur(6px);
     border: 1px solid oklch(var(--star-white) / 0.05);
     border-radius: 20px;
-    padding: clamp(2rem, 5vw, 3rem);
-    max-width: 900px;
-    width: 100%;
-    margin: 25rem auto 10rem auto;
     box-shadow: 0 8px 32px oklch(var(--star-white) / 0.05);
+    --inset: -14.5px;
 }
-.glass-card h2 {
-    font-size: clamp(1.8rem, 5vw, 2.5rem);
-    margin-bottom: 2rem;
-    color: oklch(var(--accent-crypto));
-    text-align: center;
+@media (max-width: 1080px) { .panel.home-card { --inset: -1rem; } }
+@media (max-width: 640px) { .panel.home-card { --inset: -0.5rem; } }
+.panel.home-card > .panel-head { padding: clamp(2rem, 5vw, 3rem) clamp(2rem, 5vw, 3rem) 0; }
+.panel.home-card > .panel-body { gap: 0; padding: 2rem clamp(2rem, 5vw, 3rem) clamp(2rem, 5vw, 3rem); }
+.panel.home-card > .panel-head > h2 { font-size: clamp(1.8rem, 5vw, 2.5rem); justify-self: center; text-align: center; }
+/* A centered title centers on the panel: a spacer as wide as the tools at the head's end balances them */
+.panel:is(.home-card, .home-box) > .panel-head::before { content: ''; width: 4.5rem; }
+.panel.home-box > .panel-head::before { display: none; }
+
+/* The boxes: Amazonian, Lounge and Finance, each in its own accent */
+.panel.home-box {
+    background: oklch(var(--space-oled) / 0.02);
+    backdrop-filter: blur(5px);
+    border: 1px solid oklch(var(--accent) / 0.2);
+    border-radius: 15px;
+}
+@media (hover: hover) { .panel.home-box:hover { border-color: oklch(var(--accent)); box-shadow: 0 10px 40px oklch(var(--accent) / 0.2); } }
+.panel.home-box:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent)); box-shadow: 0 10px 40px oklch(var(--accent) / 0.2); }
+.panel.home-box > .panel-head { padding: clamp(1.5rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem) 0; }
+.panel.home-box > .panel-body { gap: 1rem; padding: 1rem clamp(1.5rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem); }
+.panel.home-box p { opacity: 0.9; line-height: 1.6; font-size: clamp(0.9rem, 2.5vw, 1rem); }
+.panel.finance-box > .panel-head > h2 { font-size: clamp(2rem, 3vw, 2.25rem); }
+.panel.home-box h3 { margin-bottom: 0.5rem; font-size: clamp(1.2rem, 4vw, 1.5rem); } /* the Finance box's quick-link header */
+/* A box's title sat at its start, and centered on smaller screens (770px across at 900px) */
+@container panel (max-width: 770.5px) {
+    .panel.home-box > .panel-head::before { display: block; }
+    .panel.home-box > .panel-head > h2 { justify-self: center; text-align: center; }
+    .panel.finance-box > .panel-head { padding-bottom: 1rem; }
+}
+/* A head too narrow to spare the spacers gives its title the whole width, as the box did, and the
+   tools sit in its top corner, in the padding above the title (collapsed, the bar keeps them beside it) */
+@container panel (max-width: 32rem) {
+    .panel:is(.home-card, .home-box) > .panel-head::before { display: none; }
+    .panel:is(.home-card, .home-box):not(.is-collapsed) > .panel-head > .panel-tools { position: absolute; grid-area: auto; top: 0; right: var(--sp-xs); margin: 0; }
+    .panel:is(.home-card, .home-box):not(.is-collapsed) > .panel-head > h2 { grid-column: 1 / -1; }
+    .panel.home-box:not(.is-collapsed) > .panel-head > h2 { margin-top: max(0px, 1.75rem - clamp(1.5rem, 4vw, 2rem)); } /* clear of the tools' 1.75rem */
 }
 
 /* ─── DESERT DIAMOND PROMO SPOT ─── */
-.promo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0rem auto 25rem auto;
-}
+.panel.promo-panel > .panel-body { align-items: center; justify-content: center; padding: 0; overflow: visible; } /* no box: the link alone, breathing past its edges */
 
 .promo-link {
     text-decoration: none;
@@ -154,7 +191,7 @@
 }
 
 .promo-image {
-    width: clamp(175px, 50vw, 400px); /* Responsive sizing */
+    width: clamp(175px, 50vw, 400px); max-width: 100%; /* Responsive sizing, no wider than its panel */
     object-fit: contain;
     filter: drop-shadow(0 10px 20px oklch(var(--space-oled) / .5)); 
     will-change: filter;
@@ -225,7 +262,6 @@ button.social-item { cursor: pointer; font: inherit; }
 }
 .scroll-hint { text-align: center; margin-top: 1rem; opacity: 0.6; font-size: clamp(0.8rem, 2vw, 0.9rem); }
 
-.grid-container { display: grid; grid-template-columns: 1fr; gap: clamp(1rem, 3vw, 2rem); max-width: 1200px; width: 100%; padding: 1rem; }
 
 /* Toggle Container */
 .link-toggle-container { display: flex; align-items: center; align-self: center;
@@ -463,18 +499,21 @@ button.social-item { cursor: pointer; font: inherit; }
 
 .footer-nav a.footer-active { color: oklch(var(--accent-amzn)); font-weight: 600; }
 
-/* Tab & Phone Optimizations */
+/* Tab & Phone Optimizations. The pop-ups follow the window; what a panel holds follows its panel,
+   flipping where it did: a box's body is 770px across at a 900px window and 468px at 550, the
+   socials card's 776px at 900 (UI-SPEC § Converting a page) */
 @media (max-width: 900px) {
     .ctaPopup-content { padding: 2rem 1.5rem; }
     .ctaPopup-btn { padding: 1rem 1.5rem; }
+}
+@container panel (max-width: 776.5px) { .social-container { padding: 1.5rem 0.25rem; } }
+@container panel (max-width: 770.5px) {
     .category-tags { width: 100%; }
     .site-card span { font-size: 1rem; }
     .btc-chart-widget { margin-bottom: 1rem; position: static; width: 100%; }
-    .social-container { padding: 1.5rem 0.25rem; }
-    .grid-container { padding: 0.5rem; }
     .button-group { flex-direction: column; }
     .pillBtn { width: 100%; }
-    
+
     /* lounge Box Mobile */
     .lounge-content { flex-direction: column;
         gap: 1rem;
@@ -494,15 +533,16 @@ button.social-item { cursor: pointer; font: inherit; }
     .link-toggle-container { flex-direction: column; text-align: center; gap: 0.5rem; }
 }
 
-@media (max-width: 550px) {
+@container panel (max-width: 468.5px) {
     .category-tags { width: 100%; }
     .social-item { min-width: 100px; padding: 1rem; }
 
     .featured-sites { grid-template-columns: repeat(2, 1fr); }
     .site-card { padding: .9rem; }
+    .site-card span { overflow-wrap: anywhere; } /* a long name breaks rather than push its column past the box (which clipped it before) */
     .credit-card-item { flex: 0 0 120px; width: 120px; min-width: 120px; }
     .card-title { font-size: 0.65rem; min-height: 2rem; }
     .lounge-box .random-meme { width: 95%; }
 
-    .qlBtns { grid-template-columns: repeat(3, minmax(75px, 1fr)); }
+    .qlBtns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

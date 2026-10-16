@@ -41,11 +41,12 @@ function loadWorkLinks() {
                 container.appendChild(link);
             });
             initAmazonLinkToggle(); // sets href/text on the fresh pills
+            container.dispatchEvent(new Event('load')); // the box grew: the board measures it again, as when a picture arrives
         })
         .catch(() => {
             /* RTDB unreachable — hide the toggle, leave the section text */
             const toggleWrap = document.querySelector('.link-toggle-container');
-            if (toggleWrap) toggleWrap.style.display = 'none';
+            if (toggleWrap) { toggleWrap.style.display = 'none'; toggleWrap.dispatchEvent(new Event('load')); } // the board measures the box again
         });
 }
 

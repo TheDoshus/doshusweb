@@ -92,9 +92,10 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 preview channel and `tests/board.cjs` runs on `/nexus`. nexus.css keeps only the hero, the room
 around the board and the footer link; the board's scales live in `shared.css`. Finance Hub
 followed the same day (Doshus's call: the slider stays and each slide is a board of its blocks;
-panel titles keep the font and color of the header each replaced), then the Lounge (2026-10-11: Doshus wanted it to read as before, so it is a clear, tall board: the sky behind every panel, each section where it was and laid out as it was, its tiers' cells measured from the old page at desktop, Fold and phone sizes). Next come the home page (Doshus, 2026-10-10: its hero stays; everything below it
-becomes the board, the Discord section included, with the same spacing between sections as
-now) and, last, Zephyy's profile (Doshus, 2026-10-10). Each conversion follows `UI-SPEC.md` § Converting a page. The widget catalog reuses the profile's htmx
+panel titles keep the font and color of the header each replaced), then the Lounge (2026-10-11: Doshus wanted it to read as before, so it is a clear, tall board: the sky behind every panel, each section where it was and laid out as it was, its tiers' cells measured from the old page at desktop, Fold and phone sizes). Then the home page (2026-10-16; Doshus, 2026-10-10: its hero stays, everything below it
+becomes the board with the same spacing as before): a clear, tall board like the Lounge's, the
+socials card, the promo and the Amazonian, Lounge and Finance boxes each a panel dressed as it was, its cells per tier
+measured from the old page (the Discord section had become the socials card's modal, which stays a modal). Last comes Zephyy's profile (Doshus, 2026-10-10). Each conversion follows `UI-SPEC.md` § Converting a page. The widget catalog reuses the profile's htmx
 fragments (`zephyy/fragments/`, htmx 2.0.10, moving from `/zephyy/vendor/` to a shared vendor
 folder). Site-specific parts that stay out of the spec: the cells go through the CSSOM, so no
 `style=` attribute ever leans on the CSP's `'unsafe-inline'`; `board.css` also carries the
