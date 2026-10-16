@@ -30,6 +30,7 @@ rules. Hosts are listed under [Implementations](#implementations).
 | `data-accent` | Picks the panel's accent from the host's palette; everything in the panel reads `--accent` |
 | `.panel-head` / `-body` / `-foot` | Title row (a grab bar), content that scrolls when the panel is smaller than it, status line. All optional. A body's content sits in elements stacked in flow, top to bottom (no bare text, `display: contents`, `order` or reversed flow, auto margins or stretched children): the engine reads the body's height off their extent |
 | `.panel-media` | A headless panel whose content another script owns; it gets a grab strip over its top-left, clear of the player's own buttons |
+| `.board` in a `.panel-body` | A board in a panel: the panel's blocks, each a panel of its own, move, resize, hide and save within it as the panel's do on the page (§ Boards in a panel) |
 
 The markup holds only content. The engine adds every control (grab dots, resize handles, the
 snap ghost, collapse ▾, ✕, Add widget, Reset), and without the engine the panels still flow as
@@ -41,6 +42,8 @@ the same: a narrow one drops its icon, and narrower still the title takes a line
 under the controls, so it never gets crushed.
 The board's bar (Add widget, Reset) sits right above the board unless the page gives it a home:
 an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it in the hero). A page with several boards (Finance Hub's slides) can home all their bars in one spot and show only the current board's: a bar marked `hidden` stays hidden.
+
+**Boards in a panel.** A panel's body can hold a board of its own (`<div class="board" data-board="home-finance">` and its panels, the blocks), and its blocks are arranged within that panel exactly as panels are on the page: moved, resized, hidden, by pointer, touch and keys, each tier saved under its own name. A block is one: grabbing it never grabs its panel, a panel's controls show for the panel and a block's for the block, and the panel holds its board as it changes (grown to hold blocks moved lower, measured again with the rest of the page until the visitor arranges it, held as it was otherwise unless it held just its board). The inner board's tier is its own width's (its panel's body: 12 columns from 1080px down, 6 from 640px), so a visitor who narrows the panel gets the board's smaller layout, swapped in once they let go. Its Add widget and Reset (＋, ↺) sit with its panel's tools. A block carried by a pointer stays under it even where its panel's blur or a transform places a fixed element from the panel; the page's Reset leaves the blocks be.
 
 ## Layout
 

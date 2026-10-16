@@ -1387,6 +1387,86 @@ const TESTS = {
         assert.deepEqual([a[3] > 8 && a[1] + a[3] < 28, b[3], c[1], m[3], d[3], d[1] === m[1]], [true, 24, 30, 12, 12, true], `A ${a}, B ${b}, C ${c}, D ${d}, M ${m}`);
         return errors;
     },
+    async 'a board in a panel: its blocks move within the panel, which holds them, and its tier follows the panel'(browser) {
+        const block = (id, cells, px) => `<section class="panel" id="${id}" aria-label="Block ${id}" ${cells}><div class="panel-body"><div style="height: ${px}px"></div></div></section>`;
+        const html = `<!doctype html><html><head><link rel="stylesheet" href="/css/shared.css"><link rel="stylesheet" href="/css/board.css"></head><body><main><div class="board" data-board="made" data-surface="clear" data-tall>
+            <article class="panel" id="H" data-x="1" data-y="2" data-w="24" data-h="10" style="backdrop-filter: blur(4px)"><header class="panel-head"><h2>Host</h2></header><div class="panel-body">
+                <div class="board" data-board="made-in" data-surface="clear" data-tall>${block('A', 'data-x="1" data-y="1" data-w="12" data-h="4"', 60)}${block('B', 'data-x="13" data-y="1" data-w="12" data-h="4"', 60)}</div>
+            </div></article>
+            <article class="panel" id="O" data-x="1" data-y="13" data-w="24" data-h="6"><header class="panel-head"><h2>Other</h2></header><div class="panel-body"><p>below</p></div></article>
+        </div></main><div style="height: 150vh"></div><script src="/js/main.js"></script><script src="/js/board.js"></script></body></html>`;
+        const { page, errors } = await open(browser, WIDE, { path: '/made.html', route: [base + '/made.html', (r) => r.fulfill({ contentType: 'text/html', body: html })] });
+        // The panel holds its board whole, and the panel under it keeps its gap
+        const held = () => page.evaluate(() => { const h = document.getElementById('H'), b = h.querySelector(':scope > .panel-body'), inner = b.querySelector('.board');
+            return { inside: b.scrollHeight - b.clientHeight, blank: Math.round(b.getBoundingClientRect().bottom - inner.getBoundingClientRect().bottom - parseFloat(getComputedStyle(b).paddingBottom)) }; });
+        const gap = async () => { const [h, o] = [await cells(page, 'H'), await cells(page, 'O')]; return o[1] - (h[1] + h[3]); };
+        let got = await held();
+        assert.deepEqual([got.inside <= 1, got.blank < 32, await gap()], [true, true, 1], `held at first: ${JSON.stringify(got)}`);
+        // Each board's controls are its own: the panel's title, grip and corner aren't its blocks', and the
+        // inner board's Reset and Add widget sit with the panel's tools
+        assert.deepEqual(await page.evaluate(() => [document.querySelector('#H > .panel-head .panel-grip').getAttribute('aria-label'), document.querySelector('#A > .panel-grab .panel-grip').getAttribute('aria-label'),
+            !!document.querySelector('#H > .panel-head > .panel-tools > .board-tools'), document.querySelectorAll('.board-bar').length]),
+            ['Move Host with the arrow keys', 'Move Block A with the arrow keys', true, 1], 'controls');
+        // Pointed at, the panel shows its tools and corner, not its blocks'
+        await page.mouse.move(...await page.locator('#H > .panel-head').boundingBox().then((b) => [b.x + 200, b.y + 10]));
+        await sleep(400);
+        assert.deepEqual(await page.evaluate(() => ['#H > .panel-head > .panel-tools', '#H > .panel-edge[data-dir="se"]', '#A > .panel-grab > .panel-tools', '#A > .panel-edge[data-dir="se"]'].map((q) => getComputedStyle(document.querySelector(q)).opacity)), ['1', '1', '0', '0'], 'tools shown pointing at the panel');
+        // A block carried stays under the pointer, the page scrolled under it too; dropped lower, the panel grows to hold it
+        const g = await page.locator('#A > .panel-grab').boundingBox(), x = g.x + 20, y = g.y + g.height / 2;
+        const a0 = await page.locator('#A').boundingBox();
+        await page.mouse.move(x, y);
+        await page.mouse.down();
+        await page.mouse.move(x + 6, y + 6);
+        await page.mouse.move(x + 10, y + 260, { steps: 8 });
+        assert.equal(await page.evaluate(() => { scrollBy({ top: 60, behavior: 'instant' }); return scrollY; }), 60, 'the page scrolled under the carried block');
+        await page.mouse.move(x + 10, y + 262);
+        await frames(page);
+        const a1 = await page.evaluate(() => { const r = document.getElementById('A').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+        assert.deepEqual([Math.abs(a1.x - (a0.x + a0.width / 2 + 10)) < 6, Math.abs(a1.y - (a0.y + a0.height / 2 + 262)) < 6], [true, true], `carried block under the pointer ${JSON.stringify([a0, a1])}`);
+        await page.mouse.up();
+        await sleep(500);
+        got = await held();
+        const a = await cells(page, 'A');
+        assert.deepEqual([a[0], a[1] > 4, got.inside <= 1, got.blank < 32, await gap(), !!await page.evaluate(() => localStorage.getItem('board:made-in')), await page.evaluate(() => !document.querySelector('#H .board-tools button:nth-of-type(2)').hidden)],
+            [1, true, true, true, 1, true, true], `dropped lower: A ${a}, ${JSON.stringify(got)}`);
+        // Its own Reset puts the blocks back, and the panel holds them as they were
+        await page.click('#H .board-tools button:nth-of-type(2)', { force: true });
+        await sleep(500);
+        got = await held();
+        assert.deepEqual([await cells(page, 'A'), got.inside <= 1, got.blank < 32], [[1, 1, 12, 4], true, true], `reset: ${JSON.stringify(got)}`);
+        // A block hidden comes back from the panel's ＋
+        await page.click('#B > .panel-grab .panel-close', { force: true });
+        await sleep(300);
+        assert.ok(await page.evaluate(() => document.getElementById('B').hidden), 'B hidden by its ✕');
+        await page.click('#H .board-tools button:nth-of-type(1)', { force: true });
+        assert.ok(await page.evaluate(() => document.getElementById('made-in-menu').matches(':popover-open')), 'the panel\'s ＋ opens its menu');
+        await page.click('#made-in-menu button', { force: true });
+        await sleep(400);
+        assert.deepEqual([await page.evaluate(() => document.getElementById('B').hidden), await cells(page, 'B'), await page.evaluate(() => document.querySelector('#H .board-tools button:nth-of-type(2)').hidden)], [false, [13, 1, 12, 4], true], 'B hidden and added back: [hidden, its cells, the ↺ hidden at the default]');
+        // Narrowed to half the board (a 700px body) by keys, the panel's board is a mid tier's, 12 columns.
+        // Its blocks arranged there, the panel narrowed to a third (470px) by its edge: the resize goes
+        // through, and the board is a phone's, 6 columns, its blocks stacked full width
+        const inner = () => page.evaluate(() => getComputedStyle(document.querySelector('#H .board')).getPropertyValue('--cols').trim());
+        await page.focus('#H > .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 12; i++) await page.keyboard.press('ArrowLeft');
+        await sleep(600);
+        assert.equal(await inner(), '12', 'half: the inner board\'s columns');
+        await page.focus('#A > .panel-grab .panel-grip');
+        await page.keyboard.press('ArrowDown');
+        await sleep(400);
+        const e = await page.locator('#H > .panel-edge[data-dir="e"]').boundingBox(), cw = await page.evaluate(() => document.querySelector('.board').clientWidth / 24);
+        await page.mouse.move(e.x + e.width / 2, e.y + e.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(e.x + e.width / 2 - 4 * cw, e.y + e.height / 2, { steps: 10 });
+        await sleep(300); // the inner board has crossed into the phone tier under the pointer
+        await page.mouse.up();
+        await sleep(600);
+        assert.equal((await cells(page, 'H'))[2], 8, 'the panel resized across its board\'s tiers');
+        got = await held();
+        const [ia, ib] = [await cells(page, 'A'), await cells(page, 'B')];
+        assert.deepEqual([await page.evaluate(() => getComputedStyle(document.querySelector('#H .board')).getPropertyValue('--cols').trim()), ia[2], ib[2], ib[1] > ia[1], got.inside <= 1], ['6', 6, 6, true, true], `narrowed: A ${ia}, B ${ib}, ${JSON.stringify(got)}`);
+        return errors;
+    },
     async "a box its page fills after the first measure grows to hold it: the Lounge's Discord roster"(browser) {
         const all = [];
         const roster = { name: 'Doshus', presence_count: 40, members: Array.from({ length: 40 }, (_, i) => ({ username: `u${i}`, avatar_url: `${base}/doshusfavi.ico`, status: 'online' })) };

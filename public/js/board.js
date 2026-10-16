@@ -12,15 +12,17 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const cols = () => +css.getPropertyValue('--cols') || 1;
     const minW = () => Math.min(+css.getPropertyValue('--min-cols') || 1, cols());
     const cell = () => ({ x: board.clientWidth / cols(), y: parseFloat(css.gridAutoRows) });
-    // The board's width as --board-w, for a host whose panel's inset answers to the board, not its cells
-    new ResizeObserver(() => board.style.setProperty('--board-w', `${board.clientWidth}px`)).observe(board);
     const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
     const panels = [...board.children].filter((el) => el.matches('.panel'));
-    const title = (p) => p.querySelector('h2')?.textContent ?? p.getAttribute('aria-label') ?? p.id;
+    // A panel's own parts, never those of a board inside it (UI-SPEC § Boards in a panel)
+    const own = (p, sel) => p.querySelector(`:scope > ${sel}`);
+    // A board inside a panel: its blocks move within that panel, which holds them
+    const host = board.parentElement.closest('.panel');
+    const title = (p) => own(p, '.panel-head h2')?.textContent ?? p.getAttribute('aria-label') ?? p.id;
     // A panel marked data-collapsed starts as its title bar (data-h counts the bar's rows) and opens to its content.
     // Hidden is the markup's too, not the DOM's now: a panel hidden in one tier's layout is still in the others'
     const hiddenAtStart = new Set(panels.filter((p) => p.hidden));
-    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: hiddenAtStart.has(p), collapsed: 'collapsed' in p.dataset && !!p.querySelector('.panel-head') });
+    const read = (p) => ({ x: +p.dataset.x || 1, y: +p.dataset.y || 1, w: +p.dataset.w || 6, h: +p.dataset.h || 8, hidden: hiddenAtStart.has(p), collapsed: 'collapsed' in p.dataset && !!own(p, '.panel-head') });
     // A page can lay out a smaller tier itself: data-mid / data-phone hold that tier's cells, "x y w h",
     // on every panel of the board (else, or if any is malformed, the tier flows the wide layout)
     const cellsIn = (t) => {
@@ -30,18 +32,20 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         return new Map(panels.map((p, i) => [p, { ...read(p), x: cells[i][0], y: cells[i][1], w: cells[i][2], h: cells[i][3] }]));
     };
     const copy = (map) => new Map([...map].map(([p, r]) => [p, { ...r }]));
-    // Three grids, each with its own layout and save (board.css sets their --cols): wide, placed by
-    // data-x/y/w/h; mid, up to 1080px (foldables, tablets), the wide layout flowed onto half the
-    // columns; and phone, up to 640px, a stack of full-width panels. Mid and phone panels start
-    // in the wide reading order, each as tall as its content
-    const TIERS = [['phone', '(max-width: 640px)'], ['mid', '(max-width: 1080px)']].map(([name, query]) => ({ name, mq: matchMedia(query) }));
-    const tier = () => TIERS.find((t) => t.mq.matches)?.name ?? 'wide';
+    const keyFor = () => `board:${board.dataset.board}${tier() === 'wide' ? '' : `:${tier()}`}`;
+    // Three grids, each with its own layout and save: wide, placed by data-x/y/w/h; mid, up to
+    // 1080px (foldables, tablets), the wide layout flowed onto half the columns; and phone, up to
+    // 640px, a stack of full-width panels. Mid and phone panels start in the wide reading order,
+    // each as tall as its content. The tier is the grid board.css gives the board (24, 12 or 6
+    // columns): by the window's width, or a board in a panel's by its own
+    const TIERS = ['(max-width: 640px)', '(max-width: 1080px)'].map((query) => matchMedia(query));
+    const tier = () => ({ 6: 'phone', 12: 'mid' })[cols()] ?? 'wide';
     let key;
     let base;
     let layout = new Map();
     // moveBefore keeps focus and playing media; insertBefore is the fallback
     const place = (el, ref) => (board.moveBefore ? board.moveBefore(el, ref) : board.insertBefore(el, ref));
-    const el = (tag, className, text) => Object.assign(document.createElement(tag), { className, textContent: text ?? '' });
+    const el = (tag, className, text) => Object.assign(document.createElement(tag), { className: className ?? '', textContent: text ?? '' });
     const button = (text, label, className) => {
         const b = el('button', className, text);
         b.type = 'button';
@@ -82,7 +86,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         map.forEach((r, p) => {
             p.hidden = r.hidden;
             p.classList.toggle('is-collapsed', !!r.collapsed);
-            p.querySelector('.panel-collapse')?.setAttribute('aria-expanded', String(!r.collapsed));
+            own(p, '.panel-head .panel-collapse')?.setAttribute('aria-expanded', String(!r.collapsed));
             setCell(p, r);
         });
     }
@@ -129,11 +133,12 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const kept = (p) => p.matches('.panel-media') || 'scroll' in p.dataset;
     const whole = (p) => 'tall' in board.dataset && !kept(p);
     // The shortest a panel can get: its head and foot plus a few lines of body (or MIN_H); on a tall
-    // board, all it holds at its width (read where it stands, or with `settle` once a glide lands)
-    function minH(p, settle = false) {
+    // board, all it holds at its width (read where it stands, or with `settle` once a glide lands;
+    // `less`: as it was before a board inside it grew by that many px)
+    function minH(p, settle = false, less = 0) {
         const fixed = parts(p);
         const least = Math.max(MIN_H, Math.ceil((fixed + gutters(p) + (fixed ? 48 : 0)) / cell().y));
-        return whole(p) && !p.hidden && !p.classList.contains('is-collapsed') ? Math.max(least, contentH(p, false, !settle)) : least;
+        return whole(p) && !p.hidden && !p.classList.contains('is-collapsed') ? Math.max(least, contentH(p, false, !settle, less)) : least;
     }
     // The narrowest a visitor can make a panel: --min-cols, and on a tall board no narrower than its
     // title's longest word, whole (at the title's size now)
@@ -160,7 +165,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // Collapsed to its title bar: the head alone (and the panel's border). A running glide carries
     // on: the bar's one-line title keeps it one height at any width, and finishing the glide here
     // would make the panel jump
-    const headRows = (p) => rows(tall(landed(p.querySelector('.panel-head'))) + gutters(p) + p.offsetHeight - p.clientHeight);
+    const headRows = (p) => rows(tall(landed(own(p, '.panel-head'))) + gutters(p) + p.offsetHeight - p.clientHeight);
     // The tallest: one screen (100dvh), so a panel always fits in view. A board marked data-tall (a
     // page that reads top to bottom, like the Lounge), or a panel marked so on any board, lets it be
     // as tall as what it holds, read where it stands (a running glide carries on); a hidden one,
@@ -171,7 +176,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // first, so that's the width it lands at, unless `gliding` reads it where it stands). A meme
     // gets a little over half the screen, or with `exact` (once its picture has loaded) exactly
     // its picture's shape
-    function contentH(p, exact, gliding) {
+    function contentH(p, exact, gliding, less = 0) {
         if (!gliding) p.getAnimations().forEach((anim) => anim.id === 'glide' && anim.finish());
         landed(p);
         if (p.matches('.panel-media')) {
@@ -179,8 +184,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             const ratio = media && (media.videoHeight / media.videoWidth || media.naturalHeight / media.naturalWidth);
             return Math.round((ratio ? p.offsetWidth * ratio + gutters(p) : innerHeight * 0.55) / cell().y);
         }
-        const body = p.querySelector('.panel-body');
-        return rows(parts(p) + gutters(p) + p.offsetHeight - p.clientHeight + (body ? bodyH(body) : 0)); // border too
+        const body = own(p, '.panel-body');
+        return rows(parts(p) + gutters(p) + p.offsetHeight - p.clientHeight + (body ? bodyH(body) : 0) - less); // border too
     }
     // A body's content end to end, whatever height the body has now: its padding and the extent of
     // its in-flow children, margins in. Read off the layout as it stands, so nothing moves and a
@@ -276,6 +281,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // The layout Reset replaced, offered back until the next change; and whether the visitor has
     // arranged anything this visit (a layout saved on an earlier one is fitted again as content lands)
     let undo = null, arranged = false;
+    let height = board.offsetHeight; // a board in a panel: how tall its panel last heard it was
     // Reading order becomes DOM order, so tab order follows the layout. Add widget shows only
     // with something to add, Reset only once the layout differs from the default (or as Undo
     // right after a reset)
@@ -291,8 +297,15 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         fillMenu();
         add.hidden = !panels.some((p) => layout.get(p).hidden);
         reset.hidden = !undo && same(layout, base);
-        reset.textContent = undo ? 'Undo reset' : 'Reset layout';
+        label(reset, undo ? words.undo : words.reset);
         if (stale && same(layout, base)) remeasure();
+        // A board in a panel tells its panel when it's grown or shrunk, once it's done (a gesture's
+        // arranging room gone), and still before the page paints it
+        if (host) queueMicrotask(() => {
+            const grew = board.offsetHeight - height;
+            height += grew;
+            if (grew) board.dispatchEvent(new CustomEvent('boardchange', { bubbles: true, detail: grew }));
+        });
     }
     // A visitor's change: settle it and save it (a board back at its default saves nothing).
     // `back` is what a reset replaced; any other change drops it
@@ -314,8 +327,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     function load(keep = null) {
         // Measuring renders the markup's cells for a moment, which can clamp a body scrolled
         // inside: each keeps its place
-        const scrolled = panels.flatMap((p) => { const b = p.querySelector('.panel-body'); return b?.scrollTop ? [[b, b.scrollTop]] : []; });
-        key = `board:${board.dataset.board}${tier() === 'wide' ? '' : `:${tier()}`}`;
+        const scrolled = panels.flatMap((p) => { const b = own(p, '.panel-body'); return b?.scrollTop ? [[b, b.scrollTop]] : []; });
+        key = keyFor();
         base = defaults();
         const next = copy(base);
         let saved = null;
@@ -337,21 +350,32 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
 
     // ─── Toolbar, live region, snap ghost ───
     // The bar goes where the page gives it a home (any element with data-board-bar=<name>),
-    // otherwise right above the board
-    const bar = document.querySelector(`[data-board-bar="${board.dataset.board}"]`) ?? el('div');
+    // otherwise right above the board; a board in a panel keeps its two buttons, as icons, with
+    // that panel's tools
+    const tools = host && own(host, ':is(.panel-head, .panel-grab) > .panel-tools');
+    const bar = document.querySelector(`[data-board-bar="${board.dataset.board}"]`) ?? el(tools ? 'span' : 'div');
     const status = el('p', 'sr-only');
     const menu = el('div', 'board-menu');
-    const add = button('＋ Add widget');
-    const reset = button('Reset layout');
+    const add = button('');
+    const reset = button('');
+    const where = tools && title(host);
+    const words = where
+        ? { add: ['＋', `Add a block back to ${where}`], reset: ['↺', `Reset ${where}'s blocks`], undo: ['↶', `Undo the reset of ${where}'s blocks`] }
+        : { add: ['＋ Add widget'], reset: ['Reset layout'], undo: ['Undo reset'] };
+    const label = (b, [text, name]) => {
+        b.textContent = text;
+        if (name) { b.title = name; b.setAttribute('aria-label', name); }
+    };
+    label(add, words.add);
     const ghost = el('div', 'board-ghost');
     status.setAttribute('aria-live', 'polite');
     menu.id = `${board.dataset.board}-menu`;
     menu.popover = 'auto';
     add.setAttribute('popovertarget', menu.id);
     ghost.hidden = true;
-    bar.classList.add('board-bar');
+    bar.classList.add(tools ? 'board-tools' : 'board-bar');
     bar.append(status, add, reset, menu);
-    if (!bar.isConnected) board.before(bar);
+    if (!bar.isConnected) tools ? tools.prepend(bar) : board.before(bar);
     board.append(ghost);
     const say = (msg) => { status.textContent = msg; };
     // The ghost marks where a grabbed panel will land, in that panel's accent and inset (computed to
@@ -378,7 +402,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 menu.hidePopover();
                 say(`${title(p)} added back`);
                 p.scrollIntoView({ block: 'nearest' });
-                p.querySelector('.panel-grip').focus({ preventScroll: true });
+                own(p, ':is(.panel-head, .panel-grab) .panel-grip').focus({ preventScroll: true });
             });
             return b;
         }));
@@ -481,6 +505,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         let pending;
         Object.assign(p.style, { width: `${r0.width}px`, height: `${r0.height}px`, left: `${r0.left}px`, top: `${r0.top}px` });
         p.classList.add('is-dragging');
+        // Carried, it's fixed in place, which a panel with a filter (a home box's blur) or a transform
+        // places from itself rather than the window: so it's set back where it was, and a board in a
+        // panel keeps it with the pointer as the page scrolls
+        const now = p.getBoundingClientRect();
+        p.style.left = `${r0.left * 2 - now.left + (r0.width - now.width) / 2}px`;
+        p.style.top = `${r0.top * 2 - now.top + (r0.height - now.height) / 2}px`;
+        const b0 = board.getBoundingClientRect();
         showGhost(p, me);
         // Re-layout at most once a frame, however fast the pointer reports
         const retarget = () => {
@@ -497,7 +528,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         };
         return {
             move(ev) {
-                p.style.translate = `${ev.clientX - e.clientX}px ${ev.clientY - e.clientY}px`;
+                const b = host ? board.getBoundingClientRect() : b0;
+                p.style.translate = `${ev.clientX - e.clientX + b0.left - b.left}px ${ev.clientY - e.clientY + b0.top - b.top}px`;
                 pending = ev;
                 frame ||= requestAnimationFrame(retarget);
             },
@@ -628,7 +660,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         // The head and the grab dots move the panel (a headless panel gets a grab strip over its
         // top-left, clear of a video's own buttons); the grip is the keyboard's move control and
         // only shows on focus. The tools sit at the end of the head or grab strip
-        const headed = p.querySelector('.panel-head');
+        const headed = own(p, '.panel-head');
         const head = headed ?? p.appendChild(el('div', 'panel-grab'));
         const tools = el('div', 'panel-tools');
         const grip = button('⠿', `Move ${name} with the arrow keys`, 'panel-grip');
@@ -645,7 +677,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         });
         // Double-click the corner (or Enter on it) and the panel takes the height its content
         // needs at this width; a meme takes its picture's shape
-        const corner = p.querySelector('.panel-edge[data-dir="se"]');
+        const corner = own(p, '.panel-edge[data-dir="se"]');
         corner.title = 'Drag to resize, double-click to fit';
         corner.addEventListener('click', (e) => {
             if (e.detail === 1 || (e.detail && dragged === corner)) return; // one click of a pair, or the click a drag's release fires
@@ -728,11 +760,40 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (!stale) load(undo);
         }, 150);
     };
+    // The board's width as --board-w, for a host whose panel's inset answers to the board, not its
+    // cells: set before the first measure, and kept as the board resizes
+    const boardW = () => board.style.setProperty('--board-w', `${board.clientWidth}px`);
+    boardW();
     load();
     document.fonts?.ready.then(remeasure);
     board.addEventListener('load', remeasure, true);
     addEventListener('resize', () => { if (innerWidth !== width) { width = innerWidth; remeasure(); } });
-    TIERS.forEach((t) => t.mq.addEventListener('change', () => { active?.(); load(); }));
+    // A board in a panel follows its own width: it measures again as that changes within a tier, and
+    // swaps layouts once its panel is narrower or wider into another (after the gesture doing it,
+    // which may be the visitor resizing that panel)
+    let across = board.clientWidth;
+    const swap = () => (active ? setTimeout(swap, 150) : keyFor() !== key && load());
+    new ResizeObserver(() => {
+        boardW();
+        if (!host || board.clientWidth === across) return;
+        across = board.clientWidth;
+        if (keyFor() === key) remeasure();
+        else swap();
+    }).observe(board);
+    if (!host) TIERS.forEach((mq) => mq.addEventListener('change', () => { active?.(); load(); }));
+    // A board in one of these panels grew or shrank (its blocks moved, or what they hold changed): the
+    // panel holds it. A layout the visitor hasn't arranged this visit is measured again; one they have
+    // keeps its panel's height unless it's now short of the board, or held just what it holds before
+    board.addEventListener('boardchange', (e) => {
+        const p = e.target.parentElement.closest('.panel');
+        if (!panels.includes(p)) return;
+        if (active || !arranged) return active ? remeasure() : load(undo);
+        const next = copy(layout), r = next.get(p);
+        if (r.hidden || r.collapsed) return;
+        const hug = r.h <= minH(p, true, e.detail);
+        flip(() => hold(next, p, hug));
+        commit(next);
+    });
 
     // Reset, then (until the next change) Undo puts the visitor's own layout back
     reset.addEventListener('click', () => {

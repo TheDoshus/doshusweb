@@ -55,7 +55,7 @@
 /* While arranging: room to drop below the last panel, and no backdrop blur. Blurring live
    stars behind every moving panel is the heaviest thing on the page; dark glass stands in */
 .board.is-arranging { padding-bottom: calc(var(--row) * 8); user-select: none; }
-.board.is-arranging .panel { backdrop-filter: none; background: oklch(var(--space-oled) / 0.72); }
+.board.is-arranging > .panel { backdrop-filter: none; background: oklch(var(--space-oled) / 0.72); }
 /* A frame is another page (the Lounge's game): a pointer over it leaves the gesture, its moves and
    its release unseen, even captured. While arranging, every frame lets the pointer through */
 :root:has(.board.is-arranging) iframe { pointer-events: none; }
@@ -117,7 +117,7 @@
 .panel::after { content: ''; position: absolute; inset: 0 var(--r-l) auto; height: 1px; pointer-events: none;
     background: linear-gradient(90deg, transparent, oklch(var(--accent) / 0.7), transparent);
 }
-:where(.board:not([data-surface="clear"])) .panel:is(:hover, :focus-within) {
+:where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within) {
     border-color: oklch(var(--accent) / 0.85);
     box-shadow: 0 12px 38px oklch(var(--accent) / 0.25), 0 0 0 1px oklch(var(--accent) / 0.4) inset;
 }
@@ -128,26 +128,29 @@
    pointers hover, a finger holding it (which glows, as on every board). While arranging, every panel
    shows where it is. A page can still dress a panel itself (the Lounge's category boxes) */
 .board[data-surface="clear"] { --panel-fill: 0; --panel-backdrop: none; }
-:where(.board[data-surface="clear"]) .panel { border-color: transparent; }
-:where(.board[data-surface="clear"]) .panel::before, :where(.board[data-surface="clear"]) .panel::after { opacity: 0; transition: opacity 0.35s ease; }
-:where(.board[data-surface="clear"]) .panel .panel-dots::before { opacity: 0; }
+:where(.board[data-surface="clear"]) > .panel { border-color: transparent; }
+:where(.board[data-surface="clear"]) > .panel::before, :where(.board[data-surface="clear"]) > .panel::after { opacity: 0; transition: opacity 0.35s ease; }
+:where(.board[data-surface="clear"]) > .panel > .panel-dots::before { opacity: 0; }
 @media (hover: none) {
-    :where(.board[data-surface="clear"]) .panel:not(.is-collapsed) :is(.panel-tools, .panel-edge[data-dir="se"]),
-    :where(.board[data-surface="clear"]) .panel .panel-dots::before { opacity: 0.35; }
+    :where(.board[data-surface="clear"]) > .panel:not(.is-collapsed) > :is(.panel-head, .panel-grab) > .panel-tools,
+    :where(.board[data-surface="clear"]) > .panel:not(.is-collapsed) > .panel-edge[data-dir="se"],
+    :where(.board[data-surface="clear"]) > .panel > .panel-dots::before { opacity: 0.35; }
 }
-:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
-:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing)::before,
-:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing)::after,
-:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) :is(.panel-tools, .panel-edge[data-dir="se"]),
-:where(.board[data-surface="clear"]) .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) .panel-dots::before { opacity: 1; }
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing)::before,
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing)::after,
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) > :is(.panel-head, .panel-grab) > .panel-tools,
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) > .panel-edge[data-dir="se"],
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) > .panel-dots::before { opacity: 1; }
 @media (hover: hover) {
-    :where(.board[data-surface="clear"]) .panel:hover { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
-    :where(.board[data-surface="clear"]) .panel:hover::before, :where(.board[data-surface="clear"]) .panel:hover::after,
-    :where(.board[data-surface="clear"]) .panel:hover :is(.panel-tools, .panel-edge[data-dir="se"]),
-    :where(.board[data-surface="clear"]) .panel:hover .panel-dots::before { opacity: 1; }
+    :where(.board[data-surface="clear"]) > .panel:hover { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
+    :where(.board[data-surface="clear"]) > .panel:hover::before, :where(.board[data-surface="clear"]) > .panel:hover::after,
+    :where(.board[data-surface="clear"]) > .panel:hover > :is(.panel-head, .panel-grab) > .panel-tools,
+    :where(.board[data-surface="clear"]) > .panel:hover > .panel-edge[data-dir="se"],
+    :where(.board[data-surface="clear"]) > .panel:hover > .panel-dots::before { opacity: 1; }
 }
-.board[data-surface="clear"].is-arranging .panel:not(.is-dragging, .is-resizing) { background: oklch(var(--space-oled) / 0.35); border-color: oklch(var(--accent) / 0.5); }
-.board[data-surface="clear"].is-arranging .panel::before, .board[data-surface="clear"].is-arranging .panel::after { opacity: 1; }
+.board[data-surface="clear"].is-arranging > .panel:not(.is-dragging, .is-resizing) { background: oklch(var(--space-oled) / 0.35); border-color: oklch(var(--accent) / 0.5); }
+.board[data-surface="clear"].is-arranging > .panel::before, .board[data-surface="clear"].is-arranging > .panel::after { opacity: 1; }
 /* A finger resting on a panel charges a glow as it swells, so the hold reads as a grab */
 .panel.is-holding { scale: 1.02; transition-duration: var(--hold);
     border-color: oklch(var(--accent)); box-shadow: 0 0 0 2px oklch(var(--accent) / 0.55), 0 0 44px oklch(var(--accent) / 0.45);
@@ -173,7 +176,7 @@
     opacity: 0.5; transition: opacity 0.2s ease;
     background: radial-gradient(circle, oklch(var(--accent)) 1.1px, transparent 1.6px) 0 0 / 6px 4px;
 }
-:where(.board:not([data-surface="clear"])) .panel:is(:hover, :focus-within, .is-holding, .is-dragging) .panel-dots::before { opacity: 1; }
+:where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within, .is-holding, .is-dragging) > .panel-dots::before { opacity: 1; }
 .panel-icon { grid-column: 1; margin-right: var(--sp-s); width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 9px;
     background: oklch(var(--accent) / 0.12); border: 1px solid oklch(var(--accent) / 0.4); color: oklch(var(--accent));
 }
@@ -266,9 +269,11 @@
 .panel-edge[data-dir="se"] { right: 0; bottom: 0; width: 1.3rem; height: 1.3rem; opacity: 0; border-radius: 0 0 var(--r-l) 0;
     background: linear-gradient(135deg, transparent 55%, oklch(var(--accent) / 0.7) 55% 62%, transparent 62% 72%, oklch(var(--accent) / 0.7) 72% 79%, transparent 79%);
 }
-:where(.board:not([data-surface="clear"])) .panel:is(:hover, :focus-within) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 1; }
+:where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within) > :is(.panel-head, .panel-grab) > .panel-tools,
+:where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within) > .panel-edge[data-dir="se"] { opacity: 1; }
 @media (hover: none) {
-    :where(.board:not([data-surface="clear"])) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 1; }
+    :where(.board:not([data-surface="clear"])) > .panel > :is(.panel-head, .panel-grab) > .panel-tools,
+    :where(.board:not([data-surface="clear"])) > .panel > .panel-edge[data-dir="se"] { opacity: 1; }
     .panel:not(.panel-media) .panel-tag { visibility: hidden; }
 }
 /* Touch: one big corner to resize by, instead of eight thin edges a thumb catches by accident */
@@ -327,7 +332,7 @@
 /* Foldables and tablets: 12 columns. By default the wide layout flows onto half the columns, two
    panels to a row; a visitor can still narrow one to a third */
 @media (max-width: 1080px) {
-    .board { --cols: 12; --min-cols: 4; }
+    .board:not(.panel .board) { --cols: 12; --min-cols: 4; }
 }
 /* Phones: 6 columns (Doshus, 2026-10-11; 4 before). By default every panel is full width and as
    tall as its content; half the width is the narrowest (a third is too thin for a title or the
@@ -335,6 +340,17 @@
    between them (Doshus, 2026-10-10), and the board's side padding gives back the extra, so the
    panels keep their width */
 @media (max-width: 640px) {
-    .board { --cols: 6; --min-cols: 3; --gutter: 1rem; }
+    .board:not(.panel .board) { --cols: 6; --min-cols: 3; --gutter: 1rem; }
     .board-wrap { padding-inline: 0.5rem; }
 }
+
+/* ─── A BOARD IN A PANEL (UI-SPEC § Boards in a panel): its blocks move within the panel ─── */
+/* Its tier is its own width's (the panel's body), not the window's: a visitor can narrow its panel */
+@container panel (max-width: 1080px) { .board { --cols: 12; --min-cols: 4; } }
+@container panel (max-width: 640px) { .board { --cols: 6; --min-cols: 3; } }
+/* Its Reset and Add widget sit with its panel's tools, as they are */
+.panel-tools > .board-tools { display: contents; }
+.panel-tools button[hidden] { display: none; }
+/* While its blocks are arranged, its room below them shows past its panel's bottom, over what's there */
+.panel:has(> .panel-body > .board.is-arranging) { z-index: 40; }
+.panel-body:has(> .board.is-arranging) { overflow: visible; }
