@@ -59,6 +59,15 @@ const cells = (page, id) => page.evaluate((id) => { const s = document.getElemen
 const saved = (page, tier = '') => page.evaluate((k) => localStorage.getItem('board:nexus' + k), tier && ':' + tier);
 const arranging = (page) => page.evaluate(() => document.querySelector('.board').classList.contains('is-arranging'));
 const countMoves = () => { window.__moves = 0; for (const m of ['moveBefore', 'insertBefore']) { const f = Element.prototype[m]; if (f) Element.prototype[m] = function (...a) { if (this.matches?.('.board')) window.__moves++; return f.apply(this, a); }; } };
+// Once every board's cells and height have held still for 400ms (longer than the engine's 150ms waits for a
+// resize to rest, so a measure still due resets it), or 4s have passed
+const steady = async (page) => {
+    for (let last = '', since = Date.now(), end = Date.now() + 4000; Date.now() < end; await sleep(100)) {
+        const now = await page.evaluate(() => [...document.querySelectorAll('.board')].map((b) => `${b.offsetHeight}:${[...b.querySelectorAll(':scope > .panel')].map((p) => p.style.cssText).join()}`).join('|'));
+        if (now !== last) [last, since] = [now, Date.now()];
+        else if (Date.now() - since >= 400) return;
+    }
+};
 const center = async (page, id) => { await page.evaluate((id) => document.getElementById(id).scrollIntoView({ block: 'center' }), id); await sleep(150); };
 // Made shorter than what it holds by the keyboard, as a visitor would, so its body scrolls inside
 // (Nexus's Dev Core, marked data-tall, is as tall as its content by default)
@@ -748,6 +757,7 @@ const TESTS = {
     async "a finger resting on a panel (it swells) doesn't measure it bigger"(browser) {
         const { ctx, page, errors } = await open(browser, PHONE);
         const all = () => page.evaluate(() => [...document.querySelectorAll('.board > .panel')].map((p) => `${p.id} ${p.style.getPropertyValue('--h')}`));
+        await steady(page); // what the page settles to on its own first (a loaded machine is still measuring after open)
         const before = await all();
         await center(page, 'signals');
         const h = await page.locator('#signals .panel-head').boundingBox();
@@ -758,7 +768,7 @@ const TESTS = {
         await page.evaluate(() => document.querySelector('.board').dispatchEvent(new Event('load'))); // a picture arriving mid-hold
         await sleep(250);
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); // let go before it lifts
-        await sleep(500);
+        await steady(page);
         assert.deepEqual(await all(), before);
         return errors;
     },
@@ -1326,7 +1336,7 @@ const TESTS = {
         // The promo's sentence takes as many lines as on the page before (one down to 560px, then two)
         for (const [width, lines] of [1440, 1200, 1100, 1000, 901, 800, 700, 650, 641, 640, 600, 560, 480, 430, 390, 320].map((w) => [w, w >= 560 ? 1 : 2])) {
             await page.setViewportSize({ width, height: 800 });
-            await sleep(350);
+            await steady(page);
             const got = await page.evaluate(() => {
                 const panels = [...document.querySelectorAll('.board[data-board="home"] > .panel')];
                 // A body's content end to its bottom edge: under a row (its own board's) means the box, or a block in it, is as tall as what it holds
@@ -1720,10 +1730,18 @@ const TESTS = {
             }
             return out;
         }, touch);
-        for (const [opts, touch] of [[WIDE, false], [{ viewport: { width: 900, height: 800 } }, false], [FOLD, true], [PHONE, true]]) {
+        // A block's thin resize edges sit in the gutter beside it: none overlaps a control it holds (they'd take its last 5px)
+        const edged = (page) => page.evaluate(() => [...document.querySelectorAll('.panel .board > .panel')].flatMap((p) => {
+            const edges = [...p.querySelectorAll(':scope > .panel-edge:not([data-dir="se"])')].filter((e) => e.checkVisibility()).map((e) => [e.dataset.dir, e.getBoundingClientRect()]);
+            const body = p.querySelector(':scope > .panel-body').getBoundingClientRect(); // what scrolls past it is clipped (the card carousel)
+            return [...p.querySelectorAll(':scope > .panel-body :is(a, button, input, label, #slackText)')].flatMap((n) => { const c = n.getBoundingClientRect();
+                const r = { left: Math.max(c.left, body.left), right: Math.min(c.right, body.right), top: Math.max(c.top, body.top), bottom: Math.min(c.bottom, body.bottom) };
+                return c.width ? edges.filter(([, e]) => Math.min(r.right, e.right) - Math.max(r.left, e.left) > 0 && Math.min(r.bottom, e.bottom) - Math.max(r.top, e.top) > 0).map(([d]) => `${p.id} "${n.textContent.trim().slice(0, 16)}" under its ${d} edge`) : []; });
+        }));
+        for (const [opts, touch] of [[WIDE, false], [{ viewport: { width: 900, height: 800 } }, false], [{ viewport: { width: 768, height: 800 } }, false], [FOLD, true], [PHONE, true]]) {
             const { page, errors } = await open(browser, opts, { path: '/' });
             all.push(...errors);
-            assert.deepEqual(await covered(page, touch), [], `${opts.viewport.width}px`);
+            assert.deepEqual([...await covered(page, touch), ...touch ? [] : await edged(page)], [], `${opts.viewport.width}px`);
             await page.context().close();
         }
         // A pointer: a click on the Slack line (a plain span, clickable) and on a link at the top of their blocks lands on them;
@@ -1791,6 +1809,111 @@ const TESTS = {
             await center(page, 'az-slack');
             const after = await close('az-slack');
             assert.deepEqual([slack.picked, slack.live, after.picked, after.live], [true, true, false, false], 'the Slack line picked, then a press elsewhere');
+            await page.context().close();
+        }
+        return all;
+    },
+    async "a block's press ends wherever the pointer goes, a finger let go clicks nothing, and a touch laptop's tap finds no unseen ✕"(browser) {
+        const all = [];
+        const pressed = () => document.querySelector('.panel.is-pressed, .board.is-arranging') !== null;
+        // A mouse flicked out of a block's band and let go outside: nothing stays armed, so pointing at the block again carries nothing
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/' });
+            all.push(...errors);
+            await center(page, 'lounge');
+            const before = await cells(page, 'lg-intro');
+            const t = await page.locator('#lg-intro p').boundingBox(), x = t.x + 40, y = t.y + t.height / 2;
+            await page.mouse.move(x, y);
+            await page.mouse.down();
+            await page.mouse.move(x, y - 100); // one event, out of the block
+            await page.mouse.up();
+            await sleep(300);
+            await page.mouse.move(x + 30, y + 10, { steps: 5 });
+            await sleep(300);
+            assert.deepEqual([await page.evaluate(pressed), await cells(page, 'lg-intro')], [false, before], 'the Lounge intro after a flick out and back');
+            // Spotify's dots sit on its frame, its one pointer handle: a quick first move onto the frame still lifts it
+            await center(page, 'lg-spotify');
+            const d = await page.locator('#lg-spotify > .panel-dots').boundingBox();
+            await page.mouse.move(d.x + d.width / 2, d.y + 6);
+            await page.mouse.down();
+            for (const dy of [25, 60]) { await page.mouse.move(d.x + d.width / 2, d.y + 6 + dy); await sleep(16); }
+            await sleep(150);
+            const lifted = await page.evaluate(() => document.querySelector('#lounge .board').classList.contains('is-arranging'));
+            await page.keyboard.press('Escape');
+            await page.mouse.up();
+            assert.equal(lifted, true, 'Spotify lifted by its dots, the first move landing on its frame');
+            await page.context().close();
+        }
+        // A finger held still and let go: the click it fires reaches nothing (not a link under the dots, not the Slack line)
+        {
+            const { ctx, page, errors } = await open(browser, PHONE, { path: '/' });
+            all.push(...errors);
+            const cdp = await ctx.newCDPSession(page);
+            const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts });
+            await page.evaluate(() => { window.__hit = []; for (const q of ['#lg-links a', '#slackText']) document.querySelector(q).addEventListener('click', (e) => { e.preventDefault(); window.__hit.push(q); }); });
+            const at = (q) => page.evaluate((q) => { const r = document.querySelector(q).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, radiusX: 12, radiusY: 12 }; }, q);
+            for (const [id, q] of [['lg-links', '#lg-links > .panel-dots'], ['az-slack', '#slackText']]) {
+                await center(page, id);
+                await touch('touchStart', [await at(q)]);
+                await sleep(700);
+                await touch('touchEnd', []);
+                await sleep(500);
+            }
+            assert.deepEqual(await page.evaluate(() => [window.__hit, ['lg-links', 'az-slack'].map((id) => document.getElementById(id).classList.contains('is-picked'))]), [[], [false, true]], 'clicks after holds, and what each left picked');
+            await page.context().close();
+        }
+        // A touch laptop (a pointer that hovers, and a finger; a page alone can't emulate both): a tap where a block's unseen ✕ sits reaches what's under it
+        {
+            const laptop = await chromium.launch({ ...LAUNCH, args: [...LAUNCH.args, '--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=2,availablePointerTypes=6'] });
+            const { ctx, page, errors } = await open(laptop, { viewport: { width: 1440, height: 900 } }, { path: '/' }); // (hasTouch would report no hover; a CDP touch needs none)
+            all.push(...errors);
+            const cdp = await ctx.newCDPSession(page);
+            const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts });
+            const hid = [];
+            for (const id of ['lg-intro', 'az-intro', 'lg-sites']) {
+                await center(page, id);
+                const c = await page.evaluate((id) => { const r = document.querySelector(`#${id} > .panel-grab .panel-close`).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, radiusX: 12, radiusY: 12 }; }, id);
+                await touch('touchStart', [c]);
+                await touch('touchEnd', []);
+                await sleep(400);
+                if (!await page.evaluate((id) => document.getElementById(id).checkVisibility(), id)) hid.push(id);
+            }
+            const hover = await page.evaluate(() => matchMedia('(hover: hover)').matches);
+            await laptop.close();
+            assert.deepEqual([hover, hid], [true, []], `blocks hidden by a tap where their ✕ sits unseen: ${JSON.stringify([hover, hid])}`);
+        }
+        return all;
+    },
+    async "a box's blocks: a window swept across measures them once it rests, and a box resized into their phone tier holds them while the pointer does"(browser) {
+        const all = [];
+        // Swept within the wide tier, 35 steps: each inner board reads its layout a handful of times, not once a step
+        {
+            const init = () => { window.__reads = {}; const get = Storage.prototype.getItem; Storage.prototype.getItem = function (k) { window.__reads[k] = (window.__reads[k] ?? 0) + 1; return get.call(this, k); }; };
+            const { page, errors } = await open(browser, WIDE, { path: '/', init });
+            all.push(...errors);
+            await steady(page);
+            await page.evaluate(() => { window.__reads = {}; });
+            for (let w = 1440; w >= 1100; w -= 10) { await page.setViewportSize({ width: w, height: 900 }); await sleep(16); }
+            await steady(page);
+            const reads = await page.evaluate(() => Object.entries(window.__reads).filter(([k]) => /^board:home-/.test(k)));
+            assert.ok(reads.length && reads.every(([, n]) => n <= 3), `inner boards' reads over the sweep: ${JSON.stringify(reads)}`);
+            await page.context().close();
+        }
+        // The Lounge box narrowed by its edge into its blocks' phone tier and held there: it holds its blocks, nothing scrolling inside
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/' });
+            all.push(...errors);
+            await center(page, 'lounge');
+            const e = await page.locator('#lounge > .panel-edge[data-dir="e"]').boundingBox(), x = e.x + e.width / 2, y = e.y + e.height / 2;
+            await page.mouse.move(x, y);
+            await page.mouse.down();
+            await page.mouse.move(x - 650, y, { steps: 10 });
+            await sleep(1200);
+            const held = await page.evaluate(() => { const box = document.getElementById('lounge'), body = box.querySelector(':scope > .panel-body'), board = body.querySelector('.board');
+                const last = Math.max(...[...board.querySelectorAll(':scope > .panel')].filter((p) => !p.hidden).map((p) => p.getBoundingClientRect().bottom));
+                return { cols: getComputedStyle(board).getPropertyValue('--cols').trim(), inside: Math.round(body.scrollHeight - body.clientHeight), past: Math.round(last - body.getBoundingClientRect().bottom) }; });
+            await page.mouse.up();
+            assert.deepEqual([held.cols, held.inside <= 1, held.past <= 0], ['6', true, true], `the Lounge box held at its blocks' phone tier: ${JSON.stringify(held)}`);
             await page.context().close();
         }
         return all;

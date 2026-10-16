@@ -58,8 +58,9 @@
 .board.is-arranging { padding-bottom: calc(var(--row) * 8); user-select: none; }
 .board.is-arranging > .panel { backdrop-filter: none; background: oklch(var(--space-oled) / 0.72); }
 /* A frame is another page (the Lounge's game): a pointer over it leaves the gesture, its moves and
-   its release unseen, even captured. While arranging, every frame lets the pointer through */
-:root:has(.board.is-arranging) iframe { pointer-events: none; }
+   its release unseen, even captured. While arranging, and while a press waits to lift a panel
+   (Spotify's block is held by its dots alone), every frame lets the pointer through */
+:root:has(.board.is-arranging, .panel.is-pressed) iframe { pointer-events: none; }
 .board.is-arranging::before { opacity: var(--field-opacity); }
 /* The ghost: where the panel will land, in the grabbed panel's own accent. It breathes by
    fading a glow layer (opacity runs on the compositor; an animated box-shadow repaints) */
@@ -357,17 +358,22 @@
 .panel-tools > .board-tools { display: contents; }
 .panel-tools > .board-tools > button[hidden] { display: none; }
 /* A block's grab strip covers nothing it holds: the block answers the strip's presses itself
-   (board.js). Its ✕ and corner still sit on what it holds (it has no head, and its content runs to
-   its edges): a pointer sees them as it reaches the block, but on a touch screen they'd be live at
-   rest, so there they wait unseen and untouchable until the block is picked: a finger holding it,
-   or having set it down, until a press lands elsewhere. Its dots stay as the cue */
+   (board.js), and its thin edges sit in the gutter beside it, over its border at most. Its ✕ and
+   corner still sit on what it holds (it has no head, and its content runs to its edges): a pointer
+   sees them as it reaches the block, but while a finger or pen is in use (board.js's data-touch: a
+   touch screen, or a touch laptop's last press, set on the press, before Chromium picks the tap's
+   click target) they'd be live unseen, so then they wait, unseen and untouchable, until the block
+   is focused or picked (a finger holding it, or having set it down, until a press lands
+   elsewhere). Its dots are the cue */
 .panel .board > .panel > .panel-grab { pointer-events: none; }
 .panel .board > .panel > .panel-grab > .panel-tools { pointer-events: auto; }
+.panel .board > .panel > .panel-edge[data-dir^="n"] { top: -10px; }
+.panel .board > .panel > .panel-edge[data-dir^="s"]:not([data-dir="se"]) { bottom: -10px; }
+.panel .board > .panel > .panel-edge[data-dir$="e"]:not([data-dir="se"]) { right: -10px; }
+.panel .board > .panel > .panel-edge[data-dir$="w"] { left: -10px; }
 .panel .board > .panel.is-picked > .panel-grab > .panel-tools, .panel .board > .panel.is-picked > .panel-edge[data-dir="se"] { opacity: 1; }
-@media (hover: none) {
-    .panel .board > .panel:not(.is-picked, .is-holding, .is-dragging, .is-resizing, :has(:focus-visible)) > .panel-grab > .panel-tools,
-    .panel .board > .panel:not(.is-picked, .is-holding, .is-dragging, .is-resizing, :has(:focus-visible)) > .panel-edge { opacity: 0; pointer-events: none; }
-}
+:root[data-touch] .panel .board > .panel:not(.is-picked, .is-holding, .is-dragging, .is-resizing, :has(:focus-visible)) > .panel-grab > .panel-tools,
+:root[data-touch] .panel .board > .panel:not(.is-picked, .is-holding, .is-dragging, .is-resizing, :has(:focus-visible)) > .panel-edge { opacity: 0; pointer-events: none; }
 /* While its blocks are arranged, its room below them shows past its panel's bottom, over what's there */
 .panel:has(> .panel-body > .board.is-arranging) { z-index: 40; }
 .panel-body:has(> .board.is-arranging) { overflow: visible; }

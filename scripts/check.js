@@ -182,6 +182,7 @@ const CHECKS = {
         const tiers = { '': grid(/(?:^|\n)\.board \{[^}]*--cols:\s*(\d+)[^}]*--min-cols:\s*(\d+)/), mid: grid(at(1080)), phone: grid(at(640)) };
         if (!Object.values(tiers).every(Boolean)) return ['public/css/board.css: a tier grid the board lint reads is gone (.board, and the 1080px and 640px window tiers)'];
         const VOID = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)$/i;
+        const OPTIONAL = /^(p|li|dt|dd|option|optgroup|tr|td|th|thead|tbody|tfoot|colgroup|caption|rt|rp)$/i; // end tag may be left out
         const TAG = /<(\/?)([a-z][\w-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*)\s*\/?>/gi;
         const attrs = (s) => Object.fromEntries([...s.matchAll(/([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)]
             .map((m) => [m[1].toLowerCase(), m[2] ?? m[3] ?? m[4] ?? '']));
@@ -191,6 +192,7 @@ const CHECKS = {
             const html = fs.readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ' '));
             const ids = new Set();
             const open = []; // the boards being walked, innermost last: how deep each is, and its panels' cells so far
+            const stack = []; // every open element's tag: counting depth alone lets an ancestor's end tag stand in for a missing one
             for (const m of html.matchAll(TAG)) {
                 const [, close, tag, rest] = m;
                 const line = `${rel(f)}:${lineOf(html, m.index)}`;
@@ -199,6 +201,10 @@ const CHECKS = {
                 if (board?.body && board.body === board.depth && html.slice(board.at, m.index).trim()) problems.push(`${line}: bare text in a panel body (wrap it in an element)`);
                 open.forEach((b) => { b.at = m.index + m[0].length; });
                 if (close) {
+                    // What it closes, and anything left open inside it whose end tag can't be left out
+                    const i = stack.lastIndexOf(tag.toLowerCase());
+                    const left = i < 0 ? [] : stack.splice(i).slice(1).filter((t) => !OPTIONAL.test(t));
+                    if (open.length && left.length) problems.push(`${line}: <${left.join('>, <')}> never closed before </${tag}>`);
                     open.forEach((b) => b.depth--);
                     if (board?.depth === 0) {
                         // A tier the page lays out itself names every panel's cells, or the engine flows it
@@ -208,6 +214,7 @@ const CHECKS = {
                     continue;
                 }
                 if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
+                stack.push(tag.toLowerCase());
                 const a = attrs(rest);
                 const depth = board?.depth;
                 open.forEach((b) => b.depth++);

@@ -3,6 +3,12 @@
 // cells counted from 1. This file lays the panels out, adds the move/hide/resize controls
 // and saves the visitor's layout. Loads after main.js: uses prefersReducedMotion, haptic().
 let active = null; // ends the one gesture running on any board (cancelled); a second pointer waits
+// Whether a finger or pen is in use (board.css stills a block's ✕ and corner then, which a tap would
+// otherwise find, its hover waking them): a touch screen to begin with, then the last pointer pressed or moved
+const touching = (on) => document.documentElement.toggleAttribute('data-touch', on);
+touching(matchMedia('(hover: none)').matches);
+addEventListener('pointerdown', (e) => touching(e.pointerType !== 'mouse'), true);
+addEventListener('pointermove', (e) => e.pointerType === 'mouse' && touching(false), { capture: true, passive: true });
 document.querySelectorAll('.board[data-board]').forEach((board) => {
     const VERSION = 2; // bump when the saved shape changes; older saves are ignored
     const MIN_H = 3;
@@ -462,9 +468,16 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         // The panel lands before the board drops its arranging room, so the page can't lose its scroll
         const end = (cancel) => {
             stop.abort(); cancelAnimationFrame(scroll); active = null; op.done(cancel); board.classList.remove('is-arranging'); haptic();
-            if (host && e.pointerType !== 'mouse') pick(handle.closest('.panel'));
+            if (e.pointerType === 'mouse') return;
+            if (host) pick(handle.closest('.panel'));
+            // A finger let go where it held fires a click there, on whatever is under it now (a ✕ the
+            // pick just made live, a link): it's the gesture's, so nothing takes it
+            const off = new AbortController();
+            addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); }, { capture: true, once: true, signal: off.signal });
+            setTimeout(() => off.abort(), 400);
         };
-        active = () => end(true);
+        // A change under the gesture (a board in the panel being resized swapped its tier) is followed at once
+        active = Object.assign(() => end(true), { refresh: () => op.move(last) });
         on('pointermove', mine((ev) => { last = ev; op.move(ev); scroll ||= requestAnimationFrame(edge); }));
         on('pointerup', mine(() => end(false)));
         // Capture lost with no release seen: it was let go where this page couldn't see, so it lands.
@@ -493,10 +506,14 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (e.button || cols() < 2 || (where && !where(e)) || (e.target !== handle && e.target.closest('button, a, input, label, select, textarea, summary, .board-menu'))) return;
             const panel = handle.closest('.panel');
             const wait = new AbortController();
-            const on = (type, fn) => handle.addEventListener(type, fn, { signal: wait.signal });
+            // A block isn't captured at the press, so it hears this pointer on the window: a fast move out
+            // of it, or a release outside, still ends the wait
+            const on = (type, fn) => (where && type.startsWith('pointer')
+                ? addEventListener(type, (ev) => ev.pointerId === e.pointerId && fn(ev), { capture: true, signal: wait.signal })
+                : handle.addEventListener(type, fn, { signal: wait.signal }));
             const moved = (ev, px) => Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) > px;
             let timer = 0;
-            const quit = () => { wait.abort(); if (timer) { clearTimeout(timer); panel.classList.remove('is-holding'); } };
+            const quit = () => { wait.abort(); panel.classList.remove('is-pressed'); if (timer) { clearTimeout(timer); panel.classList.remove('is-holding'); } };
             on('pointerup', quit);
             on('pointercancel', quit); // the page started scrolling
             if (hold && e.pointerType !== 'mouse') {
@@ -510,6 +527,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             e.preventDefault();
             // A thin edge loses a fast pointer otherwise; a block is captured only once it moves, so a click lands on what it pressed
             if (!where) handle.setPointerCapture(e.pointerId);
+            panel.classList.add('is-pressed'); // a frame under the first move can't take it (board.css)
             on('pointermove', (ev) => { if (moved(ev, 3)) { quit(); begin(handle, start, e)?.move(ev); } });
         });
     }
@@ -808,7 +826,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const widthChanged = () => {
         if (board.clientWidth === across) return;
         across = board.clientWidth;
-        if (keyFor() === key) return measure(); // what moved its panel already waited out its own changes
+        if (keyFor() === key) return remeasure(); // once its width rests: a window swept across measures it once, not every step
         if (active) { render(fit(copy(layout))); tell(); } // meanwhile the old layout, fitted into the new grid
         swap();
     };
@@ -821,7 +839,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     board.addEventListener('boardchange', (e) => {
         const p = e.target.parentElement.closest('.panel');
         if (!panels.includes(p)) return;
-        if (active || !arranged) return active ? remeasure() : load(undo);
+        if (active) { active.refresh(); return remeasure(); } // the gesture holds it now, a measure after
+        if (!arranged) return load(undo);
         const next = copy(layout), r = next.get(p);
         if (r.hidden || r.collapsed) return;
         const hug = r.h <= minH(p, true, e.detail);
