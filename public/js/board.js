@@ -12,9 +12,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const cols = () => +css.getPropertyValue('--cols') || 1;
     const minW = () => Math.min(+css.getPropertyValue('--min-cols') || 1, cols());
     const cell = () => ({ x: board.clientWidth / cols(), y: parseFloat(css.gridAutoRows) });
-    // The board's width as --board-w, for a host whose panel's inset answers to the board, not its
-    // cells: set as each default measure starts, and kept as the board resizes
-    const boardW = () => board.style.setProperty('--board-w', `${board.clientWidth}px`);
+    // A page board's width as --board-w, for a host whose panel's inset answers to the board, not its
+    // cells: set as each default measure starts, and kept as the board resizes (a board in a panel
+    // has none: written as its panel resizes, it restyled every block in it for nothing)
+    const boardW = () => { if (!host) board.style.setProperty('--board-w', `${board.clientWidth}px`); };
     const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
     const panels = [...board.children].filter((el) => el.matches('.panel'));
     // A panel's own parts, never those of a board inside it (UI-SPEC § Boards in a panel)
@@ -306,8 +307,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         reset.hidden = !undo && same(layout, base);
         label(reset, undo ? words.undo : words.reset);
         if (stale && same(layout, base)) remeasure();
-        // A board in a panel tells its panel when it's grown or shrunk, once it's done (a gesture's
-        // arranging room gone), and still before the page paints it
+        tell();
+    }
+    // A board in a panel tells its panel when it's grown or shrunk, once it's done (a gesture's
+    // arranging room gone), and still before the page paints it
+    function tell() {
         if (host) queueMicrotask(() => {
             const grew = board.offsetHeight - height;
             height += grew;
@@ -473,8 +477,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     function track(handle, start, hold) {
         handle.addEventListener('pointerdown', (e) => {
             dragged = null;
-            // A press on a button inside the handle (the head's ✕) is a click, not a drag
-            if (e.button || cols() < 2 || (e.target !== handle && e.target.closest('button, a'))) return;
+            // A press on a button inside the handle (the head's ✕), or in a board-in-the-panel's menu, is a click, not a drag
+            if (e.button || cols() < 2 || (e.target !== handle && e.target.closest('button, a, .board-menu'))) return;
             const panel = handle.closest('.panel');
             const wait = new AbortController();
             const on = (type, fn) => handle.addEventListener(type, fn, { signal: wait.signal });
@@ -512,12 +516,14 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         let pending;
         Object.assign(p.style, { width: `${r0.width}px`, height: `${r0.height}px`, left: `${r0.left}px`, top: `${r0.top}px` });
         p.classList.add('is-dragging');
-        // Carried, it's fixed in place, which a panel with a filter (a home box's blur) or a transform
-        // places from itself rather than the window: so it's set back where it was, and a board in a
-        // panel keeps it with the pointer as the page scrolls
+        // Carried, it's fixed in place, which a panel with a filter (a home box's blur, gone on a lean
+        // board) or a transform places from itself rather than the window: so it's set back where it
+        // was, and where a panel placed it, it's kept with the pointer as the page scrolls
         const now = p.getBoundingClientRect();
-        p.style.left = `${r0.left * 2 - now.left + (r0.width - now.width) / 2}px`;
-        p.style.top = `${r0.top * 2 - now.top + (r0.height - now.height) / 2}px`;
+        const shift = { x: now.left + (now.width - r0.width) / 2 - r0.left, y: now.top + (now.height - r0.height) / 2 - r0.top };
+        p.style.left = `${r0.left - shift.x}px`;
+        p.style.top = `${r0.top - shift.y}px`;
+        const placed = Math.abs(shift.x) > 0.5 || Math.abs(shift.y) > 0.5;
         const b0 = board.getBoundingClientRect();
         showGhost(p, me);
         // Re-layout at most once a frame, however fast the pointer reports
@@ -535,7 +541,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         };
         return {
             move(ev) {
-                const b = host ? board.getBoundingClientRect() : b0;
+                const b = placed ? board.getBoundingClientRect() : b0;
                 p.style.translate = `${ev.clientX - e.clientX + b0.left - b.left}px ${ev.clientY - e.clientY + b0.top - b.top}px`;
                 pending = ev;
                 frame ||= requestAnimationFrame(retarget);
@@ -780,13 +786,15 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // which may be the visitor resizing that panel)
     let across = board.clientWidth;
     const swap = () => (active ? setTimeout(swap, 150) : keyFor() !== key && load());
-    new ResizeObserver(() => {
-        boardW();
-        if (!host || board.clientWidth === across) return;
+    const widthChanged = () => {
+        if (board.clientWidth === across) return;
         across = board.clientWidth;
-        if (keyFor() === key) remeasure();
-        else swap();
-    }).observe(board);
+        if (keyFor() === key) return remeasure();
+        if (active) { render(fit(copy(layout))); tell(); } // meanwhile the old layout, fitted into the new grid
+        swap();
+    };
+    // (read in the next frame, out of the observer's own pass, which reading the tier would loop)
+    new ResizeObserver(() => { boardW(); if (host) requestAnimationFrame(widthChanged); }).observe(board);
     if (!host) TIERS.forEach((mq) => mq.addEventListener('change', () => { active?.(); load(); }));
     // A board in one of these panels grew or shrank (its blocks moved, or what they hold changed): the
     // panel holds it. A layout the visitor hasn't arranged this visit is measured again; one they have

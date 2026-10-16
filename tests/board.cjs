@@ -1396,6 +1396,9 @@ const TESTS = {
                 <div class="board" data-board="made-in" data-surface="clear" data-tall>${block('A', 'data-x="1" data-y="1" data-w="12" data-h="4"', 60)}${block('B', 'data-x="13" data-y="1" data-w="12" data-h="4"', 60)}</div>
             </div></article>
             <article class="panel" id="O" data-x="1" data-y="13" data-w="24" data-h="6"><header class="panel-head"><h2>Other</h2></header><div class="panel-body"><p>below</p></div></article>
+            <section class="panel" id="G" aria-label="Second" data-x="1" data-y="20" data-w="24" data-h="8"><div class="panel-body">
+                <div class="board" data-board="made-in-2" data-tall><article class="panel" id="I" data-x="1" data-y="1" data-w="12" data-h="4"><header class="panel-head"><h2>Inner</h2></header><div class="panel-body"><p>held</p></div></article></div>
+            </div></section>
         </div></main><div style="height: 150vh"></div><script src="/js/main.js"></script><script src="/js/board.js"></script></body></html>`;
         const { page, errors } = await open(browser, WIDE, { path: '/made.html', route: [base + '/made.html', (r) => r.fulfill({ contentType: 'text/html', body: html })] });
         // The panel holds its board whole, and the panel under it keeps its gap
@@ -1409,6 +1412,8 @@ const TESTS = {
         assert.deepEqual(await page.evaluate(() => [document.querySelector('#H > .panel-head .panel-grip').getAttribute('aria-label'), document.querySelector('#A > .panel-grab .panel-grip').getAttribute('aria-label'),
             !!document.querySelector('#H > .panel-head > .panel-tools > .board-tools'), document.querySelectorAll('.board-bar').length]),
             ['Move Host with the arrow keys', 'Move Block A with the arrow keys', true, 1], 'controls');
+        // A headless panel is named by its label, not by a block's title inside it
+        assert.equal(await page.evaluate(() => document.querySelector('#G > .panel-grab .panel-grip').getAttribute('aria-label')), 'Move Second with the arrow keys', 'a headless host\'s grip');
         // Pointed at, the panel shows its tools and corner, not its blocks'
         await page.mouse.move(...await page.locator('#H > .panel-head').boundingBox().then((b) => [b.x + 200, b.y + 10]));
         await sleep(400);
@@ -1436,12 +1441,41 @@ const TESTS = {
         await sleep(500);
         got = await held();
         assert.deepEqual([await cells(page, 'A'), got.inside <= 1, got.blank < 32], [[1, 1, 12, 4], true, true], `reset: ${JSON.stringify(got)}`);
+        // Its panel without a blur (a lean board drops it), so the window places a carried block: it stays under the pointer as the page scrolls
+        await page.evaluate(() => { document.getElementById('H').style.backdropFilter = 'none'; scrollTo({ top: 0, behavior: 'instant' }); });
+        {
+            const g = await page.locator('#A > .panel-grab').boundingBox(), x = g.x + 20, y = g.y + g.height / 2, a0 = await page.locator('#A').boundingBox();
+            await page.mouse.move(x, y);
+            await page.mouse.down();
+            await page.mouse.move(x + 6, y + 6);
+            await page.mouse.move(x + 10, y + 260, { steps: 8 });
+            await page.evaluate(() => scrollBy({ top: 60, behavior: 'instant' }));
+            await page.mouse.move(x + 10, y + 262);
+            await frames(page);
+            const a1 = await page.evaluate(() => { const r = document.getElementById('A').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+            await page.keyboard.press('Escape');
+            await page.mouse.up();
+            await sleep(300);
+            assert.deepEqual([Math.abs(a1.x - (a0.x + a0.width / 2 + 10)) < 6, Math.abs(a1.y - (a0.y + a0.height / 2 + 262)) < 6, await cells(page, 'A')], [true, true, [1, 1, 12, 4]], `carried in a panel with no blur ${JSON.stringify([a0, a1])}`);
+            await page.evaluate(() => { document.getElementById('H').style.backdropFilter = 'blur(4px)'; scrollTo({ top: 0, behavior: 'instant' }); });
+        }
         // A block hidden comes back from the panel's ＋
         await page.click('#B > .panel-grab .panel-close', { force: true });
         await sleep(300);
         assert.ok(await page.evaluate(() => document.getElementById('B').hidden), 'B hidden by its ✕');
         await page.click('#H .board-tools button:nth-of-type(1)', { force: true });
         assert.ok(await page.evaluate(() => document.getElementById('made-in-menu').matches(':popover-open')), 'the panel\'s ＋ opens its menu');
+        // Its items are the menu's, not the panel's tool squares, and a press in the menu is no grab of the panel
+        const item = await page.evaluate(() => { const b = document.querySelector('#made-in-menu button'); return [b.offsetWidth, b.scrollWidth <= b.clientWidth]; });
+        const mb = await page.locator('#made-in-menu').boundingBox(), h0 = await cells(page, 'H');
+        const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.id, [mb.x + mb.width / 2, mb.y + 2]);
+        await page.mouse.move(mb.x + mb.width / 2, mb.y + 2); // its padding, above its first item
+        await page.mouse.down();
+        await page.mouse.move(mb.x + mb.width / 2 + 200, mb.y + 202, { steps: 5 });
+        await page.mouse.up();
+        await sleep(300);
+        assert.deepEqual([item[0] > 60, item[1], hit, await cells(page, 'H')], [true, true, 'made-in-menu', h0], `the menu: [its item ${item[0]}px wide, its label whole, pressed in its padding, the panel where it was]`);
+        if (!await page.evaluate(() => document.getElementById('made-in-menu').matches(':popover-open'))) await page.click('#H .board-tools button:nth-of-type(1)', { force: true }); // let go outside it, it closed
         await page.click('#made-in-menu button', { force: true });
         await sleep(400);
         assert.deepEqual([await page.evaluate(() => document.getElementById('B').hidden), await cells(page, 'B'), await page.evaluate(() => document.querySelector('#H .board-tools button:nth-of-type(2)').hidden)], [false, [13, 1, 12, 4], true], 'B hidden and added back: [hidden, its cells, the ↺ hidden at the default]');
@@ -1523,6 +1557,13 @@ const TESTS = {
             assert.deepEqual(slack.filter(Boolean), [], 'the Lounge box narrowed by its side edge');
             await page.context().close();
         }
+        // A save from before that fix, holding a panel above the board, loads with the panel on it
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html', init: () => { try { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('board:lounge', JSON.stringify({ v: 2, cols: 24, items: [{ id: 'picks', x: 1, y: -10, w: 12, h: 34 }] })); } } catch {} } });
+            all.push(...errors);
+            assert.ok((await cells(page, 'picks'))[1] >= 1, `a saved row above the board: ${await cells(page, 'picks')}`);
+            await page.context().close();
+        }
         // A top corner narrowing a panel near the board's top: the panel grows down, never above row 1, and saves that
         {
             const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
@@ -1574,6 +1615,23 @@ const TESTS = {
         await page.evaluate(() => document.fonts.ready);
         await sleep(600);
         assert.deepEqual([(await cells(page, 'fin-chart'))[0], await held() <= 1], [1, true], 'after a reload');
+        // Narrowed past 770.5px of box by its edge, the blocks it had stay in view, fitted into the
+        // stacking grid, until it's let go (the chart was 2px wide in the old cells)
+        await page.evaluate(() => localStorage.clear());
+        await page.reload();
+        await sleep(600);
+        await center(page, 'finance');
+        {
+            const e = await page.locator('#finance > .panel-edge[data-dir="e"]').boundingBox();
+            await page.mouse.move(e.x + e.width / 2, e.y + e.height / 2);
+            await page.mouse.down();
+            await page.mouse.move(e.x + e.width / 2 - 500, e.y + e.height / 2, { steps: 10 });
+            await sleep(400);
+            const chart = await page.evaluate(() => Math.round(document.getElementById('fin-chart').getBoundingClientRect().width));
+            await page.keyboard.press('Escape');
+            await page.mouse.up();
+            assert.ok(chart > 100, `the chart ${chart}px wide mid-drag past 770.5px of box`);
+        }
         // Narrowed past 770.5px of box, its blocks stack, the chart on top, as the box's content did
         await page.evaluate(() => localStorage.clear());
         await page.reload();
@@ -1583,6 +1641,22 @@ const TESTS = {
         await sleep(800);
         const stack = await page.evaluate(() => ['fin-chart', 'fin-intro', 'fin-cards', 'fin-freeze'].map((id) => +document.getElementById(id).style.getPropertyValue('--y')));
         assert.deepEqual([stack.every((y, i) => !i || y > stack[i - 1]), await page.evaluate(() => getComputedStyle(document.querySelector('#finance .board')).getPropertyValue('--cols').trim()), await held() <= 1], [true, '12', true], `narrowed: rows ${stack}`);
+        await page.context().close();
+        // Windows swept across the box's tiers: no ResizeObserver loop (the inner board read its tier
+        // inside the observer's pass), no width written on the inner board (it restyled every block), and
+        // the card's rows right the frame the page crosses into the mid tier (measured at the new width)
+        {
+            const { page: sw, errors: swe } = await open(browser, { viewport: { width: 1200, height: 900 } }, { path: '/', init: () => { window.__loops = 0; addEventListener('error', (e) => { if (/ResizeObserver/.test(e.message)) window.__loops++; }); } });
+            all.push(...swe);
+            const settledH = async () => { await sleep(700); return (await cells(sw, 'socials'))[3]; };
+            await sw.setViewportSize({ width: 1000, height: 900 });
+            await frames(sw);
+            const first = (await cells(sw, 'socials'))[3];
+            assert.equal(first, await settledH(), 'the card\'s rows the frame the page crosses into the mid tier');
+            for (const width of [920, 900, 880, 860, 700, 560, 540, 520, 480, 900, 1440]) { await sw.setViewportSize({ width, height: 900 }); await frames(sw); await sleep(120); }
+            assert.deepEqual([await sw.evaluate(() => window.__loops), await sw.evaluate(() => document.querySelector('#finance .board').style.getPropertyValue('--board-w'))], [0, ''], '[ResizeObserver loops, the inner board\'s own --board-w]');
+            await sw.context().close();
+        }
         return all.concat(errors);
     },
     async "Home: a box can't be made smaller than what it holds, and the card's frame follows its cells as it's resized"(browser) {

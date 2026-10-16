@@ -171,12 +171,16 @@ const CHECKS = {
     // A board's name and its panels' ids key every visitor's saved layout (UI-SPEC.md), so a
     // reused name or id mixes two saves; cells sit inside the wide grid board.css sets, at least
     // its narrowest panel wide, and the default panels don't overlap. A panel is a direct child
-    // of its board, as board.js reads it, so the markup is walked tag by tag (comments blanked)
+    // of its board, as board.js reads it, so the markup is walked tag by tag (comments blanked),
+    // a board in a panel's body (UI-SPEC § Boards in a panel) checked as one of its own
     'boards are well-formed': () => {
         const css = fs.readFileSync(path.join(ROOT, 'public/css/board.css'), 'utf8');
-        // Each tier's grid, wide first, then mid and phone (board.css sets them in that order)
-        const grids = [...css.matchAll(/\.board \{[^}]*--cols:\s*(\d+)[^}]*--min-cols:\s*(\d+)/g)].map((m) => ({ cols: +m[1], minCols: +m[2] }));
-        const tiers = { '': grids[0], mid: grids[1], phone: grids[2] };
+        // Each tier's grid: every board's, then the window tiers' (a board in a panel gets the same
+        // grids from container queries)
+        const grid = (re) => { const m = css.match(re); return m && { cols: +m[1], minCols: +m[2] }; };
+        const at = (w) => new RegExp(`@media \\(max-width: ${w}px\\) \\{\\s*\\.board:not\\(\\.panel \\.board\\) \\{[^}]*--cols:\\s*(\\d+)[^}]*--min-cols:\\s*(\\d+)`);
+        const tiers = { '': grid(/(?:^|\n)\.board \{[^}]*--cols:\s*(\d+)[^}]*--min-cols:\s*(\d+)/), mid: grid(at(1080)), phone: grid(at(640)) };
+        if (!Object.values(tiers).every(Boolean)) return ['public/css/board.css: a tier grid the board lint reads is gone (.board, and the 1080px and 640px window tiers)'];
         const VOID = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)$/i;
         const TAG = /<(\/?)([a-z][\w-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*)\s*\/?>/gi;
         const attrs = (s) => Object.fromEntries([...s.matchAll(/([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)]
@@ -186,32 +190,36 @@ const CHECKS = {
         for (const f of byExt('.html').filter((f) => rel(f).startsWith('public/'))) {
             const html = fs.readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ' '));
             const ids = new Set();
-            let board = null; // the board being walked: how deep, and its panels' cells so far
+            const open = []; // the boards being walked, innermost last: how deep each is, and its panels' cells so far
             for (const m of html.matchAll(TAG)) {
                 const [, close, tag, rest] = m;
                 const line = `${rel(f)}:${lineOf(html, m.index)}`;
+                const board = open.at(-1);
                 // A panel body's content sits in elements: the engine reads its height off theirs
                 if (board?.body && board.body === board.depth && html.slice(board.at, m.index).trim()) problems.push(`${line}: bare text in a panel body (wrap it in an element)`);
-                if (board) board.at = m.index + m[0].length;
+                open.forEach((b) => { b.at = m.index + m[0].length; });
                 if (close) {
-                    if (board && --board.depth === 0) {
+                    open.forEach((b) => b.depth--);
+                    if (board?.depth === 0) {
                         // A tier the page lays out itself names every panel's cells, or the engine flows it
                         for (const tier of ['mid', 'phone']) if (board.named[tier] && board.named[tier] < board.count) problems.push(`${board.line}: ${board.named[tier]} of ${board.count} panels have data-${tier}; give every panel its ${tier} cells or none`);
-                        board = null;
+                        open.pop();
                     } else if (board?.depth < board?.body) board.body = 0;
                     continue;
                 }
                 if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
                 const a = attrs(rest);
-                if (!board) {
-                    if (!('data-board' in a)) continue;
+                const depth = board?.depth;
+                open.forEach((b) => b.depth++);
+                if ('data-board' in a) {
                     if (names.has(a['data-board'])) problems.push(`${line}: board "${a['data-board']}" also in ${names.get(a['data-board'])}`);
                     names.set(a['data-board'], line);
-                    board = { depth: 1, line, cells: { '': [], mid: [], phone: [] }, named: { mid: 0, phone: 0 }, count: 0 };
+                    open.push({ depth: 1, line, cells: { '': [], mid: [], phone: [] }, named: { mid: 0, phone: 0 }, count: 0 });
                     continue;
                 }
-                if (a.class?.split(/\s+/).includes('panel-body')) board.body = board.depth + 1;
-                if (board.depth++ !== 1 || !a.class?.split(/\s+/).includes('panel')) continue;
+                if (!board) continue;
+                if (a.class?.split(/\s+/).includes('panel-body')) board.body = board.depth;
+                if (depth !== 1 || !a.class?.split(/\s+/).includes('panel')) continue;
                 const id = a.id;
                 if (!id || ids.has(id)) problems.push(`${line}: panel id ${id ? `"${id}" repeats` : 'missing'}`);
                 ids.add(id);
@@ -235,7 +243,7 @@ const CHECKS = {
                     board.cells[tier].push({ id, x, y, w, h });
                 }
             }
-            if (board) problems.push(`${rel(f)}: a board is never closed (the file ends inside it)`);
+            if (open.length) problems.push(`${rel(f)}: a board is never closed (the file ends inside it)`);
         }
         return problems;
     },
