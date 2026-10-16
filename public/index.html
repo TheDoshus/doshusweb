@@ -312,11 +312,9 @@
             <article class="panel home-box finance-box" id="finance" data-accent="finance" data-x="1" data-y="115" data-w="24" data-h="28" data-mid="1 118 12 28" data-phone="1 141 6 43">
                 <header class="panel-head"><h2>💰 Finance</h2></header>
                 <div class="panel-body">
-                    <!-- BTC Chart Widget -->
-                    <div class="btc-chart-widget">
-                        <script src="https://widgets.coingecko.com/gecko-coin-price-chart-widget.js"></script>
-                        <gecko-coin-price-chart-widget locale="en" dark-mode="true" transparent-background="true" coin-id="bitcoin" initial-currency="usd"></gecko-coin-price-chart-widget>
-                    </div>
+                    <div class="board" data-board="home-finance" data-surface="clear" data-tall>
+                        <section class="panel" id="fin-intro" aria-label="Finance links" data-x="1" data-y="1" data-w="14" data-h="18" data-mid="1 19 12 22" data-phone="1 19 6 26">
+                            <div class="panel-body">
                         <p>Checkout all my finance related stuff here 😎</p>
 
                         <div class="category-tags">
@@ -340,7 +338,19 @@
                                 <img src="assets/icons/L3con.webp" alt="" class="btn-icon rounded">Doshus Layer3 →
                             </a>
                         </div>
-
+                            </div>
+                        </section>
+                        <section class="panel" id="fin-chart" aria-label="Bitcoin price chart" data-x="15" data-y="1" data-w="10" data-h="18" data-mid="1 1 12 18" data-phone="1 1 6 18">
+                            <div class="panel-body">
+                    <!-- BTC Chart Widget -->
+                    <div class="btc-chart-widget">
+                        <script src="https://widgets.coingecko.com/gecko-coin-price-chart-widget.js"></script>
+                        <gecko-coin-price-chart-widget locale="en" dark-mode="true" transparent-background="true" coin-id="bitcoin" initial-currency="usd"></gecko-coin-price-chart-widget>
+                    </div>
+                            </div>
+                        </section>
+                        <section class="panel" id="fin-cards" aria-label="Credit card collection" data-x="1" data-y="19" data-w="24" data-h="18" data-mid="1 45 12 16" data-phone="1 48 6 16">
+                            <div class="panel-body">
                         <!-- Credit Card Carousel -->
                         <div class="credit-card-carousel">
                             <h2>My credit card collection:<br>(click for a referral)</h2>
@@ -438,7 +448,10 @@
                                 <!-- Add more cards as needed -->
                             </div>
                         </div>
-
+                            </div>
+                        </section>
+                        <section class="panel" id="fin-freeze" aria-label="Freeze your credit" data-x="1" data-y="38" data-w="24" data-h="10" data-mid="1 63 12 10" data-phone="1 66 6 12">
+                            <div class="panel-body">
                         <!-- Quick Links Box -->
                         <div class="quickLinks">
                             <h3 class="qlHeader">Freeze Your Credit 🥶</h3>
@@ -448,6 +461,9 @@
                                 <a href="https://usa.experian.com/mfe/member/security-freeze" class="qlBtn" target="_blank" rel="noreferrer">🧊 Experian Freeze</a>
                             </div>
                         </div>
+                            </div>
+                        </section>
+                    </div>
                 </div>
             </article>
         </div>

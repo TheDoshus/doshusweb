@@ -23,8 +23,9 @@
 .board-wrap { max-width: 1440px; margin: 0 auto; padding: var(--sp-m) clamp(1rem, 3vw, 2rem) 6rem;
     position: relative; z-index: 10;
 }
-/* The default accent, at zero specificity so a data-accent on the board itself wins */
-:where(.board) { --accent: var(--accent-crypto); }
+/* The default accent, at zero specificity so a data-accent on the board itself wins; a board in a
+   panel takes its panel's */
+:where(.board:not(.panel .board)) { --accent: var(--accent-crypto); }
 .board { --cols: 24; --row: 2rem; --gutter: 0.625rem;
     /* Arranging feel, tune here: how strongly the cell field shows and the ghost's fill and
        glow (alphas, 0–1), then how long panels and the ghost glide (in ms; js/board.js reads

@@ -62,7 +62,7 @@ const countMoves = () => { window.__moves = 0; for (const m of ['moveBefore', 'i
 const center = async (page, id) => { await page.evaluate((id) => document.getElementById(id).scrollIntoView({ block: 'center' }), id); await sleep(150); };
 // Made shorter than what it holds by the keyboard, as a visitor would, so its body scrolls inside
 // (Nexus's Dev Core, marked data-tall, is as tall as its content by default)
-const squeeze = async (page, id, n = 10) => { await page.focus(`#${id} .panel-edge[data-dir="se"]`); for (let i = 0; i < n; i++) await page.keyboard.press('ArrowUp'); await sleep(300); };
+const squeeze = async (page, id, n = 10) => { await page.focus(`#${id} > .panel-edge[data-dir="se"]`); for (let i = 0; i < n; i++) await page.keyboard.press('ArrowUp'); await sleep(300); };
 async function drag(page, sel, dx, dy, { hold, before } = {}) {
     const box = await page.locator(sel).boundingBox();
     const x = box.x + box.width / 2, y = box.y + Math.min(box.height / 2, 20);
@@ -176,7 +176,7 @@ const TESTS = {
     async 'hiding a panel moves no other in the DOM, even without moveBefore'(browser) {
         const { page, errors } = await open(browser, WIDE, { init: () => { delete Element.prototype.moveBefore; } });
         await page.evaluate(`(${countMoves})()`);
-        for (const id of ['meme-2', 'meme-1', 'dev-core']) await page.evaluate((id) => document.querySelector(`#${id} .panel-close`).click(), id);
+        for (const id of ['meme-2', 'meme-1', 'dev-core']) await page.evaluate((id) => document.querySelector(`#${id} > :is(.panel-head, .panel-grab) .panel-close`).click(), id);
         for (let i = 0; i < 3; i++) await page.evaluate(() => document.querySelector('.board-menu button').click());
         assert.equal(await page.evaluate(() => window.__moves), 0);
         assert.equal(await page.evaluate(() => document.querySelectorAll('.panel[hidden]').length), 0);
@@ -769,9 +769,9 @@ const TESTS = {
             const bad = [];
             for (const id of ['cc-myths', 'cc-freeze', 'cc-building', 'cc-rewards', 'cc-tools']) {
                 await center(page, id);
-                await page.focus(`#${id} .panel-edge[data-dir="se"]`);
+                await page.focus(`#${id} > .panel-edge[data-dir="se"]`);
                 for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowUp'); // squeezed: its body scrolls, with a scrollbar
-                const bar = await page.evaluate((id) => { const b = document.querySelector(`#${id} .panel-body`); return b.offsetWidth > b.clientWidth; }, id);
+                const bar = await page.evaluate((id) => { const b = document.querySelector(`#${id} > .panel-body`); return b.offsetWidth > b.clientWidth; }, id);
                 if (!bar) { bad.push(`${id}: no scrollbar taking room, so it tests nothing`); continue; }
                 await page.keyboard.press('Enter');
                 await sleep(300);
@@ -1214,8 +1214,8 @@ const TESTS = {
     async 'Lounge: Surprise Me skips the links of a panel hidden or collapsed on the board'(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html', init: () => { window.open = (url) => { (window.__opened ??= []).push(url); }; } });
         // Hidden and collapsed: everything but Weird Internet
-        for (const id of ['sites-fun', 'sites-mind-bending', 'sites-archives']) await page.evaluate((id) => document.querySelector(`#${id} .panel-close`).click(), id);
-        for (const id of ['sites-stats', 'sites-beer']) await page.evaluate((id) => document.querySelector(`#${id} .panel-collapse`).click(), id);
+        for (const id of ['sites-fun', 'sites-mind-bending', 'sites-archives']) await page.evaluate((id) => document.querySelector(`#${id} > :is(.panel-head, .panel-grab) .panel-close`).click(), id);
+        for (const id of ['sites-stats', 'sites-beer']) await page.evaluate((id) => document.querySelector(`#${id} > :is(.panel-head, .panel-grab) .panel-collapse`).click(), id);
         for (let i = 0; i < 40; i++) await page.evaluate(() => document.getElementById('surpriseBtn').click());
         const weird = await page.evaluate(() => [...document.querySelectorAll('#sites-weird .site-link')].map((a) => a.href));
         const opened = await page.evaluate(() => window.__opened);
@@ -1239,10 +1239,12 @@ const TESTS = {
         for (const [opts, tier, path] of ['/thelounge.html', '/'].flatMap((path) => [[{ ...FOLD, viewport: { width: 901, height: 700 } }, 'mid', path], [{ ...PHONE, viewport: { width: 390, height: 700 } }, 'phone', path]])) {
             const { page, errors } = await open(browser, opts, { path });
             all.push(...errors);
-            const off = await page.evaluate((tier) => [...document.querySelectorAll('.board > .panel')].flatMap((p) => {
-                const want = p.dataset[tier].split(' ').map(Number), got = ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k));
+            const off = await page.evaluate(() => [...document.querySelectorAll('.board > .panel')].flatMap((p) => {
+                // Each at its own board's tier: the page's by the window, a board in a panel's by its own width
+                const tier = ({ 6: 'phone', 12: 'mid' })[getComputedStyle(p.parentElement).getPropertyValue('--cols').trim()] ?? 'wide';
+                const want = (tier === 'wide' ? ['x', 'y', 'w', 'h'].map((k) => p.dataset[k]) : p.dataset[tier].split(' ')).map(Number), got = ['x', 'y', 'w', 'h'].map((k) => +p.style.getPropertyValue('--' + k));
                 return got.join() === want.join() ? [] : [`${p.id} ${want} → ${got}`]; // measured at this width, so exactly
-            }), tier);
+            }));
             assert.deepEqual(off, [], `${path} ${tier}`);
             await page.context().close();
         }
@@ -1295,7 +1297,7 @@ const TESTS = {
         await page.goto(base + '/', { waitUntil: 'load' });
         await page.waitForFunction(() => document.querySelectorAll('#workLinks .pillBtn').length === 4);
         await sleep(500);
-        assert.equal(await page.evaluate(() => { const b = document.querySelector('#amazonian .panel-body'); return b.scrollHeight - b.clientHeight; }), 0, 'Amazonian scrolls inside once its links are in');
+        assert.equal(await page.evaluate(() => { const b = document.querySelector('#amazonian > .panel-body'); return b.scrollHeight - b.clientHeight; }), 0, 'Amazonian scrolls inside once its links are in');
         // The database unreachable, but only after the fonts are in: the toggle hides and the box shrinks to fit
         const slow = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
         await slow.route((url) => !url.href.startsWith(base), async (r) => { if (r.request().url().endsWith('/config/worklinks.json')) await sleep(1500); r.abort(); });
@@ -1304,7 +1306,7 @@ const TESTS = {
         await sp.goto(base + '/', { waitUntil: 'load' });
         await sp.waitForFunction(() => getComputedStyle(document.querySelector('.link-toggle-container')).display === 'none', null, { timeout: 5000 });
         await sleep(500);
-        assert.ok(await sp.evaluate(() => { const b = document.querySelector('#amazonian .panel-body'), z = b.lastElementChild;
+        assert.ok(await sp.evaluate(() => { const b = document.querySelector('#amazonian > .panel-body'), z = b.lastElementChild;
             return b.getBoundingClientRect().bottom - z.getBoundingClientRect().bottom - parseFloat(getComputedStyle(b).paddingBottom) <= parseFloat(getComputedStyle(document.querySelector('.board')).gridAutoRows); }), 'Amazonian keeps a blank band where its hidden toggle was');
         await slow.close();
         // The narrowest phones: nothing in a panel runs sideways (the boxes clipped it before)
@@ -1324,11 +1326,11 @@ const TESTS = {
             await page.setViewportSize({ width, height: 800 });
             await sleep(350);
             const got = await page.evaluate(() => {
-                const panels = [...document.querySelectorAll('.board > .panel')], row = parseFloat(getComputedStyle(document.querySelector('.board')).gridAutoRows);
-                // A body's content end to its bottom edge: under a row means the box is as tall as what it holds
-                const blank = panels.filter((p) => { const b = p.querySelector('.panel-body'), kids = [...b.children].filter((k) => getComputedStyle(k).position !== 'absolute');
+                const panels = [...document.querySelectorAll('.board[data-board="home"] > .panel')];
+                // A body's content end to its bottom edge: under a row (its own board's) means the box, or a block in it, is as tall as what it holds
+                const blank = [...document.querySelectorAll('.board > .panel')].filter((p) => { const b = p.querySelector(':scope > .panel-body'), kids = [...b.children].filter((k) => getComputedStyle(k).position !== 'absolute');
                     const end = Math.max(...kids.map((k) => k.getBoundingClientRect().bottom + parseFloat(getComputedStyle(k).marginBottom))) + parseFloat(getComputedStyle(b).paddingBottom);
-                    return b.getBoundingClientRect().bottom - end > row; }).map((p) => p.id);
+                    return b.getBoundingClientRect().bottom - end > parseFloat(getComputedStyle(p.parentElement).gridAutoRows); }).map((p) => p.id);
                 // The gaps between panels, in rows: the ones their cells give them, at any width
                 const tier = innerWidth <= 640 ? 'phone' : innerWidth <= 1080 ? 'mid' : 'wide';
                 const cells = (p) => (tier === 'wide' ? ['x', 'y', 'w', 'h'].map((k) => +p.dataset[k]) : p.dataset[tier].split(' ').map(Number));
@@ -1341,7 +1343,7 @@ const TESTS = {
                     const r = link.getBoundingClientRect();
                     return !link.contains(document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy));
                 });
-                const chart = document.querySelector('.btc-chart-widget').getBoundingClientRect(), fb = document.querySelector('#finance .panel-body').getBoundingClientRect();
+                const chart = document.querySelector('.btc-chart-widget').getBoundingClientRect(), fb = document.querySelector('#finance > .panel-body').getBoundingClientRect();
                 // A title that fits its head's room on one line takes one line
                 const wraps = [...document.querySelectorAll('.board .panel-head > h2')].filter((t) => { const r = document.createRange(); r.selectNodeContents(t);
                     const lines = new Set([...r.getClientRects()].map((l) => Math.round(l.top))).size, head = t.parentElement, cs = getComputedStyle(head);
@@ -1364,10 +1366,10 @@ const TESTS = {
         for (const width of [1440, 390]) {
             await page.setViewportSize({ width, height: 800 });
             await sleep(400);
-            await page.focus('#finance .panel-edge[data-dir="se"]');
+            await page.focus('#finance > .panel-edge[data-dir="se"]');
             for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowLeft');
             await sleep(300);
-            assert.deepEqual(await page.evaluate(() => { const b = document.querySelector('#finance .panel-body');
+            assert.deepEqual(await page.evaluate(() => { const b = document.querySelector('#finance > .panel-body');
                 return [getComputedStyle(b.querySelector('.qlBtns')).gridTemplateColumns.split(' ').length, b.scrollWidth - b.clientWidth]; }), [1, 0], `${width}px: [freeze buttons across, px it scrolls sideways] in the narrowest Finance`);
         }
         await ctx.close();
@@ -1481,10 +1483,53 @@ const TESTS = {
         }
         return all;
     },
+    async "Home: the Finance box's blocks sit where its content did, and move within it"(browser) {
+        const all = [];
+        // Tops of what each block holds, from the box's content edge, on the page before (its chart rose 11px past it; stacked, 16)
+        const was = { 1440: [0, -11, 277, 597], 901: [0, -11, 277, 597], 390: [291, -16, 756, 1037] };
+        const tops = (page) => page.evaluate(() => { const b = document.querySelector('#finance > .panel-body'), top = b.getBoundingClientRect().top + parseFloat(getComputedStyle(b).paddingTop);
+            return ['#fin-intro p', '.btc-chart-widget', '.credit-card-carousel', '.quickLinks'].map((q) => Math.round(document.querySelector(q).getBoundingClientRect().top - top)); });
+        for (const opts of [{ viewport: { width: 1440, height: 900 } }, { ...FOLD, viewport: { width: 901, height: 700 } }, { ...PHONE, viewport: { width: 390, height: 700 } }]) {
+            const { page, errors } = await open(browser, opts, { path: '/' });
+            all.push(...errors);
+            const got = await tops(page), w = opts.viewport.width;
+            assert.deepEqual(got.map((t, i) => Math.abs(t - was[w][i]) <= 16), [true, true, true, true], `${w}px: tops of the intro, chart, cards and freeze buttons ${got} (was ${was[w]})`);
+            // The chart as wide as it was (40% of the box beside the links; the box's width stacked), the first two links side by side as they were
+            const look = await page.evaluate(() => { const c = document.querySelector('.btc-chart-widget').getBoundingClientRect().width, [a, b] = [...document.querySelectorAll('#fin-intro .button-group > a')].map((x) => x.getBoundingClientRect().top);
+                return [Math.round(c), a === b]; });
+            assert.deepEqual([Math.abs(look[0] - { 1440: 466, 901: 334, 390: 308 }[w]) <= 24, look[1] || w === 390], [true, true], `${w}px: [chart width ${look[0]}, links side by side]`);
+            // In the box's accent, as before (a board in a panel takes its panel's)
+            assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('#fin-freeze .qlBtn')).borderColor), await page.evaluate(() => { const b = document.createElement('a'); b.className = 'qlBtn'; const q = document.createElement('div'); q.className = 'qlBtns'; q.append(b); document.querySelector('#finance > .panel-body').append(q); const c = getComputedStyle(b).borderColor; q.remove(); return c; }), `${w}px: the freeze buttons' color`);
+            await page.context().close();
+        }
+        // Carried by its strip, the chart goes to the box's left; the box holds its blocks, the move is saved for the next visit
+        const { page, errors } = await open(browser, WIDE, { path: '/' });
+        all.push(...errors);
+        await center(page, 'finance');
+        const g = await page.locator('#fin-chart > .panel-grab').boundingBox(), cw = await page.evaluate(() => document.querySelector('#finance .board').clientWidth / 24);
+        await drag(page, '#fin-chart > .panel-grab', -14 * cw, 0);
+        await sleep(400);
+        const held = () => page.evaluate(() => { const b = document.querySelector('#finance > .panel-body'); return b.scrollHeight - b.clientHeight; });
+        assert.deepEqual([(await cells(page, 'fin-chart'))[0], await held() <= 1, !!await page.evaluate(() => localStorage.getItem('board:home-finance'))], [1, true, true], `chart carried left: ${await cells(page, 'fin-chart')}`);
+        await page.reload();
+        await page.evaluate(() => document.fonts.ready);
+        await sleep(600);
+        assert.deepEqual([(await cells(page, 'fin-chart'))[0], await held() <= 1], [1, true], 'after a reload');
+        // Narrowed past 770.5px of box, its blocks stack, the chart on top, as the box's content did
+        await page.evaluate(() => localStorage.clear());
+        await page.reload();
+        await sleep(600);
+        await page.focus('#finance > .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowLeft');
+        await sleep(800);
+        const stack = await page.evaluate(() => ['fin-chart', 'fin-intro', 'fin-cards', 'fin-freeze'].map((id) => +document.getElementById(id).style.getPropertyValue('--y')));
+        assert.deepEqual([stack.every((y, i) => !i || y > stack[i - 1]), await page.evaluate(() => getComputedStyle(document.querySelector('#finance .board')).getPropertyValue('--cols').trim()), await held() <= 1], [true, '12', true], `narrowed: rows ${stack}`);
+        return all.concat(errors);
+    },
     async "Home: a box can't be made smaller than what it holds, and the card's frame follows its cells as it's resized"(browser) {
         const { page, errors } = await open(browser, { viewport: { width: 1440, height: 900 } }, { path: '/' });
         const state = (id) => page.evaluate((id) => {
-            const p = document.getElementById(id), r = p.getBoundingClientRect(), g = document.querySelector('.board-ghost'), b = p.querySelector('.panel-body'), h2 = p.querySelector('.panel-head > h2');
+            const p = document.getElementById(id), r = p.getBoundingClientRect(), g = p.parentElement.querySelector(':scope > .board-ghost'), b = p.querySelector(':scope > .panel-body'), h2 = p.querySelector('.panel-head > h2');
             const kids = [...b.children].filter((k) => getComputedStyle(k).position !== 'absolute');
             let broken = false;
             if (h2) { const t = document.createRange(); t.selectNodeContents(h2); broken = new Set([...t.getClientRects()].map((l) => Math.round(l.top))).size > h2.textContent.trim().split(/\s+/).length; }
@@ -1492,7 +1537,7 @@ const TESTS = {
         }, id);
         const resize = async (id, dir, dx, dy) => {
             await center(page, id);
-            const e = await page.locator(`#${id} .panel-edge[data-dir="${dir}"]`).boundingBox();
+            const e = await page.locator(`#${id} > .panel-edge[data-dir="${dir}"]`).boundingBox();
             await page.mouse.move(e.x + e.width / 2, e.y + e.height / 2);
             await page.mouse.down();
             await page.mouse.move(e.x + e.width / 2 + dx, e.y + e.height / 2 + dy, { steps: 10 });
@@ -1519,7 +1564,7 @@ const TESTS = {
         assert.deepEqual([await cells(page, 'finance'), back.below >= 0 && back.below < 40], [start, true], `Finance made wide again: [its cells, ghost holding it mid-drag] ${JSON.stringify(back)}`);
         // And by the keyboard, a column a press: each press that wraps what it holds taller grows it to hold it
         await center(page, 'amazonian');
-        await page.focus('#amazonian .panel-edge[data-dir="se"]');
+        await page.focus('#amazonian > .panel-edge[data-dir="se"]');
         const presses = [];
         for (let i = 0; i < 24; i++) {
             await page.keyboard.press('ArrowLeft');
@@ -1723,7 +1768,7 @@ const TESTS = {
             const cdp = await ctx.newCDPSession(page);
             const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts });
             // On the title's text: the finger's implicit capture lands on the h2, and the hold hands it to the head
-            const at = await page.evaluate((id) => { const r = document.createRange(); r.selectNodeContents(document.querySelector(`#${id} .panel-head h2`)); const b = r.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; }, id);
+            const at = await page.evaluate((id) => { const r = document.createRange(); r.selectNodeContents(document.querySelector(`#${id} > .panel-head h2`)); const b = r.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; }, id);
             await touch('touchStart', [at]); await sleep(150);
             await touch('touchMove', [{ x: at.x + 2, y: at.y + 1 }]); await sleep(150);
             await touch('touchMove', [{ x: at.x + 1, y: at.y + 2 }]); await sleep(500);
@@ -1757,7 +1802,7 @@ const TESTS = {
     async "Lounge: a big title's collapsed bar holds its whole head, under reduced motion too"(browser) {
         // Reduced motion gives every property a 0.01ms transition, so the head reads its open size right after the class
         const { page, errors } = await open(browser, FOLD, { path: '/thelounge.html' });
-        await page.evaluate(() => ['picks', 'sandspiel', 'sites-fun'].forEach((id) => document.querySelector(`#${id} .panel-collapse`).click()));
+        await page.evaluate(() => ['picks', 'sandspiel', 'sites-fun'].forEach((id) => document.querySelector(`#${id} > :is(.panel-head, .panel-grab) .panel-collapse`).click()));
         await frames(page);
         const spill = await page.evaluate(() => ['picks', 'sandspiel', 'sites-fun'].flatMap((id) => {
             const p = document.getElementById(id), head = p.querySelector('.panel-head').getBoundingClientRect(), box = p.getBoundingClientRect();
@@ -1820,10 +1865,10 @@ const TESTS = {
             const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
             all.push(...errors);
             const ids = await page.evaluate(() => [...document.querySelectorAll('.section-panel')].map((p) => p.id));
-            for (const id of ids) await page.evaluate((id) => document.querySelector(`#${id} .panel-collapse`).click(), id);
+            for (const id of ids) await page.evaluate((id) => document.querySelector(`#${id} > :is(.panel-head, .panel-grab) .panel-collapse`).click(), id);
             await frames(page);
             const hit = await page.evaluate((ids) => ids.flatMap((id) => {
-                const head = document.querySelector(`#${id} .panel-head`), t = head.querySelector('h2').getBoundingClientRect(), tools = head.querySelector('.panel-tools').getBoundingClientRect();
+                const head = document.querySelector(`#${id} > .panel-head`), t = head.querySelector('h2').getBoundingClientRect(), tools = head.querySelector('.panel-tools').getBoundingClientRect();
                 return t.right > tools.left + 1 || head.scrollWidth > head.clientWidth + 1 ? [`${id}: title to ${Math.round(t.right)}, tools from ${Math.round(tools.left)}`] : [];
             }), ids);
             assert.deepEqual(hit, [], `${opts.viewport.width}px`);
@@ -1885,7 +1930,7 @@ const TESTS = {
         const rect = (page, sel) => page.evaluate((sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; }, sel);
         // Grabs a panel by its head and starts carrying it (dir: which way the nudge goes)
         const grab = async (page, id, dir = 1) => {
-            const h = await page.locator(`#${id} .panel-head`).boundingBox();
+            const h = await page.locator(`#${id} > .panel-head`).boundingBox();
             await page.mouse.move(h.x + 40, h.y + 20);
             await page.mouse.down();
             await page.mouse.move(h.x + 40 + 4 * dir, h.y + 20);
@@ -1900,9 +1945,9 @@ const TESTS = {
             all.push(...errors);
             await center(page, id);
             if (dir < 0) { // as narrow as it goes (its title's longest word holds it at 4 of 6 columns), at the right
-                await page.focus(`#${id} .panel-edge[data-dir="se"]`);
+                await page.focus(`#${id} > .panel-edge[data-dir="se"]`);
                 for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowLeft');
-                await page.focus(`#${id} .panel-grip`);
+                await page.focus(`#${id} > :is(.panel-head, .panel-grab) .panel-grip`);
                 for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight');
                 await sleep(300);
                 await center(page, id);

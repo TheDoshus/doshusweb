@@ -145,6 +145,21 @@
 .board:is(.is-arranging, .is-lean) .panel:is(.home-card, .home-box) { backdrop-filter: none; } /* board.css's weak-GPU and arranging modes */
 .panel.home-box > .panel-head { padding: clamp(1.5rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem) 0; }
 .panel.home-box > .panel-body { gap: 1rem; padding: 1rem clamp(1.5rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem); }
+.panel:is(.home-box, .home-card) > .panel-body { container-name: panel box; }
+/* A box's blocks (a board in a panel, UI-SPEC § Boards in a panel) sit where its content did: half
+   rows and tight gutters, so each lands within half a row of its old spot, the board reaching out by
+   a gutter and a block's border, so a block's content lines up with the box's and a full-width one
+   is the box's width, and a block holds its content as the box's body did */
+.panel.home-box > .panel-body > .board { --gutter: 0.25rem; --row: 1rem; margin: calc(-1 * var(--gutter) - 1px); }
+.panel.home-box > .panel-body > .board > .panel > .panel-body { padding: 0; gap: 1rem; }
+/* The Finance box's: the chart beside the links above 770.5px of box, everything stacked below it,
+   a phone's grid from 468.5px, where its content flipped */
+@container box (max-width: 1080px) { #finance .board { --cols: 24; } }
+@container box (max-width: 770.5px) { #finance .board { --cols: 12; } }
+@container box (max-width: 468.5px) { #finance .board { --cols: 6; --min-cols: 3; } }
+#fin-intro .category-tags { width: auto; } /* it kept clear of the chart at 55% of the box, now beside it */
+#fin-chart .btc-chart-widget { position: static; width: auto; margin: 0; }
+#fin-cards .credit-card-carousel { margin: 0; }
 .panel.home-box p { opacity: 0.9; line-height: 1.6; font-size: clamp(0.9rem, 2.5vw, 1rem); }
 .panel.finance-box > .panel-head > h2 { font-size: clamp(2rem, 3vw, 2.25rem); }
 .panel.home-box h3 { margin-bottom: 0.5rem; font-size: clamp(1.2rem, 4vw, 1.5rem); } /* the Finance box's quick-link header */
@@ -489,15 +504,16 @@ button.social-item { cursor: pointer; font: inherit; }
 
 .footer-nav a.footer-active { color: oklch(var(--accent-amzn)); font-weight: 600; }
 
-/* Tab & Phone Optimizations. The pop-ups follow the window; what a panel holds follows its panel,
-   flipping where it did: a box's body is 770px across at a 900px window and 468px at 550, the
-   socials card's 776px at 900 (UI-SPEC § Converting a page) */
+/* Tab & Phone Optimizations. The pop-ups follow the window; what a box holds follows the box (its
+   body, container `box`, so its blocks' content flips with it too), flipping where it did: a box's
+   body is 770px across at a 900px window and 468px at 550, the socials card's 776px at 900
+   (UI-SPEC § Converting a page) */
 @media (max-width: 900px) {
     .ctaPopup-content { padding: 2rem 1.5rem; }
     .ctaPopup-btn { padding: 1rem 1.5rem; }
 }
-@container panel (max-width: 776.5px) { .social-container { padding: 1.5rem 0.25rem; } }
-@container panel (max-width: 770.5px) {
+@container box (max-width: 776.5px) { .social-container { padding: 1.5rem 0.25rem; } }
+@container box (max-width: 770.5px) {
     .category-tags { width: 100%; }
     .site-card span { font-size: 1rem; }
     .btc-chart-widget { margin-bottom: 1rem; position: static; width: 100%; margin-top: -1rem; } /* flush with the body's top: the body clips what rises past it */
@@ -523,7 +539,7 @@ button.social-item { cursor: pointer; font: inherit; }
     .link-toggle-container { flex-direction: column; text-align: center; gap: 0.5rem; }
 }
 
-@container panel (max-width: 468.5px) {
+@container box (max-width: 468.5px) {
     .category-tags { width: 100%; }
     .social-item { min-width: 100px; padding: 1rem; }
 
@@ -535,4 +551,4 @@ button.social-item { cursor: pointer; font: inherit; }
     .lounge-box .random-meme { width: 95%; }
 
 }
-@container panel (14rem < width <= 468.5px) { .qlBtns { grid-template-columns: repeat(3, minmax(0, 1fr)); } } /* shared.css stacks them under 14rem */
+@container box (14rem < width <= 468.5px) { .qlBtns { grid-template-columns: repeat(3, minmax(0, 1fr)); } } /* shared.css stacks them under 14rem */
