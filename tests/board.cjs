@@ -801,6 +801,37 @@ const TESTS = {
         assert.equal(await page.evaluate(() => document.querySelector('#stack .panel-body').scrollTop), top);
         return errors;
     },
+    async "a re-measure leaves Add widget's menu open where it was, focus and all"(browser) {
+        const { page, errors } = await open(browser);
+        await page.evaluate(() => document.querySelector('#privacy .panel-close').click());
+        await page.reload({ waitUntil: 'load' }); // a returning visitor: the save is fitted again as content lands
+        await sleep(600);
+        await page.locator('.board-bar button', { hasText: 'Add widget' }).click();
+        await page.focus('.board-menu button');
+        await page.evaluate(() => document.querySelector('.board').dispatchEvent(new Event('load'))); // as a picture arriving
+        await sleep(400);
+        assert.equal(await page.evaluate(() => document.activeElement.closest('.board-menu') ? document.activeElement.textContent : document.activeElement.tagName), '＋ Privacy & OpSec', 'focus after the re-measure');
+        await page.keyboard.press('Enter');
+        await sleep(300);
+        assert.equal(await page.evaluate(() => document.getElementById('privacy').hidden), false, 'Enter on it brought nothing back');
+        return errors;
+    },
+    async "a move into the board's edge arranges nothing, so a saved layout is still fitted again once the fonts are in"(browser) {
+        const { ctx, page, errors } = await open(browser, { viewport: { width: 1440, height: 900 } });
+        const devcore = () => page.evaluate(() => { const p = document.getElementById('dev-core'), b = p.querySelector('.panel-body'); return [+p.style.getPropertyValue('--h'), b.scrollHeight - b.clientHeight <= 1]; });
+        const whole = await devcore();
+        await page.focus('#stack .panel-grip');
+        await page.keyboard.press('ArrowRight'); // saved: the layout is the visitor's
+        await ctx.route('**/*.woff2', async (r) => { await sleep(800); r.continue(); });
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await page.focus('#dev-core .panel-grip');
+        assert.equal(await page.evaluate(() => document.fonts.status), 'loading', 'the fonts landed before the move, so this case tests nothing');
+        await page.keyboard.press('ArrowLeft'); // Dev Core is at the left edge already: nothing moves, and nothing is saved over
+        await page.evaluate(() => document.fonts.ready);
+        await sleep(600);
+        assert.deepEqual(await devcore(), whole, 'Dev Core after a reload and a move into the edge: [rows, shows all it holds]');
+        return errors;
+    },
     async 'with no storage (private mode), an arrangement made this visit holds through a re-measure'(browser) {
         const { page, errors } = await open(browser, WIDE, { init: () => { Storage.prototype.setItem = () => { throw new DOMException('full', 'QuotaExceededError'); }; } });
         await page.focus('#stack .panel-grip');

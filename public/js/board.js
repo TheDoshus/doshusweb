@@ -249,9 +249,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // A visitor's change: settle it and save it (a board back at its default saves nothing).
     // `back` is what a reset replaced; any other change drops it
     function commit(next, back = null) {
+        // A move into a wall or a drop in place arranges nothing and saves nothing (a layout fitted
+        // with the fallback fonts mustn't overwrite the save it came from)
+        const changed = !same(next, layout);
         undo = back;
-        arranged = true;
+        arranged ||= changed;
         settle(next);
+        if (!changed) return;
         try {
             if (same(layout, base)) localStorage.removeItem(key);
             else localStorage.setItem(key, JSON.stringify({ v: VERSION, cols: cols(), items: [...layout].map(([p, r]) => ({ id: p.id, ...r })) }));
@@ -311,9 +315,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     };
 
     function fillMenu() {
-        // Add widget only shows while something is hidden, so the menu is never empty
-        menu.replaceChildren(...panels.filter((p) => layout.get(p).hidden).map((p) => {
+        // Add widget only shows while something is hidden, so the menu is never empty. It's rebuilt
+        // only when what's hidden changes, so a re-measure leaves an open menu (and its focus) be
+        const gone = panels.filter((p) => layout.get(p).hidden);
+        if (gone.length === menu.children.length && gone.every((p, i) => menu.children[i].dataset.id === p.id)) return;
+        menu.replaceChildren(...gone.map((p) => {
             const b = button(`＋ ${title(p)}`);
+            b.dataset.id = p.id;
             b.addEventListener('click', () => {
                 const next = copy(layout);
                 next.get(p).hidden = false; // back where it was; anything there now is pushed down
@@ -658,8 +666,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         again = setTimeout(() => {
             // Mid-gesture on any board, or a finger resting on a panel (it swells): once it ends
             if (active || board.querySelector('.is-holding')) return remeasure();
-            stale = !same(layout, base);
-            if (!stale || !arranged) load(undo);
+            stale = arranged && !same(layout, base); // a measure skipped: the visitor's own layout this visit
+            if (!stale) load(undo);
         }, 150);
     };
     load();
