@@ -148,7 +148,7 @@ these or a host stylesheet on top.
 | `--accent` (from `data-accent`) | A panel's border, glow, title, ghost and controls |
 | `--cols`, `--row`, `--gutter`, `--min-cols` | Grid density and spacing |
 | `--inset` on a panel | How far in from its cells' sides the panel's frame sits, past the gutter (negative sits out): a host lines a panel up with content of its own. A length, registered with `@property` so an `em` is the panel's own (a browser without it, before Safari 16.4 or Firefox 128, frames the ghost off for a font-relative one), or a percentage of its cells' width (a live resize reads it at the starting width); its ghost frames the same spot, and a drag or resize reads from the frame |
-| `--board-w` on a board | The board's width in px, kept by board.js as the board resizes: a host's `--inset` that should answer to the board rather than the panel's own cells (a card a set width across at its default cells, made wider or narrower with them) is reckoned from it |
+| `--board-w` on a board | The board's width in px, set by board.js as each measure of its defaults starts and kept as the board resizes: a host's `--inset` that should answer to the board rather than the panel's own cells (a card a set width across at its default cells, made wider or narrower with them) is reckoned from it |
 | `--field-opacity` | How strongly the cell field shows while arranging |
 | `--ghost-fill`, `--ghost-glow` | The landing ghost's fill and glow |
 | `--glide`, `--ghost-glide` | How long panels and the ghost glide (ms) |

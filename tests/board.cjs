@@ -1483,6 +1483,65 @@ const TESTS = {
         }
         return all;
     },
+    async 'on a tall board a box keeps holding what it holds: keys at full motion, a side drag that snaps, a top edge narrowing it at the top'(browser) {
+        const all = [];
+        // Narrowed and widened again by keys as fast as a held key repeats, gliding: back where it started
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/', motion: 'no-preference' });
+            all.push(...errors);
+            await center(page, 'amazonian');
+            await page.focus('#amazonian > .panel-edge[data-dir="se"]');
+            for (const [key, n] of [['ArrowLeft', 8], ['ArrowRight', 11]]) for (let i = 0; i < n; i++) { await page.keyboard.press(key); await sleep(30); }
+            await sleep(1600);
+            assert.deepEqual(await cells(page, 'amazonian'), [1, 59, 24, 17], 'Amazonian narrowed and widened by keys, gliding');
+            // Collapsed, its ▾ turns as it did: measuring it lands only what can change a size
+            await page.click('#amazonian > .panel-head .panel-collapse', { force: true });
+            assert.ok(await page.evaluate(() => document.querySelector('#amazonian > .panel-head .panel-collapse').getAnimations().some((a) => a.transitionProperty === 'rotate' && a.playState === 'running')), 'the ▾ turning as it collapses');
+            await page.context().close();
+        }
+        // Dragged narrower by its side edge, the Lounge box lands as tall as it holds at the width it snaps to
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/' });
+            all.push(...errors);
+            const slack = [];
+            for (const dx of [-300, -420, -540, -660, -780]) {
+                await page.evaluate(() => localStorage.clear());
+                await page.reload();
+                await page.evaluate(() => document.fonts.ready);
+                await sleep(600);
+                await center(page, 'lounge');
+                const e = await page.locator('#lounge > .panel-edge[data-dir="e"]').boundingBox();
+                await page.mouse.move(e.x + e.width / 2, e.y + e.height / 2);
+                await page.mouse.down();
+                await page.mouse.move(e.x + e.width / 2 + dx, e.y + e.height / 2, { steps: 10 });
+                await page.mouse.up();
+                await sleep(500);
+                slack.push(await page.evaluate(() => { const p = document.getElementById('lounge'), b = p.querySelector(':scope > .panel-body'), row = parseFloat(getComputedStyle(p.parentElement).gridAutoRows);
+                    const end = Math.max(...[...b.children].map((k) => k.getBoundingClientRect().bottom + parseFloat(getComputedStyle(k).marginBottom))) + parseFloat(getComputedStyle(b).paddingBottom);
+                    return b.getBoundingClientRect().bottom - end >= row || b.scrollHeight - b.clientHeight > 1 ? `${p.style.getPropertyValue('--w')} wide: ${Math.round(b.getBoundingClientRect().bottom - end)}px below, ${b.scrollHeight - b.clientHeight}px inside` : 0; }));
+            }
+            assert.deepEqual(slack.filter(Boolean), [], 'the Lounge box narrowed by its side edge');
+            await page.context().close();
+        }
+        // A top corner narrowing a panel near the board's top: the panel grows down, never above row 1, and saves that
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
+            all.push(...errors);
+            await center(page, 'picks');
+            const e = await page.locator('#picks > .panel-edge[data-dir="ne"]').boundingBox();
+            await page.mouse.move(e.x + e.width / 2, e.y + e.height / 2);
+            await page.mouse.down();
+            await page.mouse.move(e.x + e.width / 2 - 700, e.y + e.height / 2 + 40, { steps: 10 });
+            await page.mouse.up();
+            await sleep(500);
+            const got = await cells(page, 'picks'), kept = await page.evaluate(() => JSON.parse(localStorage.getItem('board:lounge')).items.find((i) => i.id === 'picks').y);
+            await page.reload();
+            await sleep(800);
+            assert.deepEqual([got[1] >= 1, kept >= 1, (await cells(page, 'picks'))[1] >= 1], [true, true, true], `picks narrowed from its top corner: ${got}, saved at row ${kept}`);
+            await page.context().close();
+        }
+        return all;
+    },
     async "Home: the Finance box's blocks sit where its content did, and move within it"(browser) {
         const all = [];
         // Tops of what each block holds, from the box's content edge, on the page before (its chart rose 11px past it; stacked, 16)
@@ -1532,7 +1591,10 @@ const TESTS = {
             const p = document.getElementById(id), r = p.getBoundingClientRect(), g = p.parentElement.querySelector(':scope > .board-ghost'), b = p.querySelector(':scope > .panel-body'), h2 = p.querySelector('.panel-head > h2');
             const kids = [...b.children].filter((k) => getComputedStyle(k).position !== 'absolute');
             let broken = false;
-            if (h2) { const t = document.createRange(); t.selectNodeContents(h2); broken = new Set([...t.getClientRects()].map((l) => Math.round(l.top))).size > h2.textContent.trim().split(/\s+/).length; }
+            if (h2) for (const walk = document.createTreeWalker(h2, NodeFilter.SHOW_TEXT); walk.nextNode();) for (const m of walk.currentNode.textContent.matchAll(/\S+/g)) {
+                const t = document.createRange(); t.setStart(walk.currentNode, m.index); t.setEnd(walk.currentNode, m.index + m[0].length);
+                broken ||= new Set([...t.getClientRects()].map((l) => Math.round(l.top))).size > 1;
+            }
             return { right: Math.round(r.right), ghost: g.hidden ? null : Math.round(g.getBoundingClientRect().right), below: g.hidden ? null : Math.round(g.getBoundingClientRect().bottom - r.bottom), spill: Math.round(Math.max(...kids.map((k) => k.getBoundingClientRect().bottom)) - r.bottom), inside: b.scrollHeight - b.clientHeight, broken };
         }, id);
         const resize = async (id, dir, dx, dy) => {
@@ -1576,6 +1638,9 @@ const TESTS = {
         for (let i = 0; i < 24; i++) await page.keyboard.press('ArrowRight'); // wide again, it hugs what it holds again
         await sleep(400);
         assert.deepEqual(await cells(page, 'amazonian'), [1, 59, 24, 17], 'Amazonian made wide again by keys');
+        for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowDown'); // taller than it holds, as asked
+        await sleep(400);
+        assert.equal((await cells(page, 'amazonian'))[3], 20, 'Amazonian made taller by keys');
         for (let i = 0; i < 24; i++) await page.keyboard.press('ArrowUp');
         await sleep(400);
         const amz = await state('amazonian');

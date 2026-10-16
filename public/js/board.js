@@ -12,6 +12,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const cols = () => +css.getPropertyValue('--cols') || 1;
     const minW = () => Math.min(+css.getPropertyValue('--min-cols') || 1, cols());
     const cell = () => ({ x: board.clientWidth / cols(), y: parseFloat(css.gridAutoRows) });
+    // The board's width as --board-w, for a host whose panel's inset answers to the board, not its
+    // cells: set as each default measure starts, and kept as the board resizes
+    const boardW = () => board.style.setProperty('--board-w', `${board.clientWidth}px`);
     const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
     const panels = [...board.children].filter((el) => el.matches('.panel'));
     // A panel's own parts, never those of a board inside it (UI-SPEC § Boards in a panel)
@@ -122,7 +125,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // A class change (collapsed, open) starts transitions, and under reduced motion every property
     // has one (shared.css: 0.01ms, so transitionend still fires): a size read right after it would
     // be the old one, so what's being measured lands its transitions first
-    const landed = (n) => { n.getAnimations({ subtree: true }).forEach((a) => a instanceof CSSTransition && a.finish()); return n; };
+    const looks = /^(opacity|rotate|scale|translate|transform|color|background-color|border-color|box-shadow|outline-color|filter|backdrop-filter)$/;
+    const landed = (n) => { n.getAnimations({ subtree: true }).forEach((a) => a instanceof CSSTransition && !looks.test(a.transitionProperty) && a.finish()); return n; };
     // A panel's fixed parts (head and foot) and the gutter around it, in px: above and below, or
     // (margin) any sides, since a host may inset a panel either side of its cells (--inset)
     const parts = (p) => [...p.children].filter((n) => n.matches('.panel-head, .panel-foot')).reduce((s, n) => s + tall(n), 0);
@@ -156,7 +160,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // After a change, a panel on a tall board that lands short of what it holds grows to hold it (and
     // one that held exactly what it holds, `hug`, holds exactly that again). Run inside a flip's
     // change, so the glide starts from where everything stood
-    function hold(map, p, hug = false) {
+    function grow(map, p, hug = false) {
         const r = map.get(p);
         if (!whole(p) || r.hidden || r.collapsed) return;
         const h = hug ? minH(p, true) : Math.max(r.h, minH(p, true));
@@ -177,8 +181,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // gets a little over half the screen, or with `exact` (once its picture has loaded) exactly
     // its picture's shape
     function contentH(p, exact, gliding, less = 0) {
-        if (!gliding) p.getAnimations().forEach((anim) => anim.id === 'glide' && anim.finish());
-        landed(p);
+        // Read mid-gesture (`gliding`), it neither finishes the glide nor lands transitions: nothing's
+        // changed class, and a live resize reads it every frame
+        if (!gliding) { p.getAnimations().forEach((anim) => anim.id === 'glide' && anim.finish()); landed(p); }
         if (p.matches('.panel-media')) {
             const media = exact && p.querySelector('video, img');
             const ratio = media && (media.videoHeight / media.videoWidth || media.naturalHeight / media.naturalWidth);
@@ -212,6 +217,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         map.forEach((r) => {
             r.w = clamp(r.w, minW(), cols());
             r.x = clamp(r.x, 1, cols() - r.w + 1);
+            r.y = Math.max(1, r.y); // a save from before 2026-10-16's top-edge fix may hold a row above the board
         });
         render(resolve(map));
         map.forEach((r, p) => {
@@ -221,6 +227,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         return resolve(map);
     }
     function defaults() {
+        boardW(); // measured at the board's width now, not as of the last observer report
         const wide = new Map(panels.map((p) => [p, read(p)]));
         const t = tier();
         const media = (p) => p.matches('.panel-media');
@@ -397,7 +404,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             b.addEventListener('click', () => {
                 const next = copy(layout);
                 next.get(p).hidden = false; // back where it was; anything there now is pushed down
-                flip(() => { render(resolve(next, p)); hold(next, p); });
+                flip(() => { render(resolve(next, p)); grow(next, p); });
                 commit(next);
                 menu.hidePopover();
                 say(`${title(p)} added back`);
@@ -558,7 +565,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const blockers = [...layout].filter(([o, r]) => o !== p && !r.hidden && r.y < start.y).map(([, r]) => r);
         const blocked = (r) => blockers.some((o) => overlap(o, r));
         const c = cell();
-        const floor = minH(p);
+        const floor = minH(p, true);
         const ceiling = maxH(p);
         const narrow = narrowest(p);
         // On a tall board one that held exactly its content keeps holding it as it's made wider or narrower
@@ -588,9 +595,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             p.style.width = `${w}px`;
             const least = whole(p) ? minH(p) : floor, top = Math.max(ceiling, least);
             const lim = [px(least, 'y'), px(dir.includes('n') ? Math.min(top, start.y + start.h - 1) : top, 'y')];
-            const tall = !dir.includes('s') && !dir.includes('n') && whole(p);
+            const sides = !dir.includes('s') && !dir.includes('n') && whole(p);
             const h = dir.includes('s') ? clamp(r0.height + dy, ...lim) : dir.includes('n') ? clamp(r0.height - dy, ...lim)
-                : tall ? (hugging ? lim[0] : Math.max(r0.height, lim[0])) : r0.height;
+                : sides ? (hugging ? lim[0] : Math.max(r0.height, lim[0])) : r0.height;
             Object.assign(p.style, { width: `${w}px`, height: `${h}px`,
                 translate: `${dir.includes('w') ? r0.width - w : 0}px ${dir.includes('n') ? r0.height - h : 0}px` });
             d.c = snap(dx / c.x, d.c);
@@ -600,8 +607,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (dir.includes('w')) { r.x = clamp(start.x + d.c, 1, start.x + start.w - narrow); r.w = start.w + start.x - r.x; }
             while (r.w > start.w && blocked(r)) { if (dir.includes('w')) r.x++; r.w--; }
             if (dir.includes('s')) r.h = clamp(start.h + d.r, least, top);
-            if (dir.includes('n')) { r.y = clamp(start.y + d.r, Math.max(1, start.y + start.h - top), start.y + start.h - least); r.h = start.h + start.y - r.y; }
-            if (tall) r.h = hugging ? least : Math.max(start.h, least);
+            if (dir.includes('n')) { const lo = Math.max(1, start.y + start.h - top); r.y = clamp(start.y + d.r, lo, Math.max(lo, start.y + start.h - least)); r.h = Math.max(start.h + start.y - r.y, least); }
+            if (sides) r.h = hugging ? least : Math.max(start.h, least);
             while (r.y < start.y && blocked(r)) { r.y++; r.h--; }
             if (`${r.x},${r.y},${r.w},${r.h}` === last) return;
             last = `${r.x},${r.y},${r.w},${r.h}`;
@@ -625,7 +632,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                     p.classList.remove('is-resizing');
                     ['width', 'height', 'translate'].forEach((k) => p.style.removeProperty(k));
                     render(next);
-                    if (!cancel) hold(next, p);
+                    if (!cancel) grow(next, p, hugging && !/[ns]/.test(dir)); // a side drag that hugged hugs where it landed
                 });
                 if (cancel) return say(`${title(p)} put back`);
                 commit(next);
@@ -643,10 +650,14 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (!d || cols() < 2) return;
             e.preventDefault();
             const next = copy(layout);
-            // Made wider or narrower (not taller or shorter), one that holds exactly its content keeps holding it
-            const hug = !d[1] && whole(p) && !next.get(p).collapsed && next.get(p).h <= minH(p);
             change(next.get(p), ...d, next);
-            flip(() => { render(resolve(next, p)); hold(next, p, hug); });
+            // Made wider or narrower (not taller or shorter), one that held exactly its content keeps holding
+            // it: judged where the layout had it, its glide landed, not at a width it's still gliding through
+            flip(() => {
+                const hug = !d[1] && whole(p) && !layout.get(p).collapsed && layout.get(p).h <= minH(p, true);
+                render(resolve(next, p));
+                grow(next, p, hug);
+            });
             commit(next);
             handle.focus();
             p.scrollIntoView({ block: 'nearest' });
@@ -719,7 +730,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 p.classList.add('is-collapsed'); // measured as the title bar it becomes
                 r.h = headRows(p);
             }
-            flip(() => { render(resolve(next, p)); hold(next, p); });
+            flip(() => { render(resolve(next, p)); grow(next, p); });
             commit(next);
             say(`${name} ${r.collapsed ? 'collapsed' : 'opened'}`);
         });
@@ -760,10 +771,6 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (!stale) load(undo);
         }, 150);
     };
-    // The board's width as --board-w, for a host whose panel's inset answers to the board, not its
-    // cells: set before the first measure, and kept as the board resizes
-    const boardW = () => board.style.setProperty('--board-w', `${board.clientWidth}px`);
-    boardW();
     load();
     document.fonts?.ready.then(remeasure);
     board.addEventListener('load', remeasure, true);
@@ -791,7 +798,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const next = copy(layout), r = next.get(p);
         if (r.hidden || r.collapsed) return;
         const hug = r.h <= minH(p, true, e.detail);
-        flip(() => hold(next, p, hug));
+        flip(() => grow(next, p, hug));
         commit(next);
     });
 
