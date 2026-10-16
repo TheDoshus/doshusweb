@@ -112,17 +112,19 @@
 /* Titles keep the page's: its title font at each box's size and color (board.css gives a panel's its own) */
 .board[data-board="home"] .panel-head > h2 { font-family: var(--font-title); font-size: 2rem; line-height: normal; color: oklch(var(--accent)); }
 
-/* The socials card: a glass card 900px across at most, so its panel sits in from its cells to that
-   width, or out past them by up to 1rem (half of that on phones) where they're narrower, as it sat
-   past the boxes' edges (a percentage inset is of its cells' width, UI-SPEC) */
+/* The socials card: a glass card 900px across at its own cells (20 of the 24 columns, all 12 on the
+   mid tier) where they allow, and up to 1rem past them (half that on phones) where they're narrower,
+   as it sat past the boxes' edges. Its inset is off the board's width, not its cells', so a visitor
+   who resizes it makes the card itself wider or narrower (UI-SPEC § --board-w) */
 .panel.home-card {
     background: oklch(var(--space-oled) / 0.02);
     backdrop-filter: blur(6px);
     border: 1px solid oklch(var(--star-white) / 0.05);
     border-radius: 20px;
     box-shadow: 0 8px 32px oklch(var(--star-white) / 0.05);
-    --inset: max(-1rem, 50% - 450px - var(--gutter));
+    --inset: max(-1rem, (var(--board-w) * 20 / 24 - 900px) / 2 - var(--gutter));
 }
+@media (max-width: 1080px) { .panel.home-card { --inset: max(-1rem, (var(--board-w) - 900px) / 2 - var(--gutter)); } }
 @media (max-width: 640px) { .panel.home-card { --inset: -0.5rem; } }
 .panel.home-card > .panel-head { padding: clamp(2rem, 5vw, 3rem) clamp(2rem, 5vw, 3rem) 0; }
 .panel.home-card > .panel-body { gap: 0; padding: 2rem clamp(2rem, 5vw, 3rem) clamp(2rem, 5vw, 3rem); }
@@ -307,6 +309,7 @@ button.social-item { cursor: pointer; font: inherit; }
     background: oklch(var(--accent-amzn) / 0.1);
     border-color: oklch(var(--accent-amzn));
 }
+#slackText { min-width: 0; overflow-wrap: anywhere; } /* an address breaks before it runs out of a narrowed box */
 .email-hidden {
     filter: blur(8px);
     user-select: none;
@@ -408,7 +411,7 @@ button.social-item { cursor: pointer; font: inherit; }
 .featured-sites { display: grid; width: 100%; gap: 0.4rem; justify-content: center;
     grid-template-columns: repeat(6, minmax(60px, 1fr));
 }
-.site-card { 
+.site-card { min-width: 0; /* square, but free to be narrower than its content is tall, so its column can shrink */
     aspect-ratio: 1; text-align: center; transition: all 0.3s ease; text-decoration: none; display: flex; flex-direction: column; align-items: center;
     background: oklch(var(--accent-lounge) / 0.05);
     border: 1px solid oklch(var(--accent-lounge) / 0.2);

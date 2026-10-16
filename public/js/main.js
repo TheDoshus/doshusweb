@@ -726,6 +726,7 @@ window.populateDiscordWidget = async function(widget) {
         widget.classList.add('discord-offline');
         countEl.textContent = "the chat's always open — tap in";
     }
+    widget.dispatchEvent(new Event('load')); // it holds more now: a board it's on measures it again, as when a picture arrives
 };
 
 window.addEventListener('DOMContentLoaded', () => {

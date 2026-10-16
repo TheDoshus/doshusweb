@@ -39,10 +39,11 @@ function serve() {
 }
 
 let base;
-async function open(browser, opts = WIDE, { init, motion = 'reduce', delayBoard, path = PAGE } = {}) {
+async function open(browser, opts = WIDE, { init, motion = 'reduce', delayBoard, path = PAGE, route } = {}) {
     const ctx = await browser.newContext({ ...opts, reducedMotion: motion });
     if (init) await ctx.addInitScript(init);
     await ctx.route((url) => !url.href.startsWith(base), (r) => r.abort()); // nothing leaves the machine
+    if (route) await ctx.route(...route); // a page or a reply made for the case: [url, handler]
     if (delayBoard) await ctx.route('**/js/board.js', async (r) => { await sleep(delayBoard); r.continue(); });
     const page = await ctx.newPage();
     const errors = [];
@@ -1315,10 +1316,11 @@ const TESTS = {
         await ctx.close();
         return all;
     },
-    async "Home: at any width a box holds no blank band and keeps its gaps, the promo is a link edge to edge, the chart isn't cut, the card is 900px, and a title that fits takes one line"(browser) {
+    async "Home: at any width a box holds no blank band and keeps its gaps, the promo is a link edge to edge and wraps as it did, the chart isn't cut, the card is 900px, and a title that fits takes one line"(browser) {
         const { ctx, page, errors } = await open(browser, { viewport: { width: 1440, height: 900 } }, { path: '/' });
         // (the work links' fetch fails here, so the toggle hides after the first measure, and says so)
-        for (const width of [1440, 1200, 1100, 1000, 901, 800, 700, 650, 641, 640, 600, 480, 430, 390, 320]) {
+        // The promo's sentence takes as many lines as on the page before (one down to 560px, then two)
+        for (const [width, lines] of [1440, 1200, 1100, 1000, 901, 800, 700, 650, 641, 640, 600, 560, 480, 430, 390, 320].map((w) => [w, w >= 560 ? 1 : 2])) {
             await page.setViewportSize({ width, height: 800 });
             await sleep(350);
             const got = await page.evaluate(() => {
@@ -1345,23 +1347,114 @@ const TESTS = {
                     const lines = new Set([...r.getClientRects()].map((l) => Math.round(l.top))).size, head = t.parentElement, cs = getComputedStyle(head);
                     t.style.whiteSpace = 'nowrap'; const one = r.getBoundingClientRect().width; t.style.removeProperty('white-space');
                     return lines > 1 && one <= head.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); }).map((t) => t.closest('.panel').id);
-                return { blank, gaps, dead: dead.length, cut: Math.round(fb.top - chart.top), card: Math.round(document.getElementById('socials').getBoundingClientRect().width), wraps };
+                const said = document.createRange(); said.selectNodeContents(document.querySelector('.promo-text'));
+                return { blank, gaps, dead: dead.length, cut: Math.round(fb.top - chart.top), card: Math.round(document.getElementById('socials').getBoundingClientRect().width), wraps, lines: new Set([...said.getClientRects()].map((l) => Math.round(l.top))).size };
             });
             assert.deepEqual([got.blank, got.gaps, got.dead, got.wraps], [[], [], 0, []], `${width}px: boxes with a blank band, gaps off their cells', dead spots on the promo, titles wrapped that fit: ${JSON.stringify(got)}`);
             assert.ok(got.cut <= 0, `${width}px: the chart starts ${got.cut}px above its box's body, cut off`);
             if ([1440, 1200, 1000].includes(width)) assert.equal(got.card, 900, `${width}px: the card's width`);
+            assert.equal(got.lines, lines, `${width}px: lines the promo's sentence takes`);
         }
         // A weak machine's lean board (and an arranging one) drops the dressed panels' blur
         await page.evaluate(() => document.querySelector('.board').classList.add('is-lean'));
         assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.home-card, .home-box')].map((p) => getComputedStyle(p).backdropFilter)), Array(4).fill('none'), 'blur on a lean board');
-        // Finance made as narrow as a panel gets: its freeze buttons stack, one to a row
-        await page.setViewportSize({ width: 1440, height: 800 });
+        // Finance made as narrow as a panel gets: its freeze buttons stack, one to a row, and nothing
+        // scrolls sideways (at a phone's width too, where shared.css lays them out two across)
         await page.evaluate(() => document.querySelector('.board').classList.remove('is-lean'));
-        await page.focus('#finance .panel-edge[data-dir="se"]');
-        for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowLeft');
-        await sleep(300);
-        assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('#finance .qlBtns')).gridTemplateColumns.split(' ').length), 1, 'freeze buttons across in the narrowest Finance');
+        for (const width of [1440, 390]) {
+            await page.setViewportSize({ width, height: 800 });
+            await sleep(400);
+            await page.focus('#finance .panel-edge[data-dir="se"]');
+            for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowLeft');
+            await sleep(300);
+            assert.deepEqual(await page.evaluate(() => { const b = document.querySelector('#finance .panel-body');
+                return [getComputedStyle(b.querySelector('.qlBtns')).gridTemplateColumns.split(' ').length, b.scrollWidth - b.clientWidth]; }), [1, 0], `${width}px: [freeze buttons across, px it scrolls sideways] in the narrowest Finance`);
+        }
         await ctx.close();
+        return errors;
+    },
+    async 'on a tall board a meme keeps its height in a row beside a box, and a panel keeps its gap under the lowest panel above it'(browser) {
+        // A beside a list B (which keeps its 24 rows) over C; a box D sharing a meme M's row under C
+        const box = (id, cells, px, mark = '') => `<article class="panel" id="${id}" ${cells}${mark}><header class="panel-head"><h2>${id}</h2></header><div class="panel-body"><div style="height: ${px}px"></div></div></article>`;
+        const html = `<!doctype html><html><head><link rel="stylesheet" href="/css/shared.css"><link rel="stylesheet" href="/css/board.css"></head><body><main><div class="board" data-board="made" data-tall>
+            ${box('A', 'data-x="1" data-y="4" data-w="12" data-h="8"', 400)}${box('B', 'data-x="13" data-y="4" data-w="12" data-h="24"', 2000, ' data-scroll')}
+            ${box('C', 'data-x="1" data-y="30" data-w="24" data-h="8"', 100)}${box('D', 'data-x="1" data-y="40" data-w="18" data-h="12"', 60)}
+            <figure class="panel panel-media" id="M" data-x="19" data-y="40" data-w="6" data-h="12" aria-label="Meme"><div class="panel-body"></div></figure>
+        </div></main><script src="/js/board.js"></script></body></html>`;
+        const { page, errors } = await open(browser, WIDE, { path: '/made.html', route: [base + '/made.html', (r) => r.fulfill({ contentType: 'text/html', body: html })] });
+        const [a, b, c, d, m] = await Promise.all(['A', 'B', 'C', 'D', 'M'].map((id) => cells(page, id)));
+        // A grows to hold its content and still ends above B, so C stays its 2 rows under B; M keeps its 12 rows and D its row with it
+        assert.deepEqual([a[3] > 8 && a[1] + a[3] < 28, b[3], c[1], m[3], d[3], d[1] === m[1]], [true, 24, 30, 12, 12, true], `A ${a}, B ${b}, C ${c}, D ${d}, M ${m}`);
+        return errors;
+    },
+    async "a box its page fills after the first measure grows to hold it: the Lounge's Discord roster"(browser) {
+        const all = [];
+        const roster = { name: 'Doshus', presence_count: 40, members: Array.from({ length: 40 }, (_, i) => ({ username: `u${i}`, avatar_url: `${base}/doshusfavi.ico`, status: 'online' })) };
+        const reply = async (r) => { await sleep(900); r.fulfill({ contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(roster) }); };
+        for (const opts of [WIDE, PHONE]) {
+            const { page, errors } = await open(browser, opts, { path: '/thelounge.html', route: ['https://discord.com/api/guilds/**', reply] });
+            all.push(...errors);
+            await sleep(1200);
+            const got = await page.evaluate(() => { const b = document.querySelector('#discord .panel-body'); return [b.querySelectorAll('.discord-member').length, b.scrollHeight - b.clientHeight]; });
+            assert.deepEqual([got[0], got[1] <= 1], [12, true], `${opts.viewport.width}px: [avatars shown, nothing scrolls inside] (scrolls ${got[1]}px)`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async "Home: a box can't be made smaller than what it holds, and the card's frame follows its cells as it's resized"(browser) {
+        const { page, errors } = await open(browser, { viewport: { width: 1440, height: 900 } }, { path: '/' });
+        const state = (id) => page.evaluate((id) => {
+            const p = document.getElementById(id), r = p.getBoundingClientRect(), g = document.querySelector('.board-ghost'), b = p.querySelector('.panel-body'), h2 = p.querySelector('.panel-head > h2');
+            const kids = [...b.children].filter((k) => getComputedStyle(k).position !== 'absolute');
+            let broken = false;
+            if (h2) { const t = document.createRange(); t.selectNodeContents(h2); broken = new Set([...t.getClientRects()].map((l) => Math.round(l.top))).size > h2.textContent.trim().split(/\s+/).length; }
+            return { right: Math.round(r.right), ghost: g.hidden ? null : Math.round(g.getBoundingClientRect().right), below: g.hidden ? null : Math.round(g.getBoundingClientRect().bottom - r.bottom), spill: Math.round(Math.max(...kids.map((k) => k.getBoundingClientRect().bottom)) - r.bottom), inside: b.scrollHeight - b.clientHeight, broken };
+        }, id);
+        const resize = async (id, dir, dx, dy) => {
+            await center(page, id);
+            const e = await page.locator(`#${id} .panel-edge[data-dir="${dir}"]`).boundingBox();
+            await page.mouse.move(e.x + e.width / 2, e.y + e.height / 2);
+            await page.mouse.down();
+            await page.mouse.move(e.x + e.width / 2 + dx, e.y + e.height / 2 + dy, { steps: 10 });
+            await frames(page);
+            const during = await state(id);
+            await page.mouse.up();
+            await sleep(400);
+            return [during, await state(id)];
+        };
+        // Made wider: the live edge, the ghost and where it lands agree (the card used to snap back to 900px)
+        const [wide, landed] = await resize('socials', 'e', 200, 0);
+        assert.deepEqual([wide.right, landed.right], [wide.ghost, wide.ghost], 'the card made wider: live edge, ghost, landed edge');
+        // Squeezed from its corner as far as it goes: its title keeps its words, nothing spills or scrolls inside
+        for (const id of ['socials', 'promo']) {
+            const [during, after] = await resize(id, 'se', -1100, -700);
+            assert.deepEqual([during.broken, during.spill <= 2, after.broken, after.spill <= 0, after.inside <= 1], [false, true, false, true, true], `${id} squeezed: [title broken mid-drag, holding all mid-drag, title broken, held all it holds, nothing scrolls inside] ${JSON.stringify([during, after])}`);
+        }
+        // Narrowed from its side, Finance's buttons and chart wrap taller, and it grows as the edge moves,
+        // its ghost with it; made wide again it hugs what it holds again, no blank band
+        const start = await cells(page, 'finance');
+        const [fin, finLanded] = await resize('finance', 'e', -1100, 0);
+        assert.deepEqual([fin.broken, fin.spill <= 2, fin.below >= 0 && fin.below < 40, finLanded.broken, finLanded.inside <= 1], [false, true, true, false, true], `Finance narrowed: [title broken mid-drag, holding all mid-drag, ghost holding it mid-drag, title broken, nothing scrolls inside] ${JSON.stringify([fin, finLanded])}`);
+        const [back] = await resize('finance', 'e', 1100, 0);
+        assert.deepEqual([await cells(page, 'finance'), back.below >= 0 && back.below < 40], [start, true], `Finance made wide again: [its cells, ghost holding it mid-drag] ${JSON.stringify(back)}`);
+        // And by the keyboard, a column a press: each press that wraps what it holds taller grows it to hold it
+        await center(page, 'amazonian');
+        await page.focus('#amazonian .panel-edge[data-dir="se"]');
+        const presses = [];
+        for (let i = 0; i < 24; i++) {
+            await page.keyboard.press('ArrowLeft');
+            await sleep(250);
+            presses.push({ w: (await cells(page, 'amazonian'))[2], ...await state('amazonian') });
+            if (presses.length > 1 && presses.at(-1).w === presses.at(-2).w) break;
+        }
+        const narrow = presses.at(-1);
+        for (let i = 0; i < 24; i++) await page.keyboard.press('ArrowRight'); // wide again, it hugs what it holds again
+        await sleep(400);
+        assert.deepEqual(await cells(page, 'amazonian'), [1, 59, 24, 17], 'Amazonian made wide again by keys');
+        for (let i = 0; i < 24; i++) await page.keyboard.press('ArrowUp');
+        await sleep(400);
+        const amz = await state('amazonian');
+        assert.deepEqual([narrow.broken, presses.filter((s) => s.inside > 1).map((s) => `${s.w} wide: ${s.inside}px`), amz.inside <= 1], [false, [], true], `Amazonian squeezed by keys: [title broken at its narrowest, presses it scrolled inside after, scrolls inside made shortest]`);
         return errors;
     },
     async "a panel marked data-tall on a board that isn't is as tall as what it holds, and a visitor can stretch it there past the screen"(browser) {
@@ -1726,7 +1819,7 @@ const TESTS = {
             const { page, errors } = await open(browser, opts, { path: '/thelounge.html' });
             all.push(...errors);
             await center(page, id);
-            if (dir < 0) { // half width, at the right
+            if (dir < 0) { // as narrow as it goes (its title's longest word holds it at 4 of 6 columns), at the right
                 await page.focus(`#${id} .panel-edge[data-dir="se"]`);
                 for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowLeft');
                 await page.focus(`#${id} .panel-grip`);
@@ -1735,7 +1828,7 @@ const TESTS = {
                 await center(page, id);
             }
             const start = await cells(page, id), frame = await rect(page, `#${id}`);
-            if (dir < 0) assert.deepEqual([start[0], start[2]], [4, 3], `${id} made half width at the right`);
+            if (dir < 0) assert.deepEqual([start[0], start[2]], [3, 4], `${id} made narrow at the right`);
             const cw = await page.evaluate(() => { const b = document.querySelector('.board'); return b.clientWidth / +getComputedStyle(b).getPropertyValue('--cols'); });
             const h = await grab(page, id, dir);
             assert.deepEqual(await rect(page, '.board-ghost'), frame, `${opts.viewport.width}px: the ghost frames ${id} where it sits`);

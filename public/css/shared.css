@@ -398,10 +398,6 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 /* Tab & Phone Optimizations */
-/* In a board panel the grid answers to the panel's width, not the window's */
-@container panel (max-width: 26rem) { .qlBtns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@container panel (max-width: 14rem) { .qlBtns { grid-template-columns: 1fr; } }
-
 @media (max-width: 900px) {
     h2 { text-align: center; }
     .quickLinks { flex-direction: column; }
@@ -420,6 +416,11 @@ h1, h2, h3 { text-wrap: balance; }
     .footer-nav a { font-size: 0.8rem; }
     .footer-copyright { display: none }
 }
+/* In a board panel the grid answers to the panel's width, not the window's (after the window's
+   rules, so it wins over them) */
+@container panel (max-width: 26rem) { .qlBtns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container panel (max-width: 14rem) { .qlBtns { grid-template-columns: 1fr; } }
+
 /* ─── DISCORD WIDGET (shared component: lounge section + home modal) ─── */
 .discord-widget { max-width: 720px; margin: 0 auto; backdrop-filter: blur(10px); transition: all 0.3s ease;
     background: oklch(var(--star-white) / 0.03);

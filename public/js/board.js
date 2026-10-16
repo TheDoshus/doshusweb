@@ -12,6 +12,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const cols = () => +css.getPropertyValue('--cols') || 1;
     const minW = () => Math.min(+css.getPropertyValue('--min-cols') || 1, cols());
     const cell = () => ({ x: board.clientWidth / cols(), y: parseFloat(css.gridAutoRows) });
+    // The board's width as --board-w, for a host whose panel's inset answers to the board, not its cells
+    new ResizeObserver(() => board.style.setProperty('--board-w', `${board.clientWidth}px`)).observe(board);
     const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
     const panels = [...board.children].filter((el) => el.matches('.panel'));
     const title = (p) => p.querySelector('h2')?.textContent ?? p.getAttribute('aria-label') ?? p.id;
@@ -122,10 +124,38 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const parts = (p) => [...p.children].filter((n) => n.matches('.panel-head, .panel-foot')).reduce((s, n) => s + tall(n), 0);
     const margin = (p, ...sides) => sides.reduce((n, k) => n + (parseFloat(getComputedStyle(p)[`margin${k}`]) || 0), 0);
     const gutters = (p) => margin(p, 'Top', 'Bottom');
-    // The shortest a panel can get: its head and foot plus a few lines of body (or MIN_H)
-    function minH(p) {
+    // A meme, or a list marked data-scroll (a window onto what it holds), keeps its height. On a tall
+    // board everything else holds what it holds (UI-SPEC § Sizes): never shorter than its content
+    const kept = (p) => p.matches('.panel-media') || 'scroll' in p.dataset;
+    const whole = (p) => 'tall' in board.dataset && !kept(p);
+    // The shortest a panel can get: its head and foot plus a few lines of body (or MIN_H); on a tall
+    // board, all it holds at its width (read where it stands, or with `settle` once a glide lands)
+    function minH(p, settle = false) {
         const fixed = parts(p);
-        return Math.max(MIN_H, Math.ceil((fixed + gutters(p) + (fixed ? 48 : 0)) / cell().y));
+        const least = Math.max(MIN_H, Math.ceil((fixed + gutters(p) + (fixed ? 48 : 0)) / cell().y));
+        return whole(p) && !p.hidden && !p.classList.contains('is-collapsed') ? Math.max(least, contentH(p, false, !settle)) : least;
+    }
+    // The narrowest a visitor can make a panel: --min-cols, and on a tall board no narrower than its
+    // title's longest word, whole (at the title's size now)
+    function narrowest(p) {
+        const h2 = 'tall' in board.dataset && p.querySelector(':scope > .panel-head > h2');
+        if (!h2) return minW();
+        const was = h2.style.cssText;
+        h2.style.cssText += '; width: min-content; overflow-wrap: normal';
+        const word = h2.getBoundingClientRect().width;
+        h2.style.cssText = was;
+        const head = getComputedStyle(h2.parentElement);
+        const px = word + parseFloat(head.paddingLeft) + parseFloat(head.paddingRight) + p.offsetWidth - p.clientWidth + margin(p, 'Left', 'Right');
+        return Math.min(cols(), Math.max(minW(), Math.ceil(px / cell().x)));
+    }
+    // After a change, a panel on a tall board that lands short of what it holds grows to hold it (and
+    // one that held exactly what it holds, `hug`, holds exactly that again). Run inside a flip's
+    // change, so the glide starts from where everything stood
+    function hold(map, p, hug = false) {
+        const r = map.get(p);
+        if (!whole(p) || r.hidden || r.collapsed) return;
+        const h = hug ? minH(p, true) : Math.max(r.h, minH(p, true));
+        if (h !== r.h) { r.h = h; render(resolve(map, p)); }
     }
     // Collapsed to its title bar: the head alone (and the panel's border). A running glide carries
     // on: the bar's one-line title keeps it one height at any width, and finishing the glide here
@@ -189,25 +219,24 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const wide = new Map(panels.map((p) => [p, read(p)]));
         const t = tier();
         const media = (p) => p.matches('.panel-media');
-        // A meme, or a list marked data-scroll (a window onto what it holds, as tall as its cells, the
-        // rest scrolling inside), keeps its height: only what the panel holds in full is measured
-        const kept = (p) => media(p) || 'scroll' in p.dataset;
+        // A meme or a list (kept) keeps its height: only what a panel holds in full is measured
         const own = t === 'wide' ? wide : cellsIn(t);
         if (own) {
             // The markup's cells, each row grown to its tallest content where this window wraps it
-            // taller than the cells allow; panels sharing a row's top and height grow together
+            // taller than the cells allow; panels sharing a row's top and height grow together (a
+            // meme or a list in it counts at its height)
             render(own);
             const row = (r) => `${r.y}/${r.h}`;
             const need = new Map();
-            own.forEach((r, p) => { if (!r.collapsed && !r.hidden && !kept(p)) need.set(row(r), Math.max(need.get(row(r)) ?? 0, clamp(contentH(p), minH(p), maxH(p)))); });
+            own.forEach((r, p) => { if (!r.collapsed && !r.hidden) need.set(row(r), Math.max(need.get(row(r)) ?? 0, kept(p) ? r.h : clamp(contentH(p), minH(p), maxH(p)))); });
             if (!('tall' in board.dataset)) {
                 own.forEach((r) => { if (!r.collapsed) r.h = Math.max(r.h, need.get(row(r)) ?? 0); });
                 return fit(own);
             }
             // A tall board reads top to bottom, as the page it came from flowed: a row is as tall as
             // what it holds at this width, shorter too, and each panel keeps the gap its cells give
-            // it under the panels right above it in its columns (so the cells are exact where they
-            // were measured, and a box never holds a blank band)
+            // it under the lowest of the panels right above it in its columns (so the cells are exact
+            // where they were measured, and a box never holds a blank band)
             const was = new Map([...own].map(([p, r]) => [p, { ...r }]));
             const shown = [...own].filter(([, r]) => !r.hidden).sort(([, a], [, b]) => a.y - b.y);
             const over = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w;
@@ -217,7 +246,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 if (!r.collapsed) r.h = need.get(row(o)) ?? r.h;
                 const above = shown.map(([q]) => q).filter((q) => under(was.get(q), o));
                 const right = above.filter((q) => !above.some((m) => m !== q && under(was.get(q), was.get(m))));
-                if (right.length) r.y = Math.max(...right.map((q) => own.get(q).y + own.get(q).h + o.y - (was.get(q).y + was.get(q).h)));
+                const end = (m) => Math.max(...right.map((q) => m.get(q).y + m.get(q).h));
+                if (right.length) r.y = end(own) + o.y - end(was);
             });
             return fit(own);
         }
@@ -343,7 +373,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             b.addEventListener('click', () => {
                 const next = copy(layout);
                 next.get(p).hidden = false; // back where it was; anything there now is pushed down
-                flip(() => render(resolve(next, p)));
+                flip(() => { render(resolve(next, p)); hold(next, p); });
                 commit(next);
                 menu.hidePopover();
                 say(`${title(p)} added back`);
@@ -498,16 +528,16 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const c = cell();
         const floor = minH(p);
         const ceiling = maxH(p);
-        const narrow = minW();
+        const narrow = narrowest(p);
+        // On a tall board one that held exactly its content keeps holding it as it's made wider or narrower
+        const hugging = whole(p) && start.h <= floor;
         const r0 = p.getBoundingClientRect();
         const y0 = scrollY; // the edge follows the pointer on the page, so it keeps up while the page scrolls
-        // The live edge stays between the panel's minimum and the board's edge (px, gutters out)
+        // The live edge stays between the panel's minimum and the board's edge (px, gutters out); its
+        // height limits are read as it goes (follow)
         const room = { x: margin(p, 'Left', 'Right'), y: gutters(p) };
         const px = (cells, axis) => cells * c[axis] - room[axis];
-        const limit = {
-            w: [px(narrow, 'x'), px(dir.includes('w') ? start.x + start.w - 1 : cols() - start.x + 1, 'x')],
-            h: [px(floor, 'y'), px(dir.includes('n') ? Math.min(ceiling, start.y + start.h - 1) : ceiling, 'y')],
-        };
+        const limit = { w: [px(narrow, 'x'), px(dir.includes('w') ? start.x + start.w - 1 : cols() - start.x + 1, 'x')] };
         const d = { c: 0, r: 0 };
         let next = layout;
         let last = '';
@@ -522,7 +552,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             const dx = pending.clientX - e.clientX;
             const dy = pending.clientY - e.clientY + scrollY - y0;
             const w = dir.includes('e') ? clamp(r0.width + dx, ...limit.w) : dir.includes('w') ? clamp(r0.width - dx, ...limit.w) : r0.width;
-            const h = dir.includes('s') ? clamp(r0.height + dy, ...limit.h) : dir.includes('n') ? clamp(r0.height - dy, ...limit.h) : r0.height;
+            // What it holds, read at the width it's being given (on a tall board, its floor follows)
+            p.style.width = `${w}px`;
+            const least = whole(p) ? minH(p) : floor, top = Math.max(ceiling, least);
+            const lim = [px(least, 'y'), px(dir.includes('n') ? Math.min(top, start.y + start.h - 1) : top, 'y')];
+            const tall = !dir.includes('s') && !dir.includes('n') && whole(p);
+            const h = dir.includes('s') ? clamp(r0.height + dy, ...lim) : dir.includes('n') ? clamp(r0.height - dy, ...lim)
+                : tall ? (hugging ? lim[0] : Math.max(r0.height, lim[0])) : r0.height;
             Object.assign(p.style, { width: `${w}px`, height: `${h}px`,
                 translate: `${dir.includes('w') ? r0.width - w : 0}px ${dir.includes('n') ? r0.height - h : 0}px` });
             d.c = snap(dx / c.x, d.c);
@@ -531,8 +567,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (dir.includes('e')) r.w = clamp(start.w + d.c, narrow, cols() - start.x + 1);
             if (dir.includes('w')) { r.x = clamp(start.x + d.c, 1, start.x + start.w - narrow); r.w = start.w + start.x - r.x; }
             while (r.w > start.w && blocked(r)) { if (dir.includes('w')) r.x++; r.w--; }
-            if (dir.includes('s')) r.h = clamp(start.h + d.r, floor, ceiling);
-            if (dir.includes('n')) { r.y = clamp(start.y + d.r, Math.max(1, start.y + start.h - ceiling), start.y + start.h - floor); r.h = start.h + start.y - r.y; }
+            if (dir.includes('s')) r.h = clamp(start.h + d.r, least, top);
+            if (dir.includes('n')) { r.y = clamp(start.y + d.r, Math.max(1, start.y + start.h - top), start.y + start.h - least); r.h = start.h + start.y - r.y; }
+            if (tall) r.h = hugging ? least : Math.max(start.h, least);
             while (r.y < start.y && blocked(r)) { r.y++; r.h--; }
             if (`${r.x},${r.y},${r.w},${r.h}` === last) return;
             last = `${r.x},${r.y},${r.w},${r.h}`;
@@ -556,6 +593,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                     p.classList.remove('is-resizing');
                     ['width', 'height', 'translate'].forEach((k) => p.style.removeProperty(k));
                     render(next);
+                    if (!cancel) hold(next, p);
                 });
                 if (cancel) return say(`${title(p)} put back`);
                 commit(next);
@@ -573,8 +611,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (!d || cols() < 2) return;
             e.preventDefault();
             const next = copy(layout);
+            // Made wider or narrower (not taller or shorter), one that holds exactly its content keeps holding it
+            const hug = !d[1] && whole(p) && !next.get(p).collapsed && next.get(p).h <= minH(p);
             change(next.get(p), ...d, next);
-            flip(() => render(resolve(next, p)));
+            flip(() => { render(resolve(next, p)); hold(next, p, hug); });
             commit(next);
             handle.focus();
             p.scrollIntoView({ block: 'nearest' });
@@ -629,7 +669,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (hit && dy) r.y = dy < 0 ? hit.y : hit.y + 1;
         });
         keyed(corner, p, (r, dx, dy) => {
-            r.w = clamp(r.w + dx, minW(), cols() - r.x + 1);
+            r.w = clamp(r.w + dx, narrowest(p), cols() - r.x + 1);
             r.h = clamp(r.h + dy, minH(p), maxH(p));
         });
 
@@ -647,7 +687,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 p.classList.add('is-collapsed'); // measured as the title bar it becomes
                 r.h = headRows(p);
             }
-            flip(() => render(resolve(next, p)));
+            flip(() => { render(resolve(next, p)); hold(next, p); });
             commit(next);
             say(`${name} ${r.collapsed ? 'collapsed' : 'opened'}`);
         });
