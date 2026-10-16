@@ -441,7 +441,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const off = new AbortController();
         addEventListener('pointerdown', (ev) => { if (!p.contains(ev.target)) { p.classList.remove('is-picked'); off.abort(); } }, { capture: true, signal: off.signal });
     }
-    function begin(handle, start, e) {
+    function begin(handle, start, e, first = e) {
         if (active) return;
         handle.setPointerCapture(e.pointerId);
         const op = start(e);
@@ -451,7 +451,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         const stop = new AbortController();
         const on = (type, fn, opts, target = handle) => target.addEventListener(type, fn, { signal: stop.signal, ...opts });
         const mine = (fn) => (ev) => ev.pointerId === e.pointerId && fn(ev);
-        let last = e;
+        let last = first; // the move that started it, so a refresh before the next move doesn't aim at the press
         let scroll = 0;
         let then = 0;
         const pad = getComputedStyle(document.documentElement).scrollPaddingTop;
@@ -471,9 +471,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             if (e.pointerType === 'mouse') return;
             if (host) pick(handle.closest('.panel'));
             // A finger let go where it held fires a click there, on whatever is under it now (a ✕ the
-            // pick just made live, a link): it's the gesture's, so nothing takes it
+            // pick just made live, a link): it's the gesture's, so nothing takes it. One that moved fires
+            // none, so the next press disarms it, and a real tap after a drag still lands
             const off = new AbortController();
             addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); }, { capture: true, once: true, signal: off.signal });
+            addEventListener('pointerdown', () => off.abort(), { capture: true, once: true, signal: off.signal });
             setTimeout(() => off.abort(), 400);
         };
         // A change under the gesture (a board in the panel being resized swapped its tier) is followed at once
@@ -528,7 +530,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             // A thin edge loses a fast pointer otherwise; a block is captured only once it moves, so a click lands on what it pressed
             if (!where) handle.setPointerCapture(e.pointerId);
             panel.classList.add('is-pressed'); // a frame under the first move can't take it (board.css)
-            on('pointermove', (ev) => { if (moved(ev, 3)) { quit(); begin(handle, start, e)?.move(ev); } });
+            on('pointermove', (ev) => {
+                if (!ev.buttons) return quit(); // its release went unseen (it hears the whole window, so it'd carry on a hover)
+                if (moved(ev, 3)) { quit(); begin(handle, start, e, ev)?.move(ev); }
+            });
         });
     }
 

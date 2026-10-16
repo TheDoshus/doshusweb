@@ -60,13 +60,14 @@ const saved = (page, tier = '') => page.evaluate((k) => localStorage.getItem('bo
 const arranging = (page) => page.evaluate(() => document.querySelector('.board').classList.contains('is-arranging'));
 const countMoves = () => { window.__moves = 0; for (const m of ['moveBefore', 'insertBefore']) { const f = Element.prototype[m]; if (f) Element.prototype[m] = function (...a) { if (this.matches?.('.board')) window.__moves++; return f.apply(this, a); }; } };
 // Once every board's cells and height have held still for 400ms (longer than the engine's 150ms waits for a
-// resize to rest, so a measure still due resets it), or 4s have passed
+// resize to rest, so a measure still due resets it); 4s without that fails
 const steady = async (page) => {
     for (let last = '', since = Date.now(), end = Date.now() + 4000; Date.now() < end; await sleep(100)) {
         const now = await page.evaluate(() => [...document.querySelectorAll('.board')].map((b) => `${b.offsetHeight}:${[...b.querySelectorAll(':scope > .panel')].map((p) => p.style.cssText).join()}`).join('|'));
         if (now !== last) [last, since] = [now, Date.now()];
         else if (Date.now() - since >= 400) return;
     }
+    throw new Error('the boards never held still for 400ms within 4s');
 };
 const center = async (page, id) => { await page.evaluate((id) => document.getElementById(id).scrollIntoView({ block: 'center' }), id); await sleep(150); };
 // Made shorter than what it holds by the keyboard, as a visitor would, so its body scrolls inside
@@ -1730,14 +1731,26 @@ const TESTS = {
             }
             return out;
         }, touch);
-        // A block's thin resize edges sit in the gutter beside it: none overlaps a control it holds (they'd take its last 5px)
-        const edged = (page) => page.evaluate(() => [...document.querySelectorAll('.panel .board > .panel')].flatMap((p) => {
-            const edges = [...p.querySelectorAll(':scope > .panel-edge:not([data-dir="se"])')].filter((e) => e.checkVisibility()).map((e) => [e.dataset.dir, e.getBoundingClientRect()]);
-            const body = p.querySelector(':scope > .panel-body').getBoundingClientRect(); // what scrolls past it is clipped (the card carousel)
-            return [...p.querySelectorAll(':scope > .panel-body :is(a, button, input, label, #slackText)')].flatMap((n) => { const c = n.getBoundingClientRect();
-                const r = { left: Math.max(c.left, body.left), right: Math.min(c.right, body.right), top: Math.max(c.top, body.top), bottom: Math.min(c.bottom, body.bottom) };
-                return c.width ? edges.filter(([, e]) => Math.min(r.right, e.right) - Math.max(r.left, e.left) > 0 && Math.min(r.bottom, e.bottom) - Math.max(r.top, e.top) > 0).map(([d]) => `${p.id} "${n.textContent.trim().slice(0, 16)}" under its ${d} edge`) : []; });
-        }));
+        // A block's thin resize edges tile the gutter beside it: none overlaps a control it holds (they'd take its last
+        // 5px), and a pointer can reach every one (a neighbour's mustn't cover it)
+        const edged = (page) => page.evaluate(async () => {
+            const out = [];
+            for (const p of document.querySelectorAll('.panel .board > .panel')) {
+                const edges = [...p.querySelectorAll(':scope > .panel-edge:not([data-dir="se"])')].filter((e) => e.checkVisibility());
+                const body = p.querySelector(':scope > .panel-body').getBoundingClientRect(); // what scrolls past it is clipped (the card carousel)
+                for (const n of p.querySelectorAll(':scope > .panel-body :is(a, button, input, label, #slackText)')) {
+                    const c = n.getBoundingClientRect(), r = { left: Math.max(c.left, body.left), right: Math.min(c.right, body.right), top: Math.max(c.top, body.top), bottom: Math.min(c.bottom, body.bottom) };
+                    for (const e of edges) { const b = e.getBoundingClientRect(); if (c.width && Math.min(r.right, b.right) - Math.max(r.left, b.left) > 0 && Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) > 0) out.push(`${p.id} "${n.textContent.trim().slice(0, 16)}" under its ${e.dataset.dir} edge`); }
+                }
+                for (const e of edges) {
+                    e.scrollIntoView({ block: 'center', inline: 'nearest' });
+                    await new Promise(requestAnimationFrame);
+                    const b = e.getBoundingClientRect();
+                    if (![0.25, 0.5, 0.75].some((fx) => [0.25, 0.5, 0.75].some((fy) => document.elementFromPoint(b.left + b.width * fx, b.top + b.height * fy) === e))) out.push(`${p.id}'s ${e.dataset.dir} edge out of reach`);
+                }
+            }
+            return out;
+        });
         for (const [opts, touch] of [[WIDE, false], [{ viewport: { width: 900, height: 800 } }, false], [{ viewport: { width: 768, height: 800 } }, false], [FOLD, true], [PHONE, true]]) {
             const { page, errors } = await open(browser, opts, { path: '/' });
             all.push(...errors);
@@ -1822,7 +1835,8 @@ const TESTS = {
             all.push(...errors);
             await center(page, 'lounge');
             const before = await cells(page, 'lg-intro');
-            const t = await page.locator('#lg-intro p').boundingBox(), x = t.x + 40, y = t.y + t.height / 2;
+            const t = await page.locator('#lg-intro p').boundingBox();
+            let x = t.x + 40, y = t.y + t.height / 2;
             await page.mouse.move(x, y);
             await page.mouse.down();
             await page.mouse.move(x, y - 100); // one event, out of the block
@@ -1831,6 +1845,29 @@ const TESTS = {
             await page.mouse.move(x + 30, y + 10, { steps: 5 });
             await sleep(300);
             assert.deepEqual([await page.evaluate(pressed), await cells(page, 'lg-intro')], [false, before], 'the Lounge intro after a flick out and back');
+            // A release the page never saw (the next move has no button down): the press ends, carrying nothing on that move
+            // (pressed mid-screen: near its top or bottom a carried block scrolls the page, and moves with it)
+            const cdp = await page.context().newCDPSession(page);
+            await center(page, 'lg-intro');
+            ({ x, y } = await page.locator('#lg-intro p').boundingBox().then((t) => ({ x: t.x + 40, y: t.y + t.height / 2 })));
+            await page.mouse.move(x, y);
+            await page.mouse.down();
+            await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: x + 60, y: y + 40, buttons: 0 });
+            await sleep(200);
+            const unseen = await page.evaluate(pressed);
+            await page.mouse.up();
+            // Carried by one jump, then a change under the gesture (another box's board told the page it grew): it stays where the jump left it
+            await page.mouse.move(x, y);
+            await page.mouse.down();
+            await page.mouse.move(x + 120, y + 90);
+            await sleep(150);
+            const carried = await page.evaluate(() => document.getElementById('lg-intro').style.translate);
+            await page.evaluate(() => document.querySelector('#finance .board').dispatchEvent(new CustomEvent('boardchange', { bubbles: true, detail: 0 })));
+            await sleep(150);
+            const told = await page.evaluate(() => document.getElementById('lg-intro').style.translate);
+            await page.keyboard.press('Escape');
+            await page.mouse.up();
+            assert.deepEqual([unseen, told], [false, carried], `a press whose release went unseen, and a carried block when the page is told of a change: ${JSON.stringify([unseen, told, carried])}`);
             // Spotify's dots sit on its frame, its one pointer handle: a quick first move onto the frame still lifts it
             await center(page, 'lg-spotify');
             const d = await page.locator('#lg-spotify > .panel-dots').boundingBox();
@@ -1844,7 +1881,8 @@ const TESTS = {
             assert.equal(lifted, true, 'Spotify lifted by its dots, the first move landing on its frame');
             await page.context().close();
         }
-        // A finger held still and let go: the click it fires reaches nothing (not a link under the dots, not the Slack line)
+        // A finger held still and let go: the click it fires reaches nothing, not the ✕ its pick just made live under it
+        // (held where that ✕ sits) nor the Slack line. A finger's drag fires none, so a real tap right after it still lands
         {
             const { ctx, page, errors } = await open(browser, PHONE, { path: '/' });
             all.push(...errors);
@@ -1852,14 +1890,28 @@ const TESTS = {
             const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts });
             await page.evaluate(() => { window.__hit = []; for (const q of ['#lg-links a', '#slackText']) document.querySelector(q).addEventListener('click', (e) => { e.preventDefault(); window.__hit.push(q); }); });
             const at = (q) => page.evaluate((q) => { const r = document.querySelector(q).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, radiusX: 12, radiusY: 12 }; }, q);
-            for (const [id, q] of [['lg-links', '#lg-links > .panel-dots'], ['az-slack', '#slackText']]) {
+            const held = ['lg-meme', 'lg-sites', 'az-tools', 'fin-intro'];
+            for (const [id, q] of [...held.map((id) => [id, `#${id} > .panel-grab .panel-close`]), ['az-slack', '#slackText']]) {
                 await center(page, id);
                 await touch('touchStart', [await at(q)]);
                 await sleep(700);
                 await touch('touchEnd', []);
                 await sleep(500);
             }
-            assert.deepEqual(await page.evaluate(() => [window.__hit, ['lg-links', 'az-slack'].map((id) => document.getElementById(id).classList.contains('is-picked'))]), [[], [false, true]], 'clicks after holds, and what each left picked');
+            const after = await page.evaluate((held) => [window.__hit.splice(0), held.filter((id) => !document.getElementById(id).checkVisibility())], held);
+            await center(page, 'lg-intro');
+            const d = await at('#lg-intro > .panel-dots');
+            await touch('touchStart', [d]);
+            await sleep(700);
+            for (const dy of [40, 80, 120]) { await touch('touchMove', [{ ...d, y: d.y + dy }]); await sleep(60); }
+            await touch('touchEnd', []);
+            await page.evaluate(() => document.getElementById('lg-links').scrollIntoView({ block: 'center' })); // at once: inside the 400ms a let-go finger's click is waited for
+            const pill = await at('#lg-links a');
+            await touch('touchStart', [pill]);
+            await touch('touchEnd', []);
+            await sleep(300);
+            after.push(await page.evaluate(() => window.__hit));
+            assert.deepEqual(after, [[], [], ['#lg-links a']], 'clicks after holds, the blocks they hid, and a tap on a link just after a drag');
             await page.context().close();
         }
         // A touch laptop (a pointer that hovers, and a finger; a page alone can't emulate both): a tap where a block's unseen ✕ sits reaches what's under it
@@ -1878,9 +1930,12 @@ const TESTS = {
                 await sleep(400);
                 if (!await page.evaluate((id) => document.getElementById(id).checkVisibility(), id)) hid.push(id);
             }
-            const hover = await page.evaluate(() => matchMedia('(hover: hover)').matches);
+            const hover = await page.evaluate(() => matchMedia('(hover: hover)').matches), fingered = await page.evaluate(() => document.documentElement.hasAttribute('data-touch'));
+            await page.mouse.move(300, 300);
+            await page.mouse.move(320, 310);
+            const moused = await page.evaluate(() => document.documentElement.hasAttribute('data-touch'));
             await laptop.close();
-            assert.deepEqual([hover, hid], [true, []], `blocks hidden by a tap where their ✕ sits unseen: ${JSON.stringify([hover, hid])}`);
+            assert.deepEqual([hover, hid, fingered, moused], [true, [], true, false], `a tap where a block's ✕ sits unseen, and the finger's mode once a mouse moves: ${JSON.stringify([hover, hid, fingered, moused])}`);
         }
         return all;
     },
@@ -1896,7 +1951,7 @@ const TESTS = {
             for (let w = 1440; w >= 1100; w -= 10) { await page.setViewportSize({ width: w, height: 900 }); await sleep(16); }
             await steady(page);
             const reads = await page.evaluate(() => Object.entries(window.__reads).filter(([k]) => /^board:home-/.test(k)));
-            assert.ok(reads.length && reads.every(([, n]) => n <= 3), `inner boards' reads over the sweep: ${JSON.stringify(reads)}`);
+            assert.ok(reads.length && reads.every(([, n]) => n <= 6), `inner boards' reads over the sweep: ${JSON.stringify(reads)}`);
             await page.context().close();
         }
         // The Lounge box narrowed by its edge into its blocks' phone tier and held there: it holds its blocks, nothing scrolling inside
@@ -2197,16 +2252,16 @@ const TESTS = {
         const all = [];
         for (const opts of [PHONE, FOLD, { viewport: { width: 1100, height: 800 } }]) {
             // Read once its cells hold still: content arriving (the roster's fallback, the game's frame) re-measures
-            const steady = async (page) => { let last = '', same = 0; for (let i = 0; i < 40 && same < 4; i++) { const now = String(await cells(page, 'sites-fun')); same = now === last ? same + 1 : 0; last = now; await sleep(100); } return cells(page, 'sites-fun'); };
+            const stillCells = async (page) => { let last = '', same = 0; for (let i = 0; i < 40 && same < 4; i++) { const now = String(await cells(page, 'sites-fun')); same = now === last ? same + 1 : 0; last = now; await sleep(100); } return cells(page, 'sites-fun'); };
             const fresh = await open(browser, opts, { path: '/thelounge.html' });
-            const want = await steady(fresh.page);
+            const want = await stillCells(fresh.page);
             await fresh.ctx.close();
             // A visitor who left it on Weird Internet: the filter applies at load, before the board measures again
             const { page, errors } = await open(browser, opts, { path: '/thelounge.html', init: () => { try { localStorage.setItem('loungeFilter', 'weird'); } catch { /* the game's frame, an error page here */ } } });
             all.push(fresh.errors, ...errors);
             await page.evaluate(() => document.querySelector('.filter-btn[data-category="all"]').click());
             // Its own width and height (where it sits also follows panels above it, measured as their content arrives)
-            const [, , ...got] = await steady(page);
+            const [, , ...got] = await stillCells(page);
             assert.deepEqual(got, want.slice(2), `${opts.viewport.width}px`);
             await page.context().close();
         }

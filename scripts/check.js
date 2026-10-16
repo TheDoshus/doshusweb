@@ -201,16 +201,20 @@ const CHECKS = {
                 if (board?.body && board.body === board.depth && html.slice(board.at, m.index).trim()) problems.push(`${line}: bare text in a panel body (wrap it in an element)`);
                 open.forEach((b) => { b.at = m.index + m[0].length; });
                 if (close) {
-                    // What it closes, and anything left open inside it whose end tag can't be left out
+                    // What it closes, with anything open inside it (each board's depth drops by all of them, so an
+                    // end tag left out where it may be doesn't skew it); one whose end tag can't be left out is missing
                     const i = stack.lastIndexOf(tag.toLowerCase());
-                    const left = i < 0 ? [] : stack.splice(i).slice(1).filter((t) => !OPTIONAL.test(t));
+                    const shut = i < 0 ? [] : stack.splice(i);
+                    const left = shut.slice(1).filter((t) => !OPTIONAL.test(t));
+                    if (open.length && i < 0) problems.push(`${line}: </${tag}> closes nothing open`);
                     if (open.length && left.length) problems.push(`${line}: <${left.join('>, <')}> never closed before </${tag}>`);
-                    open.forEach((b) => b.depth--);
-                    if (board?.depth === 0) {
+                    open.forEach((b) => { b.depth -= shut.length; });
+                    while (open.at(-1)?.depth <= 0) {
                         // A tier the page lays out itself names every panel's cells, or the engine flows it
-                        for (const tier of ['mid', 'phone']) if (board.named[tier] && board.named[tier] < board.count) problems.push(`${board.line}: ${board.named[tier]} of ${board.count} panels have data-${tier}; give every panel its ${tier} cells or none`);
-                        open.pop();
-                    } else if (board?.depth < board?.body) board.body = 0;
+                        const done = open.pop();
+                        for (const tier of ['mid', 'phone']) if (done.named[tier] && done.named[tier] < done.count) problems.push(`${done.line}: ${done.named[tier]} of ${done.count} panels have data-${tier}; give every panel its ${tier} cells or none`);
+                    }
+                    if (open.includes(board) && board.depth < board.body) board.body = 0;
                     continue;
                 }
                 if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
