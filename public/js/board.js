@@ -225,8 +225,9 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         return fit(flow);
     }
     const same = (a, b) => [...a].every(([p, r]) => ['x', 'y', 'w', 'h', 'hidden', 'collapsed'].every((k) => (r[k] ?? false) === (b.get(p)[k] ?? false)));
-    // The layout Reset replaced, offered back until the next change
-    let undo = null;
+    // The layout Reset replaced, offered back until the next change; and whether the visitor has
+    // arranged anything this visit (a layout saved on an earlier one is fitted again as content lands)
+    let undo = null, arranged = false;
     // Reading order becomes DOM order, so tab order follows the layout. Add widget shows only
     // with something to add, Reset only once the layout differs from the default (or as Undo
     // right after a reset)
@@ -249,6 +250,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // `back` is what a reset replaced; any other change drops it
     function commit(next, back = null) {
         undo = back;
+        arranged = true;
         settle(next);
         try {
             if (same(layout, base)) localStorage.removeItem(key);
@@ -644,8 +646,10 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
 
     // Default heights are measured from the content, so measure again once the fonts are in, as
     // pictures arrive (their load events, caught on the way down) and when the window's width
-    // changes within a tier, unless the visitor has made the layout their own (or is making it
-    // now). Height alone never re-measures: a phone's toolbar hiding mid-scroll mustn't move panels.
+    // changes within a tier, unless the visitor has arranged the layout this visit (or is doing it
+    // now). A layout saved on an earlier visit is fitted again from the save, since its first fit
+    // measured with the fallback fonts and may have held a tall panel short of what it holds.
+    // Height alone never re-measures: a phone's toolbar hiding mid-scroll mustn't move panels.
     // Crossing into another tier swaps layouts, ending a gesture first so it can't save into the other one
     let again, stale = false, width = innerWidth;
     const remeasure = () => {
@@ -655,7 +659,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             // Mid-gesture on any board, or a finger resting on a panel (it swells): once it ends
             if (active || board.querySelector('.is-holding')) return remeasure();
             stale = !same(layout, base);
-            if (!stale) load(undo);
+            if (!stale || !arranged) load(undo);
         }, 150);
     };
     load();

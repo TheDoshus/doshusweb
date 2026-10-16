@@ -791,13 +791,40 @@ const TESTS = {
         } finally { await classic.close(); }
     },
     async 'measuring again leaves a panel scrolled inside where it was'(browser) {
-        const { page, errors } = await open(browser);
-        await squeeze(page, 'dev-core');
-        const top = await page.evaluate(() => { const b = document.querySelector('#dev-core .panel-body'); b.scrollTop = Math.floor((b.scrollHeight - b.clientHeight) / 2); return b.scrollTop; });
-        assert.ok(top > 20, `Dev Core barely scrolls (${top}px), so this case tests nothing`);
+        // A short window caps The Stack at a screen by default, so it scrolls inside (the default
+        // layout re-measures; one a visitor arranged this visit doesn't)
+        const { page, errors } = await open(browser, { viewport: { width: 1440, height: 500 } });
+        const top = await page.evaluate(() => { const b = document.querySelector('#stack .panel-body'); b.scrollTop = Math.floor((b.scrollHeight - b.clientHeight) / 2); return b.scrollTop; });
+        assert.ok(top > 20, `The Stack barely scrolls (${top}px), so this case tests nothing`);
         await page.evaluate(() => document.querySelector('.board').dispatchEvent(new Event('load'))); // as a picture arriving
         await sleep(400); // past the re-measure
-        assert.equal(await page.evaluate(() => document.querySelector('#dev-core .panel-body').scrollTop), top);
+        assert.equal(await page.evaluate(() => document.querySelector('#stack .panel-body').scrollTop), top);
+        return errors;
+    },
+    async 'with no storage (private mode), an arrangement made this visit holds through a re-measure'(browser) {
+        const { page, errors } = await open(browser, WIDE, { init: () => { Storage.prototype.setItem = () => { throw new DOMException('full', 'QuotaExceededError'); }; } });
+        await page.focus('#stack .panel-grip');
+        await page.keyboard.press('ArrowRight');
+        const moved = await cells(page, 'stack');
+        await page.evaluate(() => document.querySelector('.board').dispatchEvent(new Event('load'))); // as a picture arriving
+        await sleep(400);
+        assert.deepEqual(await cells(page, 'stack'), moved, 'the move was undone');
+        return errors;
+    },
+    async 'a layout saved on an earlier visit is fitted again once the fonts are in, so a tall panel holds all it did'(browser) {
+        const { ctx, page, errors } = await open(browser, { viewport: { width: 1440, height: 900 } });
+        const devcore = () => page.evaluate(() => { const p = document.getElementById('dev-core'), b = p.querySelector('.panel-body'); return [+p.style.getPropertyValue('--h'), b.scrollHeight - b.clientHeight <= 1]; });
+        const whole = await devcore();
+        assert.deepEqual(whole.slice(1), [true], 'Dev Core scrolls inside at its default');
+        await page.focus('#stack .panel-grip');
+        await page.keyboard.press('ArrowRight'); // the layout becomes the visitor's, and is saved
+        assert.ok(await saved(page));
+        // The next visit: its fonts land after the board's first fit, which measured with the fallbacks
+        await ctx.route('**/*.woff2', async (r) => { await sleep(500); r.continue(); });
+        await page.reload({ waitUntil: 'load' });
+        await page.evaluate(() => document.fonts.ready);
+        await sleep(600);
+        assert.deepEqual(await devcore(), whole, 'Dev Core after a reload: [rows, shows all it holds]');
         return errors;
     },
     async 'no default panel body overflows by a pixel, at any width (a scrollbar on Windows)'(browser) {
@@ -1430,10 +1457,37 @@ const TESTS = {
         await page.hover('#sites-stats .category-header');
         await sleep(400);
         assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById('sites-stats')).opacity), '1', 'a faded box pointed at stays faded');
+        await page.mouse.move(0, 0);
+        // Reached by the keyboard, or carried, it comes up too
+        await page.focus('#sites-weird .site-link');
+        await page.keyboard.press('Tab');
+        await sleep(400);
+        assert.equal(await page.evaluate(() => [document.activeElement.closest('.category-box')?.id, getComputedStyle(document.getElementById('sites-weird')).opacity].join()), 'sites-weird,1', 'a faded box with keyboard focus in it');
+        await page.evaluate(() => document.activeElement.blur());
+        await center(page, 'sites-archives');
+        const head = await page.locator('#sites-archives .panel-head').boundingBox();
+        await page.mouse.move(head.x + 40, head.y + 20);
+        await page.mouse.down();
+        await page.mouse.move(head.x + 60, head.y + 30, { steps: 3 });
+        await frames(page);
+        assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById('sites-archives')).opacity), '0.92', 'a faded box carried');
+        await page.keyboard.press('Escape');
+        await page.mouse.up();
+        await page.mouse.move(0, 0);
+        await sleep(400);
         await page.evaluate(() => document.querySelector('.filter-btn[data-category="all"]').click());
         await sleep(400);
         assert.deepEqual(await read(), before);
         assert.equal(await pressed(), 'all');
+        return errors;
+    },
+    async "Lounge: a filter remembered from the last visit is on as the page opens, not fading in"(browser) {
+        // Motion allowed, so the fade has its length; read in the first frame after the page's scripts ran
+        const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html', motion: 'no-preference', init: () => {
+            try { localStorage.setItem('loungeFilter', 'weird'); } catch { /* the game's frame, an error page here */ }
+            if (window === top) document.addEventListener('DOMContentLoaded', () => requestAnimationFrame(() => { window.__first = getComputedStyle(document.getElementById('sites-fun')).opacity; }));
+        } });
+        assert.equal(await page.evaluate(() => window.__first), '0.3', 'Fun in the first frame');
         return errors;
     },
     async "Lounge: a collapsed section's title is cut short of its controls on a phone"(browser) {

@@ -47,7 +47,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
 - **Three tiers, three layouts.** Wide: 24 columns of 2rem rows. Mid (up to 1080px: foldables
   opened, tablets): 12 columns. Phone (up to 640px): 6 columns. Each tier has its own default
   and its own save, and the board swaps between them live as the window crosses a tier (a
-  foldable opening or closing). The wide default is the markup's cells (so is a smaller tier's, where the page gives every panel its `data-mid` or `data-phone` cells), each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing; one skipped while the board was arranged runs once it's back at its default), and a panel scrolled inside keeps its place. Otherwise the mid default flows
+  foldable opening or closing). The wide default is the markup's cells (so is a smaller tier's, where the page gives every panel its `data-mid` or `data-phone` cells), each row grown to its tallest content where the window wraps it taller than the cells allow (panels sharing a row's top and height grow together). Until a visitor arranges the board, defaults are measured again as fonts and pictures arrive and when the window's width changes within a tier (never on height alone, so a phone's toolbar hiding mid-scroll moves nothing; one skipped while the board was arranged runs once it's back at its default), and a panel scrolled inside keeps its place. A layout saved on an earlier visit is fitted again from the save on the same cues, until the visitor arranges something this visit: its first fit measured with the fallback fonts, which can hold a tall panel short of what it holds. Otherwise the mid default flows
   the wide layout onto half the columns: every panel half the row, or all of it if it spans
   three quarters or more of the wide row, so a row holds two panels or one; each as tall as its
   content, media keeping its wide height, in the highest free spot in reading order (a half-width
@@ -57,7 +57,7 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
   1.5rem to the screen's edge.
 - **Sizes.** No narrower than `--min-cols` (4 of 24 wide, 4 of 12 mid, 3 of 6 phone), no
   shorter than its head and foot plus a few lines of body, no taller than one screen (on a
-  `data-tall` board, than the larger of one screen and what it holds; a hidden panel keeps its height). Content scrolls inside a panel that's smaller than it.
+  `data-tall` board or a panel marked `data-tall`, than the larger of one screen and what it holds; a hidden panel keeps its height). Content scrolls inside a panel that's smaller than it.
 - **Free placement.** A panel stays wherever it's dropped, gaps and all; nothing floats up on
   its own. Where it lands decides what moves:
   - dragged upward onto a panel with free space above it, that panel rises out of the way;

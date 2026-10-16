@@ -55,7 +55,7 @@ function initSurpriseButton() {
 
     surpriseBtn.addEventListener('click', function() {
         // Get only the selected category's visible links (not faded by the filter, or in a panel hidden or collapsed on the board)
-        const visibleLinks = Array.from(allLinks).filter(link => !link.closest('.is-faded') && link.getClientRects().length && getComputedStyle(link).visibility === 'visible');
+        const visibleLinks = Array.from(allLinks).filter(link => !link.closest('.is-faded') && link.getClientRects().length);
 
         if (visibleLinks.length === 0) {
             alert('No sites showing! Try a different category, or bring one back from Add widget.');
@@ -88,9 +88,10 @@ function initFilterMemory() {
     filterButtons.forEach(button => {
         const category = button.getAttribute('data-category');
 
-        // Apply saved filter
+        // Apply saved filter, at once (only a visitor's pick fades)
         if (category === savedFilter) {
             button.click();
+            document.querySelectorAll('.category-box').forEach(box => box.getAnimations().forEach(a => a.transitionProperty === 'opacity' && a.finish()));
         }
 
         // Save filter when clicked
