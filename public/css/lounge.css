@@ -144,7 +144,7 @@
 
 /* CATEGORY BOXES: each a panel dressed as its box, its header the panel's title, and a window onto
    its links (data-scroll): as tall as the box was, the rest scrolling, and more of them in view as a
-   visitor makes it taller. A filtered-out one keeps its box (invisible) */
+   visitor makes it taller. One the filter leaves out fades where it sits */
 .panel.category-box {
     background: oklch(var(--star-white) / 0.03);
     border: 2px solid oklch(var(--accent-crypto) / 0.2);
@@ -160,8 +160,10 @@
 @media (width > 640px) { .panel:is(.category-box, .panel-media) { --inset: var(--edge); } }
 .panel.category-box > .panel-head { padding: 1.5rem 1.5rem 0; }
 .panel.category-box > .panel-body { gap: 0; padding: 1rem 1.5rem; }
-.category-box.hidden { visibility: hidden; pointer-events: none; }
-.category-box.hidden * { transition: none; } /* its links' `transition: all` would hold them in view a moment */
+/* Left out by the filter: faded where it sits (hidden, it would leave a hole in the board), and up
+   again while it's reached for, held or carried */
+.panel.category-box.is-faded:not(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) { opacity: 0.3; }
+@media (hover: hover) { .panel.category-box.is-faded:hover:not(.is-dragging) { opacity: 1; } }
 .panel-head > .category-header { font-family: var(--font-button); color: oklch(var(--accent-crypto)); text-align: center;
     font-size: 1.5rem;
     line-height: 1.3;

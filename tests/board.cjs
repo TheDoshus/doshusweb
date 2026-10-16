@@ -59,6 +59,9 @@ const saved = (page, tier = '') => page.evaluate((k) => localStorage.getItem('bo
 const arranging = (page) => page.evaluate(() => document.querySelector('.board').classList.contains('is-arranging'));
 const countMoves = () => { window.__moves = 0; for (const m of ['moveBefore', 'insertBefore']) { const f = Element.prototype[m]; if (f) Element.prototype[m] = function (...a) { if (this.matches?.('.board')) window.__moves++; return f.apply(this, a); }; } };
 const center = async (page, id) => { await page.evaluate((id) => document.getElementById(id).scrollIntoView({ block: 'center' }), id); await sleep(150); };
+// Made shorter than what it holds by the keyboard, as a visitor would, so its body scrolls inside
+// (Nexus's Dev Core, marked data-tall, is as tall as its content by default)
+const squeeze = async (page, id, n = 10) => { await page.focus(`#${id} .panel-edge[data-dir="se"]`); for (let i = 0; i < n; i++) await page.keyboard.press('ArrowUp'); await sleep(300); };
 async function drag(page, sel, dx, dy, { hold, before } = {}) {
     const box = await page.locator(sel).boundingBox();
     const x = box.x + box.width / 2, y = box.y + Math.min(box.height / 2, 20);
@@ -225,14 +228,15 @@ const TESTS = {
         assert.ok(sh <= ch, `scrollHeight ${sh} > clientHeight ${ch}`);
         return errors;
     },
-    async 'a panel taller than the screen scrolls to its end, then the page carries on'(browser) {
+    async 'a panel that scrolls inside scrolls to its end, then the page carries on'(browser) {
         const all = [];
         for (const opts of [WIDE, PHONE]) {
             const { ctx, page, errors } = await open(browser, opts);
             all.push(...errors);
             const at = `${opts.viewport.width}px`;
             const body = () => page.evaluate(() => { const b = document.querySelector('#dev-core .panel-body'); return [b.scrollTop, b.scrollHeight - b.clientHeight]; });
-            assert.ok((await body())[1] > 0, `${at}: Dev Core fits on screen, so this case tests nothing`);
+            await squeeze(page, 'dev-core');
+            assert.ok((await body())[1] > 0, `${at}: Dev Core shows all it holds, so this case tests nothing`);
             await page.evaluate(() => { const b = document.querySelector('#dev-core .panel-body').getBoundingClientRect(); scrollBy({ top: b.top - 100, behavior: 'instant' }); });
             await sleep(200);
             const box = await page.locator('#dev-core .panel-body').boundingBox();
@@ -788,6 +792,7 @@ const TESTS = {
     },
     async 'measuring again leaves a panel scrolled inside where it was'(browser) {
         const { page, errors } = await open(browser);
+        await squeeze(page, 'dev-core');
         const top = await page.evaluate(() => { const b = document.querySelector('#dev-core .panel-body'); b.scrollTop = Math.floor((b.scrollHeight - b.clientHeight) / 2); return b.scrollTop; });
         assert.ok(top > 20, `Dev Core barely scrolls (${top}px), so this case tests nothing`);
         await page.evaluate(() => document.querySelector('.board').dispatchEvent(new Event('load'))); // as a picture arriving
@@ -1181,6 +1186,33 @@ const TESTS = {
         }
         return all;
     },
+    async "a panel marked data-tall on a board that isn't is as tall as what it holds, and a visitor can stretch it there past the screen"(browser) {
+        const all = [];
+        const devcore = (page) => page.evaluate(() => { const p = document.getElementById('dev-core'), b = p.querySelector('.panel-body');
+            return { h: +p.style.getPropertyValue('--h'), past: p.offsetHeight > innerHeight, over: b.scrollHeight - b.clientHeight }; });
+        // Nexus's Dev Core holds more than these screens: it shows whole, where the board's other panels stop at a screen
+        for (const opts of [{ viewport: { width: 1440, height: 900 } }, { ...FOLD, viewport: { width: 901, height: 700 } }, PHONE]) {
+            const { page, errors } = await open(browser, opts);
+            all.push(...errors);
+            const d = await devcore(page);
+            assert.deepEqual([d.past, d.over <= 1], [true, true], `${opts.viewport.width}px: Dev Core ${d.past ? '' : 'no taller than the screen, '}scrolls ${d.over}px inside`);
+            const capped = await page.evaluate(() => [...document.querySelectorAll('.board > .panel:not(#dev-core)')].filter((p) => p.offsetHeight > innerHeight + 1).map((p) => p.id));
+            assert.deepEqual(capped, [], `${opts.viewport.width}px: panels taller than the screen`);
+            await page.context().close();
+        }
+        // Made shorter than the screen, then stretched: it passes the screen and stops where what it holds ends
+        const { page, errors } = await open(browser, { viewport: { width: 1440, height: 900 } });
+        all.push(...errors);
+        const whole = (await devcore(page)).h;
+        await page.focus('#dev-core .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowUp');
+        assert.ok((await devcore(page)).over > 1, 'shrunk: nothing scrolls inside');
+        for (let i = 0; i < 12; i++) await page.keyboard.press('ArrowDown');
+        await sleep(300);
+        const d = await devcore(page);
+        assert.deepEqual([d.h, d.past, d.over <= 1], [whole, true, true], `stretched to ${d.h} rows (whole: ${whole}), scrolling ${d.over}px`);
+        return all;
+    },
     async "on a tall board a panel is as tall as what it holds, past one screen, so nothing scrolls inside it"(browser) {
         const all = [];
         for (const opts of [PHONE, { ...FOLD, viewport: { width: 901, height: 700 } }]) {
@@ -1333,7 +1365,7 @@ const TESTS = {
     },
     async "a finger resting on a panel's title, wobbling as fingers do, still lifts it"(browser) {
         const all = [];
-        for (const [path, id] of [['/nexus.html', 'dev-core'], ['/thelounge.html', 'picks']]) {
+        for (const [path, id] of [['/nexus.html', 'stack'], ['/thelounge.html', 'picks']]) { // each shorter than the window, so its title is on screen
             const { ctx, page, errors } = await open(browser, { viewport: { width: 1300, height: 900 }, hasTouch: true }, { path });
             all.push(...errors);
             await center(page, id);
@@ -1383,15 +1415,25 @@ const TESTS = {
         assert.deepEqual(spill, []);
         return errors;
     },
-    async "Lounge: bringing back a category the filter leaves out doesn't scroll to it"(browser) {
+    async "Lounge: the filter fades the other categories where they sit, and one comes up when pointed at"(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
-        await page.evaluate(() => document.querySelector('#sites-stats .panel-close').click());
-        await page.evaluate(() => { document.querySelector('.filter-btn[data-category="fun"]').click(); scrollTo(0, 0); });
-        await sleep(100);
-        await page.evaluate(() => [...document.querySelectorAll('.board-menu button')].find((b) => b.textContent.includes('Stats')).click());
-        await sleep(200);
-        assert.equal(await page.evaluate(() => scrollY), 0);
-        assert.equal(await page.evaluate(() => document.getElementById('sites-stats').hidden), false, 'it came back');
+        const read = () => page.evaluate(() => [...document.querySelectorAll('.category-box')].map((p) => { const r = p.getBoundingClientRect();
+            return `${p.dataset.category} ${Math.round(r.left)},${Math.round(r.top + scrollY)} ${(+getComputedStyle(p).opacity).toFixed(1)}`; }));
+        const pressed = () => page.evaluate(() => [...document.querySelectorAll('.filter-btn')].filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.dataset.category).join());
+        const before = await read();
+        await page.evaluate(() => document.querySelector('.filter-btn[data-category="fun"]').click());
+        await sleep(400);
+        // Every box where it was (no hole, nothing moved up), Fun bright and the rest faded
+        assert.deepEqual(await read(), before.map((b) => b.replace(/ 1\.0$/, b.startsWith('fun ') ? ' 1.0' : ' 0.3')));
+        assert.equal(await pressed(), 'fun');
+        await center(page, 'sites-stats');
+        await page.hover('#sites-stats .category-header');
+        await sleep(400);
+        assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById('sites-stats')).opacity), '1', 'a faded box pointed at stays faded');
+        await page.evaluate(() => document.querySelector('.filter-btn[data-category="all"]').click());
+        await sleep(400);
+        assert.deepEqual(await read(), before);
+        assert.equal(await pressed(), 'all');
         return errors;
     },
     async "Lounge: a collapsed section's title is cut short of its controls on a phone"(browser) {

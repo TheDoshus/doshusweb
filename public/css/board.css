@@ -108,7 +108,7 @@
     position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; margin: var(--gutter) calc(var(--gutter) + var(--inset, 0px));
     background: oklch(var(--space-oled) / var(--panel-fill)); backdrop-filter: var(--panel-backdrop);
     border: 1px solid oklch(var(--accent) / 0.28); border-radius: var(--r-l);
-    transition: border-color 0.35s ease, box-shadow 0.35s ease, scale 0.2s ease;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, scale 0.2s ease, opacity 0.35s ease;
 }
 .panel[hidden] { display: none; }
 .panel::before { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;

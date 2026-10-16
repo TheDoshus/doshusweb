@@ -132,11 +132,11 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // would make the panel jump
     const headRows = (p) => rows(tall(landed(p.querySelector('.panel-head'))) + gutters(p) + p.offsetHeight - p.clientHeight);
     // The tallest: one screen (100dvh), so a panel always fits in view. A board marked data-tall (a
-    // page that reads top to bottom, like the Lounge) lets a panel be as tall as what it holds, read
-    // where it stands (a running glide carries on); a hidden one, which holds nothing it can measure,
-    // keeps the height it has
+    // page that reads top to bottom, like the Lounge), or a panel marked so on any board, lets it be
+    // as tall as what it holds, read where it stands (a running glide carries on); a hidden one,
+    // which holds nothing it can measure, keeps the height it has
     const maxH = (p) => Math.max(minH(p), Math.floor(innerHeight / cell().y),
-        'tall' in board.dataset && !p.matches('.panel-media') ? (p.hidden ? Infinity : contentH(p, false, true)) : 0);
+        ('tall' in board.dataset || 'tall' in p.dataset) && !p.matches('.panel-media') ? (p.hidden ? Infinity : contentH(p, false, true)) : 0);
     // Tall enough for everything it holds, at its current width (a running glide is finished
     // first, so that's the width it lands at, unless `gliding` reads it where it stands). A meme
     // gets a little over half the screen, or with `exact` (once its picture has loaded) exactly
@@ -319,7 +319,6 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
                 commit(next);
                 menu.hidePopover();
                 say(`${title(p)} added back`);
-                if (getComputedStyle(p).visibility === 'hidden') return; // one the page keeps out of view (the Lounge's filter) isn't gone to
                 p.scrollIntoView({ block: 'nearest' });
                 p.querySelector('.panel-grip').focus({ preventScroll: true });
             });

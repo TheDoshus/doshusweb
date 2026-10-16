@@ -16,21 +16,21 @@ function initCategoryFilters() {
             const selectedCategory = this.getAttribute('data-category');
 
             // Update active button
-            filterButtons.forEach(btn => btn.classList.remove('active'));
+            filterButtons.forEach(btn => { btn.classList.remove('active'); btn.setAttribute('aria-pressed', btn === this); });
             this.classList.add('active');
 
-            // Show/hide category boxes
+            // Fade the other category boxes where they sit (hiding one would leave a hole in the board)
             if (selectedCategory === 'all') {
                 // Show all boxes
-                categoryBoxes.forEach(box => box.classList.remove('hidden'));
+                categoryBoxes.forEach(box => box.classList.remove('is-faded'));
             } else {
-                // Show only selected category
+                // Bring out only the selected category
                 categoryBoxes.forEach(box => {
                     const boxCategory = box.getAttribute('data-category');
                     if (boxCategory === selectedCategory) {
-                        box.classList.remove('hidden');
+                        box.classList.remove('is-faded');
                     } else {
-                        box.classList.add('hidden');
+                        box.classList.add('is-faded');
                     }
                 });
             }
@@ -54,8 +54,8 @@ function initSurpriseButton() {
     }
 
     surpriseBtn.addEventListener('click', function() {
-        // Get only visible links (not in a filtered-out category, or a panel hidden or collapsed on the board)
-        const visibleLinks = Array.from(allLinks).filter(link => link.getClientRects().length && getComputedStyle(link).visibility === 'visible');
+        // Get only the selected category's visible links (not faded by the filter, or in a panel hidden or collapsed on the board)
+        const visibleLinks = Array.from(allLinks).filter(link => !link.closest('.is-faded') && link.getClientRects().length && getComputedStyle(link).visibility === 'visible');
 
         if (visibleLinks.length === 0) {
             alert('No sites showing! Try a different category, or bring one back from Add widget.');
