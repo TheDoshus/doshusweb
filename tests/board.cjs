@@ -1745,9 +1745,10 @@ const TESTS = {
         await press(bar, 'Reset layout');
         await sleep(600);
         const states = () => page.evaluate(() => [...document.querySelectorAll('.board-tools .sr-only')].map((s) => s.textContent));
+        const said = () => page.evaluate(() => document.querySelector('[data-board-bar="home"] .sr-only').textContent);
         assert.deepEqual([await cells(page, 'lg-links'), await hidden('fin-chart'), await Promise.all(['home', 'home-lounge', 'home-finance'].map(save)), await shown(bar, 'Undo reset'),
-            await shown('#amazonian > .panel-head', '↶'), (await states()).includes('Layout reset')],
-            [links, false, [null, null, null], true, false, false], 'Reset: [the Lounge\'s links, the chart hidden, saves, Undo offered, an Undo on a box it changed nothing in, a box announcing it too]');
+            await shown('#amazonian > .panel-head', '↶'), (await states()).includes('Layout reset'), await said()],
+            [links, false, [null, null, null], true, false, false, 'Layout reset'], 'Reset: [the Lounge\'s links, the chart hidden, saves, Undo offered, an Undo on a box it changed nothing in, a box announcing it too, the page announcing]');
         // The Lounge's meme hidden since, then Undo: the Finance box as it was, saved again; the Lounge box keeps its change, a row lower on
         // the page as the visitor had it, and holds its blocks as they are now (a row shorter than it was)
         await page.click('#lg-meme > .panel-grab .panel-close', { force: true });
@@ -1758,14 +1759,61 @@ const TESTS = {
         const box = (save) => JSON.parse(save).items.find((i) => i.id === 'lounge');
         const fits = await page.evaluate(() => { const b = document.querySelector('#lounge > .panel-body'), r = b.getBoundingClientRect().bottom - b.querySelector('.board').getBoundingClientRect().bottom;
             return b.scrollHeight - b.clientHeight <= 1 && r - parseFloat(getComputedStyle(b).paddingBottom) < 32; });
-        const undone = [await hidden('fin-chart'), await hidden('lg-meme'), await cells(page, 'lg-links'), await save('home-finance'), lounge !== null && lounge !== mine[1], box(home).y, fits];
-        assert.deepEqual(undone, [true, true, links, mine[2], true, box(mine[0]).y, true], `Undo: [the chart hidden, the meme hidden, the links at their default, the Finance save, the Lounge's own, the box's row, it holds its blocks] ${JSON.stringify(undone)}`);
+        const undone = [await hidden('fin-chart'), await hidden('lg-meme'), await cells(page, 'lg-links'), await save('home-finance'), lounge !== null && lounge !== mine[1], box(home).y, fits, await said()];
+        assert.deepEqual(undone, [true, true, links, mine[2], true, box(mine[0]).y, true, 'Layout restored'], `Undo: [the chart hidden, the meme hidden, the links at their default, the Finance save, the Lounge's own, the box's row, it holds its blocks, the page announcing] ${JSON.stringify(undone)}`);
         // The Lounge box's own Reset: its blocks only, the page and the Finance box left as they are
         await press('#lounge > .panel-head', '↺');
         await sleep(600);
         assert.deepEqual([await hidden('lg-meme'), await save('home-lounge'), await save('home-finance'), await save('home'), await shown(bar, 'Reset layout')],
             [false, null, mine[2], home, true], "the box's own Reset");
         return errors;
+    },
+    async "Home: the page's Reset takes a box's saves in every tier (a box hidden, or narrowed into its smaller layout), and offers Undo only while it would put something back"(browser) {
+        const all = [];
+        const saves = (page) => page.evaluate(() => Object.fromEntries(Object.keys(localStorage).filter((k) => k.startsWith('board:')).sort().map((k) => [k, localStorage.getItem(k)])));
+        const bar = (page) => page.evaluate(() => [...document.querySelectorAll('[data-board-bar="home"] button')].filter((b) => !b.hidden).map((b) => b.textContent).join());
+        const press = async (page, sel) => { await page.evaluate((sel) => [...document.querySelectorAll(`${sel} button`)].find((b) => !b.hidden && /Reset|Undo|↺|↶/.test(b.textContent)).click(), sel); await sleep(700); await steady(page); };
+        const custom = (page) => page.evaluate(() => document.querySelector('#lounge .board').hasAttribute('data-custom'));
+        // A phone: the Lounge's links a row lower, then the whole box hidden (it has no width now). Reset clears every save, the box shows at
+        // its default; Undo puts both saves back and hides the box again
+        {
+            const { page, errors } = await open(browser, PHONE, { path: '/' });
+            all.push(...errors);
+            await page.focus('#lg-links .panel-grip');
+            await page.keyboard.press('ArrowDown');
+            await sleep(400);
+            await center(page, 'lounge');
+            await page.evaluate(() => document.querySelector('#lounge > .panel-head .panel-close').click());
+            await sleep(400);
+            const before = await saves(page);
+            assert.deepEqual(Object.keys(before), ['board:home-lounge:phone', 'board:home:phone'], 'arranged: the box and the page saved');
+            await press(page, '[data-board-bar="home"]');
+            assert.deepEqual([await saves(page), await page.evaluate(() => document.getElementById('lounge').hidden), await custom(page), await bar(page)], [{}, false, false, 'Undo reset'], 'phone, Reset: [saves, the box hidden, its blocks custom, the bar]');
+            await press(page, '[data-board-bar="home"]');
+            assert.deepEqual([await saves(page), await page.evaluate(() => document.getElementById('lounge').hidden)], [before, true], 'phone, Undo: [saves, the box hidden]');
+            await page.context().close();
+        }
+        // Wide, the page at its default and only the Lounge box's blocks arranged: after the page's Reset, the box's own Undo leaves the
+        // page's Undo nothing to put back, so the page offers Reset again
+        const { page, errors } = await open(browser, WIDE, { path: '/' });
+        all.push(...errors);
+        await center(page, 'lounge');
+        await page.evaluate(() => document.querySelector('#lg-meme > .panel-grab .panel-close').click());
+        await sleep(400);
+        await press(page, '[data-board-bar="home"]');
+        await press(page, '#lounge > .panel-head');
+        assert.deepEqual([await page.evaluate(() => document.getElementById('lg-meme').hidden), await bar(page)], [true, 'Reset layout'], "the box's own Undo: [the meme hidden, the page's bar]");
+        // The box then narrowed into its 12-column layout (its wide save, the meme hidden, still kept): the page's Reset widens the box back,
+        // and its blocks come back at their default rather than from that save
+        await page.focus('#lounge > .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 12; i++) await page.keyboard.press('ArrowLeft');
+        await sleep(800);
+        await steady(page);
+        const inner = () => page.evaluate(() => getComputedStyle(document.querySelector('#lounge .board')).getPropertyValue('--cols').trim());
+        assert.equal(await inner(), '12', 'narrowed into its 12-column layout');
+        await press(page, '[data-board-bar="home"]');
+        assert.deepEqual([await inner(), await page.evaluate(() => document.getElementById('lg-meme').hidden), await custom(page), await saves(page)], ['24', false, false, {}], 'narrowed, Reset: [columns, the meme hidden, custom, saves]');
+        return all.concat(errors);
     },
     async "Home: a block made taller holds what it holds in its middle (none of it out of reach when it's too tall), the Spotify player fills its block and stops at its own height, and a block narrowed keeps its sites and pills inside it"(browser) {
         const all = [];

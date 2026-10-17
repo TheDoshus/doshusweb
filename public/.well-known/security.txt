@@ -22,7 +22,9 @@
 # yours if you want it.
 
 Contact: mailto:doshusbizz@gmail.com
+# Discord: join, then DM doshus.
 Contact: https://discord.gg/Z74M8pT5C5
 Expires: 2027-09-30T23:59:59.000Z
 Preferred-Languages: en
 Canonical: https://doshus.net/.well-known/security.txt
+Canonical: https://zephyy.doshus.net/.well-known/security.txt
