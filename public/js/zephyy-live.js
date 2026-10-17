@@ -233,7 +233,9 @@
   function setupChatOrb(db, owner) {
     const root = 'zephyy/chat/ownedSessions/';
     const storageKey = 'zephyy-owned-session-' + owner;
-    let id = localStorage.getItem(storageKey) || crypto.randomUUID();
+    let id = null;
+    try { id = localStorage.getItem(storageKey); } catch { /* storage blocked: a session for this visit */ }
+    id ||= crypto.randomUUID();
     let messages = null;
     let control = null;
     let messageQuery = null;
@@ -251,7 +253,7 @@
       if (control) control.off();
       const current = ++generation;
       id = next;
-      localStorage.setItem(storageKey, id);
+      try { localStorage.setItem(storageKey, id); } catch { /* storage blocked */ }
       messages = db.ref(root + id + '/messages');
       control = db.ref(root + id + '/control');
       const ownMessages = messages;

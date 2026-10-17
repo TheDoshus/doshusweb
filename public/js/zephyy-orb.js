@@ -785,7 +785,7 @@
         sessionEnded = false;
         touchActivity(); /* don't let the idle timer instantly re-fire on the new session */
         /* A fresh session greets like a first visit: new session, rebound Firebase refs */
-        localStorage.removeItem(CACHE_KEY);
+        try { localStorage.removeItem(CACHE_KEY); } catch (e) { /* storage blocked: nothing cached */ }
         connect().then(function(rt) { rt.resetSession(); }).catch(function() { /* no chat connection: nothing to reset */ });
         /* Wipe the panel back to the first-load state (keep any typed draft) */
         messagesEl.querySelectorAll('.zp-chat-msg').forEach(function(el) { el.remove(); });
