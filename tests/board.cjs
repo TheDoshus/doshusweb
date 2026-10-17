@@ -545,6 +545,24 @@ const TESTS = {
         }
         return all;
     },
+    async "a window narrowed within its tier, the page at its end: measuring holds the page's height there too (the Lounge on a phone, Nexus on a Fold)"(browser) {
+        const all = [];
+        for (const [opts, path] of [[PHONE, '/thelounge'], [FOLD, '/nexus']]) {
+            const { page, errors } = await open(browser, opts, { path });
+            all.push(...errors);
+            await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+            await sleep(300);
+            await page.evaluate(() => { window.__seen = []; const g = Element.prototype.getBoundingClientRect;
+                Element.prototype.getBoundingClientRect = function () { window.__seen.push(scrollY); return g.call(this); }; });
+            await page.setViewportSize({ width: opts.viewport.width - 20, height: opts.viewport.height });
+            await sleep(800);
+            await steady(page);
+            const [reads, lowest, end] = await page.evaluate(() => [window.__seen.length, Math.round(Math.min(...window.__seen)), Math.round(scrollY)]);
+            assert.ok(reads && lowest >= end - 1, `${path}: the lowest scroll the board's ${reads} reads saw is ${lowest}, under where it ended (${end})`);
+            await page.context().close();
+        }
+        return all;
+    },
     async "Home: the Bitcoin chart hears its block resize (CoinGecko's widget redraws to its width only on the window's resize)"(browser) {
         // A stand-in for the widget (the suite keeps outside hosts blocked) that counts the window's resizes, as the real one redraws on them
         const stub = 'customElements.define("gecko-coin-price-chart-widget", class extends HTMLElement { connectedCallback() { window.__redraws = 0; addEventListener("resize", () => window.__redraws++); } });';
@@ -556,6 +574,14 @@ const TESTS = {
         for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowLeft');
         await sleep(600);
         assert.ok(await page.evaluate(() => window.__redraws) > before, `the chart heard no resize when its block narrowed (${before} before)`);
+        // Those resizes leave the window's width as it was, so no board measures again for them, nor for a window only made shorter
+        // (a phone's address bar, devtools docked below)
+        await page.evaluate(() => { window.__measured = 0; const count = new MutationObserver((m) => { window.__measured += m.length; });
+            document.querySelectorAll('.board').forEach((b) => count.observe(b, { attributeFilter: ['style'] })); });
+        await page.evaluate(() => { for (let i = 0; i < 3; i++) dispatchEvent(new Event('resize')); });
+        await page.setViewportSize({ width: WIDE.viewport.width, height: WIDE.viewport.height - 200 });
+        await sleep(600);
+        assert.equal(await page.evaluate(() => window.__measured), 0, 'board style changes after resizes that kept the width');
         return errors;
     },
     async "the 404 page, served at a missing address however deep, is styled and links to the site's pages"(browser) {
@@ -1991,20 +2017,27 @@ const TESTS = {
     },
     async "Home: the page's Reset keeps a box's Undo with storage blocked, and pressed mid-drag it lands"(browser) {
         const all = [];
-        // Storage that throws (cookies off): a box's arrangement has no save for the Reset to hold, so it's held as it was
+        // Storage that throws (cookies off): a box's saves are kept for the visit, so the Reset holds them as it would. The box narrowed into its
+        // 12-column layout and a block hidden there: the Reset widens it back, so Undo puts back a tier's layout it's no longer in
         const init = () => Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Access is denied for this document.', 'SecurityError'); } });
         {
             const { page, errors } = await open(browser, WIDE, { path: '/', init });
             all.push(...errors);
             const bar = () => page.evaluate(() => [...document.querySelectorAll('[data-board-bar="home"] button')].filter((b) => !b.hidden).map((b) => b.textContent).join());
             const press = async () => { await page.evaluate(() => [...document.querySelectorAll('[data-board-bar="home"] button')].find((b) => !b.hidden && /Reset|Undo/.test(b.textContent)).click()); await sleep(700); };
+            const box = () => page.evaluate(() => [getComputedStyle(document.querySelector('#lounge .board')).getPropertyValue('--cols').trim(), document.getElementById('lg-meme').hidden]);
             await center(page, 'lounge');
+            await page.focus('#lounge > .panel-edge[data-dir="se"]');
+            for (let i = 0; i < 12; i++) await page.keyboard.press('ArrowLeft');
+            await sleep(800);
+            await steady(page);
             await page.evaluate(() => document.querySelector('#lg-meme > .panel-grab .panel-close').click());
             await sleep(400);
+            assert.deepEqual(await box(), ['12', true], 'storage blocked, narrowed: [columns, the meme hidden]');
             await press();
-            assert.deepEqual([await page.evaluate(() => document.getElementById('lg-meme').hidden), await bar()], [false, 'Undo reset'], 'storage blocked, after Reset: [the meme hidden, the bar]');
+            assert.deepEqual([...await box(), await bar()], ['24', false, 'Undo reset'], 'storage blocked, after Reset: [columns, the meme hidden, the bar]');
             await press();
-            assert.equal(await page.evaluate(() => document.getElementById('lg-meme').hidden), true, 'storage blocked: the meme hidden again after Undo');
+            assert.deepEqual(await box(), ['12', true], 'storage blocked, after Undo: [columns, the meme hidden]');
             await page.context().close();
         }
         // A panel being dragged when Reset is pressed (a second pointer, a script): the gesture ends first, so it can't land its move over the default

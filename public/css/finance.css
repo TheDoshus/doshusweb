@@ -125,7 +125,7 @@
 
 /* ─── SOURCES MODAL: a <dialog class="srcOverlay"> covering the screen (shared.css) ─── */
 /* showModal() puts it in the top layer (above everything, outside the slider's transforms) */
-.srcOverlay { align-items: safe center; justify-content: center;
+.srcOverlay { align-items: center; align-items: safe center; justify-content: center; /* plain center first, for a browser without safe */
     background: oklch(var(--space-oled) / 0.7);
     backdrop-filter: blur(5px);
 }

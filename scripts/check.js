@@ -22,13 +22,15 @@ const SVG_BASELINE = new Set([
     'slackcon', 'spotifycon', 'twitchcon', 'youtubecon'
 ].map((n) => `public/assets/icons/${n}.svg`).concat('public/assets/images/Equifax_Logo.svg'));
 
-// Memes over budget before the budget existed (2026-10-17), waiting for bun run memes:convert. Shrink this list, never
-// grow it: the check names an entry that's under budget or gone, so it comes off
-const MEME_BASELINE = new Set([
-    'RDT_20260123_181341.mp4', 'RDT_20260428_021939.webm', 'RDT_20260508_224902.webm', 'RDT_20260511_043813.webm',
-    'RDT_20260513_075010.webm', 'RDT_20260516_132526.webm', 'RDT_20260524_004320.mp4', 'RDT_20260608_012111.webm',
-    'casualchaosai-20260510-0001.webm', 'deathrow_ai-20260410-0001.webm', 'djraccooni-20261001-0001.webm', 'jacobcarbreslin-20260510-0001.webm',
-]);
+// Memes over budget before the budget existed (2026-10-17), waiting for bun run memes:convert, each with the bytes it weighed
+// then. Shrink this list, never grow it: the check names an entry that's under budget or gone, so it comes off, and one
+// that's grown
+const MEME_BASELINE = new Map(Object.entries({
+    'RDT_20260123_181341.mp4': 6550529, 'RDT_20260428_021939.webm': 13464094, 'RDT_20260508_224902.webm': 16488982,
+    'RDT_20260511_043813.webm': 6694454, 'RDT_20260513_075010.webm': 21403005, 'RDT_20260516_132526.webm': 9168970,
+    'RDT_20260524_004320.mp4': 10807072, 'RDT_20260608_012111.webm': 6939087, 'casualchaosai-20260510-0001.webm': 6704448,
+    'deathrow_ai-20260410-0001.webm': 5999531, 'djraccooni-20261001-0001.webm': 6115194, 'jacobcarbreslin-20260510-0001.webm': 6843503,
+}));
 
 // Broad CSP sources that stay on purpose: widgets need inline styles (Doshus
 // tested dropping it, DOSHUS.md); images load from any https host.
@@ -53,10 +55,19 @@ const FUNC = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab)\(/gi;
 const NAMED = /(?<![-\w#.])(?:white|black|red|green|blue|yellow|orange|purple|pink|gray|grey|silver|gold|teal|navy|cyan|magenta|lime|maroon|olive|aqua|fuchsia)(?![-\w(])/gi;
 // Blank out a match but keep its newlines, so reported line numbers stay true.
 const blank = (m) => m.replace(/[^\n]/g, ' ');
-// A page's <name> tags as a browser reads them (comments blanked, so lines still count; any case; a quoted '>' kept inside its
-// value), and one attribute's value however it's quoted
-const tags = (html, name) => [...html.replace(/<!--[\s\S]*?-->/g, blank).matchAll(new RegExp(`<${name}\\b(?:"[^"]*"|'[^']*'|[^'">])*>`, 'gi'))];
-const attr = (tag, name) => tag.match(new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i'))?.slice(1).find((v) => v !== undefined);
+// A page's <name> tags as a browser reads them: comments and script bodies blanked (so lines still count), any case, a '>'
+// in a quoted value kept inside it (a quote opens a value only after '='), <name-x> not one of them
+const tags = (html, name) => [...html.replace(/<!--[\s\S]*?-->/g, blank).replace(/(<script(?=[\s>])[^>]*>)([\s\S]*?)(?=<\/script)/gi, (m, open, body) => open + blank(body))
+    .matchAll(new RegExp(`<${name}(?=[\\s/>])(?:=\\s*(?:"[^"]*"|'[^']*')|[^>])*>`, 'gi'))];
+// A tag's attributes, read in order as a browser does (so a name inside another's quoted value isn't one): name → value,
+// '' for a bare one, the first of a repeated name winning
+const attrs = (tag) => {
+    const found = new Map();
+    for (const [, name, ...value] of tag.matchAll(/\s([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) {
+        if (!found.has(name.toLowerCase())) found.set(name.toLowerCase(), value.find((v) => v !== undefined) ?? '');
+    }
+    return found;
+};
 const stripCss = (css) => css
     .replace(/\/\*[\s\S]*?\*\//g, blank)
     .replace(/(["'])(?:\\.|(?!\1)[^\\\n])*\1/g, blank)
@@ -281,8 +292,8 @@ const CHECKS = {
     // sets its width sets height: auto with it). Printmon's pages and the vendored copies are their own
     'pictures carry their size': () => byExt('.html').filter((f) => /^public\/(?!amazon\/|zephyy\/vendor\/)/.test(rel(f))).flatMap((f) => {
         const html = fs.readFileSync(f, 'utf8');
-        return tags(html, 'img').filter((m) => !/^\d+$/.test(attr(m[0], 'width') ?? '') || !/^\d+$/.test(attr(m[0], 'height') ?? ''))
-            .map((m) => `${rel(f)}:${lineOf(html, m.index)}: <img> with no width and height: ${attr(m[0], 'src') ?? '?'}`);
+        return tags(html, 'img').map((m) => [m, attrs(m[0])]).filter(([, a]) => !['width', 'height'].every((d) => /^\s*\d+\s*$/.test(a.get(d) ?? '')))
+            .map(([m, a]) => `${rel(f)}:${lineOf(html, m.index)}: <img> with no width and height: ${a.get('src') ?? '?'}`);
     }),
     // A script from another site pinned to a version (name@1.2.3, /1.2.3/) carries its hash (integrity, crossorigin), so a file
     // swapped at that address doesn't run; an unpinned one (Google's tag, CoinGecko's widget) changes by design and can't.
@@ -290,11 +301,12 @@ const CHECKS = {
     // (Scripts a page's own script adds, zephyy-live.js's Firebase SDK, carry their hashes in that code)
     'pinned scripts carry their hash': () => byExt('.html').filter((f) => /^public\/(?!amazon\/)/.test(rel(f))).flatMap((f) => {
         const html = fs.readFileSync(f, 'utf8');
-        const pinned = /@\d|[/.-]v?\d+\.\d+\.\d+(?=[/.-]|$)|[?&]v(?:er(?:sion)?)?=\d/i;
+        const pinned = /@\d|[/.-]v?\d+\.\d+\.\d+(?=[/.-]|$)|[?&]v(?:er(?:sion)?)?=\d/i; // in the path or query, not the host
         const hash = /^sha(?:256-[A-Za-z0-9+/]{43}=|384-[A-Za-z0-9+/]{64}|512-[A-Za-z0-9+/]{86}==)$/;
-        return tags(html, 'script').map((m) => [m, attr(m[0], 'src')]).filter(([m, src]) => src && /^(https?:)?\/\//i.test(src) && pinned.test(src)
-            && !(hash.test(attr(m[0], 'integrity') ?? '') && /\scrossorigin\b/i.test(m[0])))
-            .map(([m, src]) => `${rel(f)}:${lineOf(html, m.index)}: ${src} is pinned to a version but has no integrity hash (and crossorigin)`);
+        const host = /^(https?:)?\/\/[^/]*/i;
+        const hashed = (a) => { const all = (a.get('integrity') ?? '').split(/\s+/).filter(Boolean); return all.length && all.every((h) => hash.test(h)) && a.has('crossorigin'); };
+        return tags(html, 'script').map((m) => [m, attrs(m[0])]).filter(([, a]) => { const src = a.get('src') ?? ''; return host.test(src) && pinned.test(src.replace(host, '')) && !hashed(a); })
+            .map(([m, a]) => `${rel(f)}:${lineOf(html, m.index)}: ${a.get('src')} is pinned to a version but has no integrity hash (and crossorigin)`);
     }),
     // Every meme within its budget (scripts/lib/meme-budget.js), so a heavy one can't ship unshrunk
     'memes stay lean': () => {
@@ -303,8 +315,10 @@ const CHECKS = {
             const size = fs.statSync(path.join(ROOT, dir, f)).size, budget = MEME_BUDGET.VIDEO.test(f) ? MEME_BUDGET.video : MEME_BUDGET.image;
             return { f, size, budget };
         }).filter((m) => m.size > m.budget);
-        return over.filter((m) => !MEME_BASELINE.has(m.f)).map((m) => `${dir}/${m.f}: ${mb(m.size)} MB, over its ${mb(m.budget)} MB budget: ${/\.webp$/i.test(m.f) ? 'shrink it by hand (memes:convert makes WebPs, it doesn\'t take them)' : `bun run memes:convert ${m.f}`}`)
-            .concat([...MEME_BASELINE].filter((f) => !over.some((m) => m.f === f)).map((f) => `MEME_BASELINE lists ${f}, which is in budget or gone: take it off`));
+        return over.filter((m) => m.size > (MEME_BASELINE.get(m.f) ?? m.budget)).map((m) => MEME_BASELINE.has(m.f)
+            ? `${dir}/${m.f}: ${m.size} bytes, grown past the ${MEME_BASELINE.get(m.f)} MEME_BASELINE lets it weigh`
+            : `${dir}/${m.f}: ${mb(m.size)} MB, over its ${mb(m.budget)} MB budget: ${/\.webp$/i.test(m.f) ? 'shrink it by hand (memes:convert makes WebPs, it doesn\'t take them)' : `bun run memes:convert ${m.f}`}`)
+            .concat([...MEME_BASELINE.keys()].filter((f) => !over.some((m) => m.f === f)).map((f) => `MEME_BASELINE lists ${f}, which is in budget or gone: take it off`));
     },
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {

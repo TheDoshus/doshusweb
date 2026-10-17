@@ -82,13 +82,12 @@ an empty `<div data-board-bar="nexus">` anywhere on the page (doshus.net puts it
   of its panels, differs from its default) returns the board and every board in its panels to
   their defaults; a board in a panel gives up its save in every tier, since its tier can change
   as its panel goes back to its default width. It then offers Undo reset while that would put
-  anything back: each board as it was, saves and all (with storage blocked, its layout in the tier it
-  was in), until that board's next change (one changed since keeps its change and gives up its saves in
+  anything back: each board as it was, saves and all, until that board's next change (one changed since keeps its change and gives up its saves in
   the other tiers, and a panel's own pending Undo gives way to the page's).
 - **Saving.** Per browser, in `localStorage` under `board:<name>` (wide), `board:<name>:mid`
   and `board:<name>:phone`, each panel's cells, hidden and collapsed state, versioned and
   stamped with the grid's column count, so an old save never breaks a new board (one made on
-  another grid is set aside). A layout at
+  another grid is set aside). Where storage is blocked or full, the saves last the visit instead. A layout at
   its default saves nothing, so a changed default reaches everyone who hasn't arranged their own.
 - **Layout is data.** Cells live in `data-x/y/w/h`; the engine turns them into the custom
   properties `--x/--y/--w/--h`. Markup never carries inline styles.

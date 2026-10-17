@@ -1,7 +1,7 @@
 // ─── BOARD: a fine grid of panels each visitor arranges (UI-SPEC.md) ───
 // Markup: .board[data-board=<name>] > .panel[id][data-x][data-y][data-w][data-h], in grid
 // cells counted from 1. This file lays the panels out, adds the move/hide/resize controls
-// and saves the visitor's layout. Loads after main.js: uses prefersReducedMotion, haptic().
+// and saves the visitor's layout. Loads after main.js: uses prefersReducedMotion, haptic(), store.
 let active = null; // ends the one gesture running on any board (cancelled); a second pointer waits
 // Whether a finger or pen is in use (board.css stills a block's ✕ and corner then, which a tap would
 // otherwise find, its hover waking them): a touch screen to begin with, then the last pointer pressed or moved
@@ -308,8 +308,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     const same = (a, b) => [...a].every(([p, r]) => ['x', 'y', 'w', 'h', 'hidden', 'collapsed'].every((k) => (r[k] ?? false) === (b.get(p)[k] ?? false)));
     // The layout Reset replaced, offered back until the next change; whether the visitor has arranged
     // anything this visit (a layout saved on an earlier one is fitted again as content lands); and the
-    // saves a Reset of the board around this one took, every tier's, held for its Undo (with the layout it had, for storage
-    // that throws: then there are no saves to take)
+    // saves a Reset of the board around this one took, every tier's, held for its Undo
     let undo = null, arranged = false, held = null;
     let height = board.offsetHeight; // a board in a panel: how tall its panel last heard it was
     // Reading order becomes DOM order, so tab order follows the layout. Add widget shows only
@@ -361,10 +360,8 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         arranged ||= changed;
         settle(next);
         if (!changed) return;
-        try {
-            if (same(layout, base)) localStorage.removeItem(key);
-            else localStorage.setItem(key, JSON.stringify({ v: VERSION, cols: cols(), items: [...layout].map(([p, r]) => ({ id: p.id, ...r })) }));
-        } catch { /* private mode: the layout lasts this visit */ }
+        if (same(layout, base)) store.del(key);
+        else store.set(key, JSON.stringify({ v: VERSION, cols: cols(), items: [...layout].map(([p, r]) => ({ id: p.id, ...r })) }));
     }
     // This size's layout: the default, with the visitor's saved one on top (panels added to the
     // page since keep their default spot). Runs again when the window crosses into another tier
@@ -376,7 +373,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         base = defaults();
         const next = copy(base);
         let saved = null;
-        try { saved = JSON.parse(localStorage.getItem(key)); } catch { /* no saved layout */ }
+        try { saved = JSON.parse(store.get(key)); } catch { /* no saved layout */ }
         // A save keeps the grid it was made on: one from another (the phone tier had 4 columns until
         // 2026-10-11, before saves recorded theirs) would land in the wrong cells, so it's set aside
         if (saved?.v === VERSION && (saved.cols ?? (tier() === 'phone' ? 4 : cols())) === cols()) {
@@ -892,20 +889,17 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         active?.(); // a gesture running would land over it
         if (pressed) board.querySelectorAll('.board[data-board]').forEach((b) => b.dispatchEvent(new CustomEvent('boardreset', { detail: undoing })));
         if (undoing && held) {
-            // The saves go back, and it loads this tier's (another's, once its panel is put back). With storage blocked there
-            // were none to take: the layout it had goes back, if it's still in that tier
-            const { saves, had, at } = held;
-            Object.entries(saves).forEach(([k, v]) => { try { localStorage.setItem(k, v); } catch { /* blocked since */ } });
-            const back = had && !Object.keys(saves).length && at === key ? had : null;
+            // The saves go back, and it loads this tier's (another's, once its panel is put back)
+            Object.entries(held).forEach(([k, v]) => store.set(k, v));
             hold(null);
-            if (back) { flip(() => render(fit(back))); commit(back); } else flip(() => load());
+            flip(() => load());
             arranged = true;
         } else if (!pressed) {
             if (undoing) return; // changed since, or nothing held: it keeps what it has
-            const saves = {}, had = !same(layout, base) && copy(layout), at = key;
-            ['wide', 'mid', 'phone'].map(keyOf).forEach((k) => { try { const v = localStorage.getItem(k); if (v) { saves[k] = v; localStorage.removeItem(k); } } catch { /* nothing saved */ } });
+            const saves = {};
+            ['wide', 'mid', 'phone'].map(keyOf).forEach((k) => { const v = store.get(k); if (v) { saves[k] = v; store.del(k); } });
             flip(() => load()); // a box hidden now (no width to measure) measures again as it shows
-            hold(Object.keys(saves).length || had ? { saves, had, at } : null);
+            hold(Object.keys(saves).length ? saves : null);
         } else {
             let next = undoing ? undo : null;
             // The default measured now, with the boards inside it reset (and any measure skipped while it

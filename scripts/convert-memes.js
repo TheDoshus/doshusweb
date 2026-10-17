@@ -8,7 +8,8 @@
 // Video: VP9 + Opus 96k, judged by VMAF. It climbs a CRF ladder (32, 36, 40) and keeps the first
 // rung that is smaller while still clearing the bar, so already-lean files get a chance too
 // (2026-10-03 on djraccooni: CRF 32 = VMAF 91.7 at 18% smaller; CRF 30 = 92.6 at 7%, CRF 34 = 90.7
-// at 27%). Images: WebP q85 (animated for GIFs), judged by SSIM. Needs ffmpeg/ffprobe with libvpx-vp9, libopus, libwebp and libvmaf on PATH; HEIC also
+// at 27%). A video over its budget must also land under it: one no rung gets there stays as it is
+// (trim it, or keep it on check.js's MEME_BASELINE), so a WebM is never re-encoded from its own re-encode. Images: WebP q85 (animated for GIFs), judged by SSIM. Needs ffmpeg/ffprobe with libvpx-vp9, libopus, libwebp and libvmaf on PATH; HEIC also
 // needs heif-convert (libheif). Encodes run one at a time: parallel ffmpeg gets OOM-killed on small
 // machines. Candidates and scores are cached in node_modules/.cache/memes-convert, so --apply reuses
 // them, and an unchanged meme is never re-encoded.
@@ -24,7 +25,6 @@ const MEMES = path.join(ROOT, 'public', 'assets', 'memes');
 const CACHE = path.join(ROOT, 'node_modules', '.cache', 'memes-convert');
 const RESULTS = path.join(CACHE, 'results.json');
 const QUALITY = { vmaf: 90, ssim: 0.97 }; // the bar a candidate must clear
-const VIDEO = /\.(mp4|mov|mkv|avi)$/i;
 const IMAGE = /\.(jpe?g|png|gif|heic)$/i;
 const CRF_LADDER = [32, 36, 40];
 const ENCODE = {
@@ -33,7 +33,7 @@ const ENCODE = {
     image: () => ['-c:v', 'libwebp', '-quality', '85', '-compression_level', '6'],
     gif: () => ['-c:v', 'libwebp_anim', '-quality', '85', '-compression_level', '6', '-loop', '0'],
 };
-const RECIPE = JSON.stringify([ENCODE.video(0), ENCODE.image(), CRF_LADDER, QUALITY]); // a changed recipe re-encodes everything
+const RECIPE = JSON.stringify([ENCODE.video(0), ENCODE.image(), CRF_LADDER, QUALITY, BUDGET.video]); // a changed recipe re-encodes everything
 const APPLY = process.argv.includes('--apply');
 const ONLY = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 
@@ -107,6 +107,7 @@ function measure(name, src, size) {
         if (dec.status !== 0) return { verdict: 'fail', note: lastLine(dec.stderr || dec.stdout) };
     }
     const bar = kind === 'video' ? QUALITY.vmaf : QUALITY.ssim;
+    const most = kind === 'video' && size > BUDGET.video ? BUDGET.video : Infinity;
     const metric = kind === 'video' ? 'VMAF' : 'SSIM';
     let result;
     for (const crf of kind === 'video' ? CRF_LADDER : [null]) {
@@ -123,10 +124,11 @@ function measure(name, src, size) {
             : !sameFrames ? 'keep: frame count changed'
             : quality < bar ? 'keep: quality'
             : after >= size ? 'keep: bigger'
+            : after > most ? 'keep: over budget'
             : 'convert';
         console.log(verdict);
         result = { verdict, candidate, outName, after, quality, metric, ...(crf && { note: `CRF ${crf}` }) };
-        if (verdict !== 'keep: bigger') break; // a win, or quality already under the bar: higher CRF only gets worse
+        if (!['keep: bigger', 'keep: over budget'].includes(verdict)) break; // a win, or quality under the bar: higher CRF only gets worse
     }
     return result;
 }
@@ -135,7 +137,7 @@ fs.mkdirSync(CACHE, { recursive: true });
 let results = {};
 try { results = JSON.parse(fs.readFileSync(RESULTS, 'utf8')); } catch { /* first run */ }
 const files = readdirSorted(MEMES)
-    .filter((f) => VIDEO.test(f) || IMAGE.test(f) || (/\.webm$/i.test(f) && fs.statSync(path.join(MEMES, f)).size > BUDGET.video))
+    .filter((f) => IMAGE.test(f) || (BUDGET.VIDEO.test(f) && (!/\.webm$/i.test(f) || fs.statSync(path.join(MEMES, f)).size > BUDGET.video)))
     .filter((f) => !ONLY.length || ONLY.includes(f));
 
 console.log(`Checking ${files.length} meme(s) not yet WebM/WebP or over budget${can.vmaf ? '' : ' (no libvmaf: videos will be skipped)'}`);
@@ -167,8 +169,13 @@ if (!APPLY) {
     process.exit(0);
 }
 for (const [name, r] of wins) {
-    fs.copyFileSync(r.candidate, path.join(MEMES, r.outName));
-    if (r.outName !== name) fs.unlinkSync(path.join(MEMES, name)); // the original stays in git history (a WebM was replaced in place)
+    // Copied beside it, then renamed over it in one step: an interrupted run leaves the old file or the new, never half of one
+    const out = path.join(MEMES, r.outName);
+    fs.copyFileSync(r.candidate, `${out}.part`);
+    fs.renameSync(`${out}.part`, out);
+    // The original stays in git history. A WebM replaced in place keeps its name though /assets/ is cached as immutable: a
+    // visitor still holding the old copy holds the same meme (AGENTS.md)
+    if (r.outName !== name) fs.unlinkSync(path.join(MEMES, name));
     delete results[name];
     console.log(`converted ${name} -> ${r.outName}`);
 }

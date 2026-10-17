@@ -1,12 +1,14 @@
 #!/usr/bin/env bun
 // bun run serve [port] [host]: public/ at the addresses Firebase Hosting gives it (firebase.json's main target), for
 // previews and the tests: clean URLs (/thelounge is thelounge.html, and thelounge.html redirects there), its redirects, and
-// 404.html for a miss. Firebase's own hosting emulator serves firebase.json exactly, headers too, but needs firebase-tools
-// (Firebase Studio's dev.nix has none), and its headers can't go to a preview pane: the CSP's frame-ancestors keeps the page
-// out of an editor's frame. Redirect sources are matched exactly (ours are plain paths; a glob one would need matching here)
+// 404.html for a miss, and no dot-named file (firebase.json's ignore keeps those from deploying). Firebase's own hosting
+// emulator serves firebase.json's headers too, but needs firebase-tools (Firebase Studio's dev.nix has none), and its headers
+// can't go to a preview pane: the CSP's frame-ancestors keeps the page out of an editor's frame. Redirect sources are matched
+// exactly (ours are plain paths; a glob one would need matching here)
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
+const { pipeline } = require('node:stream');
 
 const ROOT = path.join(__dirname, '..');
 const site = JSON.parse(fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8')).hosting.find((t) => t.target === 'main');
@@ -25,18 +27,22 @@ function handle(req, res) {
     let url, p;
     try { url = new URL(req.url, 'http://x'); p = decodeURIComponent(url.pathname); } catch { return res.writeHead(400).end(); }
     if (!req.url.startsWith('/') || req.url.startsWith('//')) return res.writeHead(400).end();
-    // Locations are built from the address as it came, still escaped, so they stay paths on this host
     const moved = (to, code = 301) => res.writeHead(code, { location: to + url.search }).end();
     const redirect = (site.redirects ?? []).find((r) => r.source === p);
     if (redirect) return moved(redirect.destination, redirect.type);
     const asked = path.join(PUBLIC, p);
     if (!inside(asked)) return res.writeHead(403).end();
-    // name.html redirects to its clean address only when it's a page (Firebase: /zephyy/crew/index.html is /zephyy/crew)
-    if (site.cleanUrls && p.endsWith('.html') && file(asked)) return moved(url.pathname.slice(0, -5).replace(/\/index$/, '') || '/');
+    // name.html, or name/index, redirects to its clean address when it's a page (Firebase: /zephyy/crew/index.html is
+    // /zephyy/crew). The address is built from the path resolved and escaped again, so it stays a path on this host
+    if (site.cleanUrls && (p.endsWith('.html') ? file(asked) : p.endsWith('/index') && file(`${asked}.html`))) {
+        const clean = path.posix.normalize(p).replace(/\.html$/, '').replace(/\/index$/, '');
+        return moved(clean.split('/').map(encodeURIComponent).join('/') || '/');
+    }
     const hit = file(asked) ?? file(path.join(asked, 'index.html')) ?? (site.cleanUrls && !p.endsWith('.html') ? file(`${asked}.html`) : null);
-    const found = hit && hit !== NOT_FOUND ? hit : null;
+    const found = hit && hit !== NOT_FOUND && !path.basename(hit).startsWith('.') ? hit : null;
     res.writeHead(found ? 200 : 404, { 'content-type': TYPES[path.extname(found ?? NOT_FOUND)] ?? 'application/octet-stream' });
-    fs.createReadStream(found ?? NOT_FOUND).pipe(res);
+    // A file gone or rewritten since it was found (an editor's save, memes:convert) ends this response, not the server
+    pipeline(fs.createReadStream(found ?? NOT_FOUND), res, () => {});
 }
 
 // Resolves with the server once it listens (port 0: any free one)

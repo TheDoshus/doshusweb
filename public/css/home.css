@@ -1,7 +1,7 @@
 /* CTA Popup Box: a <dialog> (shared.css covers the screen with it); the page behind it holds still while it's open, and a
    card taller than the screen (a phone on its side) scrolls from its top */
 .ctaPopup { background: oklch(var(--space-oled) / .5); backdrop-filter: blur(10px); animation: fadeIn 0.3s ease; }
-.ctaPopup[open] { display: flex; justify-content: center; align-items: safe center; }
+.ctaPopup[open] { display: flex; justify-content: center; align-items: center; align-items: safe center; } /* plain center first, for a browser without safe */
 body:has(> .ctaPopup[open]) { overflow: hidden; }
 @keyframes fadeIn {
     from { opacity: 0; }

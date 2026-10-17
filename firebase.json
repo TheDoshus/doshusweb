@@ -6,6 +6,7 @@
     {
       "target": "main",
       "public": "public",
+      "predeploy": ["bun run check"],
       "cleanUrls": true,
       "redirects": [
         { "source": "/security.txt", "destination": "/.well-known/security.txt", "type": 301 }
@@ -86,6 +87,7 @@
     {
       "target": "zephyy",
       "public": "public",
+      "predeploy": ["bun run check"],
       "cleanUrls": true,
       "redirects": [
         { "source": "/security.txt", "destination": "/.well-known/security.txt", "type": 301 }

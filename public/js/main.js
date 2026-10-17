@@ -11,10 +11,12 @@ if (!navigator.globalPrivacyControl) gtag('config', 'G-KQ1RGHNMZG');
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // localStorage that never throws: blocked storage (cookies off, some private windows) throws at a
-// touch, and then a visitor's choices last the visit
+// touch, and full storage at a write. What it won't take is kept here, so a visitor's choices last the visit
 const store = {
-    get(key) { try { return localStorage.getItem(key); } catch { return null; } },
-    set(key, value) { try { localStorage.setItem(key, value); } catch { /* this visit only */ } },
+    kept: new Map(),
+    get(key) { if (this.kept.has(key)) return this.kept.get(key); try { return localStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); this.kept.delete(key); } catch { this.kept.set(key, String(value)); } },
+    del(key) { this.kept.delete(key); try { localStorage.removeItem(key); } catch { /* nothing stored */ } },
 };
 
 // ─── HAPTICS ───
