@@ -186,7 +186,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // Tall enough for everything it holds, at its current width (a running glide is finished
     // first, so that's the width it lands at, unless `gliding` reads it where it stands). A meme
     // gets a little over half the screen, or with `exact` (once its picture has loaded) exactly
-    // its picture's shape
+    // its picture's shape at the width its frame gives it
     function contentH(p, exact, gliding, less = 0) {
         // Read mid-gesture (`gliding`), it neither finishes the glide nor lands transitions: nothing's
         // changed class, and a live resize reads it every frame
@@ -194,7 +194,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         if (p.matches('.panel-media')) {
             const media = exact && p.querySelector('video, img');
             const ratio = media && (media.videoHeight / media.videoWidth || media.naturalHeight / media.naturalWidth);
-            return Math.round((ratio ? p.offsetWidth * ratio + gutters(p) : innerHeight * 0.55) / cell().y);
+            return Math.round((ratio ? media.offsetWidth * ratio + p.offsetHeight - media.offsetHeight + gutters(p) : innerHeight * 0.55) / cell().y);
         }
         const body = own(p, '.panel-body');
         return rows(parts(p) + gutters(p) + p.offsetHeight - p.clientHeight + (body ? bodyH(body) : 0) - less); // border too
@@ -744,11 +744,12 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         dots.setAttribute('aria-hidden', 'true');
         p.append(dots);
         // A block (a headless panel on a board in a panel) holds content up to its top, links and all: its
-        // strip only holds its tools, and the block answers a press on the strip's band itself unless
-        // it's on a control, so nothing it holds is covered (an embed keeps its own presses; the dots move it)
+        // strip only holds its tools, and the block answers a press on the strip's band itself (on what it
+        // holds, a picture too) unless it's on a control, so nothing it holds is covered (an embed keeps
+        // its own presses; the dots move it)
         const band = !headed && host && ((e) => {
             const r = head.getBoundingClientRect();
-            return own(p, '.panel-body')?.contains(e.target) && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+            return !e.target.closest('.panel-grab, .panel-edge, .panel-dots') && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
         });
         track(band ? p : head, moveFrom(p), true, band);
         track(dots, moveFrom(p), true);

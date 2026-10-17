@@ -471,7 +471,7 @@ function createMemeVideoControls(player) {
         event.stopPropagation();
         haptic();
         // Remember a visitor's own pause so scrolling back doesn't restart it
-        const slot = playbackButton.closest('.random-meme, .random-meme-fixed');
+        const slot = playbackButton.closest('.random-meme-fixed');
         if (slot) slot.dataset.userPaused = player.paused() ? '' : '1';
         if (player.paused()) {
             const playAttempt = player.play();
@@ -555,7 +555,7 @@ async function renderVideoMeme(container, randomFile) {
 // Universal meme/video loader - Auto-loads from JSON on ANY page
 async function loadUniversalMemes() {
     // Find ALL meme containers on the current page using their CSS classes
-    const containers = document.querySelectorAll('.random-meme, .random-meme-fixed');
+    const containers = document.querySelectorAll('.random-meme-fixed');
     if (containers.length === 0) return; // If no containers exist on this page, silently stop running
 
     try {
@@ -578,7 +578,7 @@ async function loadUniversalMemes() {
                 renderVideoMeme(container, memeFile);
                 return;
             }
-            // Size and fit come from each page's CSS (.random-meme img / .random-meme-fixed img)
+            // Size and fit come from board.css (.panel-media)
             const img = document.createElement('img');
             img.src = memeFile;
             img.alt = 'Random Meme';

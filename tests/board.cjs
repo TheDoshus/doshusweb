@@ -1326,7 +1326,7 @@ const TESTS = {
         for (const width of [320, 330, 360, 375]) {
             await page.setViewportSize({ width, height: 700 });
             await sleep(300);
-            assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.board > .panel')].filter((p) => { const b = p.querySelector('.panel-body'); return b.scrollWidth > b.clientWidth + 1; }).map((p) => p.id)), [], `${width}px: sideways`);
+            assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.board > .panel:not(.panel-media)')].filter((p) => { const b = p.querySelector('.panel-body'); return b.scrollWidth > b.clientWidth + 1; }).map((p) => p.id)), [], `${width}px: sideways`);
         }
         await ctx.close();
         return all;
@@ -1341,7 +1341,7 @@ const TESTS = {
             const got = await page.evaluate(() => {
                 const panels = [...document.querySelectorAll('.board[data-board="home"] > .panel')];
                 // A body's content end to its bottom edge: under a row (its own board's) means the box, or a block in it, is as tall as what it holds
-                const blank = [...document.querySelectorAll('.board > .panel')].filter((p) => { const b = p.querySelector(':scope > .panel-body'), kids = [...b.children].filter((k) => getComputedStyle(k).position !== 'absolute');
+                const blank = [...document.querySelectorAll('.board > .panel:not(.panel-media)')].filter((p) => { const b = p.querySelector(':scope > .panel-body'), kids = [...b.children].filter((k) => getComputedStyle(k).position !== 'absolute');
                     const end = Math.max(...kids.map((k) => k.getBoundingClientRect().bottom + parseFloat(getComputedStyle(k).marginBottom))) + parseFloat(getComputedStyle(b).paddingBottom);
                     return b.getBoundingClientRect().bottom - end > parseFloat(getComputedStyle(p.parentElement).gridAutoRows); }).map((p) => p.id);
                 // The gaps between panels, in rows: the ones their cells give them, at any width
@@ -1600,8 +1600,11 @@ const TESTS = {
         const all = [];
         // Tops of what each block holds, from the box's content edge, on the page before (its chart rose 11px past it; stacked, 16)
         const was = { 1440: [0, -11, 277, 597], 901: [0, -11, 277, 597], 390: [291, -16, 756, 1037] };
+        // Each read where it would sit at its block's top: a block holds what it holds in its middle, in the room its rows round up to
         const tops = (page) => page.evaluate(() => { const b = document.querySelector('#finance > .panel-body'), top = b.getBoundingClientRect().top + parseFloat(getComputedStyle(b).paddingTop);
-            return ['#fin-intro p', '.btc-chart-widget', '.credit-card-carousel', '.quickLinks'].map((q) => Math.round(document.querySelector(q).getBoundingClientRect().top - top)); });
+            const lift = (n) => { const body = n.closest('.panel-body'), k = [...body.children].find((c) => c.checkVisibility() && getComputedStyle(c).position !== 'absolute');
+                return k.getBoundingClientRect().top - parseFloat(getComputedStyle(k).marginTop) - body.getBoundingClientRect().top - parseFloat(getComputedStyle(body).paddingTop); };
+            return ['#fin-intro p', '.btc-chart-widget', '.credit-card-carousel', '.quickLinks'].map((q) => { const n = document.querySelector(q); return Math.round(n.getBoundingClientRect().top - top - lift(n)); }); });
         for (const opts of [{ viewport: { width: 1440, height: 900 } }, { ...FOLD, viewport: { width: 901, height: 700 } }, { ...PHONE, viewport: { width: 390, height: 700 } }]) {
             const { page, errors } = await open(browser, opts, { path: '/' });
             all.push(...errors);
@@ -1674,22 +1677,27 @@ const TESTS = {
     },
     async "Home: the Lounge box's blocks sit where its content did, and move within it"(browser) {
         const all = [];
-        // Tops of what each block holds, from the box's content edge, on the page before
-        const was = { 1440: [24, 64, 64, 633, 884], 901: [24, 64, 64, 608, 865], 390: [24, 89, 609, 941, 1480] };
+        // Tops of what each block holds, from the box's content edge, on the page before. At 1440px its
+        // meme, a square at 48% of the box, stood 29px past the 500px player; the meme block now stands
+        // flush with the player (Doshus, 2026-10-17: framed as the Lounge's memes), so the sites and links
+        // sit two rows higher there
+        const was = { 1440: [24, 64, 64, 633 - 32, 884 - 32], 901: [24, 64, 64, 608, 865], 390: [24, 89, 609, 941, 1480] };
         for (const opts of [{ viewport: { width: 1440, height: 900 } }, { ...FOLD, viewport: { width: 901, height: 700 } }, { ...PHONE, viewport: { width: 390, height: 700 } }]) {
             const { page, errors } = await open(browser, opts, { path: '/' });
             all.push(...errors);
             const w = opts.viewport.width;
             const got = await page.evaluate(() => { const b = document.querySelector('#lounge > .panel-body'), top = b.getBoundingClientRect().top + parseFloat(getComputedStyle(b).paddingTop);
                 const at = (q) => Math.round(document.querySelector(q).getBoundingClientRect().top - top);
-                const meme = document.querySelector('#lg-meme .random-meme').getBoundingClientRect(), spot = document.querySelector('#lg-spotify .spotify-section').getBoundingClientRect(), frame = document.querySelector('#lg-spotify iframe').getBoundingClientRect();
-                return { tops: ['#lg-intro p', '#lg-spotify .spotify-section', '#lg-meme .random-meme', '#lg-sites p', '#lg-links .button-group'].map(at), meme: [Math.round(meme.width), Math.round(meme.height)], spotify: Math.round(spot.height - frame.height),
-                    zoom: getComputedStyle(document.querySelector('#lg-meme > .panel-body')).overflowY };
+                const r = (q) => document.querySelector(q).getBoundingClientRect();
+                const [meme, slot, spot, body, frame] = ['#lg-meme', '#lg-meme > .random-meme-fixed', '#lg-spotify', '#lg-spotify > .panel-body', '#lg-spotify iframe'].map(r);
+                return { tops: ['#lg-intro p', '#lg-spotify iframe', '#lg-meme > .random-meme-fixed', '#lg-sites p', '#lg-links .button-group'].map(at),
+                    flush: [meme.top - spot.top, meme.height - spot.height].map(Math.round), inset: [slot.left - meme.left, meme.bottom - slot.bottom].map(Math.round),
+                    player: [frame.top - body.top, frame.height - body.height, frame.height].map(Math.round) };
             });
-            // Each block within 16px of its old spot; the meme a square at 48% of the box (95% on a phone); Spotify its own height, not its
-            // block's (a floor that's its own height never lets go); the meme's hover zoom free to spill past its block
-            assert.deepEqual([got.tops.map((t, i) => Math.abs(t - was[w][i]) <= 16), Math.abs(got.meme[0] - { 1440: 529, 901: 370, 390: 293 }[w]) <= 8, got.meme[0] === got.meme[1], got.spotify < 10, got.zoom],
-                [[true, true, true, true, true], true, true, true, 'visible'], `${w}px: ${JSON.stringify(got)} (tops were ${was[w]})`);
+            // Each block within 16px of its old spot; beside the player (above a phone) the meme block stands flush with it, its picture
+            // inside its frame (a 2px border and 8px in); the player covers its block's body
+            assert.deepEqual([got.tops.map((t, i) => Math.abs(t - was[w][i]) <= 16), w === 390 || got.flush.every((d) => !d), got.inset, got.player.slice(0, 2), got.player[2] >= 500],
+                [[true, true, true, true, true], true, [10, 10], [0, 0], true], `${w}px: ${JSON.stringify(got)} (tops were ${was[w]})`);
             await page.context().close();
         }
         // The meme carried by its strip to the box's left: it lands, the box holds its blocks, the move is saved
@@ -1712,13 +1720,79 @@ const TESTS = {
         assert.deepEqual([stack.every((y, i) => !i || y > stack[i - 1]), await page.evaluate(() => getComputedStyle(document.querySelector('#lounge .board')).getPropertyValue('--cols').trim()), await held() <= 1], [true, '12', true], `narrowed: rows ${stack}`);
         return all.concat(errors);
     },
+    async "Home: a block made taller holds what it holds in its middle, the Spotify player fills its block and stops at its own height, and a block squeezed narrow keeps its sites and pills inside it"(browser) {
+        const all = [];
+        const { page, errors } = await open(browser, WIDE, { path: '/' });
+        all.push(...errors);
+        const corner = async (page, id, key, n) => { await page.focus(`#${id} > .panel-edge[data-dir="se"]`); for (let i = 0; i < n; i++) await page.keyboard.press(key); await sleep(400); };
+        // Slack, six rows taller: its address as far from the block's top as from its bottom
+        await corner(page, 'az-slack', 'ArrowDown', 6);
+        const gaps = await page.evaluate(() => { const b = document.querySelector('#az-slack > .panel-body').getBoundingClientRect(), r = document.querySelector('#az-slack .work-email').getBoundingClientRect(); return [r.top - b.top, b.bottom - r.bottom].map(Math.round); });
+        assert.ok(gaps[0] > 40 && Math.abs(gaps[0] - gaps[1]) <= 1, `Slack's room above and below: ${gaps}`);
+        // The player, made taller, then as short as it goes: it covers the block's body each time, and the block stops at the player's 500px
+        const player = () => page.evaluate(() => { const b = document.querySelector('#lg-spotify > .panel-body').getBoundingClientRect(), f = document.querySelector('#lg-spotify iframe').getBoundingClientRect(); return [b.top, b.height, f.top, f.height].map(Math.round); });
+        await corner(page, 'lg-spotify', 'ArrowDown', 8);
+        const tall = await player();
+        await corner(page, 'lg-spotify', 'ArrowUp', 20);
+        const short = await player();
+        assert.deepEqual([tall[1] > 600, tall[2] === tall[0] && tall[3] === tall[1], short[1] >= 500 && short[1] < 520, short[2] === short[0] && short[3] === short[1]], [true, true, true, true],
+            `taller ${tall}, shortest ${short} (body top and height, player top and height)`);
+        // Each squeezed to its narrowest, by its own width, not its box's: nothing it holds past its sides, no site or pill over another. At
+        // 901px a box keeps 24 columns, where a sixth of it would be narrower than a pill
+        for (const width of [1440, 901]) {
+            const { page, errors } = await open(browser, { viewport: { width, height: 900 } }, { path: '/' });
+            all.push(...errors);
+            for (const id of ['lg-sites', 'lg-links', 'az-tools', 'fin-intro']) {
+                await corner(page, id, 'ArrowLeft', 24);
+                const got = await page.evaluate((id) => {
+                    const b = document.querySelector(`#${id} > .panel-body`), box = b.getBoundingClientRect();
+                    const past = [...b.querySelectorAll('*')].filter((n) => { const r = n.getBoundingClientRect(); return r.width && (r.left < box.left - 1 || r.right > box.right + 1); }).map((n) => n.className || n.tagName);
+                    const over = ['.site-card', '.pillBtn'].flatMap((q) => { const rs = [...b.querySelectorAll(q)].map((n) => n.getBoundingClientRect());
+                        return rs.flatMap((a, i) => rs.slice(i + 1).filter((c) => a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1)); }).length;
+                    return { width: Math.round(box.width), past, over, sideways: b.scrollWidth - b.clientWidth };
+                }, id);
+                assert.deepEqual([got.past, got.over, got.sideways <= 1], [[], 0, true], `${id} at ${width}px, squeezed to ${got.width}px: ${JSON.stringify(got)}`);
+            }
+            await page.context().close();
+        }
+        return all;
+    },
+    async "a meme on a clear board wears its box's frame, its picture stretched to it, and Fit gives it the picture's shape inside the frame"(browser) {
+        const all = [];
+        // Every slot shows a picture three times as tall as it's wide
+        const tall = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="300"><rect width="100" height="300" fill="oklch(0.6 0.2 300)"/></svg>';
+        const route = [(url) => /meme-list\.json$|tall\.svg$/.test(url.pathname), (r) => (r.request().url().endsWith('.json')
+            ? r.fulfill({ contentType: 'application/json', body: JSON.stringify(['/assets/memes/tall.svg']) }) : r.fulfill({ contentType: 'image/svg+xml', body: tall }))];
+        const look = (page, id) => page.evaluate((id) => { const p = document.getElementById(id), c = getComputedStyle(p), slot = p.querySelector('.random-meme-fixed');
+            return [c.borderTopWidth, c.paddingTop, getComputedStyle(slot, '::before').content, getComputedStyle(slot.querySelector('img')).objectFit]; }, id);
+        // Framed and unlabeled on the clear boards (the Lounge, a box on home), Nexus's glass board keeping its slot's label; the picture
+        // stretched to its frame on each (Doshus, 2026-10-17)
+        for (const [path, id, want] of [['/thelounge.html', 'meme-1', ['2px', '8px', 'none', 'fill']], ['/', 'lg-meme', ['2px', '8px', 'none', 'fill']], ['/nexus.html', 'meme-1', ['1px', '0px', '"MEDIA / NODE"', 'fill']]]) {
+            const { page, errors } = await open(browser, WIDE, { path, route });
+            all.push(...errors);
+            await center(page, id); // its picture loads lazily
+            await page.waitForFunction((id) => document.querySelector(`#${id} img`)?.complete, id);
+            assert.deepEqual(await look(page, id), want, `${path} #${id}: border, padding, label, fit`);
+            if (id !== 'lg-meme') { await page.context().close(); continue; }
+            // Narrowed to a quarter of its box, then fitted: its picture's shape, inside the frame, to within the row it rounds to
+            await page.focus('#lg-meme > .panel-edge[data-dir="se"]');
+            for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowLeft');
+            await sleep(400);
+            await page.dblclick('#lg-meme > .panel-edge[data-dir="se"]');
+            await sleep(600);
+            const slot = await page.locator('#lg-meme > .random-meme-fixed').boundingBox();
+            assert.ok(Math.abs(slot.height - slot.width * 3) <= 9, `fitted: the slot ${Math.round(slot.width)}x${Math.round(slot.height)}, its picture ${Math.round(slot.width)}x${Math.round(slot.width * 3)}`);
+            await page.context().close();
+        }
+        return all;
+    },
     async "Home: a block's links take their presses, its strip covering nothing, and on a touch screen its ✕ and corner wait for a finger to pick it"(browser) {
         const all = [];
         // Every control a block holds answers a press anywhere on it: no block's strip or dots are over it,
         // and on a touch screen, at rest, nothing of the board's (a pointer sees a ✕ or corner as it reaches the block)
         const covered = (page, touch) => page.evaluate(async (touch) => {
             const out = [];
-            for (const n of document.querySelectorAll('.panel .board > .panel > .panel-body :is(a, button, input, label, #slackText)')) {
+            for (const n of document.querySelectorAll('.panel .board > .panel > :is(.panel-body, .random-meme-fixed) :is(a, button, input, label, #slackText)')) {
                 n.scrollIntoView({ block: 'center' });
                 await new Promise(requestAnimationFrame);
                 const r = n.getBoundingClientRect();
@@ -1737,8 +1811,8 @@ const TESTS = {
             const out = [];
             for (const p of document.querySelectorAll('.panel .board > .panel')) {
                 const edges = [...p.querySelectorAll(':scope > .panel-edge:not([data-dir="se"])')].filter((e) => e.checkVisibility());
-                const body = p.querySelector(':scope > .panel-body').getBoundingClientRect(); // what scrolls past it is clipped (the card carousel)
-                for (const n of p.querySelectorAll(':scope > .panel-body :is(a, button, input, label, #slackText)')) {
+                const body = p.querySelector(':scope > :is(.panel-body, .random-meme-fixed)').getBoundingClientRect(); // what scrolls past it is clipped (the card carousel)
+                for (const n of p.querySelectorAll(':scope > :is(.panel-body, .random-meme-fixed) :is(a, button, input, label, #slackText)')) {
                     const c = n.getBoundingClientRect(), r = { left: Math.max(c.left, body.left), right: Math.min(c.right, body.right), top: Math.max(c.top, body.top), bottom: Math.min(c.bottom, body.bottom) };
                     for (const e of edges) { const b = e.getBoundingClientRect(); if (c.width && Math.min(r.right, b.right) - Math.max(r.left, b.left) > 0 && Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) > 0) out.push(`${p.id} "${n.textContent.trim().slice(0, 16)}" under its ${e.dataset.dir} edge`); }
                 }
@@ -1931,8 +2005,8 @@ const TESTS = {
                 if (!await page.evaluate((id) => document.getElementById(id).checkVisibility(), id)) hid.push(id);
             }
             const hover = await page.evaluate(() => matchMedia('(hover: hover)').matches), fingered = await page.evaluate(() => document.documentElement.hasAttribute('data-touch'));
-            await page.mouse.move(300, 300);
-            await page.mouse.move(320, 310);
+            await page.mouse.move(720, 450); // over the sites, centered last (a frame keeps a mouse's moves from the page)
+            await page.mouse.move(740, 460);
             const moused = await page.evaluate(() => document.documentElement.hasAttribute('data-touch'));
             await laptop.close();
             assert.deepEqual([hover, hid, fingered, moused], [true, [], true, false], `a tap where a block's ✕ sits unseen, and the finger's mode once a mouse moves: ${JSON.stringify([hover, hid, fingered, moused])}`);
@@ -1981,8 +2055,11 @@ const TESTS = {
             const { page, errors } = await open(browser, opts, { path: '/' });
             all.push(...errors);
             const w = opts.viewport.width;
+            // Each read where it would sit at its block's top: a block holds what it holds in its middle, in the room its rows round up to
             const got = await page.evaluate(() => { const b = document.querySelector('#amazonian > .panel-body'), top = b.getBoundingClientRect().top + parseFloat(getComputedStyle(b).paddingTop);
-                return { tops: ['#az-intro p', '#az-slack .work-email', '#az-tools .tool-description'].map((q) => Math.round(document.querySelector(q).getBoundingClientRect().top - top)), inside: b.scrollHeight - b.clientHeight }; });
+                const lift = (n) => { const body = n.closest('.panel-body'), k = [...body.children].find((c) => c.checkVisibility() && getComputedStyle(c).position !== 'absolute');
+                    return k.getBoundingClientRect().top - parseFloat(getComputedStyle(k).marginTop) - body.getBoundingClientRect().top - parseFloat(getComputedStyle(body).paddingTop); };
+                return { tops: ['#az-intro p', '#az-slack .work-email', '#az-tools .tool-description'].map((q) => { const n = document.querySelector(q); return Math.round(n.getBoundingClientRect().top - top - lift(n)); }), inside: b.scrollHeight - b.clientHeight }; });
             assert.deepEqual([got.tops.map((t, i) => Math.abs(t - was[w][i]) <= 8), got.inside <= 1], [[true, true, true], true], `${w}px: ${JSON.stringify(got)} (tops were ${was[w]})`);
             await page.context().close();
         }
@@ -2213,7 +2290,7 @@ const TESTS = {
         const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html' });
         await center(page, 'sites-fun');
         const look = () => page.evaluate(() => { const p = document.getElementById('sites-fun'), b = p.querySelector('.panel-body'), box = b.getBoundingClientRect();
-            return { h: +p.style.getPropertyValue('--h'), over: b.scrollHeight - b.clientHeight, shown: [...b.querySelectorAll('.site-link')].filter((a) => a.getBoundingClientRect().top < box.bottom).length }; });
+            return { h: +p.style.getPropertyValue('--h'), over: b.scrollHeight - b.clientHeight, shown: [...b.querySelectorAll('.site-link')].filter((a) => a.getBoundingClientRect().bottom <= box.bottom).length }; }); // shown whole
         const start = await look();
         assert.equal(start.h, await page.evaluate(() => +document.getElementById('sites-fun').dataset.h), 'grown past its cells');
         assert.ok(start.over > 0, 'it holds no more than it shows');
@@ -2351,8 +2428,9 @@ const TESTS = {
         // Where the old page's section content and boxes began; and the board's own breakpoint edges
         // (four games from 737px, four picks from 1137px, the narrow layout up to 725px)
         const edges = { 1440: [52, 52], 901: [32, 32], 390: [16, 16] };
-        // The lists the old page showed whole (every other one scrolled in its box)
-        const whole = { 1000: 'mind-bending', 1080: 'mind-bending', 1340: 'beer', 1380: 'weird beer', 1440: 'weird beer', 1920: 'weird beer' };
+        // The lists shown whole, every other one scrolling in its box: the old page's (mind-bending at 1000 and 1080px, beer from 1340, weird
+        // from 1380), and more since its boxes start a few rows taller (Doshus, 2026-10-17)
+        const whole = { 800: 'mind-bending', 901: 'mind-bending', 1000: 'mind-bending beer', 1080: 'mind-bending beer', 1081: 'beer', 1136: 'beer', 1137: 'beer', 1280: 'beer', 1340: 'beer', 1380: 'weird beer', 1440: 'weird beer', 1920: 'weird beer' };
         const bounds = { 725: '2 2 narrow', 726: '2 2 wide', 736: '2 2 wide', 737: '2 4 wide', 1080: '2 4 wide', 1081: '2 3 wide', 1136: '2 3 wide', 1137: '4 3 wide' };
         const { ctx, page, errors } = await open(browser, { viewport: { width: 1440, height: 800 } }, { path: '/thelounge.html' });
         all.push(...errors);
@@ -2376,12 +2454,13 @@ const TESTS = {
         }
         await ctx.close();
         // With scrollbars that take room (Windows), as the old page had them: a half-width box keeps
-        // its two link columns at 965px, and Beer shows whole in the band a 1366px laptop falls in
+        // its two link columns at 965px (Mind-Bending whole there, a few rows taller now), and Beer shows
+        // whole in the band a 1366px laptop falls in
         const classic = await chromium.launch({ ...LAUNCH, ignoreDefaultArgs: ['--hide-scrollbars'] });
         try {
             const { page, errors } = await open(classic, { viewport: { width: 965, height: 800 } }, { path: '/thelounge.html' });
             all.push(...errors);
-            for (const [width, want] of [[965, '232323 '], [1355, '211224 beer']]) {
+            for (const [width, want] of [[965, '232323 mind-bending'], [1355, '211224 beer']]) {
                 await page.setViewportSize({ width, height: 800 });
                 await sleep(350);
                 assert.ok(await page.evaluate(() => innerWidth - document.documentElement.clientWidth > 0), `${width}px: no scrollbar taking room, so it tests nothing`);
