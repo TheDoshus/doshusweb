@@ -25,7 +25,7 @@ Update this file when structure, a page, or a cross-repo contract changes.
   primitives, tier 2 semantic accents); read them there, not from a copy. Per-section color
   goes through accent routing (see `AGENTS.md` § Hard rules). Self-hosted woff2 fonts only.
 - **Shared runtime.** `public/js/main.js` runs on every page: star field, meme loader
-  (`.random-meme*` ← `assets/memes/meme-list.json`), collapsibles, sticky footer.
+  (`.random-meme-fixed` ← `assets/memes/meme-list.json`), collapsibles, sticky footer.
 
 ## Site map
 

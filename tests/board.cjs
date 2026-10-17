@@ -1720,15 +1720,20 @@ const TESTS = {
         assert.deepEqual([stack.every((y, i) => !i || y > stack[i - 1]), await page.evaluate(() => getComputedStyle(document.querySelector('#lounge .board')).getPropertyValue('--cols').trim()), await held() <= 1], [true, '12', true], `narrowed: rows ${stack}`);
         return all.concat(errors);
     },
-    async "Home: a block made taller holds what it holds in its middle, the Spotify player fills its block and stops at its own height, and a block squeezed narrow keeps its sites and pills inside it"(browser) {
+    async "Home: a block made taller holds what it holds in its middle (none of it out of reach when it's too tall), the Spotify player fills its block and stops at its own height, and a block narrowed keeps its sites and pills inside it"(browser) {
         const all = [];
         const { page, errors } = await open(browser, WIDE, { path: '/' });
         all.push(...errors);
-        const corner = async (page, id, key, n) => { await page.focus(`#${id} > .panel-edge[data-dir="se"]`); for (let i = 0; i < n; i++) await page.keyboard.press(key); await sleep(400); };
+        const corner = async (page, id, key, n, wait = 400) => { await page.focus(`#${id} > .panel-edge[data-dir="se"]`); for (let i = 0; i < n; i++) await page.keyboard.press(key); await sleep(wait); };
         // Slack, six rows taller: its address as far from the block's top as from its bottom
         await corner(page, 'az-slack', 'ArrowDown', 6);
         const gaps = await page.evaluate(() => { const b = document.querySelector('#az-slack > .panel-body').getBoundingClientRect(), r = document.querySelector('#az-slack .work-email').getBoundingClientRect(); return [r.top - b.top, b.bottom - r.bottom].map(Math.round); });
         assert.ok(gaps[0] > 40 && Math.abs(gaps[0] - gaps[1]) <= 1, `Slack's room above and below: ${gaps}`);
+        // Too tall for its block (forced here: the engine never makes a block's body shorter than what it holds), what it holds starts at
+        // the body's top, where it can be scrolled to, not centered past it
+        const over = await page.evaluate(() => { const b = document.querySelector('#az-tools > .panel-body'); Object.assign(b.style, { flex: 'none', height: '120px', transition: 'none' }); // (the height would ease in)
+            const top = b.firstElementChild.getBoundingClientRect().top - b.getBoundingClientRect().top; b.removeAttribute('style'); return Math.round(top); });
+        assert.ok(over >= 0, `too tall for its block, the tools' first note sits ${over}px from the body's top`);
         // The player, made taller, then as short as it goes: it covers the block's body each time, and the block stops at the player's 500px
         const player = () => page.evaluate(() => { const b = document.querySelector('#lg-spotify > .panel-body').getBoundingClientRect(), f = document.querySelector('#lg-spotify iframe').getBoundingClientRect(); return [b.top, b.height, f.top, f.height].map(Math.round); });
         await corner(page, 'lg-spotify', 'ArrowDown', 8);
@@ -1737,20 +1742,41 @@ const TESTS = {
         const short = await player();
         assert.deepEqual([tall[1] > 600, tall[2] === tall[0] && tall[3] === tall[1], short[1] >= 500 && short[1] < 520, short[2] === short[0] && short[3] === short[1]], [true, true, true, true],
             `taller ${tall}, shortest ${short} (body top and height, player top and height)`);
-        // Each squeezed to its narrowest, by its own width, not its box's: nothing it holds past its sides, no site or pill over another. At
-        // 901px a box keeps 24 columns, where a sixth of it would be narrower than a pill
-        for (const width of [1440, 901]) {
-            const { page, errors } = await open(browser, { viewport: { width, height: 900 } }, { path: '/' });
+        await page.context().close();
+        // In every tier: at its default height what each block holds sits within half a row of its top (the room its rows round up to).
+        // Narrowed by its own width, not its box's: nothing a block holds past its sides, no site or pill over another, the sites at every
+        // column on the way down; at 901px a box keeps 24 columns, where a sixth of it would be narrower than a pill
+        const fits = (page, id) => page.evaluate((id) => {
+            const b = document.querySelector(`#${id} > .panel-body`), box = b.getBoundingClientRect();
+            const past = [...b.querySelectorAll('*')].filter((n) => { const r = n.getBoundingClientRect(); return r.width && (r.left < box.left - 1 || r.right > box.right + 1); }).map((n) => n.className || n.tagName);
+            const over = ['.site-card', '.pillBtn'].flatMap((q) => { const rs = [...b.querySelectorAll(q)].map((n) => n.getBoundingClientRect());
+                return rs.flatMap((a, i) => rs.slice(i + 1).filter((c) => a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1)); }).length;
+            return { width: Math.round(box.width), past, over, sideways: b.scrollWidth - b.clientWidth };
+        }, id);
+        for (const opts of [{ viewport: { width: 1440, height: 900 } }, { viewport: { width: 901, height: 900 } }, { ...PHONE, viewport: { width: 390, height: 900 } }]) {
+            const width = opts.viewport.width;
+            const { page, errors } = await open(browser, opts, { path: '/' });
             all.push(...errors);
-            for (const id of ['lg-sites', 'lg-links', 'az-tools', 'fin-intro']) {
+            const low = await page.evaluate(() => [...document.querySelectorAll('.panel .board > .panel > .panel-body')].flatMap((b) => {
+                const k = [...b.children].find((c) => c.checkVisibility() && getComputedStyle(c).position !== 'absolute');
+                const d = k.getBoundingClientRect().top - parseFloat(getComputedStyle(k).marginTop) - b.getBoundingClientRect().top - parseFloat(getComputedStyle(b).paddingTop);
+                return d > parseFloat(getComputedStyle(b.closest('.board')).gridAutoRows) / 2 + 0.5 ? [`${b.parentElement.id} ${Math.round(d)}px down`] : [];
+            }));
+            assert.deepEqual(low, [], `${width}px: what a block holds further than half a row from its top at its default height`);
+            for (let step = 0, last; step < 24; step++) {
+                const got = await fits(page, 'lg-sites');
+                assert.deepEqual([got.past, got.over, got.sideways <= 1], [[], 0, true], `the sites at ${width}px, ${got.width}px wide: ${JSON.stringify(got)}`);
+                if (got.width === last) break;
+                last = got.width;
+                await corner(page, 'lg-sites', 'ArrowLeft', 1, 0);
+                await frames(page);
+            }
+            // At its narrowest a short name stays whole (a smaller label in a block under 16rem); on a phone's narrowest block it may break
+            if (width > 640) assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#lg-sites .site-card span')].filter((s) => ['dos.zone', 'neal.fun'].includes(s.textContent.trim()))
+                .filter((s) => { const r = document.createRange(); r.selectNodeContents(s); return new Set([...r.getClientRects()].map((l) => Math.round(l.top))).size > 1; }).map((s) => s.textContent.trim())), [], `${width}px: short names broken at the sites' narrowest`);
+            for (const id of ['lg-links', 'az-tools', 'fin-intro']) {
                 await corner(page, id, 'ArrowLeft', 24);
-                const got = await page.evaluate((id) => {
-                    const b = document.querySelector(`#${id} > .panel-body`), box = b.getBoundingClientRect();
-                    const past = [...b.querySelectorAll('*')].filter((n) => { const r = n.getBoundingClientRect(); return r.width && (r.left < box.left - 1 || r.right > box.right + 1); }).map((n) => n.className || n.tagName);
-                    const over = ['.site-card', '.pillBtn'].flatMap((q) => { const rs = [...b.querySelectorAll(q)].map((n) => n.getBoundingClientRect());
-                        return rs.flatMap((a, i) => rs.slice(i + 1).filter((c) => a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1)); }).length;
-                    return { width: Math.round(box.width), past, over, sideways: b.scrollWidth - b.clientWidth };
-                }, id);
+                const got = await fits(page, id);
                 assert.deepEqual([got.past, got.over, got.sideways <= 1], [[], 0, true], `${id} at ${width}px, squeezed to ${got.width}px: ${JSON.stringify(got)}`);
             }
             await page.context().close();
@@ -1765,6 +1791,7 @@ const TESTS = {
             ? r.fulfill({ contentType: 'application/json', body: JSON.stringify(['/assets/memes/tall.svg']) }) : r.fulfill({ contentType: 'image/svg+xml', body: tall }))];
         const look = (page, id) => page.evaluate((id) => { const p = document.getElementById(id), c = getComputedStyle(p), slot = p.querySelector('.random-meme-fixed');
             return [c.borderTopWidth, c.paddingTop, getComputedStyle(slot, '::before').content, getComputedStyle(slot.querySelector('img')).objectFit]; }, id);
+        const frost = (page, id) => page.evaluate((id) => getComputedStyle(document.getElementById(id)).backdropFilter, id);
         // Framed and unlabeled on the clear boards (the Lounge, a box on home), Nexus's glass board keeping its slot's label; the picture
         // stretched to its frame on each (Doshus, 2026-10-17)
         for (const [path, id, want] of [['/thelounge.html', 'meme-1', ['2px', '8px', 'none', 'fill']], ['/', 'lg-meme', ['2px', '8px', 'none', 'fill']], ['/nexus.html', 'meme-1', ['1px', '0px', '"MEDIA / NODE"', 'fill']]]) {
@@ -1773,7 +1800,15 @@ const TESTS = {
             await center(page, id); // its picture loads lazily
             await page.waitForFunction((id) => document.querySelector(`#${id} img`)?.complete, id);
             assert.deepEqual(await look(page, id), want, `${path} #${id}: border, padding, label, fit`);
+            if (path === '/thelounge.html') {
+                // Frosted over the sky, and not on a struggling machine (the board's lean mode, as board.js sets it)
+                const rest = await frost(page, id);
+                await page.evaluate(() => document.querySelector('.board').classList.add('is-lean'));
+                assert.deepEqual([rest, await frost(page, id)], ['blur(10px)', 'none'], `${path} #${id}: frosted at rest, then lean`);
+            }
             if (id !== 'lg-meme') { await page.context().close(); continue; }
+            // Not frosted again inside a box that already frosts what's behind it
+            assert.equal(await frost(page, id), 'none', 'the home meme block\'s own frost');
             // Narrowed to a quarter of its box, then fitted: its picture's shape, inside the frame, to within the row it rounds to
             await page.focus('#lg-meme > .panel-edge[data-dir="se"]');
             for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowLeft');
@@ -2015,7 +2050,8 @@ const TESTS = {
     },
     async "a box's blocks: a window swept across measures them once it rests, and a box resized into their phone tier holds them while the pointer does"(browser) {
         const all = [];
-        // Swept within the wide tier, 35 steps: each inner board reads its layout a handful of times, not once a step
+        // Swept within the wide tier, 35 steps: each inner board reads its layout a handful of times, not once a step (1 to 3
+        // seen; 6 leaves a slow machine room and is still far under the 35 a read per step would make)
         {
             const init = () => { window.__reads = {}; const get = Storage.prototype.getItem; Storage.prototype.getItem = function (k) { window.__reads[k] = (window.__reads[k] ?? 0) + 1; return get.call(this, k); }; };
             const { page, errors } = await open(browser, WIDE, { path: '/', init });

@@ -234,8 +234,9 @@
 .panel-media > .random-meme-fixed :is(img, video) { display: block; width: 100%; height: 100%; object-fit: fill; }
 .panel-media > .random-meme-fixed video { object-fit: contain; }
 /* On a clear board a meme wears its own frame, as the Lounge's boxes did: the panel is the frame,
-   frosted, its slot unlabeled, lit while it's reached for (the frost goes while arranging and on a
-   struggling machine, with the panels') */
+   frosted, its slot unlabeled, lit while it's reached for. The frost goes while arranging and on a
+   struggling machine, with the panels', and in a block, whose panel already frosts what's behind it
+   (a second blur there moved no pixel more than 3 of 255, at a GPU pass's cost) */
 .board[data-surface="clear"] > .panel-media { background: oklch(var(--space-oled) / 0.05); backdrop-filter: blur(10px);
     border: 2px solid oklch(var(--accent) / 0.3); border-radius: 15px; padding: 0.5rem;
 }
@@ -244,7 +245,7 @@
 .board[data-surface="clear"] > .panel-media:is(.is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent)); }
 .board[data-surface="clear"] > .panel-media > .random-meme-fixed { background: none; border-radius: 10px; }
 .board[data-surface="clear"] > .panel-media > .random-meme-fixed::before { content: none; }
-.board:is(.is-arranging, .is-lean) .panel-media { backdrop-filter: none; }
+.board:is(.is-arranging, .is-lean) .panel-media, .panel .board > .panel-media { backdrop-filter: none; }
 /* A headless panel's grab bar: an invisible strip over the top-left, stopping short of the
    right edge where a video player keeps its buttons; its tools sit at the strip's end */
 .panel-grab { position: absolute; top: 0; left: 0; z-index: 3; width: max(40%, 100% - 8rem); height: 2.75rem;
