@@ -271,6 +271,15 @@ const CHECKS = {
         return [...html.matchAll(/<img\b[^>]*>/g)].filter((m) => !/\swidth="\d+"/.test(m[0]) || !/\sheight="\d+"/.test(m[0]))
             .map((m) => `${rel(f)}:${lineOf(html, m.index)}: <img> with no width and height: ${m[0].match(/src="([^"]*)"/)?.[1] ?? '?'}`);
     }),
+    // A script from another site pinned to a version (name@1.2.3, /1.2.3/) carries its hash (integrity, crossorigin), so a file
+    // swapped at that address doesn't run; an unpinned one (Google's tag, CoinGecko's widget) changes by design and can't.
+    // Hash a new pin: curl -sS <url> | openssl dgst -sha384 -binary | openssl base64 -A
+    'pinned scripts carry their hash': () => byExt('.html').filter((f) => /^public\/(?!amazon\/)/.test(rel(f))).flatMap((f) => {
+        const html = fs.readFileSync(f, 'utf8');
+        return [...html.matchAll(/<script\b[^>]*\bsrc="(https?:[^"]+)"[^>]*>/g)]
+            .filter((m) => /@\d|\/v?\d+\.\d+\.\d+[/.-]/.test(m[1]) && !(/\sintegrity="sha(256|384|512)-[\w+/=]+"/.test(m[0]) && /\scrossorigin\b/.test(m[0])))
+            .map((m) => `${rel(f)}:${lineOf(html, m.index)}: ${m[1]} is pinned to a version but has no integrity hash (and crossorigin)`);
+    }),
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {
         const listed = new Set([...fs.readFileSync(path.join(ROOT, 'public/sitemap.xml'), 'utf8')
