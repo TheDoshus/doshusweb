@@ -6,15 +6,10 @@
 // not the headless shell Playwright launches by default: the shell keeps a cross-site frame in its
 // page's process, so the Sandspiel frame never takes the pointer away as it does in a browser.
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const http = require('node:http');
-const path = require('node:path');
 const { chromium } = require('playwright');
+const { serve } = require('../scripts/serve.js'); // public/ at the addresses Firebase gives it
 
-const ROOT = path.join(__dirname, '..', 'public');
 const PAGE = '/nexus.html';
-const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml',
-    '.woff2': 'font/woff2', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.mp4': 'video/mp4', '.webm': 'video/webm' };
 const WIDE = { viewport: { width: 1440, height: 900 } };
 const FOLD = { viewport: { width: 901, height: 1000 }, isMobile: true, hasTouch: true }; // a Galaxy Z Fold7 opened
 const PHONE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
@@ -28,15 +23,6 @@ const frames = (page) => page.evaluate(() => new Promise((r) => requestAnimation
 const settled = (handle, subtree = true) => handle.evaluate((n, subtree) => Promise.race([
     Promise.allSettled(n.getAnimations({ subtree }).map((a) => a.finished)), new Promise((r) => setTimeout(r, 2000))]), subtree);
 
-function serve() {
-    const server = http.createServer((req, res) => {
-        let file = path.join(ROOT, decodeURIComponent(new URL(req.url, 'http://x').pathname));
-        if (!file.startsWith(ROOT)) return res.writeHead(403).end();
-        if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
-        fs.readFile(file, (err, body) => (err ? res.writeHead(404).end() : res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream' }).end(body)));
-    });
-    return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
-}
 
 let base;
 async function open(browser, opts = WIDE, { init, motion = 'reduce', delayBoard, path = PAGE, route } = {}) {
@@ -461,9 +447,7 @@ const TESTS = {
         return errors;
     },
     async "the 404 page, served at a missing address however deep, is styled and links to the site's pages"(browser) {
-        const body = fs.readFileSync(path.join(ROOT, '404.html'));
-        const route = [(url) => url.pathname.startsWith('/a/b/'), (r) => r.fulfill({ status: 404, contentType: 'text/html', body })];
-        const { page, errors } = await open(browser, WIDE, { path: '/a/b/nope', route });
+        const { page, errors } = await open(browser, WIDE, { path: '/a/b/nope' });
         const got = await page.evaluate(() => [getComputedStyle(document.body).fontFamily.split(',')[0], getComputedStyle(document.querySelector('.sticky-footer')).position,
             [...document.querySelectorAll('.footer-nav a')].map((a) => new URL(a.href).pathname)]);
         assert.deepEqual(got, ['"Nata Sans"', 'fixed', ['/', '/thelounge', '/financehub', '/nexus']], '[font, footer, links]');

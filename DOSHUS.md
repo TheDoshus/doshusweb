@@ -38,7 +38,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 
 - **Hosting:** Firebase Hosting, branch `main`
 - **Deploy:** `firebase deploy --only hosting` (no auto-deploy)
-- **Dev:** Open `public/` in browser or run a local server
+- **Dev:** `bun run serve` (scripts/serve.js: Firebase's clean URLs, redirects and 404 page, so links work as they will live)
 - **RTDB:** `doshusweb-default-rtdb.firebaseio.com` — feedback, chat orb, Zephyy daily thoughts
 
 For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
@@ -93,9 +93,9 @@ A scoped credential migration requires a matching backend/rules design.
 ## Quick Commands for You
 
 ```bash
-# Run a local dev server
-cd ~/.openclaw/projects/doshusweb && python3 -m http.server 8080 -d public
-# Then open http://localhost:8080
+# Run a local dev server: public/ at Firebase's addresses (/thelounge, not thelounge.html), as Firebase Studio's preview runs it
+cd ~/.openclaw/projects/doshusweb && bun run serve
+# Then open http://localhost:8080 (a plain static server 404s the clean links)
 
 # Check what's changed in public/
 ls -lt ~/.openclaw/projects/doshusweb/public/ | head -15
