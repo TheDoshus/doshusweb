@@ -297,8 +297,7 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     let undo = null, arranged = false;
     let height = board.offsetHeight; // a board in a panel: how tall its panel last heard it was
     // Reading order becomes DOM order, so tab order follows the layout. Add widget shows only
-    // with something to add, Reset only once the layout differs from the default (or as Undo
-    // right after a reset)
+    // with something to add
     function settle(next) {
         layout = next;
         // Last to first, moving only a panel not already in front of the one after it: an
@@ -310,10 +309,16 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
             .forEach(([p]) => { if (p.nextElementSibling !== after) place(p, after); after = p; });
         fillMenu();
         add.hidden = !panels.some((p) => layout.get(p).hidden);
-        reset.hidden = !undo && same(layout, base);
-        label(reset, undo ? words.undo : words.reset);
+        board.toggleAttribute('data-custom', !same(layout, base)); // the visitor's own, for the board around it
+        offer();
         if (stale && same(layout, base)) remeasure();
         tell();
+    }
+    // Reset shows once this board, or a board in one of its panels, differs from its default, and as
+    // Undo right after a reset
+    function offer() {
+        reset.hidden = !undo && same(layout, base) && !board.querySelector('.board[data-custom]');
+        label(reset, undo ? words.undo : words.reset);
     }
     // A board in a panel tells its panel when it's grown or shrunk, once it's done (a gesture's
     // arranging room gone), and still before the page paints it
@@ -812,11 +817,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     // Height alone never re-measures: a phone's toolbar hiding mid-scroll mustn't move panels.
     // Crossing into another tier swaps layouts, ending a gesture first so it can't save into the other one
     let again, stale = false, width = innerWidth;
+    // The visitor's own layout, arranged this visit: it isn't measured again (one at its default is)
+    const mine = () => arranged && !same(layout, base);
     // Arranged, it waits: settle() asks again once the layout is back at its default
     const measure = () => {
         // Mid-gesture on any board, or a finger resting on a panel (it swells): once it ends
         if (active || board.querySelector('.is-holding')) return remeasure();
-        stale = arranged && !same(layout, base); // a measure skipped: the visitor's own layout this visit
+        stale = mine(); // a measure skipped
         if (!stale) load(undo);
     };
     const remeasure = () => { clearTimeout(again); again = setTimeout(measure, 150); };
@@ -840,13 +847,13 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
     new ResizeObserver(() => { boardW(); if (host) requestAnimationFrame(widthChanged); }).observe(board);
     if (!host) TIERS.forEach((mq) => mq.addEventListener('change', () => { active?.(); load(); }));
     // A board in one of these panels grew or shrank (its blocks moved, or what they hold changed): the
-    // panel holds it. A layout the visitor hasn't arranged this visit is measured again; one they have
-    // keeps its panel's height unless it's now short of the board, or held just what it holds before
+    // panel holds it. A layout that isn't the visitor's own (mine) is measured again; theirs keeps its
+    // panel's height unless it's now short of the board, or held just what it holds before
     board.addEventListener('boardchange', (e) => {
         const p = e.target.parentElement.closest('.panel');
         if (!panels.includes(p)) return;
         if (active) { active.refresh(); return remeasure(); } // the gesture holds it now, a measure after
-        if (!arranged) return load(undo);
+        if (!mine()) return load(undo);
         const next = copy(layout), r = next.get(p);
         if (r.hidden || r.collapsed) return;
         const hug = r.h <= minH(p, true, e.detail);
@@ -854,13 +861,25 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         commit(next);
     });
 
-    // Reset, then (until the next change) Undo puts the visitor's own layout back
-    reset.addEventListener('click', () => {
-        let next = undo;
-        // A measure skipped while the board was arranged runs now, so Reset lands on today's default
-        flip(() => { if (!next && stale) { stale = false; base = defaults(); } next ??= copy(base); render(next); });
-        say(undo ? 'Layout restored' : 'Layout reset');
-        commit(next, undo ? null : copy(layout));
+    // Reset puts the board, and every board in its panels, back to its default (Doshus, 2026-10-17);
+    // then, until each one's next change, Undo puts back what it had. The board's own button does both
+    // (`own`); the boards in its panels hear it as a boardreset event (detail: whether it's Undo)
+    function restart(undoing, own) {
+        if (undoing && !undo) return; // changed since: it keeps what it has
+        // One already at its default has nothing for an Undo to put back (an earlier Reset's Undo is past)
+        const back = !undoing && (own || !same(layout, base)) ? copy(layout) : null;
+        if (own) board.querySelectorAll('.board[data-board]').forEach((b) => b.dispatchEvent(new CustomEvent('boardreset', { detail: undoing })));
+        let next = undoing ? undo : null;
+        // The default measured now, with the boards inside it reset (and any measure skipped while it
+        // was arranged); a layout put back fitted to what its panels hold now
+        flip(() => { if (!next) { stale = false; base = defaults(); } next ??= copy(base); render(fit(next)); });
+        commit(next, back);
+        if (!own) return;
+        say(undoing ? 'Layout restored' : 'Layout reset');
         haptic();
-    });
+    }
+    reset.addEventListener('click', () => restart(!!undo, true));
+    board.addEventListener('boardreset', (e) => restart(e.detail, false));
+    // A board in one of its panels changed whether it's the visitor's own
+    if (board.querySelector('.board[data-board]')) new MutationObserver(offer).observe(board, { subtree: true, attributeFilter: ['data-custom'] });
 });
