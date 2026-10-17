@@ -446,6 +446,39 @@ const TESTS = {
         }
         return errors;
     },
+    async "pictures hold their shape before they arrive (each tag carries its file's width and height), and home's below the first screen wait to load"(browser) {
+        const all = [];
+        // Each picture's box: with the pictures never arriving, then with them in (scrolled through, so each lazy one loads)
+        const boxes = (page) => page.evaluate(() => [...document.querySelectorAll('img')].filter((i) => !i.closest('.random-meme-fixed') && i.getClientRects().length)
+            .map((i) => { const r = i.getBoundingClientRect(); return `${i.getAttribute('src')} ${i.hasAttribute('width') && i.hasAttribute('height') ? '' : 'no size '}${Math.round(r.width)}x${Math.round(r.height)}`; }));
+        for (const path of ['/', '/financehub.html', '/thelounge.html']) {
+            const held = await open(browser, WIDE, { path, route: [(url) => /\/assets\/(images|icons)\//.test(url.pathname), () => {}] });
+            const waiting = await boxes(held.page);
+            await held.page.context().close();
+            const { page, errors } = await open(browser, WIDE, { path });
+            all.push(...errors);
+            await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += innerHeight / 2) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } scrollTo(0, 0); });
+            await sleep(800);
+            const arrived = await boxes(page);
+            const off = waiting.filter((b, i) => b !== arrived[i] || b.includes('no size')).map((b, i) => `${b} -> ${arrived[waiting.indexOf(b)]}`);
+            assert.deepEqual(off, [], `${path}: pictures whose box changes as they arrive: ${JSON.stringify(off)}`);
+            await page.context().close();
+        }
+        // Home's first screen is its hero: the boxes' pictures under it wait until they're scrolled near, and the card carousel's
+        // past its side until it's swiped
+        const { page, errors } = await open(browser, WIDE, { path: '/' });
+        all.push(...errors);
+        const waiting = () => page.evaluate(() => [...document.querySelectorAll('.board img')].filter((i) => !(i.complete && i.naturalWidth)).map((i) => i.getAttribute('src').split('/').pop()));
+        const first = (await waiting()).length;
+        await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += innerHeight / 2) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 80)); } });
+        await sleep(600);
+        const unswiped = await page.evaluate(() => [...document.querySelectorAll('.board img')].filter((i) => !(i.complete && i.naturalWidth))
+            .filter((i) => { const c = i.closest('.card-scroll-container')?.getBoundingClientRect(), r = i.getBoundingClientRect(); return !c || (r.left < c.right && r.right > c.left); }).length);
+        await page.evaluate(() => { const c = document.querySelector('.card-scroll-container'); c.scrollIntoView({ block: 'center' }); c.scrollLeft = c.scrollWidth; });
+        await sleep(800);
+        assert.deepEqual([first > 0, unswiped, await waiting()], [true, 0, []], `home's board pictures: [some waited at first (${first}), any in view still waiting once scrolled, any waiting once the carousel is swiped]`);
+        return all.concat(errors);
+    },
     async "the 404 page, served at a missing address however deep, is styled and links to the site's pages"(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/a/b/nope' });
         const got = await page.evaluate(() => [getComputedStyle(document.body).fontFamily.split(',')[0], getComputedStyle(document.querySelector('.sticky-footer')).position,

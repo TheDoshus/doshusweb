@@ -264,6 +264,13 @@ const CHECKS = {
         const html = fs.readFileSync(f, 'utf8');
         return /\b(?:printmon|gallery)-dock\b/.test(html) && !html.includes('zephyy-orb-dock.css');
     }).map((f) => `${rel(f)}: has a Printmon orb dock but no css/zephyy-orb-dock.css`),
+    // A picture in a page's markup carries its file's width and height, so its room is held before it arrives (CSS that
+    // sets its width sets height: auto with it). Printmon's pages and the vendored copies are their own
+    'pictures carry their size': () => byExt('.html').filter((f) => /^public\/(?!amazon\/|zephyy\/vendor\/)/.test(rel(f))).flatMap((f) => {
+        const html = fs.readFileSync(f, 'utf8');
+        return [...html.matchAll(/<img\b[^>]*>/g)].filter((m) => !/\swidth="\d+"/.test(m[0]) || !/\sheight="\d+"/.test(m[0]))
+            .map((m) => `${rel(f)}:${lineOf(html, m.index)}: <img> with no width and height: ${m[0].match(/src="([^"]*)"/)?.[1] ?? '?'}`);
+    }),
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {
         const listed = new Set([...fs.readFileSync(path.join(ROOT, 'public/sitemap.xml'), 'utf8')

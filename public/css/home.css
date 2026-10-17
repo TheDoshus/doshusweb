@@ -221,7 +221,7 @@ body:has(> .ctaPopup[open]) { overflow: hidden; }
 }
 
 .promo-image {
-    width: clamp(175px, 50vw, 400px); max-width: 100%; /* Responsive sizing, no wider than its panel */
+    width: clamp(175px, 50vw, 400px); max-width: 100%; height: auto; /* Responsive sizing, no wider than its panel; its height from its shape (the tag's width and height give it before it loads) */
     object-fit: contain;
     filter: drop-shadow(0 10px 20px oklch(var(--space-oled) / .5)); 
     will-change: filter;
@@ -478,7 +478,7 @@ button.social-item { cursor: pointer; font: inherit; }
     opacity: 1;
     color: oklch(var(--accent-finance));
 }
-.credit-card-item img { width: 100%; object-fit: cover; border-radius: 8px; }
+.credit-card-item img { width: 100%; height: auto; object-fit: cover; border-radius: 8px; } /* height from its shape, not the tag's height */
 .card-title { display: flex; align-items: center; justify-content: center; text-align: center;
     font-family: var(--font-card);
     font-size: 0.75rem;
