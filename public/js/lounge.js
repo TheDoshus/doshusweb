@@ -83,7 +83,7 @@ function initFilterMemory() {
     const filterButtons = document.querySelectorAll('.filter-btn');
 
     // Load saved filter on page load
-    const savedFilter = localStorage.getItem('loungeFilter') || 'all';
+    const savedFilter = store.get('loungeFilter') || 'all';
 
     filterButtons.forEach(button => {
         const category = button.getAttribute('data-category');
@@ -96,7 +96,7 @@ function initFilterMemory() {
 
         // Save filter when clicked
         button.addEventListener('click', function() {
-            localStorage.setItem('loungeFilter', category);
+            store.set('loungeFilter', category);
         });
     });
 }

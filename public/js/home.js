@@ -205,8 +205,7 @@ function initAmazonLinkToggle() {
     if (!toggle || !toggleText || amazonLinks.length === 0) return;
   
     // Load saved preference or default to false (internal links)
-    const savedPreference = localStorage.getItem('amazonLinkPreference');
-    toggle.checked = savedPreference ? JSON.parse(savedPreference) : false;
+    toggle.checked = store.get('amazonLinkPreference') === 'true';
   
     // Function to update all links
     function updateLinks() {
@@ -247,7 +246,7 @@ function initAmazonLinkToggle() {
         updateLinks();
   
         // Save preference to localStorage
-        localStorage.setItem('amazonLinkPreference', JSON.stringify(this.checked));
+        store.set('amazonLinkPreference', this.checked);
   
         // Visual feedback
         toggleText.style.transform = 'scale(1.1)';

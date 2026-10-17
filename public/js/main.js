@@ -10,6 +10,13 @@ if (!navigator.globalPrivacyControl) gtag('config', 'G-KQ1RGHNMZG');
 // Respect the user's OS-level motion preference
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// localStorage that never throws: blocked storage (cookies off, some private windows) throws at a
+// touch, and then a visitor's choices last the visit
+const store = {
+    get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); } catch { /* this visit only */ } },
+};
+
 // ─── HAPTICS ───
 // Shared short-tap helper for click feedback sitewide. Silent no-op on
 // browsers/devices without vibration support (desktop, iOS Safari).

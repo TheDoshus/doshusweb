@@ -391,6 +391,59 @@ const TESTS = {
         }
         return all;
     },
+    async "storage blocked (cookies off): Finance Hub shows its slides, home's pills fill in, the Lounge's filter works; arrows typed in a field move its cursor, not the slides"(browser) {
+        const all = [];
+        // Touching localStorage at all throws, as it does with site data blocked
+        const init = () => Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Access is denied for this document.', 'SecurityError'); } });
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/financehub.html', init });
+            all.push(...errors);
+            const at = () => page.evaluate(() => [[...document.querySelectorAll('.slide')].findIndex((s) => s.classList.contains('active-slide')), document.querySelector('.sliderView').offsetHeight > 0]);
+            assert.deepEqual(await at(), [0, true], 'Finance Hub: [the slide shown, the slider has height]');
+            await page.click('#slide-next');
+            assert.deepEqual(await at(), [1, true], 'Finance Hub: the next slide');
+            await page.context().close();
+        }
+        {
+            const worklinks = { email: 'a@b.c', pills: [{ internal: '/in', external: 'https://example.com/out', internalText: 'In', externalText: 'Out' }] };
+            const route = [(url) => url.pathname.endsWith('/config/worklinks.json'), (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(worklinks) })];
+            const { page, errors } = await open(browser, WIDE, { path: '/', init, route });
+            all.push(...errors);
+            const pills = () => page.evaluate(() => [...document.querySelectorAll('#workLinks .pillBtn')].map((a) => `${a.textContent} ${a.getAttribute('href')}`));
+            assert.deepEqual(await pills(), ['In /in'], "home: the Amazonian pills");
+            await page.evaluate(() => document.getElementById('linkToggle').click());
+            assert.deepEqual(await pills(), ['Out https://example.com/out'], 'home: the pills switched to external');
+            await page.context().close();
+        }
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html', init });
+            all.push(...errors);
+            await page.evaluate(() => document.querySelector('.filter-btn:not([data-category="all"])').click());
+            assert.ok(await page.evaluate(() => document.querySelectorAll('.category-box.is-faded').length > 0), 'the Lounge: a filter fades the other categories');
+            await page.context().close();
+        }
+        // Storage working: the chat's field takes its arrows on Finance Hub, the slider stays put
+        const { page, errors } = await open(browser, WIDE, { path: '/financehub.html' });
+        all.push(...errors);
+        await page.click('#zp-orb-demo');
+        await page.waitForSelector('#zp-chat-panel.open');
+        await page.focus('#zp-chat-input');
+        await page.keyboard.type('hello');
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'zp-chat-input', 'the chat field has no focus, so this tests nothing');
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.press('ArrowLeft');
+        assert.equal(await page.evaluate(() => [...document.querySelectorAll('.slide')].findIndex((s) => s.classList.contains('active-slide'))), 0, 'arrows typed in the chat field flipped the slides');
+        return all.concat(errors);
+    },
+    async "the 404 page, served at a missing address however deep, is styled and links to the site's pages"(browser) {
+        const body = fs.readFileSync(path.join(ROOT, '404.html'));
+        const route = [(url) => url.pathname.startsWith('/a/b/'), (r) => r.fulfill({ status: 404, contentType: 'text/html', body })];
+        const { page, errors } = await open(browser, WIDE, { path: '/a/b/nope', route });
+        const got = await page.evaluate(() => [getComputedStyle(document.body).fontFamily.split(',')[0], getComputedStyle(document.querySelector('.sticky-footer')).position,
+            [...document.querySelectorAll('.footer-nav a')].map((a) => new URL(a.href).pathname)]);
+        assert.deepEqual(got, ['"Nata Sans"', 'fixed', ['/', '/thelounge', '/financehub', '/nexus']], '[font, footer, links]');
+        return errors;
+    },
     async 'Finance Hub: the slider follows a slide that shrinks, even while panels glide'(browser) {
         const init = () => localStorage.setItem('financeSlidePosition', '4');
         const { page, errors } = await open(browser, WIDE, { init, motion: 'no-preference', path: '/financehub.html' });
