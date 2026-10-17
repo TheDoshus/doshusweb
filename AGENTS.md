@@ -65,6 +65,12 @@ below means the numbered coding Rules, which say how to meet them.
   domain page holds only our deltas, each with its reason.
 - **Track what you install.** A new tool, CLI or package gets a line in the tooling inventory
   and a manual the same session, or it rots unseen.
+- **Read the changelog of every update you come across.** *"They're new updates for a
+  reason. We gotta eat em up"* (Doshus, 2026-10-16). Installing, running or just spotting a
+  new version of anything (a platform, a CLI, a package, a model): read its shipped changelog
+  or the notes at its tag, never a summary, for what we hand-rolled that it now does
+  natively, what changed default-ON, and what new capability we can use. Tell Doshus what's
+  new; each item worth adopting becomes a card on the board.
 - **Call out mess when you see it:** duplication, stale docs, dead files, and builds kept
   only because redoing them is work. Don't route around it.
 - **Answer every part.** Keep every field he asked for and never drop one for brevity.
