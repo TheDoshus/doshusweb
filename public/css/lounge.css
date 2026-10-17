@@ -162,7 +162,7 @@
    complemented, with no gap at a fractional width) */
 @media (width > 640px) { .panel:is(.category-box, .panel-media) { --inset: var(--edge); } }
 .panel.category-box > .panel-head { padding: 1.5rem 1.5rem 0; }
-.panel.category-box > .panel-body { gap: 0; padding: 1rem 1.5rem; }
+.panel.category-box > .panel-body { gap: 0; padding: 1rem 1.5rem; scrollbar-width: auto; scrollbar-color: auto; } /* scrollbar: at auto, or Chromium skips the styles below */
 /* Left out by the filter: faded where it sits (hidden, it would leave a hole in the board), and up
    again while it's reached for, held or carried */
 .panel.category-box.is-faded:not(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) { opacity: 0.3; }
@@ -177,8 +177,7 @@
     padding: 1rem;
 }
 
-/* Custom Scrollbar for Category Links (now the box's own: the panel scrolls them) */
-.panel.category-box > .panel-body { scrollbar-width: auto; scrollbar-color: auto; } /* or Chromium skips the styles below */
+/* Custom Scrollbar for Category Links (now the box's own: the panel scrolls them; its width and color stay auto, above) */
 .category-box > .panel-body::-webkit-scrollbar { width: 8px; }
 .category-box > .panel-body::-webkit-scrollbar-track {
     background: oklch(var(--space-oled) / 0.05);

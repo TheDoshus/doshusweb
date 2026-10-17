@@ -106,7 +106,7 @@
 }
 .st-svc-label.off { background: oklch(65% 0.25 20 / 0.15); color: oklch(70% 0.2 20); border-color: oklch(65% 0.25 20 / 0.25); }
 .st-svc-label.loading { background: oklch(var(--brand-gold) / 0.1); color: oklch(var(--brand-gold) / 0.6); border-color: oklch(var(--brand-gold) / 0.2); }
-.st-svc-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.st-svc-desc, .st-gw-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
 
 /* ── Heartbeat timeline ── */
 .st-beat-list {
@@ -165,7 +165,6 @@
 .st-gw-status.online { background: oklch(var(--brand-green) / 0.12); color: oklch(var(--brand-green)); border: 1px solid oklch(var(--brand-green) / 0.2); }
 .st-gw-status.offline { background: oklch(65% 0.25 20 / 0.15); color: oklch(70% 0.2 20); border: 1px solid oklch(65% 0.25 20 / 0.25); }
 .st-gw-status.pending { background: oklch(var(--brand-gold) / 0.12); color: oklch(var(--brand-gold)); border: 1px solid oklch(var(--brand-gold) / 0.2); }
-.st-gw-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
 
 /* ── Last updated ── */
 .st-updated {
