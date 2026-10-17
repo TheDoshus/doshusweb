@@ -50,17 +50,17 @@
     <section class="hero">
         <h1>Welcome to Doshus.NET</h1>
         <p>My Digital HQ</p>
-        <button class="cta-button" id="openctaPopup">Let's Vibe</button>
+        <button class="cta-button" id="openctaPopup" data-dialog="ctaPopup">Let's Vibe</button>
         <!-- The board's Reset / Add widget bar (js/board.js fills it) -->
         <div data-board-bar="home"></div>
     </section>
 
     <!-- Navigation Modal -->
-    <div class="ctaPopup" id="ctaPopup">
+    <dialog class="ctaPopup" id="ctaPopup" aria-labelledby="ctaPopupTitle">
         <div class="ctaPopup-content">
-            <button class="ctaPopup-close" id="closeModal">&times;</button>
+            <form method="dialog"><button class="ctaPopup-close" aria-label="Close">&times;</button></form>
 
-            <h2 class="ctaPopup-title">What's the move?</h2>
+            <h2 class="ctaPopup-title" id="ctaPopupTitle">What's the move?</h2>
             <div class="ctaPopup-buttons">
                 <button class="ctaPopup-btn" data-target="socials">📱 Socials</button>
                 <button class="ctaPopup-btn" data-target="amazonian">📦 Amazonian Spot</button>
@@ -73,13 +73,13 @@
                 <a href="/zephyy">⚡ Meet Zephyy — my celestial co-pilot</a>
             </p>
         </div>
-    </div>
+    </dialog>
 
     <!-- Discord Widget Modal -->
-    <div class="ctaPopup" id="discordPopup">
+    <dialog class="ctaPopup" id="discordPopup" aria-labelledby="discordPopupTitle">
         <div class="ctaPopup-content discord-popup-content">
-            <button class="ctaPopup-close" id="closeDiscordModal" aria-label="Close">&times;</button>
-            <h2 class="ctaPopup-title">Slide Into the Server</h2>
+            <form method="dialog"><button class="ctaPopup-close" aria-label="Close">&times;</button></form>
+            <h2 class="ctaPopup-title" id="discordPopupTitle">Slide Into the Server</h2>
             <div class="discord-popup-body">
                 <div class="discord-widget">
                     <div class="discord-head">
@@ -108,7 +108,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </dialog>
 
     <!-- ─── BOARD: everything below the hero, each box a panel (UI-SPEC.md; cells per tier measured from the page before) ─── -->
     <main class="board-wrap">
@@ -120,7 +120,7 @@
                                     <div class="social-container">
 
                                         <!-- Discord (opens widget modal) -->
-                                        <button type="button" class="social-item" id="discordSocial">
+                                        <button type="button" class="social-item" id="discordSocial" data-dialog="discordPopup">
                                             <div class="social-icon">
                                                 <img src="assets/icons/discordcon.svg" alt="Discord">
                                             </div>

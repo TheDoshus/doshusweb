@@ -435,6 +435,31 @@ const TESTS = {
         assert.equal(await page.evaluate(() => [...document.querySelectorAll('.slide')].findIndex((s) => s.classList.contains('active-slide'))), 0, 'arrows typed in the chat field flipped the slides');
         return all.concat(errors);
     },
+    async "Home: Let's Vibe and the Discord button open native dialogs that take focus and give it back, close by Escape, ✕ or the dark around them, and hold the page still"(browser) {
+        const { page, errors } = await open(browser, WIDE, { path: '/' });
+        const state = (id) => page.evaluate((id) => [document.getElementById(id).open, document.activeElement.id || document.activeElement.className, getComputedStyle(document.body).overflowY], id);
+        for (const [opener, id] of [['#openctaPopup', 'ctaPopup'], ['#discordSocial', 'discordPopup']]) {
+            await page.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), opener);
+            await page.click(opener);
+            const shown = await state(id);
+            const inside = await page.evaluate((id) => document.getElementById(id).contains(document.activeElement), id);
+            // Tab stays in it (the page behind is inert)
+            for (let i = 0; i < 12; i++) await page.keyboard.press('Tab');
+            const kept = await page.evaluate((id) => document.getElementById(id).contains(document.activeElement) || document.activeElement === document.body, id);
+            await page.keyboard.press('Escape');
+            const closed = await state(id);
+            assert.deepEqual([shown[0], inside, shown[2], kept, closed[0], closed[1], closed[2]], [true, true, 'hidden', true, false, opener.slice(1), 'visible'],
+                `${id}: [open, focus inside, page held, Tab kept inside, closed by Escape, focus back on its button, page free] ${JSON.stringify([shown, closed])}`);
+            // ✕, then the dark around the card
+            await page.click(opener);
+            await page.click(`#${id} .ctaPopup-close`);
+            const byX = (await state(id))[0];
+            await page.click(opener);
+            await page.mouse.click(8, 8);
+            assert.deepEqual([byX, (await state(id))[0]], [false, false], `${id}: closed by ✕, and by a click on the dark around it`);
+        }
+        return errors;
+    },
     async "the 404 page, served at a missing address however deep, is styled and links to the site's pages"(browser) {
         const body = fs.readFileSync(path.join(ROOT, '404.html'));
         const route = [(url) => url.pathname.startsWith('/a/b/'), (r) => r.fulfill({ status: 404, contentType: 'text/html', body })];

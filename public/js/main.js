@@ -629,17 +629,17 @@ if (!CSS.supports('interpolate-size', 'allow-keywords') && !prefersReducedMotion
     });
 }
 
-// Modals are native <dialog class="srcOverlay">: showModal() brings focus trapping, the Escape
-// key and an inert page behind it for free. The ✕ sits in a <form method="dialog">, which closes
-// it with no script.
-document.querySelectorAll('.srcBtn').forEach(btn => {
+// Modals are native <dialog>s, opened by a button naming one (data-dialog="<its id>"): showModal()
+// brings focus trapping, the Escape key, an inert page behind it and focus back where it was, for
+// free. The ✕ sits in a <form method="dialog">, which closes it with no script.
+document.querySelectorAll('[data-dialog]').forEach(btn => {
     btn.addEventListener('click', () => {
         haptic();
-        document.getElementById(btn.dataset.target)?.showModal();
+        document.getElementById(btn.dataset.dialog)?.showModal();
     });
 });
 // Clicking the dark background (the dialog itself, outside its card) closes it too
-document.querySelectorAll('dialog.srcOverlay').forEach(dialog => {
+document.querySelectorAll('dialog').forEach(dialog => {
     dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
 });
 

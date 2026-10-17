@@ -51,39 +51,17 @@ function loadWorkLinks() {
 }
 
 // ─── DISCORD WIDGET MODAL ───
-// Socials Discord button opens a popup with the embedded server widget
-// (custom-styled, populated by main.js on first open — no requests to
-// Discord for visitors who never click) and a click-to-copy username chip.
+// Socials Discord button opens a popup (a <dialog>, opened by main.js) with the embedded server
+// widget (custom-styled, populated by main.js on first open — no requests to Discord for visitors
+// who never click) and a click-to-copy username chip.
 function initDiscordModal() {
     const openBtn = document.getElementById('discordSocial');
     const modal = document.getElementById('discordPopup');
-    const closeBtn = document.getElementById('closeDiscordModal');
     const copyBtn = document.getElementById('copyDiscordUser');
 
-    if (!openBtn || !modal || !closeBtn) return;
+    if (!openBtn || !modal) return;
 
-    function closeModal() {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    openBtn.addEventListener('click', function() {
-        haptic();
-        window.populateDiscordWidget(modal.querySelector('.discord-widget'));
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    });
-
-    closeBtn.addEventListener('click', function() {
-        haptic();
-        closeModal();
-    });
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal();
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-    });
+    openBtn.addEventListener('click', () => window.populateDiscordWidget(modal.querySelector('.discord-widget')));
 
     // Click-to-copy username chip
     if (copyBtn) {
@@ -125,55 +103,19 @@ function initSpotifyEmbed() {
     }
 }
 
-// CTA Popup Box - "What's the move?"
+// CTA Popup Box - "What's the move?" (a <dialog>, opened by main.js): each button closes it and
+// glides to its section
 function initCTApop() {
-    const openBtn = document.getElementById('openctaPopup');
     const modal = document.getElementById('ctaPopup');
-    const closeBtn = document.getElementById('closeModal');
-    const navButtons = document.querySelectorAll('.ctaPopup-btn');
-    
-    if (!openBtn || !modal || !closeBtn) return; // Elements don't exist
+    if (!modal) return;
 
-    // Open modal
-    openBtn.addEventListener('click', function() {
-        haptic();
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-    });
-
-    // Close modal
-    closeBtn.addEventListener('click', function() {
-        haptic();
-        modal.classList.remove('active');
-        document.body.style.overflow = ''; // Re-enable scrolling
-    });
-    
-    // Close modal when clicking outside
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-
-    // Navigation buttons - smooth scroll to sections
-    navButtons.forEach(button => {
+    modal.querySelectorAll('.ctaPopup-btn').forEach(button => {
         button.addEventListener('click', function() {
             haptic();
-            const targetId = this.getAttribute('data-target');
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                // Close modal
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
-
-                // Smooth scroll to section
-                targetSection.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
+            const targetSection = document.getElementById(this.dataset.target);
+            if (!targetSection) return;
+            modal.close();
+            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });
 }

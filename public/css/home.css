@@ -1,6 +1,10 @@
-/* CTA Popup Box */
-.ctaPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: oklch(var(--space-oled) / .5); backdrop-filter: blur(10px); z-index: 1000; animation: fadeIn 0.3s ease; }
-.ctaPopup.active { display: flex; justify-content: center; align-items: center; }
+/* CTA Popup Box: a native <dialog> covering the screen (showModal() puts it in the top layer); the page
+   behind it holds still while it's open */
+.ctaPopup { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; color: inherit;
+    background: oklch(var(--space-oled) / .5); backdrop-filter: blur(10px); animation: fadeIn 0.3s ease; }
+.ctaPopup[open] { display: flex; justify-content: center; align-items: center; }
+.ctaPopup::backdrop { background: transparent; }
+body:has(> .ctaPopup[open]) { overflow: hidden; }
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
