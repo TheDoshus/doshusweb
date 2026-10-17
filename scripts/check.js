@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const readdirSorted = require('./lib/readdir-sorted');
+const MEME_BUDGET = require('./lib/meme-budget');
 
 const ROOT = path.join(__dirname, '..');
 const rel = (f) => path.relative(ROOT, f).split(path.sep).join('/');
@@ -20,6 +21,14 @@ const SVG_BASELINE = new Set([
     'farcastercon', 'githubcon', 'instagramcon', 'playstationcon', 'popcorncon',
     'slackcon', 'spotifycon', 'twitchcon', 'youtubecon'
 ].map((n) => `public/assets/icons/${n}.svg`).concat('public/assets/images/Equifax_Logo.svg'));
+
+// Memes over budget before the budget existed (2026-10-17), waiting for bun run memes:convert. Shrink this list, never
+// grow it: the check names an entry that's under budget or gone, so it comes off
+const MEME_BASELINE = new Set([
+    'RDT_20260123_181341.mp4', 'RDT_20260428_021939.webm', 'RDT_20260508_224902.webm', 'RDT_20260511_043813.webm',
+    'RDT_20260513_075010.webm', 'RDT_20260516_132526.webm', 'RDT_20260524_004320.mp4', 'RDT_20260608_012111.webm',
+    'casualchaosai-20260510-0001.webm', 'deathrow_ai-20260410-0001.webm', 'djraccooni-20261001-0001.webm', 'jacobcarbreslin-20260510-0001.webm',
+]);
 
 // Broad CSP sources that stay on purpose: widgets need inline styles (Doshus
 // tested dropping it, DOSHUS.md); images load from any https host.
@@ -280,6 +289,16 @@ const CHECKS = {
             .filter((m) => /@\d|\/v?\d+\.\d+\.\d+[/.-]/.test(m[1]) && !(/\sintegrity="sha(256|384|512)-[\w+/=]+"/.test(m[0]) && /\scrossorigin\b/.test(m[0])))
             .map((m) => `${rel(f)}:${lineOf(html, m.index)}: ${m[1]} is pinned to a version but has no integrity hash (and crossorigin)`);
     }),
+    // Every meme within its budget (scripts/lib/meme-budget.js), so a heavy one can't ship unshrunk
+    'memes stay lean': () => {
+        const dir = 'public/assets/memes', mb = (n) => (n / 1e6).toFixed(1);
+        const over = readdirSorted(path.join(ROOT, dir)).filter((f) => f !== 'meme-list.json').map((f) => {
+            const size = fs.statSync(path.join(ROOT, dir, f)).size, budget = MEME_BUDGET.VIDEO.test(f) ? MEME_BUDGET.video : MEME_BUDGET.image;
+            return { f, size, budget };
+        }).filter((m) => m.size > m.budget);
+        return over.filter((m) => !MEME_BASELINE.has(m.f)).map((m) => `${dir}/${m.f}: ${mb(m.size)} MB, over its ${mb(m.budget)} MB budget: ${/\.webp$/i.test(m.f) ? 'shrink it by hand (memes:convert makes WebPs, it doesn\'t take them)' : `bun run memes:convert ${m.f}`}`)
+            .concat([...MEME_BASELINE].filter((f) => !over.some((m) => m.f === f)).map((f) => `MEME_BASELINE lists ${f}, which is in budget or gone: take it off`));
+    },
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {
         const listed = new Set([...fs.readFileSync(path.join(ROOT, 'public/sitemap.xml'), 'utf8')

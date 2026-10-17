@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 // bun run memes:convert — shrink memes into web formats without losing quality.
-//   bun run memes:convert                encode + measure every meme not yet WebM/WebP, print a report
+//   bun run memes:convert                encode + measure every meme not yet WebM/WebP, and any WebM over its budget
+//                                        (scripts/lib/meme-budget.js), print a report
 //   bun run memes:convert --apply        swap in each candidate that passed, regenerate meme-list.json
 //   bun run memes:convert a.mp4 b.jpg    limit either run to these files
 // A candidate wins only if it is smaller AND clears the quality bar; otherwise the original stays.
@@ -16,6 +17,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const readdirSorted = require('./lib/readdir-sorted');
+const BUDGET = require('./lib/meme-budget');
 
 const ROOT = path.join(__dirname, '..');
 const MEMES = path.join(ROOT, 'public', 'assets', 'memes');
@@ -86,10 +88,11 @@ function score(kind, candidate, reference) {
 }
 
 function measure(name, src, size) {
-    const kind = VIDEO.test(name) ? 'video' : /\.gif$/i.test(name) ? 'gif' : 'image';
+    const kind = BUDGET.VIDEO.test(name) ? 'video' : /\.gif$/i.test(name) ? 'gif' : 'image';
     const outName = name.replace(/\.[^.]+$/, kind === 'video' ? '.webm' : '.webp');
     const candidate = path.join(CACHE, outName);
-    if (fs.existsSync(path.join(MEMES, outName))) return { verdict: 'skip', note: `${outName} already exists` };
+    // A WebM over budget is re-encoded in place; anything else whose WebM/WebP twin exists is left be
+    if (outName !== name && fs.existsSync(path.join(MEMES, outName))) return { verdict: 'skip', note: `${outName} already exists` };
     if (!can[kind]) return { verdict: 'skip', note: `this ffmpeg can't encode ${kind}` };
     if (kind === 'video' && !can.vmaf) return { verdict: 'skip', note: 'no libvmaf: quality unmeasurable' };
     if (kind === 'image' && exifOrientation(src) > 1) return { verdict: 'skip', note: 'rotated phone photo (EXIF): convert by hand' };
@@ -132,10 +135,10 @@ fs.mkdirSync(CACHE, { recursive: true });
 let results = {};
 try { results = JSON.parse(fs.readFileSync(RESULTS, 'utf8')); } catch { /* first run */ }
 const files = readdirSorted(MEMES)
-    .filter((f) => VIDEO.test(f) || IMAGE.test(f))
+    .filter((f) => VIDEO.test(f) || IMAGE.test(f) || (/\.webm$/i.test(f) && fs.statSync(path.join(MEMES, f)).size > BUDGET.video))
     .filter((f) => !ONLY.length || ONLY.includes(f));
 
-console.log(`Checking ${files.length} meme(s) not yet WebM/WebP${can.vmaf ? '' : ' (no libvmaf: videos will be skipped)'}`);
+console.log(`Checking ${files.length} meme(s) not yet WebM/WebP or over budget${can.vmaf ? '' : ' (no libvmaf: videos will be skipped)'}`);
 const rows = files.map((name) => {
     const src = path.join(MEMES, name);
     const { size, mtimeMs } = fs.statSync(src);
@@ -165,7 +168,7 @@ if (!APPLY) {
 }
 for (const [name, r] of wins) {
     fs.copyFileSync(r.candidate, path.join(MEMES, r.outName));
-    fs.unlinkSync(path.join(MEMES, name)); // the original stays in git history
+    if (r.outName !== name) fs.unlinkSync(path.join(MEMES, name)); // the original stays in git history (a WebM was replaced in place)
     delete results[name];
     console.log(`converted ${name} -> ${r.outName}`);
 }

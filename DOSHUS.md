@@ -17,7 +17,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `UI-SPEC.md` | The board layout: panels visitors move, resize and hide, fluid on every screen. Layout and feel only, so it ports (Aether next); the site's look and rollout live in `BLUEPRINT.md`. First page on it: `/nexus` |
 | `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
 | `scripts/generate-meme-list.js` | `bun run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
-| `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images); report first, `--apply` to swap |
+| `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, and any WebM over its budget (`scripts/lib/meme-budget.js`, which `bun run check` holds every meme to), keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images); report first, `--apply` to swap |
 | `scripts/sync-zephyy-{nav,orb,crew}.js` | `bun run sync:zephyy` — re-stamps the Zephyy subpages' nav bar (from the list in `sync-zephyy-nav.js`), the chat orb (from `public/zephyy.html`) and the crew facts (from `data/crew-facts.json`) |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
@@ -115,7 +115,8 @@ cd ~/.openclaw/projects/doshusweb && bun run deploy
 # Regenerate the meme list after dropping new memes in assets/memes/
 cd ~/.openclaw/projects/doshusweb && bun run memes
 
-# Shrink memes into WebM/WebP without losing quality: report first, then swap the winners in
+# Shrink memes into WebM/WebP without losing quality: report first, then swap the winners in. A meme over budget fails
+# bun run check; the heavy ones from before the budget are listed in check.js (MEME_BASELINE) until they're shrunk
 # (needs ffmpeg with libvmaf; Firebase Studio gets it from .idx/dev.nix after a rebuild)
 cd ~/.openclaw/projects/doshusweb && bun run memes:convert
 cd ~/.openclaw/projects/doshusweb && bun run memes:convert --apply
