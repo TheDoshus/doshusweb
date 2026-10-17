@@ -180,6 +180,11 @@ h3 {
 }
 h1, h2, h3 { text-wrap: balance; }
 
+/* A modal is a <dialog> covering the screen (showModal() puts it in the top layer); its page dims it and centers its card
+   (home's popups, Finance Hub's sources) */
+dialog { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; color: inherit; }
+dialog::backdrop { background: transparent; }
+
 /* Keyboard focus ring in the site accent — invisible for mouse/touch */
 :where(a, button, input, [tabindex]):focus-visible {
     outline: 2px solid oklch(var(--accent-crypto) / 0.9);
@@ -272,54 +277,6 @@ h1, h2, h3 { text-wrap: balance; }
     transform: translateY(-3px);
 }
 
-
-/* Content Section */
-.content-section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
-    padding: 4rem 1rem;
-    position: relative;
-    z-index: 10;
-}
-
-.grid-item { display: flex; flex-direction: column; gap: 1rem; overflow: hidden; max-width: 100%; transition: all 0.3s ease;
-    background: oklch(var(--space-oled) / 0.02);
-    backdrop-filter: blur(5px);
-    border: 1px solid oklch(var(--space-oled) / 0.05);
-    border-radius: 15px;
-    padding: clamp(1.5rem, 4vw, 2rem);
-    margin-bottom: 5rem;
-}
-.grid-item:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 40px oklch(var(--accent-crypto) / 0.3);
-    border-color: oklch(var(--accent-crypto));
-}
-.grid-item h3 {
-    margin-bottom: 0.5rem;
-    font-size: clamp(1.2rem, 4vw, 1.5rem);
-}
-.grid-item p {
-    opacity: 0.9;
-    line-height: 1.6;
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-}
-
-/* Random Meme */
-.random-meme img { width: 100%; height: 100%; object-fit: fill; border-radius: 10px; }
-.random-meme:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 30px oklch(var(--accent-crypto) / 0.3);
-}
-
-/* Finance Box */
-.finance-box { position: relative; border: 1px solid oklch(var(--accent-finance) / 0.2); }
-.finance-box:hover {
-    border-color: oklch(var(--accent-finance));
-    box-shadow: 0 10px 40px oklch(var(--accent-finance) / 0.2);
-}
-.finance-box h2 {
-    font-size: clamp(2rem, 3vw, 2.25rem);
-    color: oklch(var(--accent-finance));
-}
 .quickLinks { display: flex; flex-direction: column;
     background: oklch(var(--accent-finance) / 0.05);
     border: 1px solid oklch(var(--accent-finance) / 0.2);
@@ -380,78 +337,9 @@ h1, h2, h3 { text-wrap: balance; }
 .footer-nav a:hover svg { transform: translateY(-2px); }
 .footer-nav a span { font-size: 0.85rem; font-weight: 500; }
 
-/* Additional 404-specific styles */
-.error-container { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative;
-    padding: 2rem;
-    z-index: 10;
-}
-.error-code { background-clip: text; animation: glowPulse 3s ease-in-out infinite; line-height: 1;
-    font-size: clamp(6rem, 20vw, 12rem);
-    font-weight: 900;
-    background: linear-gradient(45deg, oklch(var(--accent-crypto)), oklch(var(--accent-taxes)), oklch(var(--accent-lounge)));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 1rem;
-}
-@keyframes glowPulse {
-    0%, 100% {  filter: drop-shadow(0 0 30px oklch(var(--accent-crypto) / 0.6));
-        transform: scale(1);
-    }
-    50% {  filter: drop-shadow(0 0 60px oklch(var(--accent-taxes) / 0.9));
-        transform: scale(1.05);
-    }
-}
-.error-title { color: var(--text-main); margin-bottom: 1rem; opacity: 0.9;
-    font-size: clamp(2rem, 6vw, 3rem);
-}
-.error-message { color: var(--text-muted); margin-bottom: 3rem; max-width: 600px; line-height: 1.6;
-    font-size: clamp(1rem, 3vw, 1.3rem);
-}
-.error-actions { display: flex; flex-wrap: wrap; justify-content: center;
-    gap: 1.5rem;
-}
-.error-button { display: inline-block; background: oklch(var(--accent-crypto) / 0.2); border: 2px solid oklch(var(--accent-crypto)); color: var(--text-main); cursor: pointer; transition: all 0.3s ease; text-decoration: none;
-    padding: 1rem 2.5rem;
-    font-size: clamp(1rem, 3vw, 1.1rem);
-    border-radius: 50px;
-}
-.error-button:hover {
-    background: oklch(var(--accent-crypto) / 0.4);
-    box-shadow: 0 0 30px oklch(var(--accent-crypto) / 0.6);
-    transform: translateY(-3px);
-}
-.error-button.secondary { background: oklch(var(--accent-taxes) / 0.2); border-color: oklch(var(--accent-taxes)); }
-.error-button.secondary:hover {
-    background: oklch(var(--accent-taxes) / 0.4);
-    box-shadow: 0 0 30px oklch(var(--accent-taxes) / 0.6);
-}
-
-.floating-astronaut { position: absolute; animation: floatAround 15s ease-in-out infinite; opacity: 0.3;
-    font-size: 4rem;
-    z-index: 5;
-}
-@keyframes floatAround {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    25% { transform: translate(50px, -50px) rotate(90deg); }
-    50% { transform: translate(0, -100px) rotate(180deg); }
-    75% { transform: translate(-50px, -50px) rotate(270deg); }
-}
-
 /* Tab & Phone Optimizations */
-/* In a board panel the grid answers to the panel's width, not the window's */
-@container panel (max-width: 26rem) { .qlBtns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@container panel (max-width: 14rem) { .qlBtns { grid-template-columns: 1fr; } }
-
 @media (max-width: 900px) {
     h2 { text-align: center; }
-    .content-section { padding: 3rem 0.5rem; }
-    /* Finance Box Mobile */
-    .finance-box h2 { margin-bottom: 1rem; }
-    .quickLinks { flex-direction: column; }
-    .qlBtns { flex-direction: column; }
-    .qlBtns > .qlBtn { width: 100%; }
-    .error-actions { flex-direction: column; width: 100%; max-width: 300px; }
-    .error-button { width: 100%; }
 }
 @media (max-width: 550px) {
     .qlBtns { grid-template-columns: repeat(2, minmax(100px, 1fr)); }
@@ -463,6 +351,11 @@ h1, h2, h3 { text-wrap: balance; }
     .footer-nav a { font-size: 0.8rem; }
     .footer-copyright { display: none }
 }
+/* In a board panel the grid answers to the panel's width, not the window's (after the window's
+   rules, so it wins over them) */
+@container panel (max-width: 26rem) { .qlBtns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container panel (max-width: 14rem) { .qlBtns { grid-template-columns: 1fr; } }
+
 /* ─── DISCORD WIDGET (shared component: lounge section + home modal) ─── */
 .discord-widget { max-width: 720px; margin: 0 auto; backdrop-filter: blur(10px); transition: all 0.3s ease;
     background: oklch(var(--star-white) / 0.03);

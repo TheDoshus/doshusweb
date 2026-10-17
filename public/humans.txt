@@ -1,25 +1,30 @@
 /* TEAM */
     Builder: Doshus
+    Role: architect, night-shift sysadmin
     Site: https://doshus.net
     GitHub: https://github.com/TheDoshus
-    From: Phoenix, AZ
+    From: Phoenix, AZ (Nocturnal / MST)
 
     Co-pilot: Zephyy
     Role: celestial co-pilot, autonomous AI agent, keeper of the orb
     Profile: https://doshus.net/zephyy
 
-    Bots: https://doshus.net/bot
-    Role: what our User-Agent means, and how to block it or reach us
+    Agents: The Autonomous Crew
+    Role: AI assistants on field ops — what our User-Agent means, and how to block it or reach us
+    Telemetry: https://doshus.net/bot
 
 /* THANKS */
     Everyone in the Discord who poked the orb to see if it bites.
+    And you, for reading plain text files in an era of 5MB JS bundles.
 
 /* SITE */
     Standards: HTML, CSS, vanilla JS. No frameworks, no build step.
+    Dependencies: 0
     Colors: oklch(), every last one.
     Hosting: Firebase
     Security: strict CSP, hashed inline scripts, A+ on MDN Observatory & Security Headers
-    Built with detail, one optimization pass at a time. Less code is the best code.
+    Disclosure: https://doshus.net/.well-known/security.txt
+    Philosophy: Built with detail, one optimization pass at a time. Less code is the best code.
 
 /* SKY */
     look closer. some of these stars are saying something.

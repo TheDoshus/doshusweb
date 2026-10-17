@@ -79,7 +79,8 @@ below means the numbered coding Rules, which say how to meet them.
   Doshus as a proposal, never into an agent's files as a rule: *"I don't need or want such baby
   restrictions on my agents"* (2026-10-11). The Safety Boundaries below still hold.
 - **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
-  different model where a free lane is available, and every finding is fixed or answered; a
+  reviewer following the reviewing standard.
+  Use a different model where a free lane is available, and every finding is fixed or answered; a
   reviewer he names is part of done, and a command he runs as root is reviewed before he
   gets it. Short on review quota, routine work lands with its review
   owed and sharp edges wait. Timing
@@ -109,10 +110,10 @@ before you stop, ask what you left behind.
 | `public/*.html` + `css/` + `js/` | Main site (home, financehub, thelounge, nexus, zephyy) |
 | `public/css/shared.css` | Tokens, fonts, cosmic background, shared components |
 | `public/js/main.js` | Global: WebGL sky (the drifting nebula, then the star field; colors are the `--nebula-*` and `--star-*` tokens) + shooting stars, meme loader, collapsibles, sticky footer |
-| `public/css/board.css` + `public/js/board.js` | The board engine (`UI-SPEC.md`); first page on it: `/nexus` |
+| `public/css/board.css` + `public/js/board.js` | The board engine (`UI-SPEC.md`); on `/nexus` (the first), `/financehub`, `/thelounge` and `/` |
 | `public/zephyy/` | Zephyy profile subpages |
 | `public/amazon/` | Printmon + work tools — hands off unless Doshus says so (Doshus, 2026-10-10); he hand-syncs it to an internal host (`AMZN-INTERNAL-SYNC.md`) |
-| `public/assets/memes/` | Meme pool; regen index with `bun run memes`; shrink new ones with `bun run memes:convert` (quality-gated, report first) |
+| `public/assets/memes/` | Meme pool; regen index with `bun run memes`; shrink new ones with `bun run memes:convert` (quality-gated, report first); each within its budget (`scripts/lib/meme-budget.js`, held by `bun run check`) |
 | `firebase.json` | Hosting config + CSP/security headers (two targets) |
 | `scripts/` | Repo tooling, run through bun (`bun run <name>`): `check`, `csp:hashes`, `memes`, `memes:convert`, `sync:zephyy` (re-stamp the Zephyy subpages after editing `public/zephyy.html`) |
 
@@ -122,19 +123,20 @@ before you stop, ask what you left behind.
 - **Zephyy's surface rides the site; it doesn't fork it** (Doshus, 2026-10-10). Her pages use the same sky (`main.js`), tokens, `haptic()` and shared components as his, and add only what is hers: chat, realtime status, her glyph. Extend the `zephyy-*` file shaped like the change (one script per job, `zephyy.css` as the base under per-page sheets) instead of adding a file, and never copy a shared rule or helper into her sheets.
 - **Grep before you write.** Before adding a new function, CSS token, util, or component, search `public/` for one that already does the job (`grep -rn "formatDate\|--accent-" public/`) — reuse or extend it, never spawn a parallel. A second date-helper or a duplicate token is a bug. This site's token + accent-routing system exists to be *extended*, not copy-pasted.
 - JS is vanilla: guard for missing DOM elements (scripts are shared across pages), build user-facing strings with `createElement`/`textContent` (not innerHTML), keep console quiet in production paths.
-- **No `?v=` cache-busters** on css/js references (Doshus's call 2026-07-16). css/js are served `Cache-Control: no-cache` (2026-10-10): browsers revalidate each load and get a 304 when nothing changed, so a change shows on the next load. A script whose new version can't run beside an old cached copy of another still gets a new file name in that deploy. Everything under `/assets/` (fonts, images, memes, vendored video.js) is `immutable` for a year, its rule after the css/js one in `firebase.json` so it wins: change one of those by giving it a new name. The one file there rebuilt in place, `assets/memes/meme-list.json` (`bun run memes`), gets `no-cache` from a rule after that, so a new meme reaches returning visitors.
+- **No `?v=` cache-busters** on css/js references (Doshus's call 2026-07-16). css/js are served `Cache-Control: no-cache` (2026-10-10): browsers revalidate each load and get a 304 when nothing changed, so a change shows on the next load. A script whose new version can't run beside an old cached copy of another still gets a new file name in that deploy. Everything under `/assets/` (fonts, images, memes, vendored video.js) is `immutable` for a year, its rule after the css/js one in `firebase.json` so it wins: change one of those by giving it a new name (`memes:convert` re-encoding a meme in place is the exception: a visitor still holding the old copy holds the same meme). The one file there rebuilt in place, `assets/memes/meme-list.json` (`bun run memes`), gets `no-cache` from a rule after that, so a new meme reaches returning visitors.
 - Respect `prefers-reduced-motion` for any new animation (CSS override exists in shared.css; JS checks `prefersReducedMotion` in main.js).
-- Random meme containers: any `.random-meme` / `.random-meme-fixed` div gets auto-filled by main.js from `meme-list.json`.
+- Random meme containers: any `.random-meme-fixed` div (a media panel's slot) gets auto-filled by main.js from `meme-list.json`.
+- Pictures in markup carry their file's `width` and `height` (its pixel size; the browser holds that shape before the file arrives), and `loading="lazy"` unless they're in the first screen. CSS that sets an image's width sets `height: auto` with it, or the `height` attribute becomes its height. `bun run check` flags an `<img>` without them (Doshus, 2026-10-17).
 
 ## Verify before committing
 
 ```bash
 bun run check                                  # read-only; exits 1 on any failure
 bun run test                                   # chat client + board engine in Chromium (Playwright)
-python3 -m http.server 8080 -d public          # eyeball locally
+bun run serve                                  # eyeball locally: public/ at Firebase's addresses (clean URLs, redirects, 404.html)
 ```
 
-`bun run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result. It also checks every board's markup (board names unique across the site, panel ids unique, cells inside the grid, no overlapping defaults) and that a page with a Printmon orb dock links its sheet. `bun run test` drives the board in Chromium, each case a bug a review found there or a promise `UI-SPEC.md` makes; a board change lands with its case.
+`bun run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (both targets identical, no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result. It also checks every board's markup (board names unique across the site, panel ids unique, cells inside the grid, no overlapping defaults), that a page with a Printmon orb dock links its sheet, that every picture in a page's markup carries its width and height, that a script from another site pinned to a version carries its integrity hash, that every meme is within its budget (`scripts/lib/meme-budget.js`; the heavy ones from before it are a baseline list that only shrinks, each held to the size it had), and that `public/.well-known/security.txt` is current (a Contact URI, one Expires between 30 days and a year out, its Canonical address): it goes red 30 days before the file expires. Every deploy runs it first (firebase.json's `predeploy`, both targets, preview channels included): a FAIL stops the deploy. `bun run test` drives the board in Chromium, each case a bug a review found there or a promise `UI-SPEC.md` makes; a board change lands with its case.
 
 Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
 

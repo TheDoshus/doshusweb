@@ -9,6 +9,7 @@
     "deploy": "firebase deploy --only hosting",
     "deploy:full": "firebase deploy",
     "check": "bun scripts/check.js",
+    "serve": "bun scripts/serve.js",
     "test": "bun tests/chatorb-client.cjs && bun tests/board.cjs",
     "og": "bun scripts/og-cards.js",
     "csp:hashes": "bun scripts/update-csp-hashes.js",

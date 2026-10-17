@@ -16,21 +16,21 @@ function initCategoryFilters() {
             const selectedCategory = this.getAttribute('data-category');
 
             // Update active button
-            filterButtons.forEach(btn => btn.classList.remove('active'));
+            filterButtons.forEach(btn => { btn.classList.remove('active'); btn.setAttribute('aria-pressed', btn === this); });
             this.classList.add('active');
 
-            // Show/hide category boxes
+            // Fade the other category boxes where they sit (hiding one would leave a hole in the board)
             if (selectedCategory === 'all') {
                 // Show all boxes
-                categoryBoxes.forEach(box => box.classList.remove('hidden'));
+                categoryBoxes.forEach(box => box.classList.remove('is-faded'));
             } else {
-                // Show only selected category
+                // Bring out only the selected category
                 categoryBoxes.forEach(box => {
                     const boxCategory = box.getAttribute('data-category');
                     if (boxCategory === selectedCategory) {
-                        box.classList.remove('hidden');
+                        box.classList.remove('is-faded');
                     } else {
-                        box.classList.add('hidden');
+                        box.classList.add('is-faded');
                     }
                 });
             }
@@ -54,14 +54,11 @@ function initSurpriseButton() {
     }
 
     surpriseBtn.addEventListener('click', function() {
-        // Get only visible links
-        const visibleLinks = Array.from(allLinks).filter(link => {
-            const parentBox = link.closest('.category-box');
-            return !parentBox || !parentBox.classList.contains('hidden');
-        });
+        // Get only the selected category's visible links (not faded by the filter, or in a panel hidden or collapsed on the board)
+        const visibleLinks = Array.from(allLinks).filter(link => !link.closest('.is-faded') && link.getClientRects().length);
 
         if (visibleLinks.length === 0) {
-            alert('No sites available! Try selecting a different category.');
+            alert('No sites showing! Try a different category, or bring one back from Add widget.');
             return;
         }
 
@@ -86,19 +83,20 @@ function initFilterMemory() {
     const filterButtons = document.querySelectorAll('.filter-btn');
 
     // Load saved filter on page load
-    const savedFilter = localStorage.getItem('loungeFilter') || 'all';
+    const savedFilter = store.get('loungeFilter') || 'all';
 
     filterButtons.forEach(button => {
         const category = button.getAttribute('data-category');
 
-        // Apply saved filter
+        // Apply saved filter, at once (only a visitor's pick fades)
         if (category === savedFilter) {
             button.click();
+            document.querySelectorAll('.category-box').forEach(box => box.getAnimations().forEach(a => a.transitionProperty === 'opacity' && a.finish()));
         }
 
         // Save filter when clicked
         button.addEventListener('click', function() {
-            localStorage.setItem('loungeFilter', category);
+            store.set('loungeFilter', category);
         });
     });
 }

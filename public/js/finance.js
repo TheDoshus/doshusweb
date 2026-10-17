@@ -64,7 +64,7 @@ function goToSlide(index, saveToStorage = true) {
     const progressPercent = (currentSlide / (totalSlides - 1)) * 100;
     progressFill.style.width = progressPercent + '%';
 
-    if (saveToStorage) localStorage.setItem(STORAGE_KEY, currentSlide);
+    if (saveToStorage) store.set(STORAGE_KEY, currentSlide);
 }
 
 // Only wire up the slider if this page actually has one
@@ -128,15 +128,15 @@ if (viewport && slides && totalSlides > 0) {
 
     // ─── KEYBOARD NAVIGATION ───
     document.addEventListener('keydown', (e) => {
-        // A panel's grip or corner took the arrow, or a panel is being moved
-        if (e.defaultPrevented || slides.querySelector('.board.is-arranging')) return;
+        // A panel's grip or corner took the arrow, a field is moving its cursor, or a panel is being moved
+        if (e.defaultPrevented || e.target.closest?.('input, textarea, select, [contenteditable]') || slides.querySelector('.board.is-arranging')) return;
         if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
         if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
     });
 
     // ─── RESTORE FROM LOCALSTORAGE ───
     // Check if user has a saved slide position from a previous visit
-    const savedSlide = parseInt(localStorage.getItem(STORAGE_KEY));
+    const savedSlide = parseInt(store.get(STORAGE_KEY));
     if (savedSlide >= 0 && savedSlide < totalSlides) {
         // Restore saved position (don't save again to avoid loop)
         goToSlide(savedSlide, false);

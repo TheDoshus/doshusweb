@@ -25,7 +25,7 @@ Update this file when structure, a page, or a cross-repo contract changes.
   primitives, tier 2 semantic accents); read them there, not from a copy. Per-section color
   goes through accent routing (see `AGENTS.md` § Hard rules). Self-hosted woff2 fonts only.
 - **Shared runtime.** `public/js/main.js` runs on every page: star field, meme loader
-  (`.random-meme*` ← `assets/memes/meme-list.json`), collapsibles, sticky footer.
+  (`.random-meme-fixed` ← `assets/memes/meme-list.json`), collapsibles, sticky footer.
 
 ## Site map
 
@@ -84,7 +84,6 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 | Card | What |
 |---|---|
 | `49f2128c` | Seasonal page effects (Doshus's idea). Plan: `main.js` sets `data-month` on `<html>` before the star block reads its colors (the WebGL sky reads `--star-*` and `--nebula-*` once at load), and twelve small blocks in `shared.css` re-point the ambient primitives (nebula, `--star-*` tints, the board's snap field). Section accents stay put so finance stays green |
-| `9414bd21` | Real OG images (every page's `og:image` is `doshusfavi.ico` today), `sitemap.xml` (lists 3 of 5 top-level pages, no `/zephyy/*`), `humans.txt` (empty) |
 | `ec678abe` | QA page claims vs live: needs OpenClaw to verify. The crew page's model chains and schedules are now generated (`data/crew-facts.json`) |
 
 **Board rollout** (the layout in `UI-SPEC.md`, signed off 2026-10-09): Nexus is the first page on it
@@ -92,9 +91,10 @@ Cards live on the OpenClaw kanban (`~/.openclaw/data/kanban.db`); IDs are the ha
 preview channel and `tests/board.cjs` runs on `/nexus`. nexus.css keeps only the hero, the room
 around the board and the footer link; the board's scales live in `shared.css`. Finance Hub
 followed the same day (Doshus's call: the slider stays and each slide is a board of its blocks;
-panel titles keep the font and color of the header each replaced). Next come the Lounge, the home page (Doshus, 2026-10-10: its hero stays; everything below it
-becomes the board, the Discord section included, with the same spacing between sections as
-now) and, last, Zephyy's profile (Doshus, 2026-10-10). Each conversion follows `UI-SPEC.md` § Converting a page. The widget catalog reuses the profile's htmx
+panel titles keep the font and color of the header each replaced), then the Lounge (2026-10-11: Doshus wanted it to read as before, so it is a clear, tall board: the sky behind every panel, each section where it was and laid out as it was, its tiers' cells measured from the old page at desktop, Fold and phone sizes). Then the home page (2026-10-16; Doshus, 2026-10-10: its hero stays, everything below it
+becomes the board with the same spacing as before): a clear, tall board like the Lounge's, the
+socials card, the promo and the Amazonian, Lounge and Finance boxes each a panel dressed as it was, its cells per tier
+measured from the old page (the Discord section had become the socials card's modal, which stays a modal). Last comes Zephyy's profile (Doshus, 2026-10-10), later on (2026-10-17: "We'll do hers a lil later on"): her pages ship as they are meanwhile, and what of hers shows on his pages (the orb, the chat) keeps getting polished with them. Each conversion follows `UI-SPEC.md` § Converting a page. The widget catalog reuses the profile's htmx
 fragments (`zephyy/fragments/`, htmx 2.0.10, moving from `/zephyy/vendor/` to a shared vendor
 folder). Site-specific parts that stay out of the spec: the cells go through the CSSOM, so no
 `style=` attribute ever leans on the CSP's `'unsafe-inline'`; `board.css` also carries the

@@ -24,8 +24,8 @@
       enable = true;
       previews = {
         web = {
-          # Serve public/ as the site root, like Firebase Hosting, so /css/... paths resolve
-          command = ["python3" "-m" "http.server" "$PORT" "--bind" "0.0.0.0" "--directory" "public"];
+          # public/ at the addresses Firebase Hosting gives it (clean URLs, its redirects, 404.html): scripts/serve.js
+          command = ["bun" "scripts/serve.js" "$PORT" "0.0.0.0"];
           manager = "web";
         };
       };

@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-async function boot({auth = {fails: false}, chatCache = false} = {}) {
+async function boot({auth = {fails: false}, chatCache = false, blocked = false} = {}) {
   const events = [], updates = [], listeners = new Map(), records = new Map();
   const handles = new Map();
   let serial = 0;
@@ -118,6 +118,8 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
     Date,
     console,
   };
+  // Storage blocked (cookies off, some private windows): reading localStorage at all throws
+  if (blocked) Object.defineProperty(context, 'localStorage', {get() { throw new Error('Access is denied for this document.'); }});
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-live.js'), 'utf8'), context);
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/zephyy-pages.js'), 'utf8'), context);
   const settle = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
@@ -248,5 +250,8 @@ async function boot({auth = {fails: false}, chatCache = false} = {}) {
   auth.fails = false;
   assert.ok(await failed.window.__zpConnect(), 'and the next ask tries again');
   assert.equal(failed.scripts.length, 3, 'without loading the SDK twice');
-  console.log('PASS: no SDK until chat, status stream put/patch/null, one connection, auth wiring, atomic input, input limits, batched replies, dedupe, ordering, reset race, auth failure and retry');
+  const blocked = await boot({blocked: true});
+  assert.ok(await blocked.window.__zpConnect(), 'storage blocked: the chat still connects');
+  assert.ok(blocked.window.__zpRealtime.sessionId, 'with a session for this visit');
+  console.log('PASS: no SDK until chat, status stream put/patch/null, one connection, auth wiring, atomic input, input limits, batched replies, dedupe, ordering, reset race, auth failure and retry, storage blocked');
 })().catch(error => { console.error(error); process.exitCode = 1; });

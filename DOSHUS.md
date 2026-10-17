@@ -17,7 +17,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `UI-SPEC.md` | The board layout: panels visitors move, resize and hide, fluid on every screen. Layout and feel only, so it ports (Aether next); the site's look and rollout live in `BLUEPRINT.md`. First page on it: `/nexus` |
 | `AMZN-INTERNAL-SYNC.md` | Printmon changes waiting to be mirrored to the Amazon-internal copy |
 | `scripts/generate-meme-list.js` | `bun run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
-| `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images); report first, `--apply` to swap |
+| `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, and any WebM over its budget (`scripts/lib/meme-budget.js`, which `bun run check` holds every meme to), keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images) *and*, for a video over budget, lands under it; report first, `--apply` to swap |
 | `scripts/sync-zephyy-{nav,orb,crew}.js` | `bun run sync:zephyy` — re-stamps the Zephyy subpages' nav bar (from the list in `sync-zephyy-nav.js`), the chat orb (from `public/zephyy.html`) and the crew facts (from `data/crew-facts.json`) |
 | `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
 | `database.rules.json` | Firebase RTDB security rules |
@@ -37,8 +37,8 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 ## Quick Reference
 
 - **Hosting:** Firebase Hosting, branch `main`
-- **Deploy:** `firebase deploy --only hosting` (no auto-deploy)
-- **Dev:** Open `public/` in browser or run a local server
+- **Deploy:** `firebase deploy --only hosting` (no auto-deploy). It runs `bun run check` first (firebase.json's `predeploy`) and stops on a FAIL
+- **Dev:** `bun run serve` (scripts/serve.js: Firebase's clean URLs, redirects and 404 page, so links work as they will live)
 - **RTDB:** `doshusweb-default-rtdb.firebaseio.com` — feedback, chat orb, Zephyy daily thoughts
 
 For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
@@ -60,6 +60,8 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 **Work links:** Amazonian Spot pills + work email live in RTDB `/config/worklinks`, not the repo. Edit in the Firebase console — live instantly, no deploy. Node missing/unreachable → section degrades gracefully (no pills, toggle hidden, email blurred).
 
 **Quarantine:** `public/amazon/**` keeps its own loose CSP — excluded from the strict policy and the hash scan.
+
+**security.txt:** `public/.well-known/security.txt` (RFC 9116) tells researchers how to reach you: doshusbizz@gmail.com first, a Discord DM second (doshus.net has no mailbox, so no `security@` address). `/security.txt` redirects to it (firebase.json, both targets). Its `Expires` must be renewed yearly: `bun run check` goes red 30 days before it lapses, and since every deploy runs the check, deploys stop from then until it's renewed. Set the new date under a year ahead, then deploy. Firebase's `**/.*` ignore drops only dot-named files, so a file inside a dot-named folder such as `.well-known/` still deploys (firebase-tools 15.31's lister, checked 2026-10-17). zephyy.doshus.net serves the same file, so it lists both addresses as Canonical; after a deploy, `curl -I https://doshus.net/.well-known/security.txt` should answer 200 `text/plain`.
 
 **Deferred security work (don't lose these):**
 - **Chatorb follow-through** — abuse admission, retention, processing health and browser/action verification remain in the backend contract below.
@@ -91,9 +93,9 @@ A scoped credential migration requires a matching backend/rules design.
 ## Quick Commands for You
 
 ```bash
-# Run a local dev server
-cd ~/.openclaw/projects/doshusweb && python3 -m http.server 8080 -d public
-# Then open http://localhost:8080
+# Run a local dev server: public/ at Firebase's addresses (/thelounge, not thelounge.html), as Firebase Studio's preview runs it
+cd ~/.openclaw/projects/doshusweb && bun run serve
+# Then open http://localhost:8080 (a plain static server 404s the clean links)
 
 # Check what's changed in public/
 ls -lt ~/.openclaw/projects/doshusweb/public/ | head -15
@@ -113,7 +115,8 @@ cd ~/.openclaw/projects/doshusweb && bun run deploy
 # Regenerate the meme list after dropping new memes in assets/memes/
 cd ~/.openclaw/projects/doshusweb && bun run memes
 
-# Shrink memes into WebM/WebP without losing quality: report first, then swap the winners in
+# Shrink memes into WebM/WebP without losing quality: report first, then swap the winners in. A meme over budget fails
+# bun run check; the heavy ones from before the budget are listed in check.js (MEME_BASELINE) until they're shrunk
 # (needs ffmpeg with libvmaf; Firebase Studio gets it from .idx/dev.nix after a rebuild)
 cd ~/.openclaw/projects/doshusweb && bun run memes:convert
 cd ~/.openclaw/projects/doshusweb && bun run memes:convert --apply

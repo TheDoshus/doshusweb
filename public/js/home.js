@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initSpotifyEmbed();
     initDiscordModal();
+
+    // CoinGecko's chart redraws to its width only when the window resizes, not when its block does (narrowed, it ran past
+    // the block until something resized the window): its box changing size tells it the same way
+    const chart = document.querySelector('gecko-coin-price-chart-widget');
+    if (chart) new ResizeObserver(() => dispatchEvent(new Event('resize'))).observe(chart);
 });
 
 // ─── AMAZONIAN SPOT WORK LINKS ───
@@ -41,48 +46,27 @@ function loadWorkLinks() {
                 container.appendChild(link);
             });
             initAmazonLinkToggle(); // sets href/text on the fresh pills
+            container.dispatchEvent(new Event('load')); // the box grew: the board measures it again, as when a picture arrives
         })
         .catch(() => {
             /* RTDB unreachable — hide the toggle, leave the section text */
             const toggleWrap = document.querySelector('.link-toggle-container');
-            if (toggleWrap) toggleWrap.style.display = 'none';
+            if (toggleWrap) { toggleWrap.style.display = 'none'; toggleWrap.dispatchEvent(new Event('load')); } // the board measures the box again
         });
 }
 
 // ─── DISCORD WIDGET MODAL ───
-// Socials Discord button opens a popup with the embedded server widget
-// (custom-styled, populated by main.js on first open — no requests to
-// Discord for visitors who never click) and a click-to-copy username chip.
+// Socials Discord button opens a popup (a <dialog>, opened by main.js) with the embedded server
+// widget (custom-styled, populated by main.js on first open — no requests to Discord for visitors
+// who never click) and a click-to-copy username chip.
 function initDiscordModal() {
     const openBtn = document.getElementById('discordSocial');
     const modal = document.getElementById('discordPopup');
-    const closeBtn = document.getElementById('closeDiscordModal');
     const copyBtn = document.getElementById('copyDiscordUser');
 
-    if (!openBtn || !modal || !closeBtn) return;
+    if (!openBtn || !modal) return;
 
-    function closeModal() {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    openBtn.addEventListener('click', function() {
-        haptic();
-        window.populateDiscordWidget(modal.querySelector('.discord-widget'));
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    });
-
-    closeBtn.addEventListener('click', function() {
-        haptic();
-        closeModal();
-    });
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal();
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-    });
+    openBtn.addEventListener('click', () => window.populateDiscordWidget(modal.querySelector('.discord-widget')));
 
     // Click-to-copy username chip
     if (copyBtn) {
@@ -124,55 +108,24 @@ function initSpotifyEmbed() {
     }
 }
 
-// CTA Popup Box - "What's the move?"
+// CTA Popup Box - "What's the move?" (a <dialog>, opened by main.js): each button closes it and
+// glides to its section
 function initCTApop() {
-    const openBtn = document.getElementById('openctaPopup');
     const modal = document.getElementById('ctaPopup');
-    const closeBtn = document.getElementById('closeModal');
-    const navButtons = document.querySelectorAll('.ctaPopup-btn');
-    
-    if (!openBtn || !modal || !closeBtn) return; // Elements don't exist
+    if (!modal) return;
 
-    // Open modal
-    openBtn.addEventListener('click', function() {
-        haptic();
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-    });
-
-    // Close modal
-    closeBtn.addEventListener('click', function() {
-        haptic();
-        modal.classList.remove('active');
-        document.body.style.overflow = ''; // Re-enable scrolling
-    });
-    
-    // Close modal when clicking outside
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-
-    // Navigation buttons - smooth scroll to sections
-    navButtons.forEach(button => {
+    modal.querySelectorAll('.ctaPopup-btn').forEach(button => {
         button.addEventListener('click', function() {
             haptic();
-            const targetId = this.getAttribute('data-target');
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                // Close modal
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
-
-                // Smooth scroll to section
-                targetSection.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
+            const targetSection = document.getElementById(this.dataset.target);
+            if (!targetSection) return;
+            modal.close();
+            // Focus goes where the page glides (a keyboard's next Tab carries on from there, a screen reader reads it), not
+            // back to Let's Vibe, which would throw the page back up
+            targetSection.tabIndex = -1;
+            targetSection.addEventListener('blur', () => targetSection.removeAttribute('tabindex'), { once: true });
+            targetSection.focus({ preventScroll: true });
+            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });
 }
@@ -204,8 +157,7 @@ function initAmazonLinkToggle() {
     if (!toggle || !toggleText || amazonLinks.length === 0) return;
   
     // Load saved preference or default to false (internal links)
-    const savedPreference = localStorage.getItem('amazonLinkPreference');
-    toggle.checked = savedPreference ? JSON.parse(savedPreference) : false;
+    toggle.checked = store.get('amazonLinkPreference') === 'true';
   
     // Function to update all links
     function updateLinks() {
@@ -246,7 +198,7 @@ function initAmazonLinkToggle() {
         updateLinks();
   
         // Save preference to localStorage
-        localStorage.setItem('amazonLinkPreference', JSON.stringify(this.checked));
+        store.set('amazonLinkPreference', this.checked);
   
         // Visual feedback
         toggleText.style.transform = 'scale(1.1)';

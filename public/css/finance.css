@@ -30,7 +30,7 @@
 /* Resting tooltips hang past the outer cards: no sideways scrollbar for them (a shown one shifts inside) */
 .panel-body:has(> .ccGrid) { overflow-x: hidden; }
 .ccCard.tip-below .card-tooltip::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: oklch(var(--accent-finance) / 0.4); }
-.ccCard:hover { transform: translateY(-5px);
+.ccCard:hover, .bank-card:hover { transform: translateY(-5px);
     border-color: oklch(var(--accent-finance));
     box-shadow: 0 8px 25px oklch(var(--accent-finance) / 0.2);
     background: oklch(var(--accent-finance) / 0.05);
@@ -123,15 +123,13 @@
     transform: scale(1.1);
 }
 
-/* ─── SOURCES MODAL: a native <dialog class="srcOverlay"> covering the screen ─── */
+/* ─── SOURCES MODAL: a <dialog class="srcOverlay"> covering the screen (shared.css) ─── */
 /* showModal() puts it in the top layer (above everything, outside the slider's transforms) */
-.srcOverlay { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-    align-items: center; justify-content: center; color: inherit;
+.srcOverlay { align-items: center; align-items: safe center; justify-content: center; /* plain center first, for a browser without safe */
     background: oklch(var(--space-oled) / 0.7);
     backdrop-filter: blur(5px);
 }
 .srcOverlay[open] { display: flex; animation: srcFade 0.3s ease; }
-.srcOverlay::backdrop { background: transparent; }
 @keyframes srcFade { from { opacity: 0; } }
 @keyframes srcRise { from { transform: translateY(20px); } }
 
@@ -187,13 +185,6 @@
     border-radius: 12px;
     padding: 1.2rem 0.8rem;
     gap: 0.6rem; margin-bottom: 1.5rem;
-}
-
-.bank-card:hover {
-    transform: translateY(-5px);
-    border-color: oklch(var(--accent-finance));
-    box-shadow: 0 8px 25px oklch(var(--accent-finance) / 0.2);
-    background: oklch(var(--accent-finance) / 0.05);
 }
 
 .bank-card img {
@@ -392,7 +383,6 @@
 .sliderWrap { width: 100%; max-width: 1200px; margin: 250px auto auto auto; position: sticky; top: var(--nav-top); z-index: 50; overflow-x: clip; overflow-y: visible; pointer-events: none;
     scroll-margin-top: calc(var(--nav-top) - var(--nav-room)); /* the CTA lands it where it sticks */
 }
-.slideNav { pointer-events: auto; }
 html { --nav-top: 2rem; --nav-room: 7.5rem; scroll-padding-top: var(--nav-room); } /* where the nav sticks; that and its height */
 /* Keyboard focus on the nav itself, which sits in that room, scrolls nothing; while a panel is
    being arranged the room is back, so the drag's autoscroll edge stays below the nav */
@@ -414,7 +404,8 @@ html:has(.slideNav :focus-visible):not(:has(.is-arranging)) { scroll-padding-top
 }
 
 /* ─── NAVIGATION TIMELINE BAR ─── */
-.slideNav { display: flex; background: oklch(var(--space-oled) / 0.5); backdrop-filter: blur(10px); border-top: 1px solid oklch(var(--space-oled) / 0.05);
+.slideNav { pointer-events: auto; /* the wrap lets clicks through; the nav takes them */
+    display: flex; background: oklch(var(--space-oled) / 0.5); backdrop-filter: blur(10px); border-top: 1px solid oklch(var(--space-oled) / 0.05);
     gap: 1.5rem;
     padding: 1.2rem 1.2rem;
     border-radius: 0 50px;

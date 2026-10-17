@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const readdirSorted = require('./lib/readdir-sorted');
+const MEME_BUDGET = require('./lib/meme-budget');
 
 const ROOT = path.join(__dirname, '..');
 const rel = (f) => path.relative(ROOT, f).split(path.sep).join('/');
@@ -20,6 +21,16 @@ const SVG_BASELINE = new Set([
     'farcastercon', 'githubcon', 'instagramcon', 'playstationcon', 'popcorncon',
     'slackcon', 'spotifycon', 'twitchcon', 'youtubecon'
 ].map((n) => `public/assets/icons/${n}.svg`).concat('public/assets/images/Equifax_Logo.svg'));
+
+// Memes over budget before the budget existed (2026-10-17), waiting for bun run memes:convert, each with the bytes it weighs.
+// Shrink this list, never grow it: the check names an entry that's under budget or gone, so it comes off, and one whose
+// bytes changed, so its number follows it down (or the meme goes back)
+const MEME_BASELINE = new Map(Object.entries({
+    'RDT_20260123_181341.mp4': 6550529, 'RDT_20260428_021939-noSound.webm': 13464094, 'RDT_20260508_224902-noSound.webm': 16488982,
+    'RDT_20260511_043813-noSound.webm': 6694454, 'RDT_20260513_075010-noSound.webm': 21403005, 'RDT_20260516_132526-noSound.webm': 9168970,
+    'RDT_20260524_004320.mp4': 10807072, 'RDT_20260608_012111.webm': 6939087, 'casualchaosai-20260510-0001-noSound.webm': 6704448,
+    'deathrow_ai-20260410-0001.webm': 5999531, 'djraccooni-20261001-0001.webm': 6115194, 'jacobcarbreslin-20260510-0001-noSound.webm': 6843503,
+}));
 
 // Broad CSP sources that stay on purpose: widgets need inline styles (Doshus
 // tested dropping it, DOSHUS.md); images load from any https host.
@@ -44,6 +55,22 @@ const FUNC = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab)\(/gi;
 const NAMED = /(?<![-\w#.])(?:white|black|red|green|blue|yellow|orange|purple|pink|gray|grey|silver|gold|teal|navy|cyan|magenta|lime|maroon|olive|aqua|fuchsia)(?![-\w(])/gi;
 // Blank out a match but keep its newlines, so reported line numbers stay true.
 const blank = (m) => m.replace(/[^\n]/g, ' ');
+// A <name> open tag as a browser ends it: at the first '>' outside a quoted value, a quote opening one only after '='
+// (each character read one way only, so a tag left open to the end of the file can't make the search run away)
+const openTag = (name) => `<${name}(?=[\\s/>])(?:=\\s*(?:"[^"]*"|'[^']*')|=(?!\\s*["'])|[^>=])*>`;
+// A page's <name> tags: comments and script bodies blanked (so lines still count), any case, <name-x> not one of them
+const tags = (html, name) => [...html.replace(/<!--[\s\S]*?-->/g, blank)
+    .replace(new RegExp(`(${openTag('script')})([\\s\\S]*?)(?=</script)`, 'gi'), (m, open, body) => open + blank(body))
+    .matchAll(new RegExp(openTag(name), 'gi'))];
+// A tag's attributes, read in order as a browser does (so a name inside another's quoted value isn't one; a '/' parts
+// them like a space): name → value, '' for a bare one, the first of a repeated name winning
+const attrs = (tag) => {
+    const found = new Map();
+    for (const [, name, ...value] of tag.matchAll(/[\s/]([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) {
+        if (!found.has(name.toLowerCase())) found.set(name.toLowerCase(), value.find((v) => v !== undefined) ?? '');
+    }
+    return found;
+};
 const stripCss = (css) => css
     .replace(/\/\*[\s\S]*?\*\//g, blank)
     .replace(/(["'])(?:\\.|(?!\1)[^\\\n])*\1/g, blank)
@@ -171,51 +198,88 @@ const CHECKS = {
     // A board's name and its panels' ids key every visitor's saved layout (UI-SPEC.md), so a
     // reused name or id mixes two saves; cells sit inside the wide grid board.css sets, at least
     // its narrowest panel wide, and the default panels don't overlap. A panel is a direct child
-    // of its board, as board.js reads it, so the markup is walked tag by tag (comments blanked)
+    // of its board, as board.js reads it, so the markup is walked tag by tag (comments blanked),
+    // a board in a panel's body (UI-SPEC § Boards in a panel) checked as one of its own
     'boards are well-formed': () => {
         const css = fs.readFileSync(path.join(ROOT, 'public/css/board.css'), 'utf8');
-        const [, cols, minCols] = css.match(/\.board \{[^}]*--cols:\s*(\d+)[^}]*--min-cols:\s*(\d+)/).map(Number);
+        // Each tier's grid: every board's, then the window tiers' (a board in a panel gets the same
+        // grids from container queries)
+        const grid = (re) => { const m = css.match(re); return m && { cols: +m[1], minCols: +m[2] }; };
+        const at = (w) => new RegExp(`@media \\(max-width: ${w}px\\) \\{\\s*\\.board:not\\(\\.panel \\.board\\) \\{[^}]*--cols:\\s*(\\d+)[^}]*--min-cols:\\s*(\\d+)`);
+        const tiers = { '': grid(/(?:^|\n)\.board \{[^}]*--cols:\s*(\d+)[^}]*--min-cols:\s*(\d+)/), mid: grid(at(1080)), phone: grid(at(640)) };
+        if (!Object.values(tiers).every(Boolean)) return ['public/css/board.css: a tier grid the board lint reads is gone (.board, and the 1080px and 640px window tiers)'];
         const VOID = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)$/i;
+        const OPTIONAL = /^(p|li|dt|dd|option|optgroup|tr|td|th|thead|tbody|tfoot|colgroup|caption|rt|rp)$/i; // end tag may be left out
         const TAG = /<(\/?)([a-z][\w-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*)\s*\/?>/gi;
-        const attrs = (s) => Object.fromEntries([...s.matchAll(/([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)]
-            .map((m) => [m[1].toLowerCase(), m[2] ?? m[3] ?? m[4] ?? '']));
         const names = new Map();
         const problems = [];
         for (const f of byExt('.html').filter((f) => rel(f).startsWith('public/'))) {
             const html = fs.readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ' '));
             const ids = new Set();
-            let board = null; // the board being walked: how deep, and its panels' cells so far
+            const open = []; // the boards being walked, innermost last: how deep each is, and its panels' cells so far
+            const stack = []; // every open element's tag: counting depth alone lets an ancestor's end tag stand in for a missing one
             for (const m of html.matchAll(TAG)) {
                 const [, close, tag, rest] = m;
                 const line = `${rel(f)}:${lineOf(html, m.index)}`;
+                const board = open.at(-1);
                 // A panel body's content sits in elements: the engine reads its height off theirs
                 if (board?.body && board.body === board.depth && html.slice(board.at, m.index).trim()) problems.push(`${line}: bare text in a panel body (wrap it in an element)`);
-                if (board) board.at = m.index + m[0].length;
-                if (close) { if (board && --board.depth === 0) board = null; else if (board?.depth < board?.body) board.body = 0; continue; }
-                if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
-                const a = attrs(rest);
-                if (!board) {
-                    if (!('data-board' in a)) continue;
-                    if (names.has(a['data-board'])) problems.push(`${line}: board "${a['data-board']}" also in ${names.get(a['data-board'])}`);
-                    names.set(a['data-board'], line);
-                    board = { depth: 1, cells: [] };
+                open.forEach((b) => { b.at = m.index + m[0].length; });
+                if (close) {
+                    // What it closes, with anything open inside it (each board's depth drops by all of them, so an
+                    // end tag left out where it may be doesn't skew it); one whose end tag can't be left out is missing
+                    const i = stack.lastIndexOf(tag.toLowerCase());
+                    const shut = i < 0 ? [] : stack.splice(i);
+                    const left = shut.slice(1).filter((t) => !OPTIONAL.test(t));
+                    if (open.length && i < 0) problems.push(`${line}: </${tag}> closes nothing open`);
+                    if (open.length && left.length) problems.push(`${line}: <${left.join('>, <')}> never closed before </${tag}>`);
+                    open.forEach((b) => { b.depth -= shut.length; });
+                    while (open.at(-1)?.depth <= 0) {
+                        // A tier the page lays out itself names every panel's cells, or the engine flows it
+                        const done = open.pop();
+                        for (const tier of ['mid', 'phone']) if (done.named[tier] && done.named[tier] < done.count) problems.push(`${done.line}: ${done.named[tier]} of ${done.count} panels have data-${tier}; give every panel its ${tier} cells or none`);
+                    }
+                    if (open.includes(board) && board.depth < board.body) board.body = 0;
                     continue;
                 }
-                if (a.class?.split(/\s+/).includes('panel-body')) board.body = board.depth + 1;
-                if (board.depth++ !== 1 || !a.class?.split(/\s+/).includes('panel')) continue;
+                if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
+                stack.push(tag.toLowerCase());
+                const a = Object.fromEntries(attrs(rest));
+                const depth = board?.depth;
+                open.forEach((b) => b.depth++);
+                if ('data-board' in a) {
+                    if (names.has(a['data-board'])) problems.push(`${line}: board "${a['data-board']}" also in ${names.get(a['data-board'])}`);
+                    names.set(a['data-board'], line);
+                    open.push({ depth: 1, line, cells: { '': [], mid: [], phone: [] }, named: { mid: 0, phone: 0 }, count: 0 });
+                    continue;
+                }
+                if (!board) continue;
+                if (a.class?.split(/\s+/).includes('panel-body')) board.body = board.depth;
+                if (depth !== 1 || !a.class?.split(/\s+/).includes('panel')) continue;
                 const id = a.id;
                 if (!id || ids.has(id)) problems.push(`${line}: panel id ${id ? `"${id}" repeats` : 'missing'}`);
                 ids.add(id);
-                const [x, y, w, h] = ['data-x', 'data-y', 'data-w', 'data-h'].map((k) => Number(a[k]));
-                if (![x, y, w, h].every((n) => Number.isInteger(n) && n > 0) || w < minCols || x + w - 1 > cols) {
-                    problems.push(`${line}: ${id} cells ${x},${y},${w},${h} outside a ${cols}-column grid (≥ ${minCols} wide)`);
-                    continue;
+                board.count++;
+                // The wide cells (data-x/y/w/h), and a smaller tier's where the page lays it out itself
+                // (data-mid / data-phone: "x y w h")
+                for (const [tier, { cols, minCols }] of Object.entries(tiers)) {
+                    const raw = tier ? a[`data-${tier}`] : ['x', 'y', 'w', 'h'].map((k) => a[`data-${k}`]).join(' ');
+                    if (tier && raw === undefined) continue;
+                    if (tier) board.named[tier]++;
+                    const parts = raw.trim().split(/\s+/).map(Number);
+                    const [x, y, w, h] = parts;
+                    const at = tier ? `${tier} cells` : 'cells';
+                    if (parts.length !== 4 || !parts.every((n) => Number.isInteger(n) && n > 0) || w < minCols || x + w - 1 > cols) {
+                        problems.push(`${line}: ${id} ${at} "${raw}": four whole numbers inside a ${cols}-column grid (≥ ${minCols} wide)`);
+                        continue;
+                    }
+                    for (const o of board.cells[tier]) {
+                        if (x < o.x + o.w && o.x < x + w && y < o.y + o.h && o.y < y + h) problems.push(`${line}: ${id} overlaps ${o.id}${tier && ` in the ${tier} tier`}`);
+                    }
+                    board.cells[tier].push({ id, x, y, w, h });
                 }
-                for (const o of board.cells) {
-                    if (x < o.x + o.w && o.x < x + w && y < o.y + o.h && o.y < y + h) problems.push(`${line}: ${id} overlaps ${o.id}`);
-                }
-                board.cells.push({ id, x, y, w, h });
             }
+            if (open.length) problems.push(`${rel(f)}: a board is never closed (the file ends inside it)`);
         }
         return problems;
     },
@@ -225,6 +289,40 @@ const CHECKS = {
         const html = fs.readFileSync(f, 'utf8');
         return /\b(?:printmon|gallery)-dock\b/.test(html) && !html.includes('zephyy-orb-dock.css');
     }).map((f) => `${rel(f)}: has a Printmon orb dock but no css/zephyy-orb-dock.css`),
+    // A picture in a page's markup carries its file's width and height, so its room is held before it arrives (CSS that
+    // sets its width sets height: auto with it). Printmon's pages and the vendored copies are their own
+    'pictures carry their size': () => byExt('.html').filter((f) => /^public\/(?!amazon\/|zephyy\/vendor\/)/.test(rel(f))).flatMap((f) => {
+        const html = fs.readFileSync(f, 'utf8');
+        return tags(html, 'img').map((m) => [m, attrs(m[0])]).filter(([, a]) => !['width', 'height'].every((d) => /^\s*\d+\s*$/.test(a.get(d) ?? '')))
+            .map(([m, a]) => `${rel(f)}:${lineOf(html, m.index)}: <img> with no width and height: ${a.get('src') ?? '?'}`);
+    }),
+    // A script from another site pinned to a version (name@1.2.3, /1.2.3/) carries its hash (integrity, crossorigin), so a file
+    // swapped at that address doesn't run; an unpinned one (Google's tag, CoinGecko's widget) changes by design and can't.
+    // Hash a new pin: curl -sS <url> | openssl dgst -sha384 -binary | openssl base64 -A
+    // (Scripts a page's own script adds, zephyy-live.js's Firebase SDK, carry their hashes in that code)
+    'pinned scripts carry their hash': () => byExt('.html').filter((f) => /^public\/(?!amazon\/)/.test(rel(f))).flatMap((f) => {
+        const html = fs.readFileSync(f, 'utf8');
+        const pinned = /@\d|[/.-]v?\d+\.\d+\.\d+(?=[/.-]|$)|[?&]v(?:er(?:sion)?)?=\d/i; // in the path or query, not the host
+        const hash = /^sha(?:256-[A-Za-z0-9+/]{43}=|384-[A-Za-z0-9+/]{64}|512-[A-Za-z0-9+/]{86}==)$/;
+        const host = /^(https?:)?\/\/[^/?#]*/i;
+        const hashed = (a) => { const all = (a.get('integrity') ?? '').split(/\s+/).filter(Boolean); return all.length && all.every((h) => hash.test(h)) && a.has('crossorigin'); };
+        return tags(html, 'script').map((m) => [m, attrs(m[0])]).filter(([, a]) => { const src = a.get('src') ?? ''; return host.test(src) && pinned.test(src.replace(host, '')) && !hashed(a); })
+            .map(([m, a]) => `${rel(f)}:${lineOf(html, m.index)}: ${a.get('src')} is pinned to a version but has no integrity hash (and crossorigin)`);
+    }),
+    // Every meme within its budget (scripts/lib/meme-budget.js), so a heavy one can't ship unshrunk
+    'memes stay lean': () => {
+        const dir = 'public/assets/memes', mb = (n) => (n / 1e6).toFixed(1);
+        const files = readdirSorted(path.join(ROOT, dir)).filter((f) => f !== 'meme-list.json');
+        const over = files.filter((f) => !f.endsWith('.part')).map((f) => {
+            const size = fs.statSync(path.join(ROOT, dir, f)).size, budget = MEME_BUDGET.VIDEO.test(f) ? MEME_BUDGET.video : MEME_BUDGET.image;
+            return { f, size, budget };
+        }).filter((m) => m.size > m.budget);
+        return over.filter((m) => !MEME_BASELINE.has(m.f) || m.size !== MEME_BASELINE.get(m.f)).map((m) => MEME_BASELINE.has(m.f)
+            ? `${dir}/${m.f}: ${m.size} bytes, MEME_BASELINE has ${MEME_BASELINE.get(m.f)}: ${m.size < MEME_BASELINE.get(m.f) ? 'set it to the new size' : 'it may not grow'}`
+            : `${dir}/${m.f}: ${mb(m.size)} MB, over its ${mb(m.budget)} MB budget: ${/\.webp$/i.test(m.f) ? 'shrink it by hand (memes:convert makes WebPs, it doesn\'t take them)' : `bun run memes:convert ${m.f}`}`)
+            .concat([...MEME_BASELINE.keys()].filter((f) => !over.some((m) => m.f === f)).map((f) => `MEME_BASELINE lists ${f}, which is in budget or gone: take it off`))
+            .concat(files.filter((f) => f.endsWith('.part')).map((f) => `${dir}/${f}: left by an interrupted memes:convert --apply: delete it`));
+    },
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {
         const listed = new Set([...fs.readFileSync(path.join(ROOT, 'public/sitemap.xml'), 'utf8')
@@ -234,6 +332,23 @@ const CHECKS = {
             .map((f) => f.replace(/^public\/|(index)?\.html$|\/index\.html$/g, '')));
         return [...pages].filter((p) => !listed.has(p)).map((p) => `missing from sitemap: /${p}`)
             .concat([...listed].filter((p) => !pages.has(p)).map((p) => `sitemap lists no page: /${p}`));
+    },
+    // RFC 9116: a way to reach Doshus, one Expires (past it, scanners treat the file as stale) and its own
+    // address. It fails 30 days out, so the date is renewed, to under a year ahead, before it lapses
+    'security.txt is current': () => {
+        const file = 'public/.well-known/security.txt';
+        const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
+        const field = (k) => [...text.matchAll(new RegExp(`^${k}:[ \\t]*(\\S+)[ \\t]*$`, 'gim'))].map((m) => m[1]);
+        const contact = field('Contact'), expires = field('Expires'), canonical = field('Canonical');
+        // RFC 3339 date-time with its zone, as the RFC requires (Date.parse would take a bare date too)
+        const days = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|[+-]\d\d:\d\d)$/i.test(expires[0]) ? (Date.parse(expires[0]) - Date.now()) / 864e5 : NaN;
+        return [
+            ...!contact.length ? ['no Contact'] : contact.filter((c) => !/^(mailto|https|tel):/.test(c)).map((c) => `Contact ${c} isn't a mailto:, https: or tel: URI`),
+            ...expires.length !== 1 ? [`${expires.length} Expires fields, not one`] : !(days > 30) ? [`Expires ${expires[0]} is ${Number.isNaN(days) ? 'not an RFC 3339 date-time with its zone' : `${Math.round(days)} days out`}: renew it, to under a year ahead`]
+                : days >= 365 ? [`Expires ${expires[0]} is a year or more out (RFC 9116 asks for under one)`] : [],
+            // Both hosts serve the file (one public/ folder, files before rewrites), so both are its address
+            ...['doshus.net', 'zephyy.doshus.net'].map((h) => `https://${h}/.well-known/security.txt`).filter((u) => !canonical.includes(u)).map((u) => `no Canonical: ${u}`),
+        ].map((p) => `${file}: ${p}`);
     }
 };
 

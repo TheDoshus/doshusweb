@@ -18,13 +18,14 @@
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* ─── BOARD: 24 columns of 2rem rows (12 and 4 in the smaller tiers, at the end); panels inset by a
+/* ─── BOARD: 24 columns of 2rem rows (12 and 6 in the smaller tiers, at the end); panels inset by a
    gutter so cells stay exact ─── */
 .board-wrap { max-width: 1440px; margin: 0 auto; padding: var(--sp-m) clamp(1rem, 3vw, 2rem) 6rem;
     position: relative; z-index: 10;
 }
-/* The default accent, at zero specificity so a data-accent on the board itself wins */
-:where(.board) { --accent: var(--accent-crypto); }
+/* The default accent, at zero specificity so a data-accent on the board itself wins; a board in a
+   panel takes its panel's */
+:where(.board:not(.panel .board)) { --accent: var(--accent-crypto); }
 .board { --cols: 24; --row: 2rem; --gutter: 0.625rem;
     /* Arranging feel, tune here: how strongly the cell field shows and the ghost's fill and
        glow (alphas, 0–1), then how long panels and the ghost glide (in ms; js/board.js reads
@@ -55,11 +56,15 @@
 /* While arranging: room to drop below the last panel, and no backdrop blur. Blurring live
    stars behind every moving panel is the heaviest thing on the page; dark glass stands in */
 .board.is-arranging { padding-bottom: calc(var(--row) * 8); user-select: none; }
-.board.is-arranging .panel { backdrop-filter: none; background: oklch(var(--space-oled) / 0.72); }
+.board.is-arranging > .panel { backdrop-filter: none; background: oklch(var(--space-oled) / 0.72); }
+/* A frame is another page (the Lounge's game): a pointer over it leaves the gesture, its moves and
+   its release unseen, even captured. While arranging, and while a press waits to lift a panel
+   (Spotify's block is held by its dots alone), every frame lets the pointer through */
+:root:has(.board.is-arranging, .panel.is-pressed) iframe { pointer-events: none; }
 .board.is-arranging::before { opacity: var(--field-opacity); }
 /* The ghost: where the panel will land, in the grabbed panel's own accent. It breathes by
    fading a glow layer (opacity runs on the compositor; an animated box-shadow repaints) */
-.board-ghost { grid-column: var(--x) / span var(--w); grid-row: var(--y) / span var(--h); margin: var(--gutter);
+.board-ghost { grid-column: var(--x) / span var(--w); grid-row: var(--y) / span var(--h); margin: var(--gutter) calc(var(--gutter) + var(--inset, 0px));
     position: relative; pointer-events: none; border-radius: var(--r-l); border: 2px dashed oklch(var(--accent));
     background: radial-gradient(circle at 50% 40%, oklch(var(--accent) / var(--ghost-fill)), oklch(var(--accent) / 0.08) 75%);
     box-shadow: 0 0 36px oklch(var(--accent) / var(--ghost-glow)), inset 0 0 28px oklch(var(--accent) / 0.45);
@@ -97,12 +102,15 @@
 .board-menu::backdrop { background: oklch(var(--space-oled) / 0.5); }
 
 /* ─── PANEL ─── */
+/* A host sets a panel in from its cells' sides with --inset (UI-SPEC). Registered, it computes to a
+   length (an em against the panel's own font), so the ghost, which copies it, frames the same spot */
+@property --inset { syntax: '<length-percentage>'; inherits: false; initial-value: 0px; }
 /* Without JS the panels still flow as 6×8 blocks; board.js sets --x/--y/--w/--h from data-* */
 .panel { grid-column: var(--x, auto) / span var(--w, 6); grid-row: var(--y, auto) / span var(--h, 8);
-    position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; margin: var(--gutter);
+    position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; margin: var(--gutter) calc(var(--gutter) + var(--inset, 0px));
     background: oklch(var(--space-oled) / var(--panel-fill)); backdrop-filter: var(--panel-backdrop);
     border: 1px solid oklch(var(--accent) / 0.28); border-radius: var(--r-l);
-    transition: border-color 0.35s ease, box-shadow 0.35s ease, scale 0.2s ease;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, scale 0.2s ease, opacity 0.35s ease;
 }
 .panel[hidden] { display: none; }
 .panel::before { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
@@ -111,12 +119,46 @@
 .panel::after { content: ''; position: absolute; inset: 0 var(--r-l) auto; height: 1px; pointer-events: none;
     background: linear-gradient(90deg, transparent, oklch(var(--accent) / 0.7), transparent);
 }
-.panel:hover, .panel:focus-within {
+:where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within) {
     border-color: oklch(var(--accent) / 0.85);
     box-shadow: 0 12px 38px oklch(var(--accent) / 0.25), 0 0 0 1px oklch(var(--accent) / 0.4) inset;
 }
-.panel.is-holding { scale: 1.02; transition-duration: var(--hold); }
-.panel.is-dragging, .panel.is-resizing { z-index: 50;
+/* A clear board (data-surface="clear") keeps the page's sky as every panel's back: no glass, frame,
+   grab dots or controls at rest, so the page reads as it did before it was a board (on touch
+   screens the controls and dots stay faint). Reached for, a panel shows a faint frame and its
+   controls: keyboard focus inside it (a click's focus leaves nothing behind), a pointer on it where
+   pointers hover, a finger holding it (which glows, as on every board). While arranging, every panel
+   shows where it is. A page can still dress a panel itself (the Lounge's category boxes) */
+.board[data-surface="clear"] { --panel-fill: 0; --panel-backdrop: none; }
+:where(.board[data-surface="clear"]) > .panel { border-color: transparent; }
+:where(.board[data-surface="clear"]) > .panel::before, :where(.board[data-surface="clear"]) > .panel::after { opacity: 0; transition: opacity 0.35s ease; }
+:where(.board[data-surface="clear"]) > .panel > .panel-dots::before { opacity: 0; }
+@media (hover: none) {
+    :where(.board[data-surface="clear"]) > .panel:not(.is-collapsed) > :is(.panel-head, .panel-grab) > .panel-tools,
+    :where(.board[data-surface="clear"]) > .panel:not(.is-collapsed) > .panel-edge[data-dir="se"],
+    :where(.board[data-surface="clear"]) > .panel > .panel-dots::before { opacity: 0.35; }
+}
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing)::before,
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing)::after,
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) > :is(.panel-head, .panel-grab) > .panel-tools,
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) > .panel-edge[data-dir="se"],
+:where(.board[data-surface="clear"]) > .panel:is(:has(:focus-visible), .is-holding, .is-dragging, .is-resizing) > .panel-dots::before { opacity: 1; }
+@media (hover: hover) {
+    :where(.board[data-surface="clear"]) > .panel:hover { border-color: oklch(var(--accent) / 0.45); box-shadow: 0 0 26px oklch(var(--accent) / 0.16); }
+    :where(.board[data-surface="clear"]) > .panel:hover::before, :where(.board[data-surface="clear"]) > .panel:hover::after,
+    :where(.board[data-surface="clear"]) > .panel:hover > :is(.panel-head, .panel-grab) > .panel-tools,
+    :where(.board[data-surface="clear"]) > .panel:hover > .panel-edge[data-dir="se"],
+    :where(.board[data-surface="clear"]) > .panel:hover > .panel-dots::before { opacity: 1; }
+}
+.board[data-surface="clear"].is-arranging > .panel:not(.is-dragging, .is-resizing) { background: oklch(var(--space-oled) / 0.35); border-color: oklch(var(--accent) / 0.5); }
+.board[data-surface="clear"].is-arranging > .panel::before, .board[data-surface="clear"].is-arranging > .panel::after { opacity: 1; }
+/* A finger resting on a panel charges a glow as it swells, so the hold reads as a grab; it selects no
+   text and opens no picture menu meanwhile (a block is held by what it holds, not a strip) */
+.panel.is-holding { scale: 1.02; transition-duration: var(--hold); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    border-color: oklch(var(--accent)); box-shadow: 0 0 0 2px oklch(var(--accent) / 0.55), 0 0 44px oklch(var(--accent) / 0.45);
+}
+.panel.is-dragging, .panel.is-resizing { z-index: 50; border-color: oklch(var(--accent));
     box-shadow: 0 0 0 2px oklch(var(--accent) / 0.7), 0 24px 60px oklch(var(--accent) / 0.4);
 }
 /* Only the carried panel keeps a layer of its own; the ones gliding aside get one from their
@@ -137,7 +179,10 @@
     opacity: 0.5; transition: opacity 0.2s ease;
     background: radial-gradient(circle, oklch(var(--accent)) 1.1px, transparent 1.6px) 0 0 / 6px 4px;
 }
-.panel:is(:hover, :focus-within, .is-holding, .is-dragging) .panel-dots::before { opacity: 1; }
+:where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within, .is-holding, .is-dragging) > .panel-dots::before { opacity: 1; }
+/* Pressed, they light up: which also tells Chromium they answer a press, so a finger on them isn't
+   moved onto a link beside or under them (its touch adjustment), as on a block of links */
+.panel-dots:active::before { opacity: 1; }
 .panel-icon { grid-column: 1; margin-right: var(--sp-s); width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 9px;
     background: oklch(var(--accent) / 0.12); border: 1px solid oklch(var(--accent) / 0.4); color: oklch(var(--accent));
 }
@@ -150,7 +195,7 @@
 .panel-head > :is(.panel-tag, .panel-tools) { grid-area: 1 / 3; justify-self: end; margin-left: var(--sp-s); }
 /* A narrow head drops its icon; narrower still, the title takes a line of its own under the tools */
 @container panel (max-width: 15rem) { .panel-icon { display: none; } }
-@container panel (max-width: 10rem) { .panel:not(.is-collapsed) .panel-head h2 { grid-area: 2 / 1 / auto / -1; margin-top: var(--sp-2xs); } }
+@container panel (max-width: 10rem) { .panel:not(.is-collapsed) > .panel-head h2 { grid-area: 2 / 1 / auto / -1; margin-top: var(--sp-2xs); } }
 .panel-tag { font: var(--fs-xs) var(--font-mono); letter-spacing: 0.15em; color: var(--text-muted); }
 /* What a panel holds answers to the panel's own width (@container panel, cqi units), never the
    window's, since a visitor can make any panel narrow. The head, body and foot are the
@@ -184,8 +229,23 @@
     font: 0.6rem var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: oklch(var(--accent) / 0.7);
     background: oklch(var(--space-oled) / 0.55); border: 1px solid oklch(var(--accent) / 0.35); backdrop-filter: blur(4px);
 }
+/* A picture stretches to its panel's shape (Doshus, 2026-10-17: he likes the stretch); a video keeps
+   its own, centered */
 .panel-media > .random-meme-fixed :is(img, video) { display: block; width: 100%; height: 100%; object-fit: fill; }
 .panel-media > .random-meme-fixed video { object-fit: contain; }
+/* On a clear board a meme wears its own frame, as the Lounge's boxes did: the panel is the frame,
+   frosted, its slot unlabeled, lit while it's reached for. The frost goes while arranging and on a
+   struggling machine, with the panels', and in a block, whose panel already frosts what's behind it
+   (a second blur there moved no pixel more than 3 of 255, at a GPU pass's cost) */
+.board[data-surface="clear"] > .panel-media { background: oklch(var(--space-oled) / 0.05); backdrop-filter: blur(10px);
+    border: 2px solid oklch(var(--accent) / 0.3); border-radius: 15px; padding: 0.5rem;
+}
+.board[data-surface="clear"] > .panel-media:not(.is-holding, .is-dragging, .is-resizing):has(:focus-visible) { border-color: oklch(var(--accent) / 0.7); box-shadow: 0 10px 30px oklch(var(--accent) / 0.4); }
+@media (hover: hover) { .board[data-surface="clear"] > .panel-media:not(.is-holding, .is-dragging, .is-resizing):hover { border-color: oklch(var(--accent) / 0.7); box-shadow: 0 10px 30px oklch(var(--accent) / 0.4); } }
+.board[data-surface="clear"] > .panel-media:is(.is-holding, .is-dragging, .is-resizing) { border-color: oklch(var(--accent)); }
+.board[data-surface="clear"] > .panel-media > .random-meme-fixed { background: none; border-radius: 10px; }
+.board[data-surface="clear"] > .panel-media > .random-meme-fixed::before { content: none; }
+.board:is(.is-arranging, .is-lean) .panel-media, .panel .board > .panel-media { backdrop-filter: none; }
 /* A headless panel's grab bar: an invisible strip over the top-left, stopping short of the
    right edge where a video player keeps its buttons; its tools sit at the strip's end */
 .panel-grab { position: absolute; top: 0; left: 0; z-index: 3; width: max(40%, 100% - 8rem); height: 2.75rem;
@@ -198,16 +258,16 @@
    only when a keyboard reaches it, beside them rather than among them, so the head never reflows */
 .panel-tools { display: flex; gap: var(--sp-2xs); position: relative; z-index: 5; opacity: 0; transition: opacity 0.2s ease; }
 .panel-grab > .panel-tools { position: absolute; top: 50%; right: var(--sp-s); translate: 0 -50%; }
-.panel-tools button { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; padding: 0; cursor: pointer;
+.panel-tools > button, .panel-tools > .board-tools > button { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; padding: 0; cursor: pointer;
     font-size: 0.8rem; color: oklch(var(--accent)); background: oklch(var(--space-oled) / 0.6);
     border: 1px solid oklch(var(--accent) / 0.3); border-radius: var(--r-s);
 }
-.panel-tools button:hover { border-color: oklch(var(--accent)); }
+:is(.panel-tools > button, .panel-tools > .board-tools > button):hover { border-color: oklch(var(--accent)); }
 .panel-grip { position: absolute; top: 0; right: calc(100% + var(--sp-2xs)); }
 /* A headless panel's strip can be narrow: there the grip sits under ✕, inside the panel */
 .panel-grab .panel-grip { top: calc(100% + var(--sp-2xs)); right: 0; }
 .panel-grip:not(:focus-visible) { width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.panel:not(.panel-media):is(:hover, :focus-within) .panel-tag { visibility: hidden; }
+.panel:not(.panel-media):is(:hover, :focus-within) > .panel-head > .panel-tag { visibility: hidden; }
 .panel.is-dragging :is(.panel-head, .panel-grab, .panel-dots) { cursor: grabbing; }
 /* Collapsed to its title bar: the head alone, its tools in view so it's clear how to open it. The
    title keeps to one line (cut with …), so the bar is the same height at any width */
@@ -230,9 +290,11 @@
 .panel-edge[data-dir="se"] { right: 0; bottom: 0; width: 1.3rem; height: 1.3rem; opacity: 0; border-radius: 0 0 var(--r-l) 0;
     background: linear-gradient(135deg, transparent 55%, oklch(var(--accent) / 0.7) 55% 62%, transparent 62% 72%, oklch(var(--accent) / 0.7) 72% 79%, transparent 79%);
 }
-.panel:is(:hover, :focus-within) :is(.panel-tools, .panel-edge[data-dir="se"]) { opacity: 1; }
+:where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within) > :is(.panel-head, .panel-grab) > .panel-tools,
+:where(.board:not([data-surface="clear"])) > .panel:is(:hover, :focus-within) > .panel-edge[data-dir="se"] { opacity: 1; }
 @media (hover: none) {
-    .panel-tools, .panel-edge[data-dir="se"] { opacity: 1; }
+    :where(.board:not([data-surface="clear"])) > .panel > :is(.panel-head, .panel-grab) > .panel-tools,
+    :where(.board:not([data-surface="clear"])) > .panel > .panel-edge[data-dir="se"] { opacity: 1; }
     .panel:not(.panel-media) .panel-tag { visibility: hidden; }
 }
 /* Touch: one big corner to resize by, instead of eight thin edges a thumb catches by accident */
@@ -291,12 +353,47 @@
 /* Foldables and tablets: 12 columns. By default the wide layout flows onto half the columns, two
    panels to a row; a visitor can still narrow one to a third */
 @media (max-width: 1080px) {
-    .board { --cols: 12; --min-cols: 4; }
+    .board:not(.panel .board) { --cols: 12; --min-cols: 4; }
 }
-/* Phones: 4 columns. By default every panel is full width and as tall as its content; half
-   width is the narrowest. Stacked panels get twice the air between them (Doshus, 2026-10-10),
-   and the board's side padding gives back the extra, so the panels keep their width */
+/* Phones: 6 columns (Doshus, 2026-10-11; 4 before). By default every panel is full width and as
+   tall as its content; half the width is the narrowest (a third is too thin for a title or the
+   keyboard's grip on a 320px phone), with two thirds and five sixths between. Stacked panels get twice the air
+   between them (Doshus, 2026-10-10), and the board's side padding gives back the extra, so the
+   panels keep their width */
 @media (max-width: 640px) {
-    .board { --cols: 4; --min-cols: 2; --gutter: 1rem; }
+    .board:not(.panel .board) { --cols: 6; --min-cols: 3; --gutter: 1rem; }
     .board-wrap { padding-inline: 0.5rem; }
 }
+
+/* ─── A BOARD IN A PANEL (UI-SPEC § Boards in a panel): its blocks move within the panel ─── */
+/* Its tier is its own width's (the panel's body), not the window's: a visitor can narrow its panel */
+@container panel (max-width: 1080px) { .board { --cols: 12; --min-cols: 4; } }
+@container panel (max-width: 640px) { .board { --cols: 6; --min-cols: 3; } }
+/* A block made taller than what it holds holds it in its middle (safe: what's too tall for it
+   scrolls from its top, none of it out of reach) */
+.panel .board > .panel > .panel-body { justify-content: safe center; }
+/* Its Reset and Add widget sit with its panel's tools, as they are */
+.panel-tools > .board-tools { display: contents; }
+.panel-tools > .board-tools > button[hidden] { display: none; }
+/* A block's grab strip covers nothing it holds: the block answers the strip's presses itself
+   (board.js), and its thin edges tile the gutter beside it, each its own margin and border, so a
+   neighbour's meets it there and neither covers the other or what they hold. Its ✕ and
+   corner still sit on what it holds (it has no head, and its content runs to its edges): a pointer
+   sees them as it reaches the block, but while a finger or pen is in use (board.js's data-touch: a
+   touch screen, or a touch laptop's last press, set on the press, before Chromium picks the tap's
+   click target) they'd be live unseen, so then they wait, unseen and untouchable, until the block
+   is focused or picked (a finger holding it, or having set it down, until a press lands
+   elsewhere). Its dots are the cue */
+.panel .board > .panel > .panel-grab { pointer-events: none; }
+.panel .board > .panel > .panel-grab > .panel-tools { pointer-events: auto; }
+.panel .board > .panel > .panel-edge { --out: calc(var(--gutter) + 1px); }
+.panel .board > .panel > .panel-edge[data-dir^="n"] { top: calc(-1 * var(--out)); height: var(--out); }
+.panel .board > .panel > .panel-edge[data-dir^="s"]:not([data-dir="se"]) { bottom: calc(-1 * var(--out)); height: var(--out); }
+.panel .board > .panel > .panel-edge[data-dir$="e"]:not([data-dir="se"]) { right: calc(-1 * var(--out)); width: var(--out); }
+.panel .board > .panel > .panel-edge[data-dir$="w"] { left: calc(-1 * var(--out)); width: var(--out); }
+.panel .board > .panel.is-picked > .panel-grab > .panel-tools, .panel .board > .panel.is-picked > .panel-edge[data-dir="se"] { opacity: 1; }
+:root[data-touch] .panel .board > .panel:not(.is-picked, .is-holding, .is-dragging, .is-resizing, :has(:focus-visible)) > .panel-grab > .panel-tools,
+:root[data-touch] .panel .board > .panel:not(.is-picked, .is-holding, .is-dragging, .is-resizing, :has(:focus-visible)) > .panel-edge { opacity: 0; pointer-events: none; }
+/* While its blocks are arranged, its room below them shows past its panel's bottom, over what's there */
+.panel:has(> .panel-body > .board.is-arranging) { z-index: 40; }
+.panel-body:has(> .board.is-arranging) { overflow: visible; }

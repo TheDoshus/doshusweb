@@ -10,6 +10,15 @@ if (!navigator.globalPrivacyControl) gtag('config', 'G-KQ1RGHNMZG');
 // Respect the user's OS-level motion preference
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// localStorage that never throws: blocked storage (cookies off, some private windows) throws at a
+// touch, and full storage at a write. What it won't take is kept here, so a visitor's choices last the visit
+const store = {
+    kept: new Map(),
+    get(key) { if (store.kept.has(key)) return store.kept.get(key); try { return localStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); store.kept.delete(key); } catch { store.kept.set(key, String(value)); } },
+    del(key) { store.kept.delete(key); try { localStorage.removeItem(key); } catch { /* nothing stored */ } },
+};
+
 // ─── HAPTICS ───
 // Shared short-tap helper for click feedback sitewide. Silent no-op on
 // browsers/devices without vibration support (desktop, iOS Safari).
@@ -382,17 +391,23 @@ const memeVideoObserver = 'IntersectionObserver' in window && new IntersectionOb
     });
 }, { threshold: 0.25 });
 
+// Video.js, its script and its stylesheet, fetched once a video meme is dealt (a page dealt only pictures never loads
+// either). The sheet goes where it sat in the head, right before meme-video.css, so the cascade is as it was
 function loadVideoJs() {
     if (window.videojs) return Promise.resolve(window.videojs);
 
     if (!videoJsLoadPromise) {
+        const sheet = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: '/assets/vendor/videojs/video-js.min.css' });
+        const styled = new Promise((resolve) => { sheet.onload = sheet.onerror = resolve; }); // unstyled, it still plays
+        const ours = document.querySelector('link[href$="meme-video.css"]');
+        ours ? ours.before(sheet) : document.head.appendChild(sheet);
         videoJsLoadPromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = '/assets/vendor/videojs/video.min.js';
             script.async = true;
             script.onload = () => {
                 if (window.videojs) {
-                    resolve(window.videojs);
+                    styled.then(() => resolve(window.videojs));
                 } else {
                     reject(new Error('Video.js loaded without exposing videojs'));
                 }
@@ -471,7 +486,7 @@ function createMemeVideoControls(player) {
         event.stopPropagation();
         haptic();
         // Remember a visitor's own pause so scrolling back doesn't restart it
-        const slot = playbackButton.closest('.random-meme, .random-meme-fixed');
+        const slot = playbackButton.closest('.random-meme-fixed');
         if (slot) slot.dataset.userPaused = player.paused() ? '' : '1';
         if (player.paused()) {
             const playAttempt = player.play();
@@ -555,7 +570,7 @@ async function renderVideoMeme(container, randomFile) {
 // Universal meme/video loader - Auto-loads from JSON on ANY page
 async function loadUniversalMemes() {
     // Find ALL meme containers on the current page using their CSS classes
-    const containers = document.querySelectorAll('.random-meme, .random-meme-fixed');
+    const containers = document.querySelectorAll('.random-meme-fixed');
     if (containers.length === 0) return; // If no containers exist on this page, silently stop running
 
     try {
@@ -578,7 +593,7 @@ async function loadUniversalMemes() {
                 renderVideoMeme(container, memeFile);
                 return;
             }
-            // Size and fit come from each page's CSS (.random-meme img / .random-meme-fixed img)
+            // Size and fit come from board.css (.panel-media)
             const img = document.createElement('img');
             img.src = memeFile;
             img.alt = 'Random Meme';
@@ -622,18 +637,19 @@ if (!CSS.supports('interpolate-size', 'allow-keywords') && !prefersReducedMotion
     });
 }
 
-// Modals are native <dialog class="srcOverlay">: showModal() brings focus trapping, the Escape
-// key and an inert page behind it for free. The ✕ sits in a <form method="dialog">, which closes
-// it with no script.
-document.querySelectorAll('.srcBtn').forEach(btn => {
+// Modals are native <dialog>s, opened by a button naming one (data-dialog="<its id>"): showModal()
+// brings focus trapping, the Escape key, an inert page behind it and focus back where it was, for
+// free. The ✕ sits in a <form method="dialog">, which closes it with no script.
+document.querySelectorAll('[data-dialog]').forEach(btn => {
     btn.addEventListener('click', () => {
         haptic();
-        document.getElementById(btn.dataset.target)?.showModal();
+        document.getElementById(btn.dataset.dialog)?.showModal();
     });
 });
-// Clicking the dark background (the dialog itself, outside its card) closes it too
-document.querySelectorAll('dialog.srcOverlay').forEach(dialog => {
+// Clicking the dark background (the dialog itself, outside its card) closes it too; its ✕ taps back like any button
+document.querySelectorAll('dialog').forEach(dialog => {
     dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.querySelectorAll('form[method="dialog"] button').forEach((x) => x.addEventListener('click', () => haptic()));
 });
 
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───
@@ -726,6 +742,7 @@ window.populateDiscordWidget = async function(widget) {
         widget.classList.add('discord-offline');
         countEl.textContent = "the chat's always open — tap in";
     }
+    widget.dispatchEvent(new Event('load')); // it holds more now: a board it's on measures it again, as when a picture arrives
 };
 
 window.addEventListener('DOMContentLoaded', () => {

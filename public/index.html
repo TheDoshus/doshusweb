@@ -36,8 +36,8 @@
 
     <link rel="stylesheet" href="css/shared.css">
     <link rel="stylesheet" href="css/zephyy-orb.css">
-    <link rel="stylesheet" href="assets/vendor/videojs/video-js.min.css">
     <link rel="stylesheet" href="css/meme-video.css">
+    <link rel="stylesheet" href="css/board.css">
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="css/zephyy-widget.css">
 </head>
@@ -49,15 +49,17 @@
     <section class="hero">
         <h1>Welcome to Doshus.NET</h1>
         <p>My Digital HQ</p>
-        <button class="cta-button" id="openctaPopup">Let's Vibe</button>
+        <button class="cta-button" id="openctaPopup" data-dialog="ctaPopup">Let's Vibe</button>
+        <!-- The board's Reset / Add widget bar (js/board.js fills it) -->
+        <div data-board-bar="home"></div>
     </section>
 
     <!-- Navigation Modal -->
-    <div class="ctaPopup" id="ctaPopup">
+    <dialog class="ctaPopup" id="ctaPopup" aria-labelledby="ctaPopupTitle">
         <div class="ctaPopup-content">
-            <button class="ctaPopup-close" id="closeModal">&times;</button>
+            <form method="dialog"><button class="ctaPopup-close" aria-label="Close">&times;</button></form>
 
-            <h2 class="ctaPopup-title">What's the move?</h2>
+            <h2 class="ctaPopup-title" id="ctaPopupTitle">What's the move?</h2>
             <div class="ctaPopup-buttons">
                 <button class="ctaPopup-btn" data-target="socials">📱 Socials</button>
                 <button class="ctaPopup-btn" data-target="amazonian">📦 Amazonian Spot</button>
@@ -67,21 +69,21 @@
             <!-- Zephyy Online Badge -->
             <div class="zephyy-badge-embed inline-hero"></div>
             <p>
-                <a href="zephyy.html">⚡ Meet Zephyy — my celestial co-pilot</a>
+                <a href="/zephyy">⚡ Meet Zephyy — my celestial co-pilot</a>
             </p>
         </div>
-    </div>
+    </dialog>
 
     <!-- Discord Widget Modal -->
-    <div class="ctaPopup" id="discordPopup">
+    <dialog class="ctaPopup" id="discordPopup" aria-labelledby="discordPopupTitle">
         <div class="ctaPopup-content discord-popup-content">
-            <button class="ctaPopup-close" id="closeDiscordModal" aria-label="Close">&times;</button>
-            <h2 class="ctaPopup-title">Slide Into the Server</h2>
+            <form method="dialog"><button class="ctaPopup-close" aria-label="Close">&times;</button></form>
+            <h2 class="ctaPopup-title" id="discordPopupTitle">Slide Into the Server</h2>
             <div class="discord-popup-body">
                 <div class="discord-widget">
                     <div class="discord-head">
                         <div class="discord-logo-wrap">
-                            <img src="assets/icons/discordcon.svg" alt="Discord" class="discord-logo">
+                            <img src="assets/icons/discordcon.svg" width="800" height="800" loading="lazy" alt="Discord" class="discord-logo">
                         </div>
                         <div class="discord-id">
                             <h3 class="discord-server-name">Doshus HQ</h3>
@@ -97,7 +99,7 @@
                 <div class="discord-popup-side">
                     <p class="discord-copy-label">or add me directly</p>
                     <button class="discord-username" id="copyDiscordUser" data-username="doshus.">
-                        <img src="assets/icons/discordcon.svg" alt="" class="btn-icon">
+                        <img src="assets/icons/discordcon.svg" width="800" height="800" loading="lazy" alt="" class="btn-icon">
                         <span id="discordUserText">doshus.</span>
                         <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor" aria-hidden="true"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></svg>
                     </button>
@@ -105,345 +107,388 @@
                 </div>
             </div>
         </div>
-    </div>
+    </dialog>
 
-    <!-- Social Media Section -->
-    <section class="content-section">
-        <div class="glass-card" id="socials">
-            <h2>Where I hide</h2>
-            <div class="social-carousel">
-                <div class="social-container">
+    <!-- ─── BOARD: everything below the hero, each box a panel (UI-SPEC.md; cells per tier measured from the page before) ─── -->
+    <main class="board-wrap">
+        <div class="board" data-board="home" data-surface="clear" data-tall>
+            <article class="panel home-card" id="socials" data-x="3" data-y="15" data-w="20" data-h="15" data-mid="1 15 12 14" data-phone="1 14 6 12">
+                <header class="panel-head"><h2>Where I hide</h2></header>
+                <div class="panel-body">
+                    <div class="social-carousel">
+                                    <div class="social-container">
 
-                    <!-- Discord (opens widget modal) -->
-                    <button type="button" class="social-item" id="discordSocial">
-                        <div class="social-icon">
-                            <img src="assets/icons/discordcon.svg" alt="Discord">
-                        </div>
-                        <span class="social-name">Discord</span>
-                    </button>
+                                        <!-- Discord (opens widget modal) -->
+                                        <button type="button" class="social-item" id="discordSocial" data-dialog="discordPopup">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/discordcon.svg" width="800" height="800" loading="lazy" alt="Discord">
+                                            </div>
+                                            <span class="social-name">Discord</span>
+                                        </button>
 
-                    <!-- Email -->
-                    <a href="mailto:doshusbizz@gmail.com" class="social-item">
-                        <div class="social-icon">
-                            <img src="assets/icons/emailcon.svg" alt="Email">
-                        </div>
-                        <span class="social-name">Email</span>
-                    </a>
+                                        <!-- Email -->
+                                        <a href="mailto:doshusbizz@gmail.com" class="social-item">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/emailcon.svg" width="800" height="800" loading="lazy" alt="Email">
+                                            </div>
+                                            <span class="social-name">Email</span>
+                                        </a>
 
-                    <!-- Farcaster -->
-                    <a href="https://farcaster.xyz/doshus.eth" class="social-item" target="_blank" rel="noreferrer">
-                        <div class="social-icon">
-                            <img src="assets/icons/farcastercon.svg" alt="Farcaster">
-                        </div>
-                        <span class="social-name">Farcaster</span>
-                    </a>
+                                        <!-- Farcaster -->
+                                        <a href="https://farcaster.xyz/doshus.eth" class="social-item" target="_blank" rel="noreferrer">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/farcastercon.svg" width="2500" height="2500" loading="lazy" alt="Farcaster">
+                                            </div>
+                                            <span class="social-name">Farcaster</span>
+                                        </a>
 
-                    <!-- GitHub -->
-                    <a href="https://github.com/TheDoshus" class="social-item" target="_blank" rel="noreferrer">
-                        <div class="social-icon">
-                            <img src="assets/icons/githubcon.svg" alt="Github">
-                        </div>
-                        <span class="social-name">Github</span>
-                    </a>
+                                        <!-- GitHub -->
+                                        <a href="https://github.com/TheDoshus" class="social-item" target="_blank" rel="noreferrer">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/githubcon.svg" width="800" height="800" loading="lazy" alt="Github">
+                                            </div>
+                                            <span class="social-name">Github</span>
+                                        </a>
 
-                    <!-- Instagram -->
-                    <a href="https://www.instagram.com/187_b00ki3" class="social-item" target="_blank" rel="noreferrer">
-                        <div class="social-icon">
-                            <img src="assets/icons/instagramcon.svg" alt="Instagram">
-                        </div>
-                        <span class="social-name">Instagram</span>
-                    </a>
-                    <!-- PlayStation -->
-                    <a href="https://psnprofiles.com/Doshus2" class="social-item" target="_blank" rel="noreferrer">
-                        <div class="social-icon">
-                            <img src="assets/icons/playstationcon.svg" alt="PlayStation">
-                        </div>
-                        <span class="social-name">PlayStation</span>
-                    </a>
+                                        <!-- Instagram -->
+                                        <a href="https://www.instagram.com/187_b00ki3" class="social-item" target="_blank" rel="noreferrer">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/instagramcon.svg" width="800" height="800" loading="lazy" alt="Instagram">
+                                            </div>
+                                            <span class="social-name">Instagram</span>
+                                        </a>
+                                        <!-- PlayStation -->
+                                        <a href="https://psnprofiles.com/Doshus2" class="social-item" target="_blank" rel="noreferrer">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/playstationcon.svg" width="800" height="800" loading="lazy" alt="PlayStation">
+                                            </div>
+                                            <span class="social-name">PlayStation</span>
+                                        </a>
 
-                    <!-- Twitch -->
-                    <a href="https://twitch.tv/doshus2" class="social-item" target="_blank" rel="noreferrer">
-                        <div class="social-icon">
-                            <img src="assets/icons/twitchcon.svg" alt="Twitch">
-                        </div>
-                        <span class="social-name">Twitch</span>
-                    </a>
+                                        <!-- Twitch -->
+                                        <a href="https://twitch.tv/doshus2" class="social-item" target="_blank" rel="noreferrer">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/twitchcon.svg" width="800" height="800" loading="lazy" alt="Twitch">
+                                            </div>
+                                            <span class="social-name">Twitch</span>
+                                        </a>
 
-                    <!-- Twitter/X -->
-                    <a href="https://x.com/DjangoDeBrignac" class="social-item" target="_blank" rel="noreferrer">
-                        <div class="social-icon">
-                            <img src="assets/icons/Xcon.svg" alt="X">
-                        </div>
-                        <span class="social-name">X</span>
-                    </a>
+                                        <!-- Twitter/X -->
+                                        <a href="https://x.com/DjangoDeBrignac" class="social-item" target="_blank" rel="noreferrer">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/Xcon.svg" width="300" height="300" loading="lazy" alt="X">
+                                            </div>
+                                            <span class="social-name">X</span>
+                                        </a>
 
-                    <!-- YouTube -->
-                    <a href="https://www.youtube.com/@doshus" class="social-item" target="_blank" rel="noreferrer">
-                        <div class="social-icon">
-                            <img src="assets/icons/youtubecon.svg" alt="YouTube">
-                        </div>
-                        <span class="social-name">YouTube</span>
-                    </a>
+                                        <!-- YouTube -->
+                                        <a href="https://www.youtube.com/@doshus" class="social-item" target="_blank" rel="noreferrer">
+                                            <div class="social-icon">
+                                                <img src="assets/icons/youtubecon.svg" width="800" height="800" loading="lazy" alt="YouTube">
+                                            </div>
+                                            <span class="social-name">YouTube</span>
+                                        </a>
+                                    </div>
+                                </div>
+                    <p class="scroll-hint">← Scroll to explore →</p>
                 </div>
-            </div>
-            <p class="scroll-hint">← Scroll to explore →</p>
-        </div>
-        <div class="promo-container">
-            <a href="https://desertdiamondautodetailing.org" target="_blank" rel="noreferrer" class="promo-link">
-                <span class="promo-text">✨ Keep ya ride clean in the Phoenix Metro @</span>
-                <img src="assets/images/ddadlogo.webp" alt="Desert Diamond Auto Detailing" class="promo-image">
-            </a>
-        </div>
-    </section>
+            </article>
 
-    <section class="content-section">
-        <div class="grid-container">
-            <!-- Amazonian Spot -->
-            <div class="grid-item coworkers-spot" id="amazonian">
-                <h2>📦 Amazonian Spot</h2>
+            <aside class="panel promo-panel" id="promo" aria-label="Desert Diamond Auto Detailing" data-x="1" data-y="32" data-w="24" data-h="12" data-mid="1 32 12 12" data-phone="1 28 6 9">
+                <div class="panel-body">
+                    <a href="https://desertdiamondautodetailing.org" target="_blank" rel="noreferrer" class="promo-link">
+                                    <span class="promo-text">✨ Keep ya ride clean in the Phoenix Metro @</span>
+                                    <img src="assets/images/ddadlogo.webp" width="1743" height="1170" loading="lazy" alt="Desert Diamond Auto Detailing" class="promo-image">
+                                </a>
+                </div>
+            </aside>
 
-                <!-- Toggle Switch -->
-                <div class="link-toggle-container">
-                    <label class="toggle-label">
-                        <input type="checkbox" id="linkToggle" class="toggle-checkbox" aria-label="toggle-links">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span class="toggle-text" id="toggleText">Internal Links</span>
-                </div>
-
-                <p>Useful tools and resource pages I've created for my Amazon team that makes our work life easier.</p>
-                
-                <div class="work-email">
-                    <img src="assets/icons/slackcon.svg" alt="Slack" class="slack-icon">
-                    <span id="slackText" class="email-hidden">•••••••@••••••••••</span>
-                </div>
-                                
-                <div class="tool-description">
-                    <strong>Doshus Printmon:</strong> Access the printmon version I've put together and host on Amazons internal network.
-                </div>
-                
-                <div class="tool-description">
-                    <strong>TamperMonkey & Bookmarks:</strong> Download my preset TamperMonkey packages and Bookmarks.
-                </div>
-                
-                <div class="tool-description">
-                    <strong>AIO:</strong> An All-In-One problem solve tool page for more efficient working.
-                </div>
-                
-                <div class="tool-description">
-                    <strong>Corners Page:</strong> A quadscreen tool page that allows you to use multiple tools in one window simultaneously.
-                </div>
-                
-                <!-- Pills are built at runtime by home.js from RTDB /config/worklinks
-                     (keeps corp URLs and the work email out of the repo) -->
-                <div class="button-group" id="workLinks"></div>
-            </div>
-
-            <!-- lounge Box -->
-            <div class="grid-item lounge-box" id="lounge">
-                <h2>🎬 Lounge</h2>
-                <p>My collection of things I find kinda entertaining 🙄</p>
-                
-                <div class="lounge-content">
-                    <div class="spotify-section">
-                        <div class="spotify-embed">
-                            <iframe title="Spotify Player" id="spotify-embed" height="500" loading="lazy" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
-                        </div>
+            <article class="panel home-box coworkers-spot" id="amazonian" data-accent="amzn" data-x="1" data-y="59" data-w="24" data-h="17" data-mid="1 59 12 18" data-phone="1 51 6 24">
+                <header class="panel-head"><h2>📦 Amazonian Spot</h2></header>
+                <div class="panel-body">
+                    <div class="board" data-board="home-amazonian" data-surface="clear" data-tall>
+                        <section class="panel" id="az-intro" aria-label="Amazonian intro" data-x="1" data-y="1" data-w="24" data-h="3" data-mid="1 1 12 4" data-phone="1 1 6 5">
+                            <div class="panel-body">
+                    <!-- Toggle Switch -->
+                    <div class="link-toggle-container">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="linkToggle" class="toggle-checkbox" aria-label="toggle-links">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-text" id="toggleText">Internal Links</span>
                     </div>
-                
-                    <div class="random-meme" id="meme-container"></div>
-                </div>
 
-                <p>A few interesting sites:</p>
-                <div class="featured-sites">
-                    <a href="https://dos.zone/" class="site-card" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/doscon.png" alt="dos.zone">
-                        <span>dos.zone</span>
-                    </a>
-                    <a href="https://neal.fun/" class="site-card" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/nealcon.webp" alt="neal.fun">
-                        <span>neal.fun</span>
-                    </a>
-                    <a href="https://jmail.world" class="site-card" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/jmailcon.webp" alt="jmail.world">
-                        <span>jmail.world</span>
-                    </a>
-                    <a href="https://futuretimeline.net/" class="site-card" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/futuretimecon.png" alt="FutureTimeline.net">
-                        <span>FutureTimeline.net</span>
-                    </a>
-                    <a href="https://ww4.fmovies.co/" class="site-card" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/popcorncon.svg" alt="Free Movies">
-                        <span>Free Movies</span>
-                    </a>
-                    <a href="https://cursordanceparty.com/" class="site-card" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/cursorcon.png" alt="Cursor Dance Party!">
-                        <span>Cursor Dance Party!</span>
-                    </a>
-                </div>
+                    <p>Useful tools and resource pages I've created for my Amazon team that makes our work life easier.</p>
+                            </div>
+                        </section>
+                        <section class="panel" id="az-slack" aria-label="Slack" data-x="1" data-y="4" data-w="24" data-h="4" data-mid="1 5 12 4" data-phone="1 6 6 4">
+                            <div class="panel-body">
+                    <div class="work-email">
+                        <img src="assets/icons/slackcon.svg" width="800" height="800" loading="lazy" alt="Slack" class="slack-icon">
+                        <span id="slackText" class="email-hidden">•••••••@••••••••••</span>
+                    </div>
+                            </div>
+                        </section>
+                        <section class="panel" id="az-tools" aria-label="Work tools" data-x="1" data-y="8" data-w="24" data-h="18" data-mid="1 9 12 22" data-phone="1 10 6 27">
+                            <div class="panel-body">
+                    <div class="tool-description">
+                        <strong>Doshus Printmon:</strong> Access the printmon version I've put together and host on Amazons internal network.
+                    </div>
 
-                <div class="button-group">
-                    <a href="thelounge.html" class="pillBtn lounge">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M500-120v-440q-14-18-34.5-29T420-600q-25 0-45.5 10.5T340-560h-80q0-117 81.5-198.5T540-840q117 0 198.5 81.5T820-560h-80q-14-19-34.5-29.5T660-600q-25 0-45.5 11T580-560v440h-80Zm33-520h14q23-19 52.5-29.5T661-680q11 0 21.5 1.5T704-675q-27-39-70-62t-94-23q-51 0-94 23t-70 62q11-2 21.5-3.5T419-680q32 0 61.5 10.5T533-640Zm107 520v-240h240v240h-80v-160h-80v160h-80Zm-480 0v-122q-18-5-30-19t-14-34L80-680h25q23 0 40.5 16t19.5 39l24 265h171q33 0 56.5 23.5T440-280v40h-40v120h-60v-120H220v120h-60Zm380-520Z"/></svg>
-                        <span>The Lounge →</span>
-                    </a>
-                    <a href="https://psnprofiles.com/Doshus2" class="pillBtn reg" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/playstationcon.svg" alt="" class="btn-icon"> My PlayStation →
-                    </a>
-                    <a href="https://open.spotify.com/user/12132828623?si=DFV6sIF2QDm3sTFNvpYEqA" class="pillBtn reg" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/spotifycon.svg" alt="" class="btn-icon"> My Spotify →
-                    </a>
-                    <a href="https://www.youtube.com/@doshus" class="pillBtn reg" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/youtubecon.svg" alt="" class="btn-icon"> My YouTube →
-                    </a>
-                    <a href="https://www.instagram.com/awakeonstandby" class="pillBtn reg" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/instagramcon.svg" alt="" class="btn-icon"> My meme page →
-                    </a>
-                </div>
-            </div>
+                    <div class="tool-description">
+                        <strong>TamperMonkey & Bookmarks:</strong> Download my preset TamperMonkey packages and Bookmarks.
+                    </div>
 
-            <!-- Finance Box -->
-            <div class="grid-item finance-box" id="finance">
-                <h2>💰 Finance</h2>
-            <!-- BTC Chart Widget -->
-            <div class="btc-chart-widget">
-                <script src="https://widgets.coingecko.com/gecko-coin-price-chart-widget.js"></script>
-                <gecko-coin-price-chart-widget locale="en" dark-mode="true" transparent-background="true" coin-id="bitcoin" initial-currency="usd"></gecko-coin-price-chart-widget>
-            </div>
-                <p>Checkout all my finance related stuff here 😎</p>
+                    <div class="tool-description">
+                        <strong>AIO:</strong> An All-In-One problem solve tool page for more efficient working.
+                    </div>
 
-                <div class="category-tags">
-                    <span class="category-tag">💸 Budgets</span>
-                    <span class="category-tag">💳 Credit Cards</span>
-                    <span class="category-tag">📊 Credit Scores</span>
-                    <span class="category-tag">🪙 Crypto</span>
-                    <span class="category-tag">💰 Loans</span>
-                    <span class="category-tag">📈 Stocks</span>
-                </div>
+                    <div class="tool-description">
+                        <strong>Corners Page:</strong> A quadscreen tool page that allows you to use multiple tools in one window simultaneously.
+                    </div>
 
-                <div class="button-group">
-                    <a href="financehub.html" class="pillBtn fin">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm40-40h400L400-680H200v400Zm320-320h240v-80H520v80ZM160-240v-480 480Z"/></svg>
-                        <span>Finance Hub →</span>
-                    </a>
-                    <a href="https://app.zerion.io/0x8aa7964e556ac724e920483423928f8e63ded4b1/overview" class="pillBtn reg" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/zerioncon.webp" alt="" class="btn-icon rounded">doshus.eth Zerion →
-                    </a>
-                    <a href="https://app.layer3.xyz/doshus" class="pillBtn reg" target="_blank" rel="noreferrer">
-                        <img src="assets/icons/L3con.webp" alt="" class="btn-icon rounded">Doshus Layer3 →
-                    </a>
-                </div>
-                
-                <!-- Credit Card Carousel -->
-                <div class="credit-card-carousel">
-                    <h2>My credit card collection:<br>(click for a referral)</h2>
-                    <div class="card-scroll-container">
-                        <a href="https://www.amazon.com/Synchrony-Bank-Amazon-com-Store-Card/dp/B008A0GNA8" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Prime Store Card</span>
-                            <img src="assets/images/amzn-store.webp" alt="Amazon Prime Store Card">
-                            <span class="card-bonus">No referral</span>
-                        </a>
-                        <a href="https://www.amazon.com/dp/BT00LN946S?externalReferenceId=92652e1d-0a34-44d3-8a28-9f0504fc65f0" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Prime Visa</span>
-                            <img src="assets/images/amzn-primevisa.webp" alt="Amazon Prime Visa Card">
-                            <span class="card-bonus">$100-200 bonus</span>
-                        </a>
-                        <a href="https://americanexpress.com/en-us/referral/blue-cash-preferred-credit-card?ref=ARMaNaMjkF&XL=MNANS" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Blue Cash Preferred</span>
-                            <img src="assets/images/amex-bluecashpreferred.webp" alt="AMEX Blue Cash Preferred Card">
-                            <span class="card-bonus">$250 bonus</span>
-                        </a>
-                        <a href="https://americanexpress.com/en-us/referral/all-cards?ref=ARMaNadMCl&XL=MNANS" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Everyday Card</span>
-                            <img src="assets/images/amex-everyday.webp" alt="AMEX Everyday Card">
-                            <span class="card-bonus">Apply for any card</span>
-                        </a>
-                        <a href="https://www.bankofamerica.com/refer?prod=ccr&refid=MY392JNB-CCCR01" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Customized Cash Rewards</span>
-                            <img src="assets/images/bofa-cc.webp" alt="BofA Cash Rewards Credit Card">
-                            <span class="card-bonus">$100 bonus</span>
-                        </a>
-                        <a href="https://i.capitalone.com/GvOgXGlvz" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">SavorOne</span>
-                            <img src="assets/images/capone-savorone.webp" alt="CapOne SavorOne Card">
-                            <span class="card-bonus">Check for bonus</span>
-                        </a>
-                        <a href="https://www.referyourchasecard.com/18m/2EI2MZ512L" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Freedom Flex</span>
-                            <img src="assets/images/chase-freedomflex.webp" alt="Chase Freedom Flex Card">
-                            <span class="card-bonus">Check for bonus</span>
-                        </a>
-                        <a href="https://online.citi.com/US/ag/cards/pre-qualify" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Custom Cash</span>
-                            <img src="assets/images/citi-customcash.webp" alt="Citi Custom Cash Card">
-                            <span class="card-bonus">No referral</span>
-                        </a>
-                        <a href="https://online.citi.com/US/ag/cards/pre-qualify" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Double Cash</span>
-                            <img src="assets/images/citi-doublecash.webp" alt="Citi Double Cash Card">
-                            <span class="card-bonus">No referral</span>
-                        </a>
-                        <a href="https://online.citi.com/US/ag/cards/pre-qualify" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Simplicity</span>
-                            <img src="assets/images/citi-simplicity.webp" alt="Credit Citi Simplicity Card">
-                            <span class="card-bonus">No referral</span>
-                        </a>
-                        <a href="https://www.coinbase.com/creditcard" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Coinbase Card</span>
-                            <img src="assets/images/coinbasecard.webp" alt="Coinbase Card">
-                            <span class="card-bonus">No referral</span>
-                        </a>
-                        <a href="https://refer.discover.com/s/armandaustin121?advocate.partner_share_id=9525237221" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">It Cashback</span>
-                            <img src="assets/images/discover-cashback.webp" alt="Discover It Cashback Card">
-                            <span class="card-bonus">$100 bonus</span>
-                        </a>
-                        <a href="https://refer.discover.com/s/armandaustin19?advocate.partner_share_id=6418950413" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">It Chrome</span>
-                            <img src="assets/images/discover-chrome.webp" alt="Discover It Chrome Card">
-                            <span class="card-bonus">$100 bonus</span>
-                        </a>
-                        <a href="https://www.fidelity.com/spend-save/visa-signature-card" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Fidelity Visa</span>
-                            <img src="assets/images/fidelityvisa.webp" alt="Fidelity Visa Card">
-                            <span class="card-bonus">No referral</span>
-                        </a>
-                        <a href="https://www.referyourchasecard.com/210y/Q80W4OL8DC" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">IHG Premier OneRewards</span>
-                            <img src="assets/images/chase-ihgpremier.webp" alt="IHG Premier OneRewards Card">
-                            <span class="card-bonus">140,000 points bonus</span>
-                        </a>
-                        <a href="https://www.playstation.com/en-us/playstation-credit-card/" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">PlayStation Visa</span>
-                            <img src="assets/images/playstationvisa.webp" alt="PlayStation Visa Card">
-                            <span class="card-bonus">No referral</span>
-                        </a>
-                        <a href="https://referral.t-mobile.com/ixU9Ust" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">T-Mobile Visa</span>
-                            <img src="assets/images/tmobilevisa.webp" alt="T-Mobile Visa Card">
-                            <span class="card-bonus">T-Mobile referral</span>
-                        </a>
-                        <a href="https://www.usaa.com/banking/credit-cards-member/cash-back/preferred-cash/apply?productId=101" class="credit-card-item" target="_blank" rel="noreferrer">
-                            <span class="card-title">Preferred Cash Rewards Visa</span>
-                            <img src="assets/images/usaa-preferredcash.webp" alt="USAA Preferred Cash Rewards Visa Card">
-                            <span class="card-bonus">No referral</span>
-                        </a>
-                        <!-- Add more cards as needed -->
+                    <!-- Pills are built at runtime by home.js from RTDB /config/worklinks
+                         (keeps corp URLs and the work email out of the repo) -->
+                    <div class="button-group" id="workLinks"></div>
+                            </div>
+                        </section>
                     </div>
                 </div>
+            </article>
 
-                <!-- Quick Links Box -->
-                <div class="quickLinks">
-                    <h3 class="qlHeader">Freeze Your Credit 🥶</h3>
-                    <div class="qlBtns">
-                        <a href="https://service.transunion.com/dss/freezeStatus.page?" class="qlBtn" target="_blank" rel="noreferrer">🧊 TransUnion Freeze</a>
-                        <a href="https://my.equifax.com/membercenter/#/freeze" class="qlBtn" target="_blank" rel="noreferrer">🧊 Equifax Freeze</a>
-                        <a href="https://usa.experian.com/mfe/member/security-freeze" class="qlBtn" target="_blank" rel="noreferrer">🧊 Experian Freeze</a>
+            <article class="panel home-box lounge-box" id="lounge" data-accent="lounge" data-x="1" data-y="78" data-w="24" data-h="33" data-mid="1 80 12 36" data-phone="1 76 6 61">
+                <header class="panel-head"><h2>🎬 Lounge</h2></header>
+                <div class="panel-body">
+                    <div class="board" data-board="home-lounge" data-surface="clear" data-tall>
+                        <section class="panel" id="lg-intro" aria-label="Lounge intro" data-x="1" data-y="1" data-w="24" data-h="4" data-mid="1 1 12 4" data-phone="1 1 6 6">
+                            <div class="panel-body">
+                    <p>My collection of things I find kinda entertaining 🙄</p>
+                            </div>
+                        </section>
+                        <section class="panel" id="lg-spotify" aria-label="Spotify player" data-x="1" data-y="5" data-w="12" data-h="32" data-mid="1 5 12 32" data-phone="1 7 6 32">
+                            <div class="panel-body">
+                        <div class="spotify-embed"><iframe title="Spotify Player" id="spotify-embed" loading="lazy" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe></div>
+                            </div>
+                        </section>
+                        <figure class="panel panel-media" id="lg-meme" aria-label="Random meme" data-x="13" data-y="5" data-w="12" data-h="32" data-mid="4 37 6 21" data-phone="1 39 6 19">
+                            <div class="random-meme-fixed"></div>
+                        </figure>
+                        <section class="panel" id="lg-sites" aria-label="Interesting sites" data-x="1" data-y="37" data-w="24" data-h="16" data-mid="1 58 12 33" data-phone="1 58 6 34">
+                            <div class="panel-body">
+                    <p>A few interesting sites:</p>
+                    <div class="featured-sites">
+                        <a href="https://dos.zone/" class="site-card" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/doscon.png" width="32" height="32" loading="lazy" alt="dos.zone">
+                            <span>dos.zone</span>
+                        </a>
+                        <a href="https://neal.fun/" class="site-card" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/nealcon.webp" width="250" height="250" loading="lazy" alt="neal.fun">
+                            <span>neal.fun</span>
+                        </a>
+                        <a href="https://jmail.world" class="site-card" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/jmailcon.webp" width="207" height="207" loading="lazy" alt="jmail.world">
+                            <span>jmail.world</span>
+                        </a>
+                        <a href="https://futuretimeline.net/" class="site-card" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/futuretimecon.png" width="16" height="16" loading="lazy" alt="FutureTimeline.net">
+                            <span>FutureTimeline.net</span>
+                        </a>
+                        <a href="https://ww4.fmovies.co/" class="site-card" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/popcorncon.svg" width="800" height="800" loading="lazy" alt="Free Movies">
+                            <span>Free Movies</span>
+                        </a>
+                        <a href="https://cursordanceparty.com/" class="site-card" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/cursorcon.png" width="16" height="16" loading="lazy" alt="Cursor Dance Party!">
+                            <span>Cursor Dance Party!</span>
+                        </a>
+                    </div>
+                            </div>
+                        </section>
+                        <section class="panel" id="lg-links" aria-label="Lounge links" data-x="1" data-y="53" data-w="24" data-h="5" data-mid="1 91 12 22" data-phone="1 92 6 22">
+                            <div class="panel-body">
+                    <div class="button-group">
+                        <a href="/thelounge" class="pillBtn lounge">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M500-120v-440q-14-18-34.5-29T420-600q-25 0-45.5 10.5T340-560h-80q0-117 81.5-198.5T540-840q117 0 198.5 81.5T820-560h-80q-14-19-34.5-29.5T660-600q-25 0-45.5 11T580-560v440h-80Zm33-520h14q23-19 52.5-29.5T661-680q11 0 21.5 1.5T704-675q-27-39-70-62t-94-23q-51 0-94 23t-70 62q11-2 21.5-3.5T419-680q32 0 61.5 10.5T533-640Zm107 520v-240h240v240h-80v-160h-80v160h-80Zm-480 0v-122q-18-5-30-19t-14-34L80-680h25q23 0 40.5 16t19.5 39l24 265h171q33 0 56.5 23.5T440-280v40h-40v120h-60v-120H220v120h-60Zm380-520Z"/></svg>
+                            <span>The Lounge →</span>
+                        </a>
+                        <a href="https://psnprofiles.com/Doshus2" class="pillBtn reg" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/playstationcon.svg" width="800" height="800" loading="lazy" alt="" class="btn-icon"> My PlayStation →
+                        </a>
+                        <a href="https://open.spotify.com/user/12132828623?si=DFV6sIF2QDm3sTFNvpYEqA" class="pillBtn reg" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/spotifycon.svg" width="800" height="800" loading="lazy" alt="" class="btn-icon"> My Spotify →
+                        </a>
+                        <a href="https://www.youtube.com/@doshus" class="pillBtn reg" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/youtubecon.svg" width="800" height="800" loading="lazy" alt="" class="btn-icon"> My YouTube →
+                        </a>
+                        <a href="https://www.instagram.com/awakeonstandby" class="pillBtn reg" target="_blank" rel="noreferrer">
+                            <img src="assets/icons/instagramcon.svg" width="800" height="800" loading="lazy" alt="" class="btn-icon"> My meme page →
+                        </a>
+                    </div>
+                            </div>
+                        </section>
                     </div>
                 </div>
-            </div>
+            </article>
+
+            <article class="panel home-box finance-box" id="finance" data-accent="finance" data-x="1" data-y="114" data-w="24" data-h="28" data-mid="1 119 12 28" data-phone="1 141 6 43">
+                <header class="panel-head"><h2>💰 Finance</h2></header>
+                <div class="panel-body">
+                    <div class="board" data-board="home-finance" data-surface="clear" data-tall>
+                        <section class="panel" id="fin-intro" aria-label="Finance links" data-x="1" data-y="1" data-w="14" data-h="18" data-mid="1 19 12 22" data-phone="1 19 6 26">
+                            <div class="panel-body">
+                        <p>Checkout all my finance related stuff here 😎</p>
+
+                        <div class="category-tags">
+                            <span class="category-tag">💸 Budgets</span>
+                            <span class="category-tag">💳 Credit Cards</span>
+                            <span class="category-tag">📊 Credit Scores</span>
+                            <span class="category-tag">🪙 Crypto</span>
+                            <span class="category-tag">💰 Loans</span>
+                            <span class="category-tag">📈 Stocks</span>
+                        </div>
+
+                        <div class="button-group">
+                            <a href="/financehub" class="pillBtn fin">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm40-40h400L400-680H200v400Zm320-320h240v-80H520v80ZM160-240v-480 480Z"/></svg>
+                                <span>Finance Hub →</span>
+                            </a>
+                            <a href="https://app.zerion.io/0x8aa7964e556ac724e920483423928f8e63ded4b1/overview" class="pillBtn reg" target="_blank" rel="noreferrer">
+                                <img src="assets/icons/zerioncon.webp" width="400" height="400" loading="lazy" alt="" class="btn-icon rounded">doshus.eth Zerion →
+                            </a>
+                            <a href="https://app.layer3.xyz/doshus" class="pillBtn reg" target="_blank" rel="noreferrer">
+                                <img src="assets/icons/L3con.webp" width="96" height="96" loading="lazy" alt="" class="btn-icon rounded">Doshus Layer3 →
+                            </a>
+                        </div>
+                            </div>
+                        </section>
+                        <section class="panel" id="fin-chart" aria-label="Bitcoin price chart" data-x="15" data-y="1" data-w="10" data-h="18" data-mid="1 1 12 18" data-phone="1 1 6 18">
+                            <div class="panel-body">
+                    <!-- BTC Chart Widget -->
+                    <div class="btc-chart-widget">
+                        <script src="https://widgets.coingecko.com/gecko-coin-price-chart-widget.js"></script>
+                        <gecko-coin-price-chart-widget locale="en" dark-mode="true" transparent-background="true" coin-id="bitcoin" initial-currency="usd"></gecko-coin-price-chart-widget>
+                    </div>
+                            </div>
+                        </section>
+                        <section class="panel" id="fin-cards" aria-label="Credit card collection" data-x="1" data-y="19" data-w="24" data-h="18" data-mid="1 45 12 16" data-phone="1 48 6 16">
+                            <div class="panel-body">
+                        <!-- Credit Card Carousel -->
+                        <div class="credit-card-carousel">
+                            <h2>My credit card collection:<br>(click for a referral)</h2>
+                            <div class="card-scroll-container">
+                                <a href="https://www.amazon.com/Synchrony-Bank-Amazon-com-Store-Card/dp/B008A0GNA8" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Prime Store Card</span>
+                                    <img src="assets/images/amzn-store.webp" width="369" height="233" loading="lazy" alt="Amazon Prime Store Card">
+                                    <span class="card-bonus">No referral</span>
+                                </a>
+                                <a href="https://www.amazon.com/dp/BT00LN946S?externalReferenceId=92652e1d-0a34-44d3-8a28-9f0504fc65f0" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Prime Visa</span>
+                                    <img src="assets/images/amzn-primevisa.webp" width="490" height="313" loading="lazy" alt="Amazon Prime Visa Card">
+                                    <span class="card-bonus">$100-200 bonus</span>
+                                </a>
+                                <a href="https://americanexpress.com/en-us/referral/blue-cash-preferred-credit-card?ref=ARMaNaMjkF&XL=MNANS" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Blue Cash Preferred</span>
+                                    <img src="assets/images/amex-bluecashpreferred.webp" width="314" height="199" loading="lazy" alt="AMEX Blue Cash Preferred Card">
+                                    <span class="card-bonus">$250 bonus</span>
+                                </a>
+                                <a href="https://americanexpress.com/en-us/referral/all-cards?ref=ARMaNadMCl&XL=MNANS" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Everyday Card</span>
+                                    <img src="assets/images/amex-everyday.webp" width="480" height="304" loading="lazy" alt="AMEX Everyday Card">
+                                    <span class="card-bonus">Apply for any card</span>
+                                </a>
+                                <a href="https://www.bankofamerica.com/refer?prod=ccr&refid=MY392JNB-CCCR01" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Customized Cash Rewards</span>
+                                    <img src="assets/images/bofa-cc.webp" width="500" height="315" loading="lazy" alt="BofA Cash Rewards Credit Card">
+                                    <span class="card-bonus">$100 bonus</span>
+                                </a>
+                                <a href="https://i.capitalone.com/GvOgXGlvz" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">SavorOne</span>
+                                    <img src="assets/images/capone-savorone.webp" width="500" height="315" loading="lazy" alt="CapOne SavorOne Card">
+                                    <span class="card-bonus">Check for bonus</span>
+                                </a>
+                                <a href="https://www.referyourchasecard.com/18m/2EI2MZ512L" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Freedom Flex</span>
+                                    <img src="assets/images/chase-freedomflex.webp" width="315" height="210" loading="lazy" alt="Chase Freedom Flex Card">
+                                    <span class="card-bonus">Check for bonus</span>
+                                </a>
+                                <a href="https://online.citi.com/US/ag/cards/pre-qualify" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Custom Cash</span>
+                                    <img src="assets/images/citi-customcash.webp" width="306" height="192" loading="lazy" alt="Citi Custom Cash Card">
+                                    <span class="card-bonus">No referral</span>
+                                </a>
+                                <a href="https://online.citi.com/US/ag/cards/pre-qualify" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Double Cash</span>
+                                    <img src="assets/images/citi-doublecash.webp" width="222" height="140" loading="lazy" alt="Citi Double Cash Card">
+                                    <span class="card-bonus">No referral</span>
+                                </a>
+                                <a href="https://online.citi.com/US/ag/cards/pre-qualify" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Simplicity</span>
+                                    <img src="assets/images/citi-simplicity.webp" width="222" height="140" loading="lazy" alt="Credit Citi Simplicity Card">
+                                    <span class="card-bonus">No referral</span>
+                                </a>
+                                <a href="https://www.coinbase.com/creditcard" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Coinbase Card</span>
+                                    <img src="assets/images/coinbasecard.webp" width="240" height="152" loading="lazy" alt="Coinbase Card">
+                                    <span class="card-bonus">No referral</span>
+                                </a>
+                                <a href="https://refer.discover.com/s/armandaustin121?advocate.partner_share_id=9525237221" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">It Cashback</span>
+                                    <img src="assets/images/discover-cashback.webp" width="150" height="94" loading="lazy" alt="Discover It Cashback Card">
+                                    <span class="card-bonus">$100 bonus</span>
+                                </a>
+                                <a href="https://refer.discover.com/s/armandaustin19?advocate.partner_share_id=6418950413" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">It Chrome</span>
+                                    <img src="assets/images/discover-chrome.webp" width="500" height="315" loading="lazy" alt="Discover It Chrome Card">
+                                    <span class="card-bonus">$100 bonus</span>
+                                </a>
+                                <a href="https://www.fidelity.com/spend-save/visa-signature-card" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Fidelity Visa</span>
+                                    <img src="assets/images/fidelityvisa.webp" width="500" height="315" loading="lazy" alt="Fidelity Visa Card">
+                                    <span class="card-bonus">No referral</span>
+                                </a>
+                                <a href="https://www.referyourchasecard.com/210y/Q80W4OL8DC" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">IHG Premier OneRewards</span>
+                                    <img src="assets/images/chase-ihgpremier.webp" width="289" height="181" loading="lazy" alt="IHG Premier OneRewards Card">
+                                    <span class="card-bonus">140,000 points bonus</span>
+                                </a>
+                                <a href="https://www.playstation.com/en-us/playstation-credit-card/" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">PlayStation Visa</span>
+                                    <img src="assets/images/playstationvisa.webp" width="477" height="300" loading="lazy" alt="PlayStation Visa Card">
+                                    <span class="card-bonus">No referral</span>
+                                </a>
+                                <a href="https://referral.t-mobile.com/ixU9Ust" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">T-Mobile Visa</span>
+                                    <img src="assets/images/tmobilevisa.webp" width="475" height="300" loading="lazy" alt="T-Mobile Visa Card">
+                                    <span class="card-bonus">T-Mobile referral</span>
+                                </a>
+                                <a href="https://www.usaa.com/banking/credit-cards-member/cash-back/preferred-cash/apply?productId=101" class="credit-card-item" target="_blank" rel="noreferrer">
+                                    <span class="card-title">Preferred Cash Rewards Visa</span>
+                                    <img src="assets/images/usaa-preferredcash.webp" width="400" height="315" loading="lazy" alt="USAA Preferred Cash Rewards Visa Card">
+                                    <span class="card-bonus">No referral</span>
+                                </a>
+                                <!-- Add more cards as needed -->
+                            </div>
+                        </div>
+                            </div>
+                        </section>
+                        <section class="panel" id="fin-freeze" aria-label="Freeze your credit" data-x="1" data-y="38" data-w="24" data-h="10" data-mid="1 63 12 10" data-phone="1 66 6 12">
+                            <div class="panel-body">
+                        <!-- Quick Links Box -->
+                        <div class="quickLinks">
+                            <h3 class="qlHeader">Freeze Your Credit 🥶</h3>
+                            <div class="qlBtns">
+                                <a href="https://service.transunion.com/dss/freezeStatus.page?" class="qlBtn" target="_blank" rel="noreferrer">🧊 TransUnion Freeze</a>
+                                <a href="https://my.equifax.com/membercenter/#/freeze" class="qlBtn" target="_blank" rel="noreferrer">🧊 Equifax Freeze</a>
+                                <a href="https://usa.experian.com/mfe/member/security-freeze" class="qlBtn" target="_blank" rel="noreferrer">🧊 Experian Freeze</a>
+                            </div>
+                        </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </article>
         </div>
-    </section>
+    </main>
 
     <!-- ─── STICKY FOOTER ─── -->
     <footer class="sticky-footer" id="sticky-footer">
@@ -453,15 +498,15 @@
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M600-160v-280h280v280H600ZM440-520v-280h440v280H440ZM80-160v-280h440v280H80Zm0-360v-280h280v280H80Zm440-80h280v-120H520v120ZM160-240h280v-120H160v120Zm520 0h120v-120H680v120ZM160-600h120v-120H160v120Zm360 0Zm-80 240Zm240 0ZM280-600Z"/></svg>
                 <span>Home</span>
             </a>
-            <a href="thelounge.html">
+            <a href="/thelounge">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M500-120v-440q-14-18-34.5-29T420-600q-25 0-45.5 10.5T340-560h-80q0-117 81.5-198.5T540-840q117 0 198.5 81.5T820-560h-80q-14-19-34.5-29.5T660-600q-25 0-45.5 11T580-560v440h-80Zm33-520h14q23-19 52.5-29.5T661-680q11 0 21.5 1.5T704-675q-27-39-70-62t-94-23q-51 0-94 23t-70 62q11-2 21.5-3.5T419-680q32 0 61.5 10.5T533-640Zm107 520v-240h240v240h-80v-160h-80v160h-80Zm-480 0v-122q-18-5-30-19t-14-34L80-680h25q23 0 40.5 16t19.5 39l24 265h171q33 0 56.5 23.5T440-280v40h-40v120h-60v-120H220v120h-60Zm380-520Z"/></svg>
                 <span>Lounge</span>
             </a>
-            <a href="financehub.html">
+            <a href="/financehub">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm40-40h400L400-680H200v400Zm320-320h240v-80H520v80ZM160-240v-480 480Z"/></svg>
                 <span>Finance</span>
             </a>
-            <a href="nexus.html">
+            <a href="/nexus">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="m480-400-80-80 80-80 80 80-80 80Zm-85-235L295-735l185-185 185 185-100 100-85-85-85 85ZM225-295 40-480l185-185 100 100-85 85 85 85-100 100Zm510 0L635-395l85-85-85-85 100-100 185 185-185 185ZM480-40 295-225l100-100 85 85 85-85 100 100L480-40Z"/></svg>
                 <span>Nexus</span>
             </a>
@@ -469,6 +514,7 @@
     </footer>
     
     <script src="js/main.js"></script>
+    <script src="js/board.js"></script>
     <script src="js/zephyy-widget.js"></script>
     <script src="js/home.js"></script>
   
