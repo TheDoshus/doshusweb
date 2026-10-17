@@ -23,6 +23,7 @@
     Colors: oklch(), every last one.
     Hosting: Firebase
     Security: strict CSP, hashed inline scripts, A+ on MDN Observatory & Security Headers
+    Disclosure: https://doshus.net/.well-known/security.txt
     Philosophy: Built with detail, one optimization pass at a time. Less code is the best code.
 
 /* SKY */

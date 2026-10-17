@@ -273,6 +273,20 @@ const CHECKS = {
             .map((f) => f.replace(/^public\/|(index)?\.html$|\/index\.html$/g, '')));
         return [...pages].filter((p) => !listed.has(p)).map((p) => `missing from sitemap: /${p}`)
             .concat([...listed].filter((p) => !pages.has(p)).map((p) => `sitemap lists no page: /${p}`));
+    },
+    // RFC 9116: a way to reach Doshus, one Expires (past it, scanners treat the file as stale) and its own
+    // address. It fails 30 days out, so the date is renewed, to under a year ahead, before it lapses
+    'security.txt is current': () => {
+        const file = 'public/.well-known/security.txt';
+        const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
+        const field = (k) => [...text.matchAll(new RegExp(`^${k}:[ \\t]*(\\S+)[ \\t]*$`, 'gim'))].map((m) => m[1]);
+        const contact = field('Contact'), expires = field('Expires'), days = (Date.parse(expires[0]) - Date.now()) / 864e5;
+        return [
+            ...!contact.length ? ['no Contact'] : contact.filter((c) => !/^(mailto|https|tel):/.test(c)).map((c) => `Contact ${c} isn't a mailto:, https: or tel: URI`),
+            ...expires.length !== 1 ? [`${expires.length} Expires fields, not one`] : !(days > 30) ? [`Expires ${expires[0]} is ${Number.isNaN(days) ? 'unreadable' : `${Math.round(days)} days out`}: renew it, to under a year ahead`]
+                : days > 366 ? [`Expires ${expires[0]} is over a year out (RFC 9116 asks for under one)`] : [],
+            ...field('Canonical').includes('https://doshus.net/.well-known/security.txt') ? [] : ['no Canonical: https://doshus.net/.well-known/security.txt'],
+        ].map((p) => `${file}: ${p}`);
     }
 };
 

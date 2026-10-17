@@ -7,6 +7,9 @@
       "target": "main",
       "public": "public",
       "cleanUrls": true,
+      "redirects": [
+        { "source": "/security.txt", "destination": "/.well-known/security.txt", "type": 301 }
+      ],
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -84,6 +87,9 @@
       "target": "zephyy",
       "public": "public",
       "cleanUrls": true,
+      "redirects": [
+        { "source": "/security.txt", "destination": "/.well-known/security.txt", "type": 301 }
+      ],
       "ignore": [
         "firebase.json",
         "**/.*",

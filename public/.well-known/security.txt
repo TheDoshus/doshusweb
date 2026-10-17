@@ -1,0 +1,28 @@
+# ==========================================
+# Doshus.NET - Security & Disclosure
+# ==========================================
+#
+# poking the orb is encouraged. breaking the perimeter gets our attention.
+#
+# this site is pure HTML, CSS and vanilla JS: no frameworks, no build step,
+# a strict CSP and hashed inline scripts. if you still found a crack in the
+# headers, an exposed endpoint, or a way to make Zephyy spill something it
+# shouldn't: good catch. tell Doshus privately, first.
+#
+# rules of engagement:
+#   - report it privately (email, or a Discord DM, never a public channel)
+#     and give a reasonable window to patch before going public
+#   - don't DoS the rig, spam the chat orb, or touch anyone else's data;
+#     the smallest PoC that proves it is plenty
+#   - third-party embeds and services (Spotify, Discord, CoinGecko, Firebase
+#     itself) belong to their owners: report those upstream
+#   - automated scanner noise without a real PoC goes straight to /dev/null
+#
+# good-faith research inside these rules is welcome, and the credit's
+# yours if you want it.
+
+Contact: mailto:doshusbizz@gmail.com
+Contact: https://discord.gg/Z74M8pT5C5
+Expires: 2027-09-30T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://doshus.net/.well-known/security.txt

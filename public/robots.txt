@@ -11,6 +11,7 @@
 #   -> for AI agents & RAG:  https://doshus.net/llms.txt
 #   -> the crew & specs:     https://doshus.net/humans.txt
 #   -> our own agents:       https://doshus.net/bot (what they send, what doesn't identify itself, how to opt out)
+#   -> found a hole:         https://doshus.net/.well-known/security.txt
 
 User-agent: *
 Allow: /
