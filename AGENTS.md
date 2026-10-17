@@ -79,7 +79,8 @@ below means the numbered coding Rules, which say how to meet them.
   Doshus as a proposal, never into an agent's files as a rule: *"I don't need or want such baby
   restrictions on my agents"* (2026-10-11). The Safety Boundaries below still hold.
 - **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
-  different model where a free lane is available, and every finding is fixed or answered; a
+  reviewer following the reviewing standard.
+  Use a different model where a free lane is available, and every finding is fixed or answered; a
   reviewer he names is part of done, and a command he runs as root is reviewed before he
   gets it. Short on review quota, routine work lands with its review
   owed and sharp edges wait. Timing
