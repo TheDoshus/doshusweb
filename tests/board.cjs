@@ -6,6 +6,8 @@
 // not the headless shell Playwright launches by default: the shell keeps a cross-site frame in its
 // page's process, so the Sandspiel frame never takes the pointer away as it does in a browser.
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { chromium } = require('playwright');
 const { serve } = require('../scripts/serve.js'); // public/ at the addresses Firebase gives it
 
@@ -478,6 +480,22 @@ const TESTS = {
         await sleep(800);
         assert.deepEqual([first > 0, unswiped, await waiting()], [true, 0, []], `home's board pictures: [some waited at first (${first}), any in view still waiting once scrolled, any waiting once the carousel is swiped]`);
         return all.concat(errors);
+    },
+    async "Video.js loads with the first video meme, its stylesheet where it sat in the head; a page dealt only pictures fetches neither"(browser) {
+        const all = [];
+        const webm = fs.readdirSync(path.join(__dirname, '..', 'public', 'assets', 'memes')).find((f) => f.endsWith('.webm'));
+        for (const meme of ['/assets/images/Image_not_available.webp', `/assets/memes/${webm}`]) {
+            const route = [(url) => url.pathname.endsWith('/meme-list.json'), (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify([meme]) })];
+            const { page, errors } = await open(browser, WIDE, { path: '/thelounge.html', route });
+            all.push(...errors);
+            await center(page, 'meme-1');
+            await sleep(1500);
+            const got = await page.evaluate(() => [performance.getEntriesByType('resource').filter((r) => r.name.includes('/videojs/')).map((r) => r.name.split('/').pop()).sort(),
+                [...document.querySelectorAll('link[rel=stylesheet]')].map((l) => l.getAttribute('href').split('/').pop()).filter((h) => /video-js|meme-video/.test(h)), !!document.querySelector('#meme-1 .video-js')]);
+            assert.deepEqual(got, meme.endsWith('.webm') ? [['video-js.min.css', 'video.min.js'], ['video-js.min.css', 'meme-video.css'], true] : [[], ['meme-video.css'], false], `${meme}: [fetched, sheet order, a player]`);
+            await page.context().close();
+        }
+        return all;
     },
     async "the 404 page, served at a missing address however deep, is styled and links to the site's pages"(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/a/b/nope' });

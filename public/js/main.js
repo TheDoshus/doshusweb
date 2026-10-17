@@ -389,17 +389,23 @@ const memeVideoObserver = 'IntersectionObserver' in window && new IntersectionOb
     });
 }, { threshold: 0.25 });
 
+// Video.js, its script and its stylesheet, fetched once a video meme is dealt (a page dealt only pictures never loads
+// either). The sheet goes where it sat in the head, right before meme-video.css, so the cascade is as it was
 function loadVideoJs() {
     if (window.videojs) return Promise.resolve(window.videojs);
 
     if (!videoJsLoadPromise) {
+        const sheet = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: '/assets/vendor/videojs/video-js.min.css' });
+        const styled = new Promise((resolve) => { sheet.onload = sheet.onerror = resolve; }); // unstyled, it still plays
+        const ours = document.querySelector('link[href$="meme-video.css"]');
+        ours ? ours.before(sheet) : document.head.appendChild(sheet);
         videoJsLoadPromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = '/assets/vendor/videojs/video.min.js';
             script.async = true;
             script.onload = () => {
                 if (window.videojs) {
-                    resolve(window.videojs);
+                    styled.then(() => resolve(window.videojs));
                 } else {
                     reject(new Error('Video.js loaded without exposing videojs'));
                 }
