@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initSpotifyEmbed();
     initDiscordModal();
+
+    // CoinGecko's chart redraws to its width only when the window resizes, not when its block does (narrowed, it ran past
+    // the block until something resized the window): its box changing size tells it the same way
+    const chart = document.querySelector('gecko-coin-price-chart-widget');
+    if (chart) new ResizeObserver(() => dispatchEvent(new Event('resize'))).observe(chart);
 });
 
 // ─── AMAZONIAN SPOT WORK LINKS ───

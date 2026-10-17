@@ -234,7 +234,20 @@ document.querySelectorAll('.board[data-board]').forEach((board) => {
         });
         return resolve(map);
     }
+    // Measuring renders the markup's cells for a moment, which can make the board, and the page, shorter than it stands: it
+    // keeps its height meanwhile, so a page scrolled to its end isn't cut short under the visitor (the browser clamps the
+    // scroll, and Firefox doesn't take it back; Doshus, 2026-10-17)
     function defaults() {
+        // Pinned and let go at once (under reduced motion every property eases, shared.css, the pin too, so the height the
+        // board tells its panel would still be the pin's): its transitions are off until the release is in
+        Object.assign(board.style, { transitionProperty: 'none', minHeight: `${board.offsetHeight}px` });
+        try { return measured(); } finally {
+            board.style.removeProperty('min-height');
+            getComputedStyle(board).minHeight; // the release, in before transitions come back
+            board.style.removeProperty('transition-property');
+        }
+    }
+    function measured() {
         boardW(); // measured at the board's width now, not as of the last observer report
         const wide = new Map(panels.map((p) => [p, read(p)]));
         const t = tier();

@@ -497,6 +497,48 @@ const TESTS = {
         }
         return all;
     },
+    async "Home: a box's ↺ doesn't throw the page back up: measuring holds the board's height, so a page scrolled to its end isn't cut short under the visitor"(browser) {
+        const all = [];
+        // Doshus's case (2026-10-17): the Lounge's sites block stretched (its box grows, Finance sits lower), the chart block taller, the
+        // page scrolled to its end. Finance's ↺ re-measures the page, which renders the markup's cells for a moment: the page was cut
+        // short then, the scroll clamped, and Firefox left it there (a screen up). Each scroll position the board's reads see is
+        // sampled; none may dip under where the page ends up
+        for (const motion of ['reduce', 'no-preference']) {
+            const { page, errors } = await open(browser, WIDE, { path: '/', motion });
+            all.push(...errors);
+            for (const [id, n] of [['lg-sites', 30], ['fin-chart', 6]]) {
+                await page.focus(`#${id} > .panel-edge[data-dir="se"]`);
+                for (let i = 0; i < n; i++) await page.keyboard.press('ArrowDown');
+            }
+            await sleep(600);
+            await steady(page);
+            await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+            await sleep(300);
+            await page.evaluate(() => { window.__seen = []; const g = Element.prototype.getBoundingClientRect;
+                Element.prototype.getBoundingClientRect = function () { window.__seen.push(scrollY); return g.call(this); }; });
+            await page.evaluate(() => [...document.querySelectorAll('#finance > .panel-head .board-tools button')].find((b) => b.textContent === '↺').click());
+            await sleep(800);
+            const [lowest, end, bottom, blank] = await page.evaluate(() => { const body = document.querySelector('#finance > .panel-body');
+                return [Math.round(Math.min(...window.__seen)), Math.round(scrollY), document.documentElement.scrollHeight - innerHeight,
+                    Math.round(body.getBoundingClientRect().bottom - body.querySelector('.board').getBoundingClientRect().bottom - parseFloat(getComputedStyle(body).paddingBottom))]; });
+            assert.deepEqual([lowest, end, blank < 32], [end, bottom, true], `${motion}: [the lowest scroll the board's reads saw, where it ended, the box holding its blocks (${blank}px under them)] (the page's end is ${bottom})`);
+            await page.context().close();
+        }
+        return all;
+    },
+    async "Home: the Bitcoin chart hears its block resize (CoinGecko's widget redraws to its width only on the window's resize)"(browser) {
+        // A stand-in for the widget (the suite keeps outside hosts blocked) that counts the window's resizes, as the real one redraws on them
+        const stub = 'customElements.define("gecko-coin-price-chart-widget", class extends HTMLElement { connectedCallback() { window.__redraws = 0; addEventListener("resize", () => window.__redraws++); } });';
+        const route = [(url) => url.hostname === 'widgets.coingecko.com', (r) => r.fulfill({ contentType: 'text/javascript', body: stub })];
+        const { page, errors } = await open(browser, WIDE, { path: '/', route });
+        await center(page, 'fin-chart');
+        const before = await page.evaluate(() => window.__redraws);
+        await page.focus('#fin-chart > .panel-edge[data-dir="se"]');
+        for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowLeft');
+        await sleep(600);
+        assert.ok(await page.evaluate(() => window.__redraws) > before, `the chart heard no resize when its block narrowed (${before} before)`);
+        return errors;
+    },
     async "the 404 page, served at a missing address however deep, is styled and links to the site's pages"(browser) {
         const { page, errors } = await open(browser, WIDE, { path: '/a/b/nope' });
         const got = await page.evaluate(() => [getComputedStyle(document.body).fontFamily.split(',')[0], getComputedStyle(document.querySelector('.sticky-footer')).position,
