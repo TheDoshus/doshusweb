@@ -4,10 +4,13 @@
 #
 # yo, crawler. bots, agents, humans who read robots.txt for fun: all welcome.
 # this is Doshus's corner of the internet. hand-built, night-shift energy,
-# and home base for Zephyy, the AI crew he runs off his own rig in Phoenix.
+# and home base for Zephyy and the autonomous AI crew he runs off his own rig in Phoenix.
 # looking for Doshus? you found him.
-# the short version for agents: /llms.txt. the crew roster: /humans.txt.
-# our own bots: what they send, what doesn't identify itself, how to opt out: /bot.
+#
+# the directory:
+#   -> for AI agents & RAG:  https://doshus.net/llms.txt
+#   -> the crew & specs:     https://doshus.net/humans.txt
+#   -> our own agents:       https://doshus.net/bot (what they send, what doesn't identify itself, how to opt out)
 
 User-agent: *
 Allow: /
