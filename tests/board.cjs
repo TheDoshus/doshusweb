@@ -574,6 +574,7 @@ const TESTS = {
         for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowLeft');
         await sleep(600);
         assert.ok(await page.evaluate(() => window.__redraws) > before, `the chart heard no resize when its block narrowed (${before} before)`);
+        await steady(page);
         // Those resizes leave the window's width as it was, so no board measures again for them, nor for a window only made shorter
         // (a phone's address bar, devtools docked below)
         await page.evaluate(() => { window.__measured = 0; const count = new MutationObserver((m) => { window.__measured += m.length; });
@@ -1595,7 +1596,7 @@ const TESTS = {
             ${box('A', 'data-x="1" data-y="4" data-w="12" data-h="8"', 400)}${box('B', 'data-x="13" data-y="4" data-w="12" data-h="24"', 2000, ' data-scroll')}
             ${box('C', 'data-x="1" data-y="30" data-w="24" data-h="8"', 100)}${box('D', 'data-x="1" data-y="40" data-w="18" data-h="12"', 60)}
             <figure class="panel panel-media" id="M" data-x="19" data-y="40" data-w="6" data-h="12" aria-label="Meme"><div class="panel-body"></div></figure>
-        </div></main><script src="/js/board.js"></script></body></html>`;
+        </div></main><script src="/js/main.js"></script><script src="/js/board.js"></script></body></html>`;
         const { page, errors } = await open(browser, WIDE, { path: '/made.html', route: [base + '/made.html', (r) => r.fulfill({ contentType: 'text/html', body: html })] });
         const [a, b, c, d, m] = await Promise.all(['A', 'B', 'C', 'D', 'M'].map((id) => cells(page, id)));
         // A grows to hold its content and still ends above B, so C stays its 2 rows under B; M keeps its 12 rows and D its row with it
@@ -2017,10 +2018,12 @@ const TESTS = {
     },
     async "Home: the page's Reset keeps a box's Undo with storage blocked, and pressed mid-drag it lands"(browser) {
         const all = [];
-        // Storage that throws (cookies off): a box's saves are kept for the visit, so the Reset holds them as it would. The box narrowed into its
-        // 12-column layout and a block hidden there: the Reset widens it back, so Undo puts back a tier's layout it's no longer in
-        const init = () => Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Access is denied for this document.', 'SecurityError'); } });
-        {
+        // Storage that throws (cookies off), or that's full (writes refused, reads fine): a box's saves are kept for the visit, so the Reset holds
+        // them as it would. The box narrowed into its 12-column layout and a block hidden there: the Reset widens it back, so Undo puts back a
+        // tier's layout it's no longer in
+        const blocked = () => Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Access is denied for this document.', 'SecurityError'); } });
+        const full = () => { Storage.prototype.setItem = () => { throw new DOMException('full', 'QuotaExceededError'); }; };
+        for (const init of [blocked, full]) {
             const { page, errors } = await open(browser, WIDE, { path: '/', init });
             all.push(...errors);
             const bar = () => page.evaluate(() => [...document.querySelectorAll('[data-board-bar="home"] button')].filter((b) => !b.hidden).map((b) => b.textContent).join());
@@ -2033,11 +2036,11 @@ const TESTS = {
             await steady(page);
             await page.evaluate(() => document.querySelector('#lg-meme > .panel-grab .panel-close').click());
             await sleep(400);
-            assert.deepEqual(await box(), ['12', true], 'storage blocked, narrowed: [columns, the meme hidden]');
+            assert.deepEqual(await box(), ['12', true], `${init.name}, narrowed: [columns, the meme hidden]`);
             await press();
-            assert.deepEqual([...await box(), await bar()], ['24', false, 'Undo reset'], 'storage blocked, after Reset: [columns, the meme hidden, the bar]');
+            assert.deepEqual([...await box(), await bar()], ['24', false, 'Undo reset'], `${init.name}, after Reset: [columns, the meme hidden, the bar]`);
             await press();
-            assert.deepEqual(await box(), ['12', true], 'storage blocked, after Undo: [columns, the meme hidden]');
+            assert.deepEqual(await box(), ['12', true], `${init.name}, after Undo: [columns, the meme hidden]`);
             await page.context().close();
         }
         // A panel being dragged when Reset is pressed (a second pointer, a script): the gesture ends first, so it can't land its move over the default

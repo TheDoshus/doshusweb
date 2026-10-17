@@ -17,7 +17,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=
     '.json': 'application/json', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.webp': 'image/webp', '.png': 'image/png',
     '.jpg': 'image/jpeg', '.gif': 'image/gif', '.ico': 'image/x-icon', '.mp4': 'video/mp4', '.webm': 'video/webm',
     '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml' };
-const file = (p) => { try { return fs.statSync(p).isFile() ? p : null; } catch { return null; } };
+const file = (p) => { try { return fs.statSync(p).isFile() && !path.basename(p).startsWith('.') ? p : null; } catch { return null; } }; // dot-named: never deployed
 const NOT_FOUND = path.join(PUBLIC, '404.html');
 // public/ or below it, never a sibling (public-x/) or above
 const inside = (p) => { const r = path.relative(PUBLIC, p); return !path.isAbsolute(r) && r !== '..' && !r.startsWith(`..${path.sep}`); };
@@ -39,7 +39,7 @@ function handle(req, res) {
         return moved(clean.split('/').map(encodeURIComponent).join('/') || '/');
     }
     const hit = file(asked) ?? file(path.join(asked, 'index.html')) ?? (site.cleanUrls && !p.endsWith('.html') ? file(`${asked}.html`) : null);
-    const found = hit && hit !== NOT_FOUND && !path.basename(hit).startsWith('.') ? hit : null;
+    const found = hit !== NOT_FOUND ? hit : null;
     res.writeHead(found ? 200 : 404, { 'content-type': TYPES[path.extname(found ?? NOT_FOUND)] ?? 'application/octet-stream' });
     // A file gone or rewritten since it was found (an editor's save, memes:convert) ends this response, not the server
     pipeline(fs.createReadStream(found ?? NOT_FOUND), res, () => {});

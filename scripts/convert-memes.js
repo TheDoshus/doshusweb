@@ -9,9 +9,10 @@
 // rung that is smaller while still clearing the bar, so already-lean files get a chance too
 // (2026-10-03 on djraccooni: CRF 32 = VMAF 91.7 at 18% smaller; CRF 30 = 92.6 at 7%, CRF 34 = 90.7
 // at 27%). A video over its budget must also land under it: one no rung gets there stays as it is
-// (trim it, or keep it on check.js's MEME_BASELINE), so a WebM is never re-encoded from its own re-encode. Images: WebP q85 (animated for GIFs), judged by SSIM. Needs ffmpeg/ffprobe with libvpx-vp9, libopus, libwebp and libvmaf on PATH; HEIC also
-// needs heif-convert (libheif). Encodes run one at a time: parallel ffmpeg gets OOM-killed on small
-// machines. Candidates and scores are cached in node_modules/.cache/memes-convert, so --apply reuses
+// (trim it, or keep it on check.js's MEME_BASELINE), so a WebM is never re-encoded from its own
+// re-encode. Images: WebP q85 (animated for GIFs), judged by SSIM. Needs ffmpeg/ffprobe with
+// libvpx-vp9, libopus, libwebp and libvmaf on PATH; HEIC also needs heif-convert (libheif).
+// Encodes run one at a time: parallel ffmpeg gets OOM-killed on small machines. Candidates and scores are cached in node_modules/.cache/memes-convert, so --apply reuses
 // them, and an unchanged meme is never re-encoded.
 
 const fs = require('fs');
@@ -170,9 +171,10 @@ if (!APPLY) {
 }
 for (const [name, r] of wins) {
     // Copied beside it, then renamed over it in one step: an interrupted run leaves the old file or the new, never half of one
-    const out = path.join(MEMES, r.outName);
-    fs.copyFileSync(r.candidate, `${out}.part`);
-    fs.renameSync(`${out}.part`, out);
+    // (a .part left behind is dot-named, so it never deploys, and bun run check names it)
+    const out = path.join(MEMES, r.outName), part = path.join(MEMES, `.${r.outName}.part`);
+    fs.copyFileSync(r.candidate, part);
+    fs.renameSync(part, out);
     // The original stays in git history. A WebM replaced in place keeps its name though /assets/ is cached as immutable: a
     // visitor still holding the old copy holds the same meme (AGENTS.md)
     if (r.outName !== name) fs.unlinkSync(path.join(MEMES, name));

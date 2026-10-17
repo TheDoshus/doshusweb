@@ -22,9 +22,9 @@ const SVG_BASELINE = new Set([
     'slackcon', 'spotifycon', 'twitchcon', 'youtubecon'
 ].map((n) => `public/assets/icons/${n}.svg`).concat('public/assets/images/Equifax_Logo.svg'));
 
-// Memes over budget before the budget existed (2026-10-17), waiting for bun run memes:convert, each with the bytes it weighed
-// then. Shrink this list, never grow it: the check names an entry that's under budget or gone, so it comes off, and one
-// that's grown
+// Memes over budget before the budget existed (2026-10-17), waiting for bun run memes:convert, each with the bytes it weighs.
+// Shrink this list, never grow it: the check names an entry that's under budget or gone, so it comes off, and one whose
+// bytes changed, so its number follows it down (or the meme goes back)
 const MEME_BASELINE = new Map(Object.entries({
     'RDT_20260123_181341.mp4': 6550529, 'RDT_20260428_021939-noSound.webm': 13464094, 'RDT_20260508_224902-noSound.webm': 16488982,
     'RDT_20260511_043813-noSound.webm': 6694454, 'RDT_20260513_075010-noSound.webm': 21403005, 'RDT_20260516_132526-noSound.webm': 9168970,
@@ -55,15 +55,18 @@ const FUNC = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab)\(/gi;
 const NAMED = /(?<![-\w#.])(?:white|black|red|green|blue|yellow|orange|purple|pink|gray|grey|silver|gold|teal|navy|cyan|magenta|lime|maroon|olive|aqua|fuchsia)(?![-\w(])/gi;
 // Blank out a match but keep its newlines, so reported line numbers stay true.
 const blank = (m) => m.replace(/[^\n]/g, ' ');
-// A page's <name> tags as a browser reads them: comments and script bodies blanked (so lines still count), any case, a '>'
-// in a quoted value kept inside it (a quote opens a value only after '='), <name-x> not one of them
-const tags = (html, name) => [...html.replace(/<!--[\s\S]*?-->/g, blank).replace(/(<script(?=[\s>])[^>]*>)([\s\S]*?)(?=<\/script)/gi, (m, open, body) => open + blank(body))
-    .matchAll(new RegExp(`<${name}(?=[\\s/>])(?:=\\s*(?:"[^"]*"|'[^']*')|[^>])*>`, 'gi'))];
-// A tag's attributes, read in order as a browser does (so a name inside another's quoted value isn't one): name → value,
-// '' for a bare one, the first of a repeated name winning
+// A <name> open tag as a browser ends it: at the first '>' outside a quoted value, a quote opening one only after '='
+// (each character read one way only, so a tag left open to the end of the file can't make the search run away)
+const openTag = (name) => `<${name}(?=[\\s/>])(?:=\\s*(?:"[^"]*"|'[^']*')|=(?!\\s*["'])|[^>=])*>`;
+// A page's <name> tags: comments and script bodies blanked (so lines still count), any case, <name-x> not one of them
+const tags = (html, name) => [...html.replace(/<!--[\s\S]*?-->/g, blank)
+    .replace(new RegExp(`(${openTag('script')})([\\s\\S]*?)(?=</script)`, 'gi'), (m, open, body) => open + blank(body))
+    .matchAll(new RegExp(openTag(name), 'gi'))];
+// A tag's attributes, read in order as a browser does (so a name inside another's quoted value isn't one; a '/' parts
+// them like a space): name → value, '' for a bare one, the first of a repeated name winning
 const attrs = (tag) => {
     const found = new Map();
-    for (const [, name, ...value] of tag.matchAll(/\s([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) {
+    for (const [, name, ...value] of tag.matchAll(/[\s/]([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) {
         if (!found.has(name.toLowerCase())) found.set(name.toLowerCase(), value.find((v) => v !== undefined) ?? '');
     }
     return found;
@@ -208,8 +211,6 @@ const CHECKS = {
         const VOID = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)$/i;
         const OPTIONAL = /^(p|li|dt|dd|option|optgroup|tr|td|th|thead|tbody|tfoot|colgroup|caption|rt|rp)$/i; // end tag may be left out
         const TAG = /<(\/?)([a-z][\w-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?)*)\s*\/?>/gi;
-        const attrs = (s) => Object.fromEntries([...s.matchAll(/([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)]
-            .map((m) => [m[1].toLowerCase(), m[2] ?? m[3] ?? m[4] ?? '']));
         const names = new Map();
         const problems = [];
         for (const f of byExt('.html').filter((f) => rel(f).startsWith('public/'))) {
@@ -243,7 +244,7 @@ const CHECKS = {
                 }
                 if (VOID.test(tag) || m[0].endsWith('/>')) continue; // opens nothing, e.g. an SVG <path/>
                 stack.push(tag.toLowerCase());
-                const a = attrs(rest);
+                const a = Object.fromEntries(attrs(rest));
                 const depth = board?.depth;
                 open.forEach((b) => b.depth++);
                 if ('data-board' in a) {
@@ -303,7 +304,7 @@ const CHECKS = {
         const html = fs.readFileSync(f, 'utf8');
         const pinned = /@\d|[/.-]v?\d+\.\d+\.\d+(?=[/.-]|$)|[?&]v(?:er(?:sion)?)?=\d/i; // in the path or query, not the host
         const hash = /^sha(?:256-[A-Za-z0-9+/]{43}=|384-[A-Za-z0-9+/]{64}|512-[A-Za-z0-9+/]{86}==)$/;
-        const host = /^(https?:)?\/\/[^/]*/i;
+        const host = /^(https?:)?\/\/[^/?#]*/i;
         const hashed = (a) => { const all = (a.get('integrity') ?? '').split(/\s+/).filter(Boolean); return all.length && all.every((h) => hash.test(h)) && a.has('crossorigin'); };
         return tags(html, 'script').map((m) => [m, attrs(m[0])]).filter(([, a]) => { const src = a.get('src') ?? ''; return host.test(src) && pinned.test(src.replace(host, '')) && !hashed(a); })
             .map(([m, a]) => `${rel(f)}:${lineOf(html, m.index)}: ${a.get('src')} is pinned to a version but has no integrity hash (and crossorigin)`);
@@ -311,14 +312,16 @@ const CHECKS = {
     // Every meme within its budget (scripts/lib/meme-budget.js), so a heavy one can't ship unshrunk
     'memes stay lean': () => {
         const dir = 'public/assets/memes', mb = (n) => (n / 1e6).toFixed(1);
-        const over = readdirSorted(path.join(ROOT, dir)).filter((f) => f !== 'meme-list.json').map((f) => {
+        const files = readdirSorted(path.join(ROOT, dir)).filter((f) => f !== 'meme-list.json');
+        const over = files.filter((f) => !f.endsWith('.part')).map((f) => {
             const size = fs.statSync(path.join(ROOT, dir, f)).size, budget = MEME_BUDGET.VIDEO.test(f) ? MEME_BUDGET.video : MEME_BUDGET.image;
             return { f, size, budget };
         }).filter((m) => m.size > m.budget);
-        return over.filter((m) => m.size > (MEME_BASELINE.get(m.f) ?? m.budget)).map((m) => MEME_BASELINE.has(m.f)
-            ? `${dir}/${m.f}: ${m.size} bytes, grown past the ${MEME_BASELINE.get(m.f)} MEME_BASELINE lets it weigh`
+        return over.filter((m) => !MEME_BASELINE.has(m.f) || m.size !== MEME_BASELINE.get(m.f)).map((m) => MEME_BASELINE.has(m.f)
+            ? `${dir}/${m.f}: ${m.size} bytes, MEME_BASELINE has ${MEME_BASELINE.get(m.f)}: ${m.size < MEME_BASELINE.get(m.f) ? 'set it to the new size' : 'it may not grow'}`
             : `${dir}/${m.f}: ${mb(m.size)} MB, over its ${mb(m.budget)} MB budget: ${/\.webp$/i.test(m.f) ? 'shrink it by hand (memes:convert makes WebPs, it doesn\'t take them)' : `bun run memes:convert ${m.f}`}`)
-            .concat([...MEME_BASELINE.keys()].filter((f) => !over.some((m) => m.f === f)).map((f) => `MEME_BASELINE lists ${f}, which is in budget or gone: take it off`));
+            .concat([...MEME_BASELINE.keys()].filter((f) => !over.some((m) => m.f === f)).map((f) => `MEME_BASELINE lists ${f}, which is in budget or gone: take it off`))
+            .concat(files.filter((f) => f.endsWith('.part')).map((f) => `${dir}/${f}: left by an interrupted memes:convert --apply: delete it`));
     },
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {

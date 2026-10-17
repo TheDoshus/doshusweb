@@ -14,9 +14,9 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
 // touch, and full storage at a write. What it won't take is kept here, so a visitor's choices last the visit
 const store = {
     kept: new Map(),
-    get(key) { if (this.kept.has(key)) return this.kept.get(key); try { return localStorage.getItem(key); } catch { return null; } },
-    set(key, value) { try { localStorage.setItem(key, value); this.kept.delete(key); } catch { this.kept.set(key, String(value)); } },
-    del(key) { this.kept.delete(key); try { localStorage.removeItem(key); } catch { /* nothing stored */ } },
+    get(key) { if (store.kept.has(key)) return store.kept.get(key); try { return localStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); store.kept.delete(key); } catch { store.kept.set(key, String(value)); } },
+    del(key) { store.kept.delete(key); try { localStorage.removeItem(key); } catch { /* nothing stored */ } },
 };
 
 // ─── HAPTICS ───
