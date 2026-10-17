@@ -2016,7 +2016,7 @@ const TESTS = {
         assert.deepEqual([await inner(), await page.evaluate(() => document.getElementById('lg-meme').hidden), await custom(page), await saves(page)], ['24', false, false, {}], 'narrowed, Reset: [columns, the meme hidden, custom, saves]');
         return all.concat(errors);
     },
-    async "Home: the page's Reset keeps a box's Undo with storage blocked, and pressed mid-drag it lands"(browser) {
+    async "Home: the page's Reset keeps a box's Undo with storage blocked or full, and pressed mid-drag it lands"(browser) {
         const all = [];
         // Storage that throws (cookies off), or that's full (writes refused, reads fine): a box's saves are kept for the visit, so the Reset holds
         // them as it would. The box narrowed into its 12-column layout and a block hidden there: the Reset widens it back, so Undo puts back a

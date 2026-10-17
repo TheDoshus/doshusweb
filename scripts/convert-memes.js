@@ -12,8 +12,9 @@
 // (trim it, or keep it on check.js's MEME_BASELINE), so a WebM is never re-encoded from its own
 // re-encode. Images: WebP q85 (animated for GIFs), judged by SSIM. Needs ffmpeg/ffprobe with
 // libvpx-vp9, libopus, libwebp and libvmaf on PATH; HEIC also needs heif-convert (libheif).
-// Encodes run one at a time: parallel ffmpeg gets OOM-killed on small machines. Candidates and scores are cached in node_modules/.cache/memes-convert, so --apply reuses
-// them, and an unchanged meme is never re-encoded.
+// Encodes run one at a time: parallel ffmpeg gets OOM-killed on small machines. Candidates and
+// scores are cached in node_modules/.cache/memes-convert, so --apply reuses them, and an unchanged
+// meme is never re-encoded.
 
 const fs = require('fs');
 const path = require('path');
