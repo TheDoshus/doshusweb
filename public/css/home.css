@@ -1,9 +1,7 @@
-/* CTA Popup Box: a native <dialog> covering the screen (showModal() puts it in the top layer); the page
-   behind it holds still while it's open */
-.ctaPopup { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; color: inherit;
-    background: oklch(var(--space-oled) / .5); backdrop-filter: blur(10px); animation: fadeIn 0.3s ease; }
-.ctaPopup[open] { display: flex; justify-content: center; align-items: center; }
-.ctaPopup::backdrop { background: transparent; }
+/* CTA Popup Box: a <dialog> (shared.css covers the screen with it); the page behind it holds still while it's open, and a
+   card taller than the screen (a phone on its side) scrolls from its top */
+.ctaPopup { background: oklch(var(--space-oled) / .5); backdrop-filter: blur(10px); animation: fadeIn 0.3s ease; }
+.ctaPopup[open] { display: flex; justify-content: center; align-items: safe center; }
 body:has(> .ctaPopup[open]) { overflow: hidden; }
 @keyframes fadeIn {
     from { opacity: 0; }

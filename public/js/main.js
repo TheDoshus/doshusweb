@@ -644,9 +644,10 @@ document.querySelectorAll('[data-dialog]').forEach(btn => {
         document.getElementById(btn.dataset.dialog)?.showModal();
     });
 });
-// Clicking the dark background (the dialog itself, outside its card) closes it too
+// Clicking the dark background (the dialog itself, outside its card) closes it too; its ✕ taps back like any button
 document.querySelectorAll('dialog').forEach(dialog => {
     dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.querySelectorAll('form[method="dialog"] button').forEach((x) => x.addEventListener('click', () => haptic()));
 });
 
 // ─── STICKY FOOTER: AUTO-HIDE + ALWAYS SHOW AT BOTTOM ───

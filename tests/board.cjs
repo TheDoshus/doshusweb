@@ -446,6 +446,25 @@ const TESTS = {
             await page.mouse.click(8, 8);
             assert.deepEqual([byX, (await state(id))[0]], [false, false], `${id}: closed by ✕, and by a click on the dark around it`);
         }
+        // By keyboard: Enter on Let's Vibe, Tab to Finance Hub, Enter. Focus lands on the box it glides to, so the next Tab carries on
+        // from there instead of throwing the page back up to Let's Vibe
+        await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+        await page.focus('#openctaPopup');
+        await page.keyboard.press('Enter');
+        while (await page.evaluate(() => document.activeElement.dataset.target) !== 'finance') await page.keyboard.press('Tab');
+        await page.keyboard.press('Enter');
+        await page.waitForFunction(() => Math.abs(document.getElementById('finance').getBoundingClientRect().top - 72) < 2, null, { timeout: 3000 }).catch(() => {});
+        const landed = await page.evaluate(() => [document.activeElement.id, Math.round(document.getElementById('finance').getBoundingClientRect().top)]);
+        await page.keyboard.press('Tab');
+        await sleep(400);
+        const tabbed = await page.evaluate(() => [document.getElementById('finance').contains(document.activeElement), Math.round(document.getElementById('finance').getBoundingClientRect().top)]);
+        assert.deepEqual([landed[0], tabbed[0], Math.abs(tabbed[1] - landed[1]) < 200], ['finance', true, true], `after a pick by keyboard: [focus, the next Tab inside Finance, the page held] ${JSON.stringify([landed, tabbed])}`);
+        // A phone on its side: the card is taller than the screen, and scrolls from its top (its ✕ in reach) instead of being cut off above it
+        await page.setViewportSize({ width: 844, height: 390 });
+        await page.evaluate(() => document.getElementById('openctaPopup').click());
+        await sleep(300);
+        const top = await page.evaluate(() => { const d = document.getElementById('ctaPopup'); d.scrollTop = 0; return Math.round(d.querySelector('.ctaPopup-close').getBoundingClientRect().top); });
+        assert.ok(top >= 0, `landscape phone: the ✕ sits ${top}px from the screen's top`);
         return errors;
     },
     async "pictures hold their shape before they arrive (each tag carries its file's width and height), and home's below the first screen wait to load"(browser) {
@@ -1968,6 +1987,45 @@ const TESTS = {
         assert.equal(await inner(), '12', 'narrowed into its 12-column layout');
         await press(page, '[data-board-bar="home"]');
         assert.deepEqual([await inner(), await page.evaluate(() => document.getElementById('lg-meme').hidden), await custom(page), await saves(page)], ['24', false, false, {}], 'narrowed, Reset: [columns, the meme hidden, custom, saves]');
+        return all.concat(errors);
+    },
+    async "Home: the page's Reset keeps a box's Undo with storage blocked, and pressed mid-drag it lands"(browser) {
+        const all = [];
+        // Storage that throws (cookies off): a box's arrangement has no save for the Reset to hold, so it's held as it was
+        const init = () => Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Access is denied for this document.', 'SecurityError'); } });
+        {
+            const { page, errors } = await open(browser, WIDE, { path: '/', init });
+            all.push(...errors);
+            const bar = () => page.evaluate(() => [...document.querySelectorAll('[data-board-bar="home"] button')].filter((b) => !b.hidden).map((b) => b.textContent).join());
+            const press = async () => { await page.evaluate(() => [...document.querySelectorAll('[data-board-bar="home"] button')].find((b) => !b.hidden && /Reset|Undo/.test(b.textContent)).click()); await sleep(700); };
+            await center(page, 'lounge');
+            await page.evaluate(() => document.querySelector('#lg-meme > .panel-grab .panel-close').click());
+            await sleep(400);
+            await press();
+            assert.deepEqual([await page.evaluate(() => document.getElementById('lg-meme').hidden), await bar()], [false, 'Undo reset'], 'storage blocked, after Reset: [the meme hidden, the bar]');
+            await press();
+            assert.equal(await page.evaluate(() => document.getElementById('lg-meme').hidden), true, 'storage blocked: the meme hidden again after Undo');
+            await page.context().close();
+        }
+        // A panel being dragged when Reset is pressed (a second pointer, a script): the gesture ends first, so it can't land its move over the default
+        const { page, errors } = await open(browser, WIDE, { path: '/' });
+        all.push(...errors);
+        const def = await Promise.all(['socials', 'promo'].map((id) => cells(page, id)));
+        await center(page, 'promo');
+        await page.focus('#promo .panel-grip');
+        await page.keyboard.press('ArrowDown');
+        await sleep(400);
+        await center(page, 'socials');
+        const box = await page.locator('#socials > .panel-head').boundingBox(), x = box.x + box.width / 2, y = box.y + 20;
+        await page.mouse.move(x, y);
+        await page.mouse.down();
+        await page.mouse.move(x + 6, y + 6);
+        await page.mouse.move(x + 60, y + 160, { steps: 6 });
+        await page.evaluate(() => [...document.querySelectorAll('[data-board-bar="home"] button')].find((b) => !b.hidden && /Reset/.test(b.textContent)).click());
+        await sleep(300);
+        await page.mouse.up();
+        await sleep(900);
+        assert.deepEqual([await Promise.all(['socials', 'promo'].map((id) => cells(page, id))), await page.evaluate(() => localStorage.getItem('board:home'))], [def, null], 'Reset mid-drag: [the default, no save]');
         return all.concat(errors);
     },
     async "Home: a block made taller holds what it holds in its middle (none of it out of reach when it's too tall), the Spotify player fills its block and stops at its own height, and a block narrowed keeps its sites and pills inside it"(browser) {

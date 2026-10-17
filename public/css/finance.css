@@ -123,15 +123,13 @@
     transform: scale(1.1);
 }
 
-/* ─── SOURCES MODAL: a native <dialog class="srcOverlay"> covering the screen ─── */
+/* ─── SOURCES MODAL: a <dialog class="srcOverlay"> covering the screen (shared.css) ─── */
 /* showModal() puts it in the top layer (above everything, outside the slider's transforms) */
-.srcOverlay { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-    align-items: center; justify-content: center; color: inherit;
+.srcOverlay { align-items: safe center; justify-content: center;
     background: oklch(var(--space-oled) / 0.7);
     backdrop-filter: blur(5px);
 }
 .srcOverlay[open] { display: flex; animation: srcFade 0.3s ease; }
-.srcOverlay::backdrop { background: transparent; }
 @keyframes srcFade { from { opacity: 0; } }
 @keyframes srcRise { from { transform: translateY(20px); } }
 

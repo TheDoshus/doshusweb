@@ -180,6 +180,11 @@ h3 {
 }
 h1, h2, h3 { text-wrap: balance; }
 
+/* A modal is a <dialog> covering the screen (showModal() puts it in the top layer); its page dims it and centers its card
+   (home's popups, Finance Hub's sources) */
+dialog { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; color: inherit; }
+dialog::backdrop { background: transparent; }
+
 /* Keyboard focus ring in the site accent — invisible for mouse/touch */
 :where(a, button, input, [tabindex]):focus-visible {
     outline: 2px solid oklch(var(--accent-crypto) / 0.9);

@@ -120,6 +120,11 @@ function initCTApop() {
             const targetSection = document.getElementById(this.dataset.target);
             if (!targetSection) return;
             modal.close();
+            // Focus goes where the page glides (a keyboard's next Tab carries on from there, a screen reader reads it), not
+            // back to Let's Vibe, which would throw the page back up
+            targetSection.tabIndex = -1;
+            targetSection.addEventListener('blur', () => targetSection.removeAttribute('tabindex'), { once: true });
+            targetSection.focus({ preventScroll: true });
             targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });

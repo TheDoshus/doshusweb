@@ -53,6 +53,10 @@ const FUNC = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab)\(/gi;
 const NAMED = /(?<![-\w#.])(?:white|black|red|green|blue|yellow|orange|purple|pink|gray|grey|silver|gold|teal|navy|cyan|magenta|lime|maroon|olive|aqua|fuchsia)(?![-\w(])/gi;
 // Blank out a match but keep its newlines, so reported line numbers stay true.
 const blank = (m) => m.replace(/[^\n]/g, ' ');
+// A page's <name> tags as a browser reads them (comments blanked, so lines still count; any case; a quoted '>' kept inside its
+// value), and one attribute's value however it's quoted
+const tags = (html, name) => [...html.replace(/<!--[\s\S]*?-->/g, blank).matchAll(new RegExp(`<${name}\\b(?:"[^"]*"|'[^']*'|[^'">])*>`, 'gi'))];
+const attr = (tag, name) => tag.match(new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i'))?.slice(1).find((v) => v !== undefined);
 const stripCss = (css) => css
     .replace(/\/\*[\s\S]*?\*\//g, blank)
     .replace(/(["'])(?:\\.|(?!\1)[^\\\n])*\1/g, blank)
@@ -277,17 +281,20 @@ const CHECKS = {
     // sets its width sets height: auto with it). Printmon's pages and the vendored copies are their own
     'pictures carry their size': () => byExt('.html').filter((f) => /^public\/(?!amazon\/|zephyy\/vendor\/)/.test(rel(f))).flatMap((f) => {
         const html = fs.readFileSync(f, 'utf8');
-        return [...html.matchAll(/<img\b[^>]*>/g)].filter((m) => !/\swidth="\d+"/.test(m[0]) || !/\sheight="\d+"/.test(m[0]))
-            .map((m) => `${rel(f)}:${lineOf(html, m.index)}: <img> with no width and height: ${m[0].match(/src="([^"]*)"/)?.[1] ?? '?'}`);
+        return tags(html, 'img').filter((m) => !/^\d+$/.test(attr(m[0], 'width') ?? '') || !/^\d+$/.test(attr(m[0], 'height') ?? ''))
+            .map((m) => `${rel(f)}:${lineOf(html, m.index)}: <img> with no width and height: ${attr(m[0], 'src') ?? '?'}`);
     }),
     // A script from another site pinned to a version (name@1.2.3, /1.2.3/) carries its hash (integrity, crossorigin), so a file
     // swapped at that address doesn't run; an unpinned one (Google's tag, CoinGecko's widget) changes by design and can't.
     // Hash a new pin: curl -sS <url> | openssl dgst -sha384 -binary | openssl base64 -A
+    // (Scripts a page's own script adds, zephyy-live.js's Firebase SDK, carry their hashes in that code)
     'pinned scripts carry their hash': () => byExt('.html').filter((f) => /^public\/(?!amazon\/)/.test(rel(f))).flatMap((f) => {
         const html = fs.readFileSync(f, 'utf8');
-        return [...html.matchAll(/<script\b[^>]*\bsrc="(https?:[^"]+)"[^>]*>/g)]
-            .filter((m) => /@\d|\/v?\d+\.\d+\.\d+[/.-]/.test(m[1]) && !(/\sintegrity="sha(256|384|512)-[\w+/=]+"/.test(m[0]) && /\scrossorigin\b/.test(m[0])))
-            .map((m) => `${rel(f)}:${lineOf(html, m.index)}: ${m[1]} is pinned to a version but has no integrity hash (and crossorigin)`);
+        const pinned = /@\d|[/.-]v?\d+\.\d+\.\d+(?=[/.-]|$)|[?&]v(?:er(?:sion)?)?=\d/i;
+        const hash = /^sha(?:256-[A-Za-z0-9+/]{43}=|384-[A-Za-z0-9+/]{64}|512-[A-Za-z0-9+/]{86}==)$/;
+        return tags(html, 'script').map((m) => [m, attr(m[0], 'src')]).filter(([m, src]) => src && /^(https?:)?\/\//i.test(src) && pinned.test(src)
+            && !(hash.test(attr(m[0], 'integrity') ?? '') && /\scrossorigin\b/i.test(m[0])))
+            .map(([m, src]) => `${rel(f)}:${lineOf(html, m.index)}: ${src} is pinned to a version but has no integrity hash (and crossorigin)`);
     }),
     // Every meme within its budget (scripts/lib/meme-budget.js), so a heavy one can't ship unshrunk
     'memes stay lean': () => {
