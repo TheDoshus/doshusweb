@@ -45,6 +45,11 @@ below means the numbered coding Rules, which say how to meet them.
    one only as the true last resort. The order lives in the config that routes it, not only
    in prose: a doc that says "free first" over a config that picks paid is how every web
    search here ran on paid providers for months.
+9. **Symmetric.** *"Having similar things built symmetrically... keeps operations clean and
+   smoov"* (2026-10-18). Like parts (agents, crew backends, gateways, crons, checkers) share
+   one shape and the same capabilities, and we choose per use when each is on. A difference
+   between them is either written beside it with its reason or it is a finding; fix it at the
+   boundary (sandbox, hook, config), not by withholding a tool from one member.
 
 ### How the work gets done
 
