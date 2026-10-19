@@ -26,10 +26,7 @@ const SVG_BASELINE = new Set([
 // Shrink this list, never grow it: the check names an entry that's under budget or gone, so it comes off, and one whose
 // bytes changed, so its number follows it down (or the meme goes back)
 const MEME_BASELINE = new Map(Object.entries({
-    'RDT_20260123_181341.mp4': 6550529, 'RDT_20260428_021939-noSound.webm': 13464094, 'RDT_20260508_224902-noSound.webm': 16488982,
-    'RDT_20260511_043813-noSound.webm': 6694454, 'RDT_20260513_075010-noSound.webm': 21403005, 'RDT_20260516_132526-noSound.webm': 9168970,
-    'RDT_20260524_004320.mp4': 10807072, 'RDT_20260608_012111.webm': 6939087, 'casualchaosai-20260510-0001-noSound.webm': 6704448,
-    'deathrow_ai-20260410-0001.webm': 5999531, 'djraccooni-20261001-0001.webm': 6115194, 'jacobcarbreslin-20260510-0001-noSound.webm': 6843503,
+    'RDT_20260508_224902-noSound.webm': 16488982, 'RDT_20260513_075010-noSound.webm': 21403005,
 }));
 
 // Broad CSP sources that stay on purpose: widgets need inline styles (Doshus
