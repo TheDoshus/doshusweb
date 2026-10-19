@@ -8,6 +8,7 @@
       "models": [
         "openai/gpt-6.1-sol",
         "xai/grok-4.7",
+        "anthropic-credits/claude-opus-5-5",
         "opencode/glm-5.3-flash",
         "openrouter/auto"
       ],
@@ -51,6 +52,10 @@
         {
           "job": "routine",
           "cadence": "every 12 h"
+        },
+        {
+          "job": "routine",
+          "cadence": "daily"
         },
         {
           "job": "routine",
