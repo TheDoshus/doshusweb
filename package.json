@@ -18,6 +18,6 @@
     "sync:zephyy": "bun scripts/sync-zephyy-nav.js && bun scripts/sync-zephyy-orb.js && bun scripts/sync-zephyy-crew.js"
   },
   "devDependencies": {
-    "playwright": "1.64.0"
+    "playwright": "1.64.1"
   }
 }
