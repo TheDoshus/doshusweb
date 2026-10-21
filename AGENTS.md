@@ -55,6 +55,8 @@ below means the numbered coding Rules, which say how to meet them.
 
 - **Ask when you don't know or aren't confident.** *"Guessing does none of us any good."* A
   question costs one message; a wrong guess costs the build and his trust.
+  Number the questions, put your recommended answer under each, and word it so "yes"
+  accepts it; a question that hangs on another still open waits for the next round.
 - **Verify, don't assert.** Quote the output that proves it. A check that ran is not a check
   that found anything (Rule 15), and one that could not look reports UNKNOWN, never clean.
   Size the check to the blast radius: no unrequested repo-wide sweep for a local edit, and
@@ -85,6 +87,9 @@ below means the numbered coding Rules, which say how to meet them.
   restrictions on my agents"* (2026-10-11). The Safety Boundaries below still hold.
 - **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
   reviewer following the reviewing standard.
+  **The reviewer carries the standards:** the builder's context is full of the work, so the
+  builder works from pointers and skills, and the reviewer holds the change to the whole
+  coding standard (its step 1).
   Use a different model where a free lane is available, and every finding is fixed or answered; a
   reviewer he names is part of done, and a command he runs as root is reviewed before he
   gets it. Short on review quota, routine work lands with its review
