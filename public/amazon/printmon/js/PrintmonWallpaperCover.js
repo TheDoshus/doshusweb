@@ -27,6 +27,7 @@ else {
 	document.body.style.backgroundImage = `url('${wallpaperUrl}')`;
 	document.body.style.backgroundSize = 'cover';
 	document.body.style.height =  '100vh';
+			document.body.style.backgroundPosition = 'center';
 }
 }
 // Call the function to set the wallpaper
