@@ -1,0 +1,429 @@
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Nunito:wght@700;800;900&display=swap');
+
+/* ─── CHIIKAWA THEME: "MANGA SKETCHBOOK & MOCHI SQUISH" ───
+ *
+ * COMPLETELY DISTINCT FROM STRAWBERRY:
+ * 1. Claymorphic "Mochi" 3D inner-shadows instead of flat hard-edge retro shadows.
+ * 2. Hand-drawn wobbly manga ink outlines (#4A3B47) & asymmetric organic radii.
+ * 3. Translucent striped Washi-Tape header pin & Manga Speech Bubble subtitle.
+ * 4. Trio-coded button rows: Row 1 = Chiikawa (Pink), Row 2 = Hachiware (Blue), Row 3 = Usagi (Yellow).
+ * 5. Japanese graph-paper grid on MultiBarcode Printer instead of polka dots.
+ * 6. Jelly-squish spring physics on hover/active instead of simple Y-translation.
+ */
+
+:root {
+    /* Trio & Manga Ink Primitives (OKLCH + Hex fallbacks) */
+    --ink-line: #4A3B47;                          /* Warm manga outline brown-charcoal */
+    --ink-soft: rgba(74, 59, 71, 0.14);
+    
+    --chiikawa-white: rgba(255, 252, 253, 0.90);  /* Fluffy white mochi base */
+    --chiikawa-pink: #FF7aa2;                     /* Cheek blush pink */
+    --chiikawa-light: #FFE5EE;                    /* Pastel sakura fill */
+    
+    --hachi-blue: #6EC4E8;                        /* Hachiware ear blue */
+    --hachi-light: #E3F6FD;                       /* Soft sky fill */
+    
+    --usagi-yellow: #FFD166;                      /* Usagi chaotic energy gold */
+    --usagi-cream: #FFF6D6;                       /* Pudding cream fill */
+    
+    /* 3D Mochi Claymorphism Shadows */
+    --mochi-inflate: 
+        inset 0 4px 6px rgba(255, 255, 255, 0.95),
+        inset 0 -4px 6px rgba(74, 59, 71, 0.08),
+        0 6px 14px rgba(74, 59, 71, 0.12);
+
+    /* Theme Swap Button Tokens */
+    --swap-accent: oklch(72% 0.16 350);
+    --swap-glow: oklch(80% 0.11 225);
+}
+
+/* ─── BASE TYPOGRAPHY ─── */
+body {
+    font-family: 'M PLUS Rounded 1c', 'Nunito', -apple-system, sans-serif;
+    color: var(--ink-line);
+}
+
+/* Tighten left column layout */
+.left {
+    margin: 45px 10px 10px 0px;
+}
+
+/* ─── PRIMARY CONTAINER: SKETCHBOOK MOCHI PANEL ─── */
+.printbox {
+    background-color: var(--chiikawa-white);
+    /* Cheek-blush radial glows in the bottom corners of the card! */
+    background-image: 
+        radial-gradient(circle at 12% 22%, rgba(255, 122, 162, 0.18) 0%, transparent 28%),
+        radial-gradient(circle at 88% 22%, rgba(255, 122, 162, 0.18) 0%, transparent 28%);
+    border: 3px solid var(--ink-line);
+    /* Organic hand-drawn asymmetric radius */
+    border-radius: 34px 26px 36px 24px / 26px 36px 24px 34px;
+    box-shadow: 
+        var(--mochi-inflate),
+        6px 6px 0px var(--hachi-blue); /* Comic panel offset backing */
+    backdrop-filter: blur(12px);
+    position: relative;
+    margin: -15px 35px 0 0;
+}
+
+/* ─── DECORATIVE 1: WASHI TAPE STRIP AT TOP CENTER ─── */
+.printbox::before {
+    content: 'ちいかわ ★ SASUMATA';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    background: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 182, 209, 0.88),
+        rgba(255, 182, 209, 0.88) 8px,
+        rgba(255, 255, 255, 0.88) 8px,
+        rgba(255, 255, 255, 0.88) 16px
+    );
+    color: var(--ink-line);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    padding: 4px 22px;
+    border-left: 2px dashed rgba(74, 59, 71, 0.35);
+    border-right: 2px dashed rgba(74, 59, 71, 0.35);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* ─── DECORATIVE 2: CHIIKAWA BLUSH MARKS ("// //") ─── */
+.printbox::after {
+    content: '〃';
+    position: absolute;
+    top: 58px;
+    right: 24px;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--chiikawa-pink);
+    transform: rotate(12deg);
+    opacity: 0.75;
+    animation: cheekWiggle 2.2s infinite ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes cheekWiggle {
+    0%, 100% { transform: rotate(12deg) scale(1); }
+    50% { transform: rotate(4deg) scale(1.12); }
+}
+
+/* ─── TITLE: MANGA LOGO POP ─── */
+h1 {
+    font-family: 'M PLUS Rounded 1c', 'Nunito', sans-serif;
+    font-weight: 900;
+    color: #FFFFFF;
+    /* Crisp manga outline via multi-angle text-shadow + blue drop */
+    text-shadow: 
+        -2px -2px 0 var(--ink-line),
+         2px -2px 0 var(--ink-line),
+        -2px  2px 0 var(--ink-line),
+         2px  2px 0 var(--ink-line),
+         0px  4px 0 var(--chiikawa-pink),
+         0px  6px 0 var(--ink-line);
+    letter-spacing: 1.5px;
+}
+
+/* ─── SUBTITLE: COMIC SPEECH BUBBLE ─── */
+.subtitle {
+    position: relative;
+    color: var(--ink-line);
+    font-family: 'M PLUS Rounded 1c', 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    font-style: normal;
+    background-color: var(--usagi-cream);
+    border: 2.5px solid var(--ink-line);
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    box-shadow: 3px 3px 0 var(--ink-line);
+    margin-top: 4px;
+}
+
+/* Speech bubble tail pointing up */
+.subtitle::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 8px 10px 8px;
+    border-style: solid;
+    border-color: transparent transparent var(--ink-line) transparent;
+}
+
+/* ─── LABELS & CHECKBOXES ─── */
+.input-group label, .options label {
+    color: var(--ink-line);
+    font-weight: 800;
+}
+
+.input-group label span {
+    background-color: var(--hachi-light);
+    color: var(--ink-line);
+    padding: 1px 6px;
+    border-radius: 8px;
+    border: 1.5px solid var(--hachi-blue);
+}
+
+.options input[type="checkbox"] {
+    accent-color: var(--chiikawa-pink);
+    transform: scale(1.15);
+}
+
+/* ─── INPUTS: SUNKEN MOCHI WELLS ─── */
+input[type="text"], input[type="number"], #textAreaID {
+    background-color: #FFFFFF;
+    border: 2.5px solid var(--ink-line);
+    border-radius: 16px;
+    color: var(--ink-line);
+    font-family: 'M PLUS Rounded 1c', 'Nunito', sans-serif;
+    font-weight: 800;
+    box-shadow: inset 0 3px 5px rgba(74, 59, 71, 0.08);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+input[type="text"]:focus, input[type="number"]:focus, #textAreaID:focus {
+    outline: none;
+    background-color: #FFFAFC;
+    border-color: var(--chiikawa-pink);
+    box-shadow: 
+        0 0 0 4px rgba(255, 122, 162, 0.28),
+        3px 3px 0 var(--hachi-blue);
+    transform: translateY(-1px);
+}
+
+/* ─── PRIMARY ACTION BUTTONS: SQUISHY PLUSH PILLOWS ─── */
+.print-button, .multiButton {
+    background: linear-gradient(180deg, #FF94B4 0%, var(--chiikawa-pink) 100%);
+    color: #FFFFFF;
+    font-family: 'M PLUS Rounded 1c', 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    border: 2.5px solid var(--ink-line);
+    border-radius: 999px;
+    /* True 3D Mochi inner highlight + ink offset shadow */
+    box-shadow: 
+        inset 0 4px 4px rgba(255, 255, 255, 0.65),
+        inset 0 -4px 4px rgba(180, 40, 85, 0.25),
+        0 4px 0 var(--ink-line);
+    text-shadow: 0 1px 2px rgba(74, 59, 71, 0.4);
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    margin: -5px 0 0 0;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+}
+
+/* Jelly squish effect on hover! */
+.print-button:hover, .multiButton:hover {
+    background: linear-gradient(180deg, #FFA6C1 0%, #FF6B98 100%);
+    transform: scale(1.04, 0.96) translateY(-1px);
+    box-shadow: 
+        inset 0 5px 6px rgba(255, 255, 255, 0.8),
+        0 6px 0 var(--ink-line),
+        0 8px 18px rgba(255, 122, 162, 0.35);
+}
+
+.print-button:active, .multiButton:active {
+    transform: scale(0.97, 1.03) translateY(3px);
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.2),
+        0 1px 0 var(--ink-line);
+}
+
+/* ─── QUICK BUTTONS: THE TRIO COLOR CODING ─── */
+/* Shared base for all quick & scroll buttons */
+.buttonsLine1, .buttonsLine2, .buttonsLine3, .scroll-button {
+    font-family: 'M PLUS Rounded 1c', 'Nunito', sans-serif;
+    font-weight: 800;
+    color: var(--ink-line);
+    border: 2.5px solid var(--ink-line);
+    border-radius: 18px 14px 18px 14px;
+    box-shadow: 
+        inset 0 3px 2px rgba(255, 255, 255, 0.85),
+        3px 3px 0 var(--ink-line);
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+/* Row 1: Chiikawa Pastel Sakura */
+.buttonsLine1 {
+    background-color: var(--chiikawa-light);
+}
+
+/* Row 2: Hachiware Sky Blue */
+.buttonsLine2 {
+    background-color: var(--hachi-light);
+}
+
+/* Row 3 & Scroll: Usagi Pudding Yellow */
+.buttonsLine3, .scroll-button {
+    background-color: var(--usagi-cream);
+}
+
+/* Jelly Squish Hover across all quick buttons */
+.buttonsLine1:hover, .buttonsLine2:hover, .buttonsLine3:hover, .scroll-button:hover {
+    background-color: #FFFFFF;
+    color: var(--ink-line);
+    transform: scale(1.06, 0.94) rotate(-1deg);
+    box-shadow: 
+        inset 0 0 0 2px var(--chiikawa-pink),
+        4px 5px 0 var(--ink-line);
+}
+
+.buttonsLine1:active, .buttonsLine2:active, .buttonsLine3:active, .scroll-button:active {
+    transform: scale(0.95, 1.04) translateY(2px);
+    box-shadow: 1px 1px 0 var(--ink-line);
+}
+
+/* Tooltip text override on scroll buttons */
+.scroll-button:hover::after {
+    color: var(--usagi-cream);
+}
+
+/* ─── MULTI BARCODE PRINTER: JAPANESE GRAPH NOTEBOOK ─── */
+.MultiBarcode-printer {
+    background-color: #FAFDFF;
+    /* Authentic pastel blue graph-paper grid instead of polka dots! */
+    background-image: 
+        linear-gradient(to right, rgba(110, 196, 232, 0.22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(110, 196, 232, 0.22) 1px, transparent 1px);
+    background-size: 20px 20px;
+    border: 3px solid var(--ink-line);
+    border-radius: 26px 34px 24px 32px;
+    box-shadow: 
+        var(--mochi-inflate),
+        6px 6px 0 var(--chiikawa-pink);
+    position: relative;
+    z-index: 1;
+}
+
+/* Spiral notebook rings along the top of MultiBarcode Printer */
+.MultiBarcode-printer::before {
+    content: '❍ ❍ ❍ ❍ ❍ ❍ ❍ ❍';
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    letter-spacing: 6px;
+    color: var(--ink-line);
+    background: rgba(255, 255, 255, 0.85);
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 2px solid var(--ink-line);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.MultiBarcode-printer h2 {
+    color: var(--ink-line);
+    font-family: 'M PLUS Rounded 1c', 'Nunito', sans-serif;
+    font-weight: 900;
+    text-shadow: 2px 2px 0 var(--usagi-yellow);
+}
+
+/* ─── ASIN STICKER CONTAINER: USAGI PUDDING CARD ─── */
+.asin-sticker-container {
+    background: repeating-linear-gradient(
+        135deg,
+        var(--usagi-cream),
+        var(--usagi-cream) 14px,
+        #FFFDF2 14px,
+        #FFFDF2 28px
+    );
+    border: 3px solid var(--ink-line);
+    border-radius: 22px;
+    box-shadow: 5px 5px 0 var(--usagi-yellow), 5px 5px 0 2px var(--ink-line);
+}
+
+.asin-sticker-header {
+    color: var(--ink-line);
+    font-family: 'M PLUS Rounded 1c', 'Nunito', sans-serif;
+    font-weight: 900;
+    border-bottom: 2.5px dashed var(--ink-line);
+    padding-bottom: 8px;
+}
+
+.asin-sticker-content p {
+    color: var(--ink-line);
+    font-weight: 800;
+}
+
+.asin-sticker-content button {
+    background-color: var(--hachi-blue);
+    color: #FFFFFF;
+    text-shadow: 0 1px 1px var(--ink-line);
+    border: 2.5px solid var(--ink-line);
+    border-radius: 999px;
+    font-family: 'M PLUS Rounded 1c', 'Nunito', sans-serif;
+    font-weight: 900;
+    box-shadow: 
+        inset 0 2px 3px rgba(255, 255, 255, 0.6),
+        0 3px 0 var(--ink-line);
+    transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.asin-sticker-content button:hover {
+    background-color: var(--chiikawa-pink);
+    transform: scale(1.06, 0.94) translateY(-2px);
+    box-shadow: 0 5px 0 var(--ink-line);
+}
+
+.asin-sticker-content button:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--ink-line);
+}
+
+/* ─── SCROLLBAR: CANDY STRIPE TRACK ─── */
+.scroll-container {
+    scrollbar-color: var(--chiikawa-pink) var(--hachi-light);
+    scrollbar-width: thin;
+}
+
+.scroll-container::-webkit-scrollbar {
+    height: 12px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: var(--hachi-light);
+    border-radius: 10px;
+    border: 2px solid var(--ink-line);
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background-color: var(--chiikawa-pink);
+    border-radius: 10px;
+    border: 2px solid var(--ink-line);
+}
+
+/* ─── QUICKBUTTONS DROPDOWN MENU ─── */
+#quickbuttons-dropdown .qb-dropdown-content {
+    background-color: #FFFFFF;
+    border: 2.5px solid var(--ink-line);
+    border-radius: 18px;
+    box-shadow: 6px 6px 0 var(--hachi-blue), 6px 6px 0 2px var(--ink-line);
+    overflow: hidden;
+}
+
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: var(--ink-line);
+    font-weight: 800;
+    border-bottom: 1.5px dashed rgba(74, 59, 71, 0.2);
+    transition: all 0.18s ease;
+}
+
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background-color: var(--usagi-cream);
+    color: var(--chiikawa-pink);
+    padding-left: 22px;
+}
+
+/* ─── DISABLE SHARED DIAGONAL SWEEP ─── */
+.buttonsLine1:before, .buttonsLine2:before, .buttonsLine3:before {
+    display: none;
+}
