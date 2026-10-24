@@ -5,8 +5,9 @@
   "targets": {
     "doshusweb": {
       "hosting": {
-        "main": ["doshusweb"],
-        "zephyy": ["zephyy"]
+        "main": [
+          "doshusweb"
+        ]
       }
     }
   }

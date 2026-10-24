@@ -172,7 +172,7 @@ const CHECKS = {
             .flatMap((t) => t.headers.flatMap((h) => h.headers))
             .filter((h) => h.key === 'Content-Security-Policy' && h.value.includes("default-src 'none'"))
             .map((h) => h.value);
-        const problems = new Set(policies).size > 1 ? ['firebase.json: main and zephyy strict CSPs differ'] : [];
+        const problems = new Set(policies).size > 1 ? ["firebase.json: the hosting targets' strict CSPs differ"] : [];
         for (const directive of (policies[0] || '').split(';')) {
             const [name, ...sources] = directive.trim().split(/\s+/);
             for (const s of sources) {
