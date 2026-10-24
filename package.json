@@ -10,7 +10,7 @@
     "deploy:full": "firebase deploy",
     "check": "bun scripts/check.js",
     "serve": "bun scripts/serve.js",
-    "test": "bun tests/chatorb-client.cjs && bun tests/board.cjs",
+    "test": "bun tests/live-guard.cjs && bun tests/chatorb-client.cjs && bun tests/board.cjs",
     "og": "bun scripts/og-cards.js",
     "csp:hashes": "bun scripts/update-csp-hashes.js",
     "memes": "bun scripts/generate-meme-list.js",

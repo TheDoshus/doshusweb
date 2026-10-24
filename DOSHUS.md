@@ -19,7 +19,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `scripts/generate-meme-list.js` | `bun run memes` — rebuilds `public/assets/memes/meme-list.json` after adding memes |
 | `scripts/convert-memes.js` | `bun run memes:convert` — re-encodes memes that aren't WebM/WebP yet, and any WebM over its budget (`scripts/lib/meme-budget.js`, which `bun run check` holds every meme to), keeping a file only if it's smaller *and* passes the quality bar (VMAF ≥ 90 video, SSIM ≥ 0.97 images) *and*, for a video over budget, lands under it; report first, `--apply` to swap |
 | `scripts/sync-zephyy-{nav,orb,crew}.js` | `bun run sync:zephyy` — re-stamps the Zephyy subpages' nav bar (from the list in `sync-zephyy-nav.js`), the chat orb (from `public/zephyy.html`) and the crew facts (from `data/crew-facts.json`) |
-| `firebase.json` | Firebase Hosting config + CSP/security headers (both targets) |
+| `firebase.json` | Firebase Hosting config + CSP/security headers |
 | `database.rules.json` | Firebase RTDB security rules |
 | `scripts/check.js` | `bun run check` — every pre-commit check, read-only (see AGENTS.md § Verify) |
 | `tests/` | `bun run test` — the chat client's wiring, then the board engine in a real browser (Playwright; once per machine: `bunx playwright install chromium`) |
@@ -37,7 +37,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 ## Quick Reference
 
 - **Hosting:** Firebase Hosting, branch `main`
-- **Deploy:** `firebase deploy --only hosting` (no auto-deploy). It runs `bun run check` first (firebase.json's `predeploy`) and stops on a FAIL
+- **Deploy:** `firebase deploy --only hosting` (no auto-deploy). It runs `bun run check` first (firebase.json's `predeploy`) and stops on a FAIL, then `scripts/live-guard.js`, which stops a release that would drop a file live serves and git never deleted (a Firebase Studio deploy's, say); `DOSHUSWEB_ALLOW_DROP=<live paths>` names an intended removal
 - **Dev:** `bun run serve` (scripts/serve.js: Firebase's clean URLs, redirects and 404 page, so links work as they will live)
 - **RTDB:** `doshusweb-default-rtdb.firebaseio.com` — feedback, chat orb, Zephyy daily thoughts
 
@@ -51,7 +51,7 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 **`style-src 'unsafe-inline'` stays** (Doshus, tested with Claude: the embedded widgets break without it; Observatory scores it 0, not a penalty). Don't retry it.
 
-**Testing a stricter policy later:** temporarily add a `Content-Security-Policy-Report-Only` header with the candidate policy to both targets, browse with DevTools open (`[Report Only]` lines = would-be blocks; ignore ones from `content.js` — that's browser extensions), promote when quiet, remove the RO header.
+**Testing a stricter policy later:** temporarily add a `Content-Security-Policy-Report-Only` header with the candidate policy to firebase.json's hosting headers, browse with DevTools open (`[Report Only]` lines = would-be blocks; ignore ones from `content.js` — that's browser extensions), promote when quiet, remove the RO header.
 
 **Edited an inline `<script>`?** → `bun run csp:hashes` (rewrites the hash tokens in firebase.json; idempotent, good predeploy habit).
 
@@ -61,7 +61,7 @@ For workspace layout and Zephyy's files: `~/.openclaw/workspace/DOSHUS.md`
 
 **Quarantine:** `public/amazon/**` keeps its own loose CSP — excluded from the strict policy and the hash scan.
 
-**security.txt:** `public/.well-known/security.txt` (RFC 9116) tells researchers how to reach you: doshusbizz@gmail.com first, a Discord DM second (doshus.net has no mailbox, so no `security@` address). `/security.txt` redirects to it (firebase.json, both targets). Its `Expires` must be renewed yearly: `bun run check` goes red 30 days before it lapses, and since every deploy runs the check, deploys stop from then until it's renewed. Set the new date under a year ahead, then deploy. Firebase's `**/.*` ignore drops only dot-named files, so a file inside a dot-named folder such as `.well-known/` still deploys (firebase-tools 15.31's lister, checked 2026-10-17). After a deploy, `curl -I https://doshus.net/.well-known/security.txt` should answer 200 `text/plain`.
+**security.txt:** `public/.well-known/security.txt` (RFC 9116) tells researchers how to reach you: doshusbizz@gmail.com first, a Discord DM second (doshus.net has no mailbox, so no `security@` address). `/security.txt` redirects to it (firebase.json). Its `Expires` must be renewed yearly: `bun run check` goes red 30 days before it lapses, and since every deploy runs the check, deploys stop from then until it's renewed. Set the new date under a year ahead, then deploy. Firebase's `**/.*` ignore drops only dot-named files, so a file inside a dot-named folder such as `.well-known/` still deploys (firebase-tools 15.31's lister, checked 2026-10-17). After a deploy, `curl -I https://doshus.net/.well-known/security.txt` should answer 200 `text/plain`.
 
 **Deferred security work (don't lose these):**
 - **Chatorb follow-through** — abuse admission, retention, processing health and browser/action verification remain in the backend contract below.

@@ -6,7 +6,7 @@
     {
       "target": "main",
       "public": "public",
-      "predeploy": ["bun run check"],
+      "predeploy": ["bun run check", "bun scripts/live-guard.js"],
       "cleanUrls": true,
       "redirects": [
         { "source": "/security.txt", "destination": "/.well-known/security.txt", "type": 301 }
