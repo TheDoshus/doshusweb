@@ -49,28 +49,28 @@
                     <div class="qa-gate-card">
                         <span class="qa-gate-icon">🔍</span>
                         <h3 class="qa-gate-name">qa-gate.sh</h3>
-                        <p class="qa-gate-desc">Strict mode — syntax check, error handling validation, env var declarations, shellcheck. Sha256-tracked registry. Any edit invalidates the entry and requires re-gate. No registry entry = hasn't passed.</p>
+                        <p class="qa-gate-desc">Strict mode — syntax check, error handling validation, env var declarations; shellcheck for Bash, ruff and a complexity ratchet for Python. Sha256-tracked registry. Any edit invalidates the entry and requires re-gate. No registry entry = hasn't passed.</p>
                         <span class="qa-gate-badge">Gate 1 — Static Analysis</span>
                     </div>
                     <div class="qa-gate-arrow">→</div>
                     <div class="qa-gate-card">
                         <span class="qa-gate-icon">📊</span>
                         <h3 class="qa-gate-name">zephyy-audit.sh</h3>
-                        <p class="qa-gate-desc">RED blocks deploy. YELLOW goes to backlog. BLUE gets fixed when already in the file. Runs on every sweep cycle. False positives are flagged and suppressed — not blindly "fixed" by damaging correct code.</p>
+                        <p class="qa-gate-desc">Walks the whole script corpus with qa-gate's rules. RED blocks the commit. YELLOW goes to backlog. BLUE gets fixed when already in the file. False positives are flagged and suppressed — not blindly "fixed" by damaging correct code.</p>
                         <span class="qa-gate-badge">Gate 2 — Runtime Audit</span>
                     </div>
                     <div class="qa-gate-arrow">→</div>
                     <div class="qa-gate-card">
                         <span class="qa-gate-icon">📐</span>
                         <h3 class="qa-gate-name">coding-standards.md</h3>
-                        <p class="qa-gate-desc">Bash ≤ 10 lines of glue. Anything with branching, loops, file I/O, or network → Python. Mandatory preflight checks up front. Every dependency declared. Fails loud or doesn't run.</p>
+                        <p class="qa-gate-desc">Bash for one-liners, Python for logic, Bun for our own JavaScript. Anything with branching, loops, file I/O, or network → Python. Mandatory preflight checks up front. Every dependency declared. Fails loud or doesn't run.</p>
                         <span class="qa-gate-badge">Gate 3 — Standards</span>
                     </div>
                     <div class="qa-gate-arrow">→</div>
                     <div class="qa-gate-card">
                         <span class="qa-gate-icon">🛡️</span>
                         <h3 class="qa-gate-name">Sentinel Gate</h3>
-                        <p class="qa-gate-desc">LLM-based judge (GPT-5.4-mini, 80/day cap) verifies domain-fact claims in every response. One-strike enforce — wrong claim triggers auto-revise. Three waves hardened: taint patterns, confabulation blind spots, fake-consult detection.</p>
+                        <p class="qa-gate-desc">LLM-based judge (free models first, 80/day cap) reads each assertive reply for claims no tool call backed that turn. Running in shadow: it logs every verdict and blocks nothing yet; enforce sends a flagged reply back for revision. Three waves hardened: taint patterns, confabulation blind spots, fake-consult detection.</p>
                         <span class="qa-gate-badge">Gate 4 — Runtime Verification</span>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                         <div class="sev-dot red"></div>
                         <div>
                             <div class="sev-label">RED — Blocks deploy</div>
-                            <div class="sev-desc">Fixed same session. No exceptions. Deploy is gated until clean.</div>
+                            <div class="sev-desc">Fixed same session. No exceptions. The commit is refused until clean.</div>
                         </div>
                     </div>
                     <div class="sev-item">
@@ -121,7 +121,7 @@
             </div>
             <div class="zp-card">
                 <div class="rule-list">
-                    <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>rm is forbidden in scripts.</strong> Use <code>trash.py</code> or another recoverable move. Gate grep-rejects bare rm. Only exception: cleaning a mktemp dir inside a trap EXIT.</span></div>
+                    <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>Deletes are recoverable.</strong> Use <code>trash.py</code>, never a bare rm. The gate rejects a recursive rm without a <code>${VAR:?}</code> guard.</span></div>
                     <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>Every script runs set -euo pipefail.</strong> Bash gets binary checks up top. Python gets shutil.which() + os.getenv() in preflight() before main().</span></div>
                     <div class="rule-item"><span class="rule-tag">HARD</span><span class="rule-text"><strong>No registry entry = not production-ready.</strong> Sha256 key — any edit invalidates it. Re-gate required before re-registration.</span></div>
                     <div class="rule-item"><span class="rule-tag">RULE</span><span class="rule-text"><strong>A finding is a claim, not a verdict.</strong> If a RED looks like a false positive, verify it. Don't blindly fix things that aren't broken to satisfy a linter.</span></div>
