@@ -343,8 +343,8 @@ const CHECKS = {
             ...!contact.length ? ['no Contact'] : contact.filter((c) => !/^(mailto|https|tel):/.test(c)).map((c) => `Contact ${c} isn't a mailto:, https: or tel: URI`),
             ...expires.length !== 1 ? [`${expires.length} Expires fields, not one`] : !(days > 30) ? [`Expires ${expires[0]} is ${Number.isNaN(days) ? 'not an RFC 3339 date-time with its zone' : `${Math.round(days)} days out`}: renew it, to under a year ahead`]
                 : days >= 365 ? [`Expires ${expires[0]} is a year or more out (RFC 9116 asks for under one)`] : [],
-            // Both hosts serve the file (one public/ folder, files before rewrites), so both are its address
-            ...['doshus.net', 'zephyy.doshus.net'].map((h) => `https://${h}/.well-known/security.txt`).filter((u) => !canonical.includes(u)).map((u) => `no Canonical: ${u}`),
+            // doshus.net is the one public host (zephyy.doshus.net retired 2026-10-24: it never resolved)
+            ...['https://doshus.net/.well-known/security.txt'].filter((u) => !canonical.includes(u)).map((u) => `no Canonical: ${u}`),
         ].map((p) => `${file}: ${p}`);
     }
 };

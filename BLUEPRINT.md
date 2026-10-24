@@ -12,8 +12,7 @@ Update this file when structure, a page, or a cross-repo contract changes.
   when any generated output has drifted.
 - **Two hosting targets, one `public/`** (`firebase.json`, `.firebaserc`): `main` serves
   doshus.net with `cleanUrls`; `zephyy` rewrites every unmatched path to `zephyy.html`.
-  `index.html` also sends the `zephyy.doshus.net` host to `/zephyy`. Both targets carry the
-  same strict CSP, so any new external origin goes into both.
+  Both targets carry the same strict CSP, so any new external origin goes into both.
 - **Security posture.** No inline script runs without a sha256 in the CSP (`csp:hashes`
   keeps them current). `public/amazon/**` is the quarantine: its own permissive CSP, skipped
   by the hash scan and the oklch lint.
