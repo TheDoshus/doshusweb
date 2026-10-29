@@ -17,21 +17,21 @@ below means the numbered coding Rules, which say how to meet them.
    rewriting what is already there: derive, don't copy (Rule 12). Anything that depends on a
    version, model, quota or upstream says so when it drifts, before it breaks.
 2. **Modular.** Each part has one clear job and a defined interface, so it can be swapped
-   out, or backed by another clean path, without touching the rest: *"a generic standard is
-   better than a custom ragdolled one."* Modular is organized, not scattered: extend the part
+   out, or backed by another clean path, without touching the rest: _"a generic standard is
+   better than a custom ragdolled one."_ Modular is organized, not scattered: extend the part
    shaped like your change before adding another (Rule 18). A pile of small scripts splitting
    one job is not modular.
-3. **Lean and optimized.** *"The meanest and leanest code possible. I believe less code is
-   the best code."* Lean over clever, native features first, the fewest moving parts, no
+3. **Lean and optimized.** _"The meanest and leanest code possible. I believe less code is
+   the best code."_ Lean over clever, native features first, the fewest moving parts, no
    bloat in code, prose or reports: a report states the finding, not the scan (Rule 16).
-   Optimizing never costs a capability: *"I'm not here to lose functionality but improve
-   on it."*
+   Optimizing never costs a capability: _"I'm not here to lose functionality but improve
+   on it."_
 4. **One source.** Every fact, rule, helper and template has one home, and everything else
    points at it. Where a harness cannot point, the copy is generated from the source and
    checked for drift. A hand-kept copy is allowed only when it forks into something
    specialized for one agent, harness or situation, and it names what it forks from.
-5. **Portable.** It must survive a teleport: *"I don't wanna boot up on another machine with
-   nothin workin."* Nothing machine-specific is baked into code or docs: users, homes, paths,
+5. **Portable.** It must survive a teleport: _"I don't wanna boot up on another machine with
+   nothin workin."_ Nothing machine-specific is baked into code or docs: users, homes, paths,
    ports and hosts come from config or the environment, or are derived (Rule 4). Build it
    generic enough to share, with our specifics layered on top.
 6. **Continuous.** When you learn or land something, update the memory, daily log, doc,
@@ -45,15 +45,15 @@ below means the numbered coding Rules, which say how to meet them.
    one only as the true last resort. The order lives in the config that routes it, not only
    in prose: a doc that says "free first" over a config that picks paid is how every web
    search here ran on paid providers for months.
-9. **Symmetric.** *"Having similar things built symmetrically... keeps operations clean and
-   smoov"* (2026-10-18). Like parts (agents, crew backends, gateways, crons, checkers) share
+9. **Symmetric.** _"Having similar things built symmetrically... keeps operations clean and
+   smoov"_ (2026-10-18). Like parts (agents, crew backends, gateways, crons, checkers) share
    one shape and the same capabilities, and we choose per use when each is on. A difference
    between them is either written beside it with its reason or it is a finding; fix it at the
    boundary (sandbox, hook, config), not by withholding a tool from one member.
 
 ### How the work gets done
 
-- **Ask when you don't know or aren't confident.** *"Guessing does none of us any good."* A
+- **Ask when you don't know or aren't confident.** _"Guessing does none of us any good."_ A
   question costs one message; a wrong guess costs the build and his trust.
   Number the questions, put your recommended answer under each, and word it so "yes"
   accepts it; a question that hangs on another still open waits for the next round.
@@ -72,8 +72,8 @@ below means the numbered coding Rules, which say how to meet them.
   domain page holds only our deltas, each with its reason.
 - **Track what you install.** A new tool, CLI or package gets a line in the tooling inventory
   and a manual the same session, or it rots unseen.
-- **Read the changelog of every update you come across.** *"They're new updates for a
-  reason. We gotta eat em up"* (Doshus, 2026-10-16). Installing, running or just spotting a
+- **Read the changelog of every update you come across.** _"They're new updates for a
+  reason. We gotta eat em up"_ (Doshus, 2026-10-16). Installing, running or just spotting a
   new version of anything (a platform, a CLI, a package, a model): read its shipped changelog
   or the notes at its tag, never a summary, for what we hand-rolled that it now does
   natively, what changed default-ON, and what new capability we can use. Tell Doshus what's
@@ -83,8 +83,8 @@ below means the numbered coding Rules, which say how to meet them.
 - **Answer every part.** Keep every field he asked for and never drop one for brevity.
 - **Agents get capabilities, not caution.** If the house already has a way to do a job (a
   script, a tool, a CLI), the agent uses it. A gate or "do not" an operator invents goes to
-  Doshus as a proposal, never into an agent's files as a rule: *"I don't need or want such baby
-  restrictions on my agents"* (2026-10-11). The Safety Boundaries below still hold.
+  Doshus as a proposal, never into an agent's files as a rule: _"I don't need or want such baby
+  restrictions on my agents"_ (2026-10-11). The Safety Boundaries below still hold.
 - **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
   reviewer following the reviewing standard.
   **The reviewer carries the standards:** the builder's context is full of the work, so the
