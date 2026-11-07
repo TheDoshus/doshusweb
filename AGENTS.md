@@ -61,6 +61,17 @@ below means the numbered coding Rules, which say how to meet them.
   that found anything (Rule 15), and one that could not look reports UNKNOWN, never clean.
   Size the check to the blast radius: no unrequested repo-wide sweep for a local edit, and
   the wider audit when real dependencies or he calls for it.
+- **A fix is proven when you have watched it fix the case.** _"How you gonna claim it's the
+  fix if ya haven't seen it fix the issue yet?"_ (2026-11-06). Run the reported case through
+  the real entry point, before and after, including the configurations the code serves that
+  we do not run; a test against a mocked layer is supporting evidence, not the proof. A change
+  to stored data proves that data written before it still loads.
+- **Read anything public as a stranger before it goes out.** _"No one is just gonna know what
+  you're talking about. Especially if it happened in this house"_ (2026-11-06). A PR, comment,
+  issue or post that people outside the house will read must tell a reader with none of our
+  context what it reports, whose work it is and where to see it: link every branch, PR, issue
+  or post it builds on, and explain any house name. Have a fresh, no-context reader check it
+  first.
 - **Gold-star it before moving on.** Research it and think it through, then finish: the
   checks pass, the cleanup is done, the note is filed. Only then start the next thing.
 - **Read the manual before you touch a part of the system.** Each part has a page: find it by the part's name and config keys and read it before the
