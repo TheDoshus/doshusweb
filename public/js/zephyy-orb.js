@@ -63,12 +63,11 @@
     (function(welcome) {
         if (!welcome) return;
         var intros = [
-            "Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. Got a name I can call you? 😄",
-            "Oh hi! ⚡ You found me — I'm Zephyy, I run things around here. What should I call you?",
-            "*materializes from the starfield* ✨ Zephyy here. Doshus's co-pilot, resident chaos manager. And you are…?",
-            "Welcome in! ⚡ I'm Zephyy — ask me anything about this corner of the internet. First though, got a name?",
-            "Yo! 🌌 Zephyy — co-pilot, tour guide, occasional menace. Who am I talking to?",
-            "Hey hey! ⚡ I'm Zephyy. I know where everything is around here — literally everything. What's your name?"
+            "Hey there! ⚡ I'm Zephyy — Doshus's celestial co-pilot. What are we exploring today?",
+            "Welcome in! ⚡ I'm Zephyy. Ask me about the site, tools, money myths, or grab a theme or meme.",
+            "*materializes from the starfield* ✨ Zephyy here. Doshus's co-pilot and resident guide. What can I help you find?",
+            "Hey hey! ⚡ Zephyy here — celestial co-pilot and navigator. What would you like to dive into?",
+            "Yo! 🌌 Zephyy in the orbit. Looking for tools, finance breakdowns, or just exploring?"
         ];
         welcome.textContent = intros[Math.floor(Math.random() * intros.length)];
     })(welcomeMsg);
@@ -87,7 +86,7 @@
     })();
 
     /* Detect touch device — hide tooltip, open panel on tap directly */
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isTouchDevice = 'ontouchstart' in window || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0);
     if (isTouchDevice && tooltip) {
         tooltip.style.display = 'none';
     }
@@ -143,13 +142,14 @@
         if (isOpen) {
             window.haptic?.(6);
             orb.classList.remove('unread');
-            /* Ensure name prompt shows even if loadMessages hasn't fired yet */
-            setTimeout(function() { showNamePrompt(); }, 600);
+            /* Ensure starters show even if loadMessages hasn't fired yet */
+            setTimeout(function() { showStarters(); }, 600);
             /* Focus input once the open transition settles */
             setTimeout(function() {
                 if (inputEl && !inputEl.disabled) inputEl.focus();
             }, 350);
         } else {
+            if (typeof chatActionState !== 'undefined') chatActionState.disposeTimer();
             orb.focus();
         }
     }
@@ -163,16 +163,71 @@
             .replace(/"/g, '&quot;');
     }
 
+    /* ── Safe media parsing for chat messages ── */
+    function parseMediaUrl(rawUrl) {
+        if (typeof rawUrl !== 'string') return null;
+        var value = rawUrl.trim();
+        if (/^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(value)) {
+            return { isStash: false, type: 'image', url: value };
+        }
+        var absolute = value.match(/^https?:\/\/([^/?#]*)([^?#]*)/i);
+        var relative = /^\/(?!\/)/.test(value);
+        if (!absolute && !relative) return null;
+        // Inspect the original pathname before URL() can normalize dot segments.
+        // Queries and fragments are opaque provider data, not path components.
+        if (absolute && /[@\\\u0000-\u0020]/.test(absolute[1])) return null;
+        var rawPath = absolute ? (absolute[2] || '/') : value.split(/[?#]/)[0];
+        if (/%(?:2f|5c)/i.test(rawPath)) return null;
+        var probe;
+        try { probe = decodeURIComponent(rawPath); } catch (e) { return null; }
+        // Decode only nested path-control escapes. A literal percent in a valid
+        // encoded filename must not be fed to decodeURIComponent a second time.
+        for (var depth = 0; depth < 5; depth++) {
+            if (/[\\\u0000-\u001f\u007f]/.test(probe) || /(^|\/)\.{1,2}(\/|$)/.test(probe) || /%(?:2f|5c)/i.test(probe)) return null;
+            var next = probe.replace(/%(25|2e)/gi, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
+            if (next === probe) break;
+            if (depth === 4) return null;
+            probe = next;
+        }
+        var parsed, currentOrigin;
+        try {
+            var location = typeof window !== 'undefined' && window.location;
+            var base = location && location.href || 'https://doshus.net/';
+            parsed = new URL(value, base);
+            currentOrigin = location && location.origin || new URL(base).origin;
+        } catch (e) { return null; }
+        if (!/^https?:$/.test(parsed.protocol) || parsed.username || parsed.password) return null;
+        var canonical = parsed.hostname === 'doshus.net' || parsed.hostname === 'www.doshus.net';
+        var trusted = parsed.origin === currentOrigin || (canonical && parsed.port === '');
+        if (canonical && !trusted) return null;
+        if (trusted && parsed.pathname.startsWith('/assets/memes/')) {
+            var filename;
+            try { filename = decodeURIComponent(parsed.pathname.slice('/assets/memes/'.length)); } catch (e) { return null; }
+            if (!filename || /[\/\\]/.test(filename)) return null;
+            var video = /\.(mp4|webm|mov)$/i.test(filename);
+            if (!video && !/\.(jpe?g|png|gif|webp)$/i.test(filename)) return null;
+            var encoded = encodeURIComponent(filename).replace(/[!'()*]/g, function(ch) { return '%' + ch.charCodeAt(0).toString(16).toUpperCase(); });
+            return { isStash: true, type: video ? 'video' : 'image', url: '/assets/memes/' + encoded };
+        }
+        if (!absolute) return null;
+        // Preserve safe provider URLs, including signatures and extensionless
+        // image endpoints, without granting any external URL video/stash trust.
+        if (/\.(mp4|webm|mov|avi|mkv|ogg|mp3|wav|html?|js|json|css|exe|sh|txt|pdf|zip)$/i.test(parsed.pathname)) return null;
+        return { isStash: false, type: 'image', url: value };
+    }
+
     function renderContent(text) {
         // Linkify BEFORE escaping — otherwise & in URLs gets corrupted to &amp;
         var placeholders = [];
-        var imgPlaceholders = [];
+        var mediaPlaceholders = [];
         var i = 0;
-        // 0. Markdown images: ![alt](url) → placeholder (must go before links)
-        //    Accept https:// AND data: URIs (HuggingFace/Gemini return base64 data URIs)
-        text = text.replace(/!\[([^\]]*)\]\(((?:https?:\/\/|data:image\/)[^\s)]+)\)/g, function(m, alt, url) {
-            var ph = '\x00IMG' + (i++) + '\x00';
-            imgPlaceholders.push({ ph: ph, alt: alt, url: url });
+        // 0. Markdown media: ![alt](url) → placeholder (must go before links)
+        // Accepts https://, data:image/, and /assets/memes/ paths (with balanced parens support)
+        text = text.replace(/!\[([^\]]*)\]\(((?:https?:\/\/|data:image\/|\/assets\/memes\/)(?:[^\s()]+|\([^\s()]+\))+)\)/g, function(m, alt, url) {
+            var media = parseMediaUrl(url);
+            if (!media) return m; // rejected/unsafe media left as raw text
+            var ph = '\x00MEDIA' + (i++) + '\x00';
+            mediaPlaceholders.push({ ph: ph, alt: alt, url: media.url, isStash: media.isStash, mediaType: media.type });
             return ph;
         });
         // 1. Markdown links: [text](url) → placeholder
@@ -191,21 +246,42 @@
         });
         // 3. HTML-escape remaining text
         text = escapeHtml(text);
-        // 4. Restore images from placeholders → click-to-expand lightbox
-        imgPlaceholders.forEach(function(p) {
+        // 4. Restore media from placeholders
+        mediaPlaceholders.forEach(function(p) {
             var url = escapeHtml(p.url);
             var alt = escapeHtml(p.alt);
             var id = 'zpli' + (i++);
-            // Store raw data off-DOM so large data URIs do not live in attributes.
-            imgUrlMap[id] = { url: p.url, alt: p.alt };
-            var html =
-                '<figure class="zp-chat-img-card">' +
-                    '<img src="' + url + '" alt="' + alt + '" data-zpli="' + id + '" class="zp-chat-img" loading="lazy">' +
-                    '<figcaption class="zp-chat-img-meta">' +
-                        '<span>Generated by Zephyy</span>' +
-                        '<button type="button" class="zp-chat-img-copy" data-zpli="' + id + '">Copy prompt</button>' +
-                    '</figcaption>' +
-                '</figure>';
+            var html;
+            if (p.isStash && p.mediaType === 'video') {
+                html =
+                    '<figure class="zp-chat-img-card zp-chat-video-card zp-chat-stash-card">' +
+                        '<video controls playsinline preload="metadata" class="zp-chat-video zp-chat-stash-video" src="' + url + '"' + (alt ? ' aria-label="' + alt + '"' : '') + '>' +
+                        '</video>' +
+                        '<figcaption class="zp-chat-img-meta zp-chat-stash-meta">' +
+                            (alt ? '<span class="zp-chat-stash-desc">' + alt + '</span>' : '') +
+                            '<span>Doshus.NET Meme Stash</span>' +
+                        '</figcaption>' +
+                    '</figure>';
+            } else if (p.isStash) {
+                html =
+                    '<figure class="zp-chat-img-card zp-chat-stash-card">' +
+                        '<img src="' + url + '" alt="' + alt + '" class="zp-chat-img zp-chat-stash-img" loading="lazy">' +
+                        '<figcaption class="zp-chat-img-meta zp-chat-stash-meta">' +
+                            (alt ? '<span class="zp-chat-stash-desc">' + alt + '</span>' : '') +
+                            '<span>Doshus.NET Meme Stash</span>' +
+                        '</figcaption>' +
+                    '</figure>';
+            } else {
+                imgUrlMap[id] = { url: p.url, alt: p.alt };
+                html =
+                    '<figure class="zp-chat-img-card">' +
+                        '<img src="' + url + '" alt="' + alt + '" data-zpli="' + id + '" class="zp-chat-img" loading="lazy">' +
+                        '<figcaption class="zp-chat-img-meta">' +
+                            '<span>Generated by Zephyy</span>' +
+                            '<button type="button" class="zp-chat-img-copy" data-zpli="' + id + '">Copy prompt</button>' +
+                        '</figcaption>' +
+                    '</figure>';
+            }
             text = text.replace(p.ph, function() { return html; });
         });
         // 5. Restore links from placeholders (escape label + url — they were captured raw before step 3)
@@ -213,22 +289,350 @@
             var html = '<a href="' + escapeHtml(p.url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(p.label) + '</a>';
             text = text.replace(p.ph, function() { return html; });
         });
-        // 5. Bold: **text**
+        // 6. Bold: **text**
         text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        // 6. Newlines to <br>
+        // 7. Newlines to <br>
         text = text.replace(/\n/g, '<br>');
         return text;
     }
 
-    function addMessage(role, content, timestamp) {
-        if (role === 'assistant') role = 'bot'; // her replies arrive as 'assistant' (zephyy-live.js)
-        // Dedup Zephyy's side only (a reply can arrive twice); a visitor's repeat is a real message
-        var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-of-type[data-content]');
-        if (role !== 'user' && prev && prev.dataset.content === content) return prev;
+    /* ── Action proposals & suggestions lifecycle & state manager ── */
+    var sessionEpoch = 0;
+
+    function disableProposalCard(card) {
+        if (!card) return;
+        card.classList.add('zp-proposal-disabled');
+        var btns = card.querySelectorAll('button');
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].disabled = true;
+        }
+    }
+
+    var chatActionState = (function() {
+        var epoch = 0;
+        var activeProposal = null; // { key, id, expiresAt, confirmMessage, cancelMessage, editMessage, cardEl }
+        var activeSuggestions = null; // { key, rowEl }
+        var consumedProposalIds = new Set();
+        var activeExpiryTimer = null;
+        var latestSeq = 0;
+
+        function disposeTimer() {
+            if (activeExpiryTimer) {
+                clearTimeout(activeExpiryTimer);
+                activeExpiryTimer = null;
+            }
+        }
+
+        function staleControls() {
+            if (activeProposal && activeProposal.cardEl) {
+                disableProposalCard(activeProposal.cardEl);
+            }
+            activeProposal = null;
+            disposeTimer();
+            if (activeSuggestions && activeSuggestions.rowEl) {
+                var btns = activeSuggestions.rowEl.querySelectorAll('button');
+                for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
+            }
+            activeSuggestions = null;
+        }
+
+        function scheduleExpiry(expiresAt) {
+            disposeTimer();
+            if (typeof expiresAt === 'number' && Number.isFinite(expiresAt)) {
+                var remaining = expiresAt - Date.now();
+                if (remaining > 0) {
+                    activeExpiryTimer = setTimeout(function() {
+                        staleControls();
+                    }, remaining);
+                }
+            }
+        }
+
+        function validateContract(proposal) {
+            if (!proposal || typeof proposal !== 'object' || Array.isArray(proposal)) return false;
+            if (typeof proposal.id !== 'string' || !proposal.id.trim()) return false;
+            if (typeof proposal.title !== 'string' || !proposal.title.trim()) return false;
+            if (typeof proposal.summary !== 'string') return false;
+            if (typeof proposal.confirmMessage !== 'string' || !proposal.confirmMessage.length || proposal.confirmMessage.length > 2000) return false;
+            if (typeof proposal.cancelMessage !== 'string' || !proposal.cancelMessage.length || proposal.cancelMessage.length > 2000) return false;
+            if (typeof proposal.editMessage !== 'string' || proposal.editMessage.length > 2000) return false;
+            if (typeof proposal.expiresAt !== 'number' || !Number.isFinite(proposal.expiresAt)) return false;
+            return true;
+        }
+
+        return {
+            get epoch() { return epoch; },
+            reset: function(newEpoch) {
+                epoch = newEpoch;
+                disposeTimer();
+                activeProposal = null;
+                activeSuggestions = null;
+                consumedProposalIds.clear();
+                latestSeq = 0;
+            },
+            onUserAction: function(ts) {
+                latestSeq = Math.max(latestSeq, ts || Date.now());
+                staleControls();
+            },
+            onAssistantMessage: function(ts) {
+                latestSeq = Math.max(latestSeq, ts || Date.now());
+                staleControls();
+            },
+            validateContract: validateContract,
+            isProposalEligible: function(proposal, msgSeq) {
+                if (!validateContract(proposal)) return false;
+                if (consumedProposalIds.has(proposal.id)) return false;
+                if (Date.now() >= proposal.expiresAt) return false;
+                if (typeof msgSeq === 'number' && latestSeq > msgSeq) return false;
+                return true;
+            },
+            setActiveProposal: function(key, proposal, cardEl) {
+                activeProposal = {
+                    key: key,
+                    id: proposal.id,
+                    expiresAt: proposal.expiresAt,
+                    confirmMessage: proposal.confirmMessage,
+                    cancelMessage: proposal.cancelMessage,
+                    editMessage: proposal.editMessage,
+                    cardEl: cardEl
+                };
+                scheduleExpiry(proposal.expiresAt);
+            },
+            setActiveSuggestions: function(key, rowEl) {
+                activeSuggestions = { key: key, rowEl: rowEl };
+            },
+            isActionClickEligible: function(proposal, cardEl) {
+                if (!proposal || consumedProposalIds.has(proposal.id)) return false;
+                if (cardEl && (cardEl.dataset.consumed === 'true' || cardEl.classList.contains('zp-proposal-disabled'))) return false;
+                if (Date.now() >= proposal.expiresAt) {
+                    if (cardEl) disableProposalCard(cardEl);
+                    staleControls();
+                    return false;
+                }
+                return true;
+            },
+            consumeProposal: function(id) {
+                if (id) consumedProposalIds.add(id);
+                staleControls();
+            },
+            staleControls: staleControls,
+            disposeTimer: disposeTimer
+        };
+    })();
+
+    function sendOpaqueAction(text) {
+        if (typeof text !== 'string' || !text.length || text.length > 2000 || sessionEnded) return;
+
+        touchActivity();
+        removeWelcome();
+        removeStarters();
+
+        var userTs = Date.now();
+        var msgEl = addMessage('user', text, userTs);
+
+        var tick = document.createElement('span');
+        tick.className = 'zp-tick';
+        tick.textContent = '…';
+        tick.title = 'Sending';
+        tick.dataset.ts = userTs;
+        var timeEl = msgEl.querySelector('.zp-chat-msg-time');
+        (timeEl || msgEl).appendChild(tick);
+
+        if (zephyyOnline) {
+            addThinkingBubble();
+        }
+
+        send(text).then(function() {
+            tick.textContent = '✓';
+            tick.title = 'Delivered';
+            tick.classList.add('zp-delivered');
+            cacheAppend('user', text, userTs);
+        }).catch(function() {
+            removeThinkingBubble();
+            tick.textContent = '!';
+            tick.title = 'Failed to send';
+            tick.classList.add('zp-failed');
+            addMessage('bot', '⚠️ Message didn\'t send. Try refreshing the page or check back later.', Date.now());
+        });
+    }
+
+    function renderProposalCard(proposal, msgKey, msgSeq) {
+        if (!chatActionState.validateContract(proposal)) return null;
+
+        var isEligible = chatActionState.isProposalEligible(proposal, msgSeq);
+
+        var title = proposal.title.trim().slice(0, 100);
+        var summary = proposal.summary.trim().slice(0, 1000);
+        var confirmMsg = proposal.confirmMessage;
+        var cancelMsg = proposal.cancelMessage;
+        var editMsg = proposal.editMessage;
+
+        var card = document.createElement('div');
+        card.className = 'zp-proposal-card' + (!isEligible ? ' zp-proposal-disabled' : '');
+        card.setAttribute('role', 'region');
+        card.setAttribute('aria-label', title);
+        card.dataset.proposalId = proposal.id.slice(0, 100);
+        if (msgKey) card.dataset.msgKey = msgKey;
+
+        var head = document.createElement('div');
+        head.className = 'zp-proposal-head';
+        head.textContent = title;
+        card.appendChild(head);
+
+        if (summary) {
+            var body = document.createElement('div');
+            body.className = 'zp-proposal-summary';
+            body.textContent = summary;
+            card.appendChild(body);
+        }
+
+        var actions = document.createElement('div');
+        actions.className = 'zp-proposal-actions';
+        actions.setAttribute('role', 'group');
+        actions.setAttribute('aria-label', 'Proposal actions');
+
+        var confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.className = 'zp-proposal-btn zp-proposal-confirm';
+        confirmBtn.textContent = title;
+        confirmBtn.setAttribute('aria-label', title);
+        if (!isEligible) confirmBtn.disabled = true;
+
+        var editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'zp-proposal-btn zp-proposal-edit';
+        editBtn.textContent = 'Edit request';
+        editBtn.setAttribute('aria-label', 'Edit request');
+        if (!isEligible) editBtn.disabled = true;
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'zp-proposal-btn zp-proposal-cancel';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.setAttribute('aria-label', 'Cancel proposal');
+        if (!isEligible) cancelBtn.disabled = true;
+
+        confirmBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!chatActionState.isActionClickEligible(proposal, card)) return;
+            card.dataset.consumed = 'true';
+            chatActionState.consumeProposal(proposal.id);
+            disableProposalCard(card);
+            sendOpaqueAction(confirmMsg);
+        });
+
+        editBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!chatActionState.isActionClickEligible(proposal, card)) return;
+            if (inputEl) {
+                inputEl.value = editMsg;
+                inputEl.focus();
+            }
+        });
+
+        cancelBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!chatActionState.isActionClickEligible(proposal, card)) return;
+            card.dataset.consumed = 'true';
+            chatActionState.consumeProposal(proposal.id);
+            disableProposalCard(card);
+            sendOpaqueAction(cancelMsg);
+        });
+
+        actions.appendChild(confirmBtn);
+        actions.appendChild(editBtn);
+        actions.appendChild(cancelBtn);
+        card.appendChild(actions);
+
+        if (isEligible) {
+            chatActionState.setActiveProposal(msgKey, proposal, card);
+        }
+
+        return card;
+    }
+
+    function renderSuggestions(suggestions, msgKey) {
+        if (!Array.isArray(suggestions) || suggestions.length === 0) return null;
+        var valid = [];
+        for (var i = 0; i < suggestions.length && valid.length < 2; i++) {
+            var s = suggestions[i];
+            if (s && typeof s.label === 'string' && s.label.trim() &&
+                typeof s.message === 'string' && s.message.length && s.message.length <= 2000) {
+                valid.push({
+                    label: s.label.trim().slice(0, 60),
+                    message: s.message
+                });
+            }
+        }
+        if (valid.length === 0) return null;
+
+        var row = document.createElement('div');
+        row.className = 'zp-chat-suggestions';
+        row.setAttribute('role', 'group');
+        row.setAttribute('aria-label', 'Suggestions');
+        if (msgKey) row.dataset.msgKey = msgKey;
+
+        valid.forEach(function(s) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'zp-suggestion-chip';
+            btn.textContent = s.label;
+            btn.setAttribute('aria-label', s.label);
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (btn.disabled) return;
+                var btns = row.querySelectorAll('button');
+                for (var b = 0; b < btns.length; b++) btns[b].disabled = true;
+                sendOpaqueAction(s.message);
+            });
+            row.appendChild(btn);
+        });
+
+        chatActionState.setActiveSuggestions(msgKey, row);
+        return row;
+    }
+
+    function addMessage(role, content, timestamp, meta, key) {
+        if (role === 'assistant') role = 'bot';
+
+        var msgKey = key || (meta && meta.key);
+        if (msgKey) {
+            var msgs = messagesEl.childNodes || messagesEl.children || [];
+            for (var mIdx = 0; mIdx < msgs.length; mIdx++) {
+                if (msgs[mIdx].dataset && msgs[mIdx].dataset.msgKey === msgKey) {
+                    return msgs[mIdx];
+                }
+            }
+        } else if (role !== 'user') {
+            var prev = messagesEl.querySelector('.zp-chat-msg-' + role + ':last-of-type[data-content]');
+            if (prev && prev.dataset.content === content) return prev;
+        }
+
+        var ts = timestamp || Date.now();
+
+        if (role === 'user') {
+            chatActionState.onUserAction(ts);
+        } else if (role === 'bot') {
+            chatActionState.onAssistantMessage(ts);
+        }
+
         var div = document.createElement('div');
         div.className = 'zp-chat-msg zp-chat-msg-' + role;
         div.dataset.content = content;
+        if (msgKey) div.dataset.msgKey = msgKey;
         div.innerHTML = renderContent(content);
+
+        if (role === 'bot' && meta) {
+            if (meta.actionProposal) {
+                var card = renderProposalCard(meta.actionProposal, msgKey, ts);
+                if (card) div.appendChild(card);
+            }
+            if (meta.suggestions) {
+                var sug = renderSuggestions(meta.suggestions, msgKey);
+                if (sug) div.appendChild(sug);
+            }
+        }
+
         if (timestamp) {
             var time = document.createElement('div');
             time.className = 'zp-chat-msg-time';
@@ -382,9 +786,12 @@
     function saveMsgCache(list) {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(list.slice(-30))); } catch (e) { /* quota — skip */ }
     }
-    function cacheAppend(role, content, timestamp) {
+    function cacheAppend(role, content, timestamp, meta) {
         var list = readMsgCache();
-        list.push({ role: role, content: content, timestamp: timestamp });
+        var item = { role: role, content: content, timestamp: timestamp };
+        if (meta && meta.actionProposal) item.actionProposal = meta.actionProposal;
+        if (meta && meta.suggestions) item.suggestions = meta.suggestions;
+        list.push(item);
         saveMsgCache(list);
     }
 
@@ -416,129 +823,94 @@
         if (el) el.remove();
     }
 
-    /* Remove quick-reply buttons from DOM only */
-    function removeQuickReplies() {
-        var r = document.getElementById('zp-quick-reply-row');
-        var nr = document.getElementById('zp-name-input-row');
+    /* Remove starter chips & quick-reply elements from DOM */
+    function removeStarters() {
+        var r = document.getElementById('zp-starters-row');
         if (r) r.remove();
+        var qr = document.getElementById('zp-quick-reply-row');
+        if (qr) qr.remove();
+        var nr = document.getElementById('zp-name-input-row');
         if (nr) nr.remove();
     }
 
     /* ================================================
-     * 3. QUICK-REPLY NAME PROMPT
+     * 3. PAGE-AWARE STARTERS (replaces name prompt gate)
      * ================================================ */
 
-    function showNamePrompt() {
+    var STARTERS = [
+        { id: 'printmon', label: 'Make a Printmon theme', prompt: 'Make a Printmon theme' },
+        { id: 'finance', label: 'Money, minus the myths', prompt: 'Money, minus the myths' },
+        { id: 'game', label: 'Give me a quick game', prompt: 'Give me a quick game' },
+        { id: 'wild', label: 'Show me something wild', prompt: 'Show me something wild' },
+        { id: 'tech', label: 'Find me a tech shortcut', prompt: 'Find me a tech shortcut' },
+        { id: 'meme', label: 'Send me a meme', prompt: 'Send me a meme' }
+    ];
+
+    function getOrderedStarters() {
+        var p = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '';
+        var priorityId = null;
+        if (p.includes('/financehub') || p.includes('finance')) {
+            priorityId = 'finance';
+        } else if (p.includes('/nexus')) {
+            priorityId = 'tech';
+        } else if (p.includes('/thelounge')) {
+            priorityId = 'game';
+        } else if (p.includes('/amazon/printmon') || p.includes('/printmon')) {
+            priorityId = 'printmon';
+        }
+
+        if (!priorityId) return STARTERS.slice();
+
+        var prioritized = [];
+        var rest = [];
+        STARTERS.forEach(function(s) {
+            if (s.id === priorityId) {
+                prioritized.push(s);
+            } else {
+                rest.push(s);
+            }
+        });
+        return prioritized.concat(rest);
+    }
+
+    function showStarters() {
         if (quickReplied) return;
-        var row = document.getElementById('zp-quick-reply-row');
+        var row = document.getElementById('zp-starters-row');
         if (row) return; // already shown
-        /* Don't show buttons if conversation already has user messages */
+        /* Don't show starters if conversation already has user messages */
         var existingMsgs = messagesEl.querySelectorAll('.zp-chat-msg-user');
         if (existingMsgs.length > 0) return;
 
         row = document.createElement('div');
-        row.id = 'zp-quick-reply-row';
-        row.className = 'zp-chat-msg zp-chat-msg-bot';
+        row.id = 'zp-starters-row';
+        row.className = 'zp-chat-msg zp-chat-msg-bot zp-starters-row';
+        row.setAttribute('role', 'group');
+        row.setAttribute('aria-label', 'Conversation starters');
 
-        /* "I have a name!" button */
-        var nameBtn = document.createElement('button');
-        nameBtn.className = 'zp-qr-btn';
-        nameBtn.textContent = 'I have a name!';
-        nameBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            showNameInput();
-        });
-
-        /* "Just Zephyy" button */
-        var skipBtn = document.createElement('button');
-        skipBtn.className = 'zp-qr-btn';
-        skipBtn.textContent = 'Nah, just chat';
-        skipBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            removeQuickReplies();
-            sendText("I'm good without a name");
-        });
-
-        row.appendChild(nameBtn);
-        row.appendChild(skipBtn);
-        messagesEl.appendChild(row);
-        scrollToBottom();
-    }
-
-    function showNameInput() {
-        removeQuickReplies();
-        var row = document.createElement('div');
-        row.id = 'zp-name-input-row';
-        row.className = 'zp-chat-msg zp-chat-msg-bot';
-
-        var input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Your name...';
-        input.maxLength = 30;
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                submitName(input.value.trim());
-            }
-        });
-
-        var okBtn = document.createElement('button');
-        okBtn.textContent = 'OK';
-        okBtn.className = 'zp-qr-btn';
-        okBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            submitName(input.value.trim());
-        });
-
-        row.appendChild(input);
-        row.appendChild(okBtn);
-        messagesEl.appendChild(row);
-        scrollToBottom();
-        input.focus();
-    }
-
-    function submitName(name) {
-        var nr = document.getElementById('zp-name-input-row');
-        if (nr) nr.remove();
-        removeWelcome();
-        removeQuickReplies();
-        if (name && name.length > 0) {
-            var raw = name.toLowerCase();
-            if (raw === 'doshus') {
-                addMessage('bot', 'Nice try \uD83D\uDE0F I know Doshus — and you\'re not him. What should I actually call you?', Date.now());
-                quickReplied = false;
-                var row = document.getElementById('zp-name-input-row');
-                if (row) row.remove();
-                setTimeout(showNamePrompt, 500);
-                return;
-            }
-            var caps = name[0].toUpperCase() + name.slice(1).toLowerCase();
-            var greetings = ["Yeah it's ", "You can call me ", "I go by "];
-            var greet = greetings[Math.floor(Math.random() * greetings.length)];
-            var userMsg = greet + caps + '!';
-            quickReplied = true;
-            var nameTs = Date.now();
-            addMessage('user', userMsg, nameTs);
-            addThinkingBubble();
-            var timeoutId = setTimeout(function() {
-                var tb = document.getElementById('zp-chat-thinking');
-                if (tb) tb.querySelector('.zp-thinking-text').textContent = 'hmm, no response yet';
-            }, 15000);
-            send(userMsg).then(function() {
-                cacheAppend('user', userMsg, nameTs); /* a conversation now: her reply finds the visitor on any page */
-            }, function() {
-                removeThinkingBubble();
-                addMessage('bot', 'That message could not be sent. Please try again.', Date.now());
+        var starters = getOrderedStarters();
+        starters.forEach(function(item) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'zp-starter-chip';
+            btn.textContent = item.label;
+            btn.setAttribute('data-starter', item.id);
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                removeStarters();
+                sendText(item.prompt);
             });
-        } else {
-            sendText("I don't have a name");
-        }
+            row.appendChild(btn);
+        });
+
+        messagesEl.appendChild(row);
+        scrollToBottom();
     }
 
     function sendText(text) {
         if (!text) return;
-        quickReplied = true; // prevent re-showing buttons
-        if (text.includes("without a name") || text.includes("don't have a name")) removeWelcome();
+        quickReplied = true; // prevent re-showing starters
+        removeWelcome();
+        removeStarters();
         inputEl.value = text;
         sendBtn.click();
     }
@@ -557,23 +929,29 @@
     }
 
     function loadMessages() {
+        var currentEpoch = sessionEpoch;
         /* Instant paint from local cache while Firebase round-trips —
            the full repaint below reconciles any drift. */
         if (!messagesEl.querySelector('.zp-chat-msg')) {
             readMsgCache().forEach(function(m) {
-                addMessage(m.role, m.content, m.timestamp);
+                addMessage(m.role, m.content, m.timestamp, m, m.key);
             });
         }
         connect().catch(function(error) {
+            if (currentEpoch !== sessionEpoch) return;
             addMessage('bot', 'Private chat could not connect. Please refresh or try again later.', Date.now());
             throw error;
-        }).then(function(rt) { return rt.loadHistory(50); }).then(function(snap) {
-            if (!snap.exists()) { showNamePrompt(); return; }
+        }).then(function(rt) {
+            if (currentEpoch !== sessionEpoch) return null;
+            return rt.loadHistory(50);
+        }).then(function(snap) {
+            if (!snap || currentEpoch !== sessionEpoch) return;
+            if (!snap.exists()) { showStarters(); return; }
             var data = snap.val();
             var keys = Object.keys(data).sort(function (a, b) {
                 return (data[a].timestamp - data[b].timestamp) || a.localeCompare(b);
             });
-            if (keys.length === 0) { showNamePrompt(); return; }
+            if (keys.length === 0) { showStarters(); return; }
 
             while (messagesEl.firstChild) {
                 messagesEl.removeChild(messagesEl.firstChild);
@@ -582,8 +960,11 @@
             var cacheList = [];
             keys.forEach(function(key) {
                 var msg = data[key];
-                addMessage(msg.role, msg.content, msg.timestamp);
-                cacheList.push({ role: msg.role, content: msg.content, timestamp: msg.timestamp });
+                addMessage(msg.role, msg.content, msg.timestamp, msg, key);
+                var item = { role: msg.role, content: msg.content, timestamp: msg.timestamp, key: key };
+                if (msg.actionProposal) item.actionProposal = msg.actionProposal;
+                if (msg.suggestions) item.suggestions = msg.suggestions;
+                cacheList.push(item);
             });
             saveMsgCache(cacheList);
 
@@ -593,8 +974,8 @@
                 return;
             }
             removeWelcome();
-            removeQuickReplies();
-            showNamePrompt();
+            removeStarters();
+            showStarters();
         }).catch(function() { /* silent */ });
     }
 
@@ -603,12 +984,14 @@
         var text = inputEl.value.trim();
         if (!text) return;
 
+        chatActionState.onUserAction(Date.now());
+
         sendBtn.disabled = true;
         inputEl.value = '';
         touchActivity();
 
         removeWelcome();
-        removeQuickReplies();
+        removeStarters();
 
         var userTs = Date.now();
         var msgEl = addMessage('user', text, userTs);
@@ -685,8 +1068,8 @@
         removeThinkingBubble();
         if (window.__zpSlowTimeout) { clearTimeout(window.__zpSlowTimeout); window.__zpSlowTimeout = null; }
         var sn = document.getElementById('zp-slow-note'); if (sn) sn.remove();
-        addMessage(msg.role, msg.content, msg.timestamp);
-        cacheAppend(msg.role, msg.content, msg.timestamp);
+        addMessage(msg.role, msg.content, msg.timestamp, msg);
+        cacheAppend(msg.role, msg.content, msg.timestamp, msg);
     });
 
     /* ── Control state extras: real typing indicator + seen receipts.
@@ -709,6 +1092,8 @@
         }
         if (ctrl.visitorForget === true) {
             try { localStorage.removeItem('zp-visitor-id'); } catch (err) { /* no-op */ }
+            try { localStorage.removeItem(CACHE_KEY); } catch (err) { /* no-op */ }
+            startFreshSession();
         }
         if (ctrl.typing) {
             if (panel.classList.contains('open')) addThinkingBubble('typing');
@@ -782,6 +1167,8 @@
     function startFreshSession() {
         if (resettingSession) return;
         resettingSession = true;
+        sessionEpoch++;
+        chatActionState.reset(sessionEpoch);
         sessionEnded = false;
         touchActivity(); /* don't let the idle timer instantly re-fire on the new session */
         /* A fresh session greets like a first visit: new session, rebound Firebase refs */
@@ -795,7 +1182,7 @@
         if (sendBtn) sendBtn.disabled = false;
         if (inputEl) { inputEl.placeholder = 'Message Zephyy...'; }
         if (panel.classList.contains('open')) {
-            setTimeout(function() { showNamePrompt(); }, 400);
+            setTimeout(function() { showStarters(); }, 400);
         }
         resettingSession = false;
     }
@@ -869,4 +1256,19 @@
 
     /* ── Session keepalive: handled server-side via RTDB control watcher.
        Client no longer mutates message timestamps — that corrupted history. ── */
+
+    /* Export test helpers in test environments */
+    if (typeof window !== 'undefined') {
+        window.__zpTest = {
+            renderContent: renderContent,
+            parseMediaUrl: parseMediaUrl,
+            getOrderedStarters: getOrderedStarters,
+            showStarters: showStarters,
+            removeStarters: removeStarters,
+            renderProposalCard: renderProposalCard,
+            renderSuggestions: renderSuggestions,
+            chatActionState: chatActionState,
+            sendOpaqueAction: sendOpaqueAction
+        };
+    }
 })();

@@ -8,6 +8,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const readdirSorted = require('./lib/readdir-sorted');
 const MEME_BUDGET = require('./lib/meme-budget');
+const { deriveMemeData } = require('./generate-meme-list');
 
 const ROOT = path.join(__dirname, '..');
 const rel = (f) => path.relative(ROOT, f).split(path.sep).join('/');
@@ -309,7 +310,7 @@ const CHECKS = {
     // Every meme within its budget (scripts/lib/meme-budget.js), so a heavy one can't ship unshrunk
     'memes stay lean': () => {
         const dir = 'public/assets/memes', mb = (n) => (n / 1e6).toFixed(1);
-        const files = readdirSorted(path.join(ROOT, dir)).filter((f) => f !== 'meme-list.json');
+        const files = readdirSorted(path.join(ROOT, dir)).filter((f) => f !== 'meme-list.json' && f !== 'meme-catalog.json');
         const over = files.filter((f) => !f.endsWith('.part')).map((f) => {
             const size = fs.statSync(path.join(ROOT, dir, f)).size, budget = MEME_BUDGET.VIDEO.test(f) ? MEME_BUDGET.video : MEME_BUDGET.image;
             return { f, size, budget };
@@ -319,6 +320,52 @@ const CHECKS = {
             : `${dir}/${m.f}: ${mb(m.size)} MB, over its ${mb(m.budget)} MB budget: ${/\.webp$/i.test(m.f) ? 'shrink it by hand (memes:convert makes WebPs, it doesn\'t take them)' : `bun run memes:convert ${m.f}`}`)
             .concat([...MEME_BASELINE.keys()].filter((f) => !over.some((m) => m.f === f)).map((f) => `MEME_BASELINE lists ${f}, which is in budget or gone: take it off`))
             .concat(files.filter((f) => f.endsWith('.part')).map((f) => `${dir}/${f}: left by an interrupted memes:convert --apply: delete it`));
+    },
+    // Catalog matches schema, real media files, and carries no-cache header in firebase.json
+    'meme catalog is well-formed': () => {
+        const catPath = path.join(ROOT, 'public/assets/memes/meme-catalog.json');
+        const listPath = path.join(ROOT, 'public/assets/memes/meme-list.json');
+        if (!fs.existsSync(catPath)) return ['public/assets/memes/meme-catalog.json is missing: run bun run memes'];
+        if (!fs.existsSync(listPath)) return ['public/assets/memes/meme-list.json is missing: run bun run memes'];
+
+        let expected;
+        try {
+            expected = deriveMemeData({
+                dir: path.join(ROOT, 'public/assets/memes'),
+                descFile: path.join(ROOT, 'data/meme-descriptions.json')
+            });
+        } catch (e) {
+            return ['failed deriving meme catalog from source media and authored descriptions: ' + e.message];
+        }
+
+        let actualCatalog, actualList;
+        try {
+            actualCatalog = JSON.parse(fs.readFileSync(catPath, 'utf8'));
+        } catch (e) {
+            return [`public/assets/memes/meme-catalog.json: invalid JSON (${e.message})`];
+        }
+        try {
+            actualList = JSON.parse(fs.readFileSync(listPath, 'utf8'));
+        } catch (e) {
+            return [`public/assets/memes/meme-list.json: invalid JSON (${e.message})`];
+        }
+
+        // These files are generated, so compare the complete shared derivation.
+        // Partial field checks silently admit stale tags, list paths and schema extras.
+        const problems = [];
+        if (JSON.stringify(actualCatalog) !== JSON.stringify(expected.catalog)) {
+            problems.push('public/assets/memes/meme-catalog.json differs from its source derivation: run bun run memes');
+        }
+        if (JSON.stringify(actualList) !== JSON.stringify(expected.memePaths)) {
+            problems.push('public/assets/memes/meme-list.json differs from its source derivation: run bun run memes');
+        }
+
+        const fb = JSON.parse(fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8'));
+        const headers = (fb.hosting || []).flatMap((h) => h.headers || []);
+        const hasNoCache = headers.some((h) => h.source === '/assets/memes/meme-catalog.json' && (h.headers || []).some((hdr) => hdr.key === 'Cache-Control' && hdr.value === 'no-cache'));
+        if (!hasNoCache) problems.push('firebase.json: /assets/memes/meme-catalog.json lacks Cache-Control: no-cache header');
+
+        return problems;
     },
     // Every public page is in the sitemap, and every sitemap URL is a page.
     'sitemap matches pages': () => {
@@ -350,11 +397,21 @@ const CHECKS = {
 };
 
 let failed = 0;
-for (const [name, run] of Object.entries(CHECKS)) {
-    const problems = run();
-    console.log(`${problems.length ? 'FAIL' : 'PASS'}  ${name}`);
-    for (const p of problems) console.log(`      ${p}`);
-    if (problems.length) failed++;
+function runAllChecks() {
+    let count = 0;
+    for (const [name, run] of Object.entries(CHECKS)) {
+        const problems = run();
+        console.log(`${problems.length ? 'FAIL' : 'PASS'}  ${name}`);
+        for (const p of problems) console.log(`      ${p}`);
+        if (problems.length) count++;
+    }
+    console.log(count ? `\n${count} check(s) failed` : '\nall checks passed');
+    return count;
 }
-console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed');
-process.exitCode = failed ? 1 : 0;
+
+if (require.main === module) {
+    const failed = runAllChecks();
+    process.exitCode = failed ? 1 : 0;
+}
+
+module.exports = { CHECKS, runAllChecks };
