@@ -2,44 +2,142 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuration
-const memesDir = path.join(__dirname, '..', 'public', 'assets', 'memes');
+const ROOT = path.join(__dirname, '..');
+const memesDir = path.join(ROOT, 'public', 'assets', 'memes');
 const outputFile = path.join(memesDir, 'meme-list.json');
+const catalogFile = path.join(memesDir, 'meme-catalog.json');
+const descriptionsFile = path.join(ROOT, 'data', 'meme-descriptions.json');
 
-// Read the memes directory
-fs.readdir(memesDir, (err, files) => {
-    if (err) {
-        console.error('❌ Error reading directory:', err);
-        console.error('Make sure the ./public/assets/memes folder exists!');
-        return;
+/**
+ * Pure deterministic derivation of meme list and catalog from on-disk media files
+ * and authored descriptions.
+ */
+function deriveMemeData({ dir = memesDir, descFile = descriptionsFile } = {}) {
+    // Authored data must exist and parse cleanly, or fail closed
+    if (!fs.existsSync(descFile)) {
+        throw new Error(`Authored descriptions file not found: ${descFile}`);
     }
 
-    files.sort(); // Node lists sorted, Bun in filesystem order: keep meme-list.json stable
+    let authoredRaw;
+    try {
+        authoredRaw = JSON.parse(fs.readFileSync(descFile, 'utf8'));
+    } catch (e) {
+        throw new Error(`Failed parsing ${descFile}: ${e.message}`);
+    }
 
-    // Filter only image AND video files
-    const imageFiles = files.filter(file =>
-        /\.(jpg|jpeg|png|gif|webp|mp4|webm|mov)$/i.test(file)
+    if (typeof authoredRaw !== 'object' || authoredRaw === null) {
+        throw new Error(`${descFile}: root must be an object`);
+    }
+
+    const authoredItems = Array.isArray(authoredRaw.items)
+        ? authoredRaw.items
+        : (Array.isArray(authoredRaw) ? authoredRaw : null);
+
+    if (!authoredItems) {
+        throw new Error(`${descFile}: items must be an array`);
+    }
+
+    const authoredMap = new Map();
+    for (const item of authoredItems) {
+        if (!item || typeof item !== 'object') {
+            throw new Error(`${descFile}: invalid item entry`);
+        }
+        const key = item.id || (item.path ? path.basename(item.path) : null);
+        if (!key || typeof key !== 'string') {
+            throw new Error(`${descFile}: item missing valid id`);
+        }
+        if (typeof item.reviewed !== 'boolean') {
+            throw new Error(`${descFile}: item ${key} missing boolean reviewed property`);
+        }
+        if (item.description !== undefined && typeof item.description !== 'string') {
+            throw new Error(`${descFile}: item ${key} description must be string`);
+        }
+        if (item.tags !== undefined && !Array.isArray(item.tags)) {
+            throw new Error(`${descFile}: item ${key} tags must be array`);
+        }
+        authoredMap.set(key, item);
+        if (item.path) authoredMap.set(item.path, item);
+    }
+
+    if (!fs.existsSync(dir)) {
+        throw new Error(`Memes directory not found: ${dir}`);
+    }
+
+    const files = fs.readdirSync(dir);
+    files.sort(); // Deterministic sort across OS/filesystems
+
+    const mediaFiles = files.filter(f =>
+        /\.(jpg|jpeg|png|gif|webp|mp4|webm|mov)$/i.test(f)
     );
 
-    if (imageFiles.length === 0) {
-        console.warn('⚠️  No image files found in the memes directory!');
-        console.warn('Add some .jpg, .png, or .gif files to ./public/assets/memes/');
-        return;
+    if (mediaFiles.length === 0) {
+        throw new Error(`No media files found in ${dir}`);
     }
 
-    // Create array of paths
-    const memePaths = imageFiles.map(file => `/assets/memes/${file}`);
+    const memePaths = mediaFiles.map(file => `/assets/memes/${file}`);
 
-    // Write to JSON file
-    fs.writeFile(outputFile, JSON.stringify(memePaths, null, 2), err => {
-        if (err) {
-            console.error('❌ Error writing file:', err);
-        } else {
-            console.log('✅ Successfully generated meme list!');
-            console.log(`🖼️ Found ${memePaths.length} images:`);
-            memePaths.forEach((path, index) => {
-                console.log(`   ${index + 1}. ${path}`);
-            });
-            console.log(`\n🗺️ Saved to: ${outputFile}`);
-        }
+    const catalogItems = mediaFiles.map(file => {
+        const relPath = `/assets/memes/${file}`;
+        const isVideo = /\.(mp4|webm|mov)$/i.test(file);
+        const authored = authoredMap.get(file) || authoredMap.get(relPath);
+
+        const description = (authored && typeof authored.description === 'string')
+            ? authored.description.trim()
+            : '';
+        const tags = (authored && Array.isArray(authored.tags))
+            ? authored.tags.map(t => String(t).trim()).filter(Boolean)
+            : [];
+        // Reviewed is true only when explicitly reviewed AND non-empty description
+        const reviewed = Boolean(authored && authored.reviewed === true && description.length > 0);
+
+        return {
+            id: file,
+            path: relPath,
+            type: isVideo ? 'video' : 'image',
+            description: description,
+            tags: tags,
+            reviewed: reviewed
+        };
     });
-});
+
+    return {
+        mediaFiles,
+        memePaths,
+        catalog: {
+            version: 1,
+            items: catalogItems
+        }
+    };
+}
+
+function generate({ dir = memesDir, descFile = descriptionsFile, outList = outputFile, outCat = catalogFile } = {}) {
+    const derived = deriveMemeData({ dir, descFile });
+
+    fs.writeFileSync(outList, JSON.stringify(derived.memePaths, null, 2) + '\n');
+    console.log(`✅ Successfully generated ${outList} (${derived.memePaths.length} items)`);
+
+    fs.writeFileSync(outCat, JSON.stringify(derived.catalog, null, 2) + '\n');
+    const reviewedCount = derived.catalog.items.filter(item => item.reviewed).length;
+    console.log(`✅ Successfully generated ${outCat} (${derived.catalog.items.length} items, ${reviewedCount} reviewed)`);
+
+    return derived;
+}
+
+if (require.main === module) {
+    try {
+        generate();
+    } catch (err) {
+        console.error('❌ Error generating meme list/catalog:', err.message);
+        process.exit(1);
+    }
+}
+
+module.exports = {
+    ROOT,
+    memesDir,
+    outputFile,
+    catalogFile,
+    descriptionsFile,
+    deriveMemeData,
+    generate
+};

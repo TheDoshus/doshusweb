@@ -81,6 +81,15 @@
               "value": "no-cache"
             }
           ]
+        },
+        {
+          "source": "/assets/memes/meme-catalog.json",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
         }
       ]
     }
