@@ -23,6 +23,7 @@ Your creative canvas. Made by hand, no frameworks. Animations, custom fonts, int
 | `database.rules.json` | Firebase RTDB security rules |
 | `scripts/check.js` | `bun run check` — every pre-commit check, read-only (see AGENTS.md § Verify) |
 | `tests/` | `bun run test` — the chat client's wiring, then the board engine in a real browser (Playwright; once per machine: `bunx playwright install chromium`) |
+| `tests/profile.cjs` | `bun run test:profile [base URL] [route]` — profile routes, fragments, no-JS fallback and HTMX swaps at desktop/mobile widths; defaults to the local server. `PROFILE_BASE_URL` / `PROFILE_ROUTE` also work; a URL ending in `/zephyy` focuses the full profile checks. Readiness has a 15-second deadline for fonts, finite animations and three consecutive stable frames; transient network codes on any request retry the whole page check once and print `RETRY`. Exit 0 = all checks passed; exit 1 = any non-network FAIL (no retry); exit 2 = network-only UNKNOWN after one retry, report UNKNOWN and skip edits. FAIL takes precedence over UNKNOWN; the summary counts both. |
 | `scripts/update-csp-hashes.js` | Recomputes CSP hashes for inline scripts (`bun run csp:hashes`) |
 
 ## Key Folders

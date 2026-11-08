@@ -14,103 +14,92 @@ below means the numbered coding Rules, which say how to meet them.
 ### The build bar
 
 1. **Futureproof.** Build so the next agent, model, machine or data source plugs in without
-   rewriting what is already there: derive, don't copy (Rule 12). Anything that depends on a
-   version, model, quota or upstream says so when it drifts, before it breaks.
-2. **Modular.** Each part has one clear job and a defined interface, so it can be swapped
-   out, or backed by another clean path, without touching the rest: _"a generic standard is
-   better than a custom ragdolled one."_ Modular is organized, not scattered: extend the part
-   shaped like your change before adding another (Rule 18). A pile of small scripts splitting
-   one job is not modular.
+   rewriting: derive, don't copy (Rule 12). Flag drift on version, model, quota or upstream
+   before breaking.
+2. **Modular.** Each part has one clear job and defined interface to swap or back cleanly
+   without touching the rest: _"a generic standard is
+   better than a custom ragdolled one."_ Modular is organized: extend the part shaped like
+   your change before adding another (Rule 18); splitting one job across many small scripts
+   is not modular.
 3. **Lean and optimized.** _"The meanest and leanest code possible. I believe less code is
-   the best code."_ Lean over clever, native features first, the fewest moving parts, no
-   bloat in code, prose or reports: a report states the finding, not the scan (Rule 16).
+   the best code."_ Lean over clever, native features first, fewest moving parts, no
+   bloat in code, prose or reports: report the finding, not the scan (Rule 16).
    Optimizing never costs a capability: _"I'm not here to lose functionality but improve
    on it."_
-4. **One source.** Every fact, rule, helper and template has one home, and everything else
-   points at it. Where a harness cannot point, the copy is generated from the source and
-   checked for drift. A hand-kept copy is allowed only when it forks into something
-   specialized for one agent, harness or situation, and it names what it forks from.
+4. **One source.** Every fact, rule, helper and template has one home; everything else
+   points at it. Where harnesses cannot point, copies are generated from source and checked
+   for drift. Hand-kept copies are allowed only when specialized for an agent, harness or
+   situation, naming what they fork from.
 5. **Portable.** It must survive a teleport: _"I don't wanna boot up on another machine with
    nothin workin."_ Nothing machine-specific is baked into code or docs: users, homes, paths,
-   ports and hosts come from config or the environment, or are derived (Rule 4). Build it
-   generic enough to share, with our specifics layered on top.
+   ports and hosts come from config or environment, or are derived (Rule 4). Build generic
+   enough to share, layering specifics on top.
 6. **Continuous.** When you learn or land something, update the memory, daily log, doc,
    handoff or board it changes right then, not at the end. Saying you will is not doing it.
 7. **oklch() colors only.** Every color value: CSS, tokens, inline styles, SVG `fill` and
-   `stroke`, generated colors, palettes, design specs, and any prompt you write for a tool
-   that produces colors. No hex, rgb/rgba or hsl wherever oklch is available; a vendor
-   example is a reference, not an exception.
-8. **Smart value first.** Anything with more than one way to get it done (models, search,
-   scraping, APIs, services) runs the best free option first, then the next best, and a paid
-   one only as the true last resort. The order lives in the config that routes it, not only
-   in prose: a doc that says "free first" over a config that picks paid is how every web
-   search here ran on paid providers for months.
+   `stroke`, generated colors, palettes, design specs, and prompts for any tool that produces colors. No hex,
+   rgb/rgba or hsl wherever oklch is available; vendor examples are references, not exceptions.
+8. **Smart value first.** Multi-path tasks (models, search, scraping, APIs, services) run the
+   best free option first, then next best, and paid only as last resort. The order lives in
+   routing config, not just prose: docs saying free-first over paid configs are how searches
+   ran paid for months.
 9. **Symmetric.** _"Having similar things built symmetrically... keeps operations clean and
    smoov"_ (2026-10-18). Like parts (agents, crew backends, gateways, crons, checkers) share
-   one shape and the same capabilities, and we choose per use when each is on. A difference
-   between them is either written beside it with its reason or it is a finding; fix it at the
-   boundary (sandbox, hook, config), not by withholding a tool from one member.
+   one shape and capabilities; choose per use when each is on. Differences must be justified
+   beside them or fixed at boundaries (sandbox, hook, config), not by withholding tools.
 
 ### How the work gets done
 
 - **Ask when you don't know or aren't confident.** _"Guessing does none of us any good."_ A
-  question costs one message; a wrong guess costs the build and his trust.
-  Number the questions, put your recommended answer under each, and word it so "yes"
-  accepts it; a question that hangs on another still open waits for the next round.
-- **Verify, don't assert.** Quote the output that proves it. A check that ran is not a check
-  that found anything (Rule 15), and one that could not look reports UNKNOWN, never clean.
-  Size the check to the blast radius: no unrequested repo-wide sweep for a local edit, and
-  the wider audit when real dependencies or he calls for it.
+  question costs one message; a wrong guess costs the build and his trust. Number questions,
+  put recommended answers under each, and word so "yes" accepts; questions depending on open
+  ones wait.
+- **Verify, don't assert.** Quote proving output. A check that ran is not a check that found
+  anything (Rule 15); one that could not look reports UNKNOWN, never clean. Size checks to
+  the blast radius: no unrequested repo sweeps for local edits; wider audits only when
+  real dependencies or Doshus call for it.
 - **A fix is proven when you have watched it fix the case.** _"How you gonna claim it's the
-  fix if ya haven't seen it fix the issue yet?"_ (2026-11-06). Run the reported case through
-  the real entry point, before and after, including the configurations the code serves that
-  we do not run; a test against a mocked layer is supporting evidence, not the proof. A change
-  to stored data proves that data written before it still loads.
+  fix if ya haven't seen it fix the issue yet?"_ (2026-11-06). Run reported cases through real
+  entry points before and after, including unrun served configs; tests on mocked layers are
+  supporting evidence, not proof. Data changes must prove prior written data still loads.
 - **Read anything public as a stranger before it goes out.** _"No one is just gonna know what
-  you're talking about. Especially if it happened in this house"_ (2026-11-06). A PR, comment,
-  issue or post that people outside the house will read must tell a reader with none of our
-  context what it reports, whose work it is and where to see it: link every branch, PR, issue
-  or post it builds on, and explain any house name. Have a fresh, no-context reader check it
-  first.
+  you're talking about. Especially if it happened in this house"_ (2026-11-06). PRs, comments,
+  issues or posts that outsiders will read must say what is reported, whose work it is and
+  where to see it, link every branch, PR, issue or post they build on, and explain house names.
+  Have a fresh, no-context reader check them first.
 - **Gold-star it before moving on.** Research it and think it through, then finish: the
   checks pass, the cleanup is done, the note is filed. Only then start the next thing.
-- **Read the manual before you touch a part of the system.** Each part has a page: find it by the part's name and config keys and read it before the
-  change, not after; a part with no page gets one in the same change.
+- **Read the manual before you touch a part of the system.** Each part has a page: find it by name and config keys and read before changing; a part
+  with no page gets one in the same change.
 - **Latest and greatest, done properly.** Prefer the maintained successor and the native
   feature over a superseded or hand-rolled one.
-- **Build to the domain's published standard.** Where a spec or vendor best-practice guide
-  exists (MCP, agent skills, hooks, an API), mirror it and build to it; our
-  domain page holds only our deltas, each with its reason.
-- **Track what you install.** A new tool, CLI or package gets a line in the tooling inventory
+- **Build to the domain's published standard.** Where a spec or vendor guide exists (MCP,
+  skills, hooks, APIs), mirror it and build to it;
+  our domain page holds only deltas with reasons.
+- **Track what you install.** A new tool, CLI or package gets a tooling inventory line
   and a manual the same session, or it rots unseen.
 - **Read the changelog of every update you come across.** _"They're new updates for a
-  reason. We gotta eat em up"_ (Doshus, 2026-10-16). Installing, running or just spotting a
-  new version of anything (a platform, a CLI, a package, a model): read its shipped changelog
-  or the notes at its tag, never a summary, for what we hand-rolled that it now does
-  natively, what changed default-ON, and what new capability we can use. Tell Doshus what's
-  new; each item worth adopting becomes a card on the board.
+  reason. We gotta eat em up"_ (Doshus, 2026-10-16). Spotting, installing, or running a new
+  version of anything (platform, CLI, package, model): read shipped changelogs or tag notes
+  (never summaries) for native replacements of hand-rolled tools, default-ON changes, and new
+  capabilities. Tell Doshus what is new; each worthy item becomes a board card.
 - **Call out mess when you see it:** duplication, stale docs, dead files, and builds kept
   only because redoing them is work. Don't route around it.
 - **Answer every part.** Keep every field he asked for and never drop one for brevity.
-- **Agents get capabilities, not caution.** If the house already has a way to do a job (a
-  script, a tool, a CLI), the agent uses it. A gate or "do not" an operator invents goes to
-  Doshus as a proposal, never into an agent's files as a rule: _"I don't need or want such baby
+- **Agents get capabilities, not caution.** If the house has a way to do a job (script, tool,
+  CLI), the agent uses it. A gate or "do not" an operator invents goes to Doshus as a proposal,
+  never into an agent's files as a rule: _"I don't need or want such baby
   restrictions on my agents"_ (2026-10-11). The Safety Boundaries below still hold.
-- **Two sets of eyes, preferably two models.** Every change gets an independent review, by a
+- **Two sets of eyes, preferably two models.** Every change gets an independent review by a
   reviewer following the reviewing standard.
-  **The reviewer carries the standards:** the builder's context is full of the work, so the
-  builder works from pointers and skills, and the reviewer holds the change to the whole
-  coding standard (its step 1).
-  Use a different model where a free lane is available, and every finding is fixed or answered; a
-  reviewer he names is part of done, and a command he runs as root is reviewed before he
-  gets it. Short on review quota, routine work lands with its review
-  owed and sharp edges wait. Timing
-  and the kept verdict: Rule 7 § E.
+  Use a different model where a free lane is available; every finding is fixed or answered. A reviewer
+  he names is part of done, and commands Doshus runs as root are reviewed before he gets them. Short on review
+  quota, routine work lands review owed;
+  sharp edges wait. Timing and verdicts: Rule 7 § E.
 
-**The messy trail** is the failure to guard against: scratch files left behind, a run-once
-script left in the script store (Rule 18), notes unfiled, board cards not moved, decisions
-not written down. Leave it clean and organized;
-before you stop, ask what you left behind.
+**The messy trail** is the failure to guard against: scratch files left behind, run-once
+scripts in the script store (Rule 18), unfiled notes, unmoved board cards, unrecorded
+decisions. Leave it clean and organized; before stopping, ask what you left behind.
 <!-- /canon -->
 
 ## Hard rules
@@ -160,6 +149,7 @@ bun run serve                                  # eyeball locally: public/ at Fir
 `bun run check` (`scripts/check.js`) runs: JS syntax (every `.js`/`.cjs`), every JSON file parses, CSS brace balance (browsers won't error on a missed `}`; it silently eats rules), oklch-only on `public/` CSS, HTML `<style>`/`style=`/color attributes, JS color strings and SVGs (Printmon and `vendor/` exempt; pre-lint SVGs are a baseline list that only shrinks), the CSP staying strict (no unsafe/wildcard sources outside `CSP_EXCEPTIONS`, no inline handlers or `javascript:` URLs outside Printmon), and drift: `csp:hashes` and `sync:zephyy` in `--check` mode must find nothing to change. A FAIL on drift means run that generator and commit the result. It also checks every board's markup (board names unique across the site, panel ids unique, cells inside the grid, no overlapping defaults), that a page with a Printmon orb dock links its sheet, that every picture in a page's markup carries its width and height, that a script from another site pinned to a version carries its integrity hash, that every meme is within its budget (`scripts/lib/meme-budget.js`; the heavy ones from before it are a baseline list that only shrinks, each held to the size it had), and that `public/.well-known/security.txt` is current (a Contact URI, one Expires between 30 days and a year out, its Canonical address): it goes red 30 days before the file expires. Every deploy runs it first (firebase.json's `predeploy`, preview channels included): a FAIL stops the deploy. Then `scripts/live-guard.js` reads the live release's file list (Hosting REST API, the token `firebase deploy` just refreshed) and stops a release that drops a live file git never deleted, since a deploy replaces the whole tree (2026-10-24, the Chiikawa theme); `DOSHUSWEB_ALLOW_DROP=<live paths>` names an intended removal, `*` deploys blind. `bun run test` drives the board in Chromium, each case a bug a review found there or a promise `UI-SPEC.md` makes; a board change lands with its case.
 
 Deploys are manual and preview-first — never auto-deploy (see DOSHUS.md).
+Exception (Doshus, 2026-11-08): Monthly Profile + Backup may deploy unattended to the expiring `monthly-audit-preview` Firebase preview channel only (`--expires 7d`), never live; Doshus promotes manually.
 
 ## Session handoffs
 

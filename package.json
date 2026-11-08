@@ -12,6 +12,7 @@
     "precommit": "bun run check",
     "serve": "bun scripts/serve.js",
     "test": "bun tests/live-guard.cjs && bun tests/chatorb-client.cjs && bun tests/board.cjs",
+    "test:profile": "bun tests/profile.cjs",
     "og": "bun scripts/og-cards.js",
     "csp:hashes": "bun scripts/update-csp-hashes.js",
     "memes": "bun scripts/generate-meme-list.js",
