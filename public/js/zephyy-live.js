@@ -98,12 +98,17 @@
     if (text && (!before || before.online !== isOnline)) text.textContent = msgs[Math.floor(Math.random() * msgs.length)];
     if (dot) dot.className = 'zp-dot ' + (isOnline ? 'online' : 'offline');
 
-    const model = window.__zpLastReplyModel || data.chatModel;
+    const rawModel = window.__zpLastReplyModel || data.chatModel;
     const badge = document.getElementById('zp-model-badge');
-    if (badge && model) {
-      badge.textContent = model;
-      badge.className = 'zp-model-badge';
-      if (/fallback|openrouter/i.test(data.chatModel || '')) badge.classList.add('fallback');
+    if (badge && rawModel) {
+      badge.dataset.telemetryModel = rawModel;
+      const isInternal = (m) => typeof m === 'string' && /stash|deterministic/i.test(m);
+      const displayModel = isInternal(rawModel) ? 'Meme stash' : rawModel;
+      if (displayModel) {
+        badge.textContent = displayModel;
+        badge.className = 'zp-model-badge';
+        if (/fallback|openrouter/i.test(displayModel)) badge.classList.add('fallback');
+      }
     }
 
     const services = data.services || {};

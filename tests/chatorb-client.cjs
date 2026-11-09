@@ -258,8 +258,9 @@ async function boot({auth = {fails: false}, chatCache = false, blocked = false} 
   await testMemeAndStarters();
   await testProposalCards();
   await testFiveArchitecturalRepros();
+  await testPolishRegressions();
 
-  console.log('PASS: no SDK until chat, status stream put/patch/null, one connection, auth wiring, atomic input, input limits, batched replies, dedupe, ordering, reset race, auth failure and retry, storage blocked, meme rendering, page-aware starters, adversarial defense, proposal cards & suggestions contract, full orb lifecycle & mutant verification');
+  console.log('PASS: no SDK until chat, status stream put/patch/null, one connection, auth wiring, atomic input, input limits, batched replies, dedupe, ordering, reset race, auth failure and retry, storage blocked, meme rendering, page-aware starters, adversarial defense, proposal cards & suggestions contract, full orb lifecycle & mutant verification, Video.js shared player & safe caption provenance');
 })().catch(error => { console.error(error); process.exitCode = 1; });
 
 function testMemeCatalogChecks() {
@@ -296,6 +297,8 @@ function testMemeCatalogChecks() {
 function buildHarness(sourceCode) {
   const elements = new Map();
   const activeObservers = [];
+  let manualVendorLoad = false;
+  let headEl;
 
   function notifyMutation(target, type, attrName) {
     for (const obs of activeObservers) {
@@ -336,12 +339,57 @@ function buildHarness(sourceCode) {
       },
       get firstChild() { return children[0] || null; },
       get lastChild() { return children[children.length - 1] || null; },
+      get isConnected() {
+        let cur = el;
+        while (cur.parentNode) cur = cur.parentNode;
+        return cur === doc.body || cur === messagesEl || (cur._id && (cur._id === 'zp-chat-messages' || cur._id === 'body'));
+      },
       set innerHTML(val) {
         el._innerHTML = val;
-        if (typeof val === 'string' && val.includes('zp-thinking-text')) {
-          const span = makeEl('thinking_text_' + Math.random(), 'span');
-          span.className = 'zp-thinking-text';
-          el.appendChild(span);
+        children.length = 0;
+        if (typeof val === 'string') {
+          if (val.includes('zp-thinking-text')) {
+            const span = makeEl('thinking_text_' + Math.random(), 'span');
+            span.className = 'zp-thinking-text';
+            el.appendChild(span);
+          }
+          if (val.includes('zp-chat-img-card')) {
+            const fig = makeEl('fig_' + Math.random(), 'figure');
+            const classMatch = val.match(/<figure[^>]*class="([^"]+)"/);
+            fig.className = classMatch ? classMatch[1] : 'zp-chat-img-card';
+            const urlMatch = val.match(/data-stash-url="([^"]+)"/);
+            if (urlMatch) {
+              fig.setAttribute('data-stash-url', urlMatch[1]);
+              fig.dataset.stashUrl = urlMatch[1];
+            }
+              if (val.includes('<video')) {
+                const vidMatch = val.match(/<video[^>]*class="([^"]*)"[^>]*src="([^"]*)"[^>]*>/);
+                const vid = makeEl('vid_' + Math.random(), 'video');
+                if (vidMatch) {
+                  vid.className = vidMatch[1];
+                  vid.setAttribute('src', vidMatch[2]);
+                  vid.src = vidMatch[2];
+                }
+                fig.appendChild(vid);
+              }
+              if (val.includes('<img')) {
+                const imgMatch = val.match(/<img[^>]*class="([^"]*)"[^>]*src="([^"]*)"[^>]*>/);
+                const img = makeEl('img_' + Math.random(), 'img');
+                if (imgMatch) {
+                  img.className = imgMatch[1];
+                  img.setAttribute('src', imgMatch[2]);
+                  img.src = imgMatch[2];
+                }
+                fig.appendChild(img);
+              }
+              const meta = makeEl('meta_' + Math.random(), 'figcaption');
+              meta.className = 'zp-chat-img-meta zp-chat-stash-meta';
+              const stashSpan = makeEl('span_' + Math.random(), 'span');
+              stashSpan.textContent = 'Doshus.NET Meme Stash';
+              meta.appendChild(stashSpan);
+              fig.appendChild(meta);
+              el.appendChild(fig);
+          }
         }
       },
       get innerHTML() { return el._innerHTML || ''; },
@@ -349,7 +397,7 @@ function buildHarness(sourceCode) {
         el.attributes[k] = String(v);
         if (k.startsWith('data-')) el.dataset[k.slice(5)] = String(v);
       },
-      getAttribute: (k) => el.attributes[k] || (el.dataset && el.dataset[k.replace(/^data-/, '')] !== undefined ? el.dataset[k.replace(/^data-/, '')] : null),
+      getAttribute: (k) => (el.attributes[k] !== undefined ? el.attributes[k] : (el[k] !== undefined ? String(el[k]) : (el.dataset && el.dataset[k.replace(/^data-/, '')] !== undefined ? el.dataset[k.replace(/^data-/, '')] : null))),
       classList: {
         add: (c) => {
           if (!el.classList.contains(c)) {
@@ -375,6 +423,9 @@ function buildHarness(sourceCode) {
         if (ch.parentNode) ch.parentNode.removeChild(ch);
         children.push(ch);
         ch.parentNode = el;
+        if (el === headEl && ch.onload && !manualVendorLoad && win.videojs) {
+          Promise.resolve().then(() => { if (ch.onload && !ch._loaded) { ch._loaded = true; ch.onload(); } });
+        }
         return ch;
       },
       prepend: (ch) => {
@@ -383,12 +434,18 @@ function buildHarness(sourceCode) {
         ch.parentNode = el;
         return ch;
       },
+      before: (sibling) => {
+        if (el.parentNode) el.parentNode.insertBefore(sibling, el);
+      },
       insertBefore: (ch, ref) => {
         if (ch.parentNode) ch.parentNode.removeChild(ch);
         const idx = children.indexOf(ref);
         if (idx >= 0) children.splice(idx, 0, ch);
         else children.push(ch);
         ch.parentNode = el;
+        if ((el === headEl || el.parentNode === headEl) && ch.onload && !manualVendorLoad && win.videojs) {
+          Promise.resolve().then(() => { if (ch.onload && !ch._loaded) { ch._loaded = true; ch.onload(); } });
+        }
         return ch;
       },
       removeChild: (ch) => {
@@ -415,18 +472,31 @@ function buildHarness(sourceCode) {
     function matchNode(node, sel) {
       if (!node || !node.tagName) return false;
       sel = sel.trim();
+      const tagM = sel.match(/^([a-zA-Z0-9_-]+)(\..*|\[.*)?$/);
+      if (tagM && tagM[1] && tagM[2]) {
+        if (node.tagName.toLowerCase() !== tagM[1].toLowerCase()) return false;
+        sel = tagM[2];
+      }
       if (sel.startsWith('#')) return node.id === sel.slice(1);
       if (sel.startsWith('.')) {
         const parts = sel.split(/\[|\:/);
         const cls = parts[0].slice(1);
         if (!node.classList.contains(cls)) return false;
         if (sel.includes('[data-content]')) return node.dataset && node.dataset.content !== undefined;
+        if (sel.includes('[data-stash-url]')) return (node.dataset && node.dataset.stashUrl !== undefined) || node.getAttribute('data-stash-url') !== null;
         return true;
       }
-      const attrM = sel.match(/^\[([a-zA-Z0-9_-]+)(?:=([^\]]+))?\]$/);
+      const attrM = sel.match(/^\[([a-zA-Z0-9_-]+)(?:([*$^~|]?=)([^\]]+))?\]$/);
       if (attrM) {
-        const val = node.getAttribute(attrM[1]);
-        if (attrM[2] !== undefined) return val === attrM[2].replace(/^["']|["']$/g, '');
+        const val = node.getAttribute(attrM[1]) || node[attrM[1]] || null;
+        if (attrM[2] !== undefined) {
+          const op = attrM[2];
+          const expected = attrM[3].replace(/^["']|["']$/g, '');
+          if (!val) return false;
+          if (op === '=') return String(val) === expected;
+          if (op === '$=') return String(val).endsWith(expected);
+          if (op === '*=') return String(val).includes(expected);
+        }
         return val !== null;
       }
       return node.tagName.toLowerCase() === sel.toLowerCase();
@@ -471,6 +541,8 @@ function buildHarness(sourceCode) {
   const welcomeMsg = makeEl('zp-welcome-msg');
   welcomeMsg.className = 'zp-chat-msg zp-chat-msg-bot zp-chat-welcome';
   messagesEl.appendChild(welcomeMsg);
+  const modelBadge = makeEl('zp-model-badge', 'span');
+  modelBadge.textContent = 'Checking...';
 
   const windowListeners = new Map();
   const storageMap = new Map();
@@ -479,6 +551,42 @@ function buildHarness(sourceCode) {
     setItem: (k, v) => storageMap.set(k, String(v)),
     removeItem: (k) => storageMap.delete(k),
     clear: () => storageMap.clear()
+  };
+
+  let videoInitCount = 0;
+  let videoDisposeCount = 0;
+  const activeMockPlayers = [];
+  function MockVideoPlayer(videoEl, options) {
+    this.videoEl = videoEl;
+    this.options = options;
+    this._disposed = false;
+    this._paused = false;
+    this.listeners = {};
+    videoInitCount++;
+    activeMockPlayers.push(this);
+  }
+  MockVideoPlayer.prototype.dispose = function() {
+    this._disposed = true;
+    videoDisposeCount++;
+    if (this.listeners.dispose) this.listeners.dispose.forEach(fn => fn());
+  };
+  MockVideoPlayer.prototype.isDisposed = function() { return this._disposed; };
+  MockVideoPlayer.prototype.pause = function() { this._paused = true; };
+  MockVideoPlayer.prototype.paused = function() { return this._paused; };
+  MockVideoPlayer.prototype.one = function(evt, fn) {
+    (this.listeners[evt] = this.listeners[evt] || []).push(fn);
+  };
+  const mockVideoJs = (videoEl, opts) => new MockVideoPlayer(videoEl, opts);
+
+  const catalogFile = path.join(__dirname, '../public/assets/memes/meme-catalog.json');
+  let catalogData = JSON.parse(fs.readFileSync(catalogFile, 'utf8'));
+  let fetchFails = false;
+  const fetchMock = async (url) => {
+    if (fetchFails) throw new Error('Fetch failed');
+    if (url.includes('meme-catalog.json')) {
+      return { ok: true, json: async () => JSON.parse(JSON.stringify(catalogData)) };
+    }
+    return { ok: true, json: async () => ({}) };
   };
 
   const timers = [];
@@ -495,22 +603,30 @@ function buildHarness(sourceCode) {
     },
     haptic: () => {},
     zephyyWhorl: () => '<svg></svg>',
-    __zpConnect: null
+    __zpConnect: null,
+    fetch: fetchMock,
+    videojs: mockVideoJs
   };
 
+  headEl = makeEl('head');
   const doc = {
     readyState: 'complete',
     getElementById: (id) => elements.get(id) || null,
-    querySelector: () => null,
-    querySelectorAll: () => [],
+    querySelector: (sel) => {
+      if (sel.startsWith('#')) return elements.get(sel.slice(1)) || null;
+      if (headEl.querySelector(sel)) return headEl.querySelector(sel);
+      return null;
+    },
+    querySelectorAll: (sel) => headEl.querySelectorAll(sel),
     createElement: (tag) => makeEl('auto_' + Math.random(), tag),
     addEventListener: () => {},
-    body: makeEl('body')
+    body: makeEl('body'),
+    head: headEl
   };
 
   const ctx = {
     window: win, document: doc, console, navigator: { maxTouchPoints: 0 },
-    URL, Date,
+    URL, Date, fetch: fetchMock,
     setTimeout: (fn, ms) => { const t = { fn, ms: ms || 0, id: timers.length + 1 }; timers.push(t); return t.id; },
     clearTimeout: (id) => { const idx = timers.findIndex(t => t.id === id); if (idx >= 0) timers.splice(idx, 1); },
     setInterval: () => {},
@@ -525,7 +641,9 @@ function buildHarness(sourceCode) {
 
   function drainTimers() { while (timers.length > 0) { timers.shift().fn(); } }
 
-  vm.runInNewContext(sourceCode, ctx);
+  const loaderSource = fs.readFileSync(path.join(__dirname, '../public/js/video-loader.js'), 'utf8');
+  vm.runInNewContext(loaderSource, ctx);
+  vm.runInContext(sourceCode, ctx);
 
   return {
     win,
@@ -538,7 +656,14 @@ function buildHarness(sourceCode) {
     sendBtn,
     localStorage,
     drainTimers,
-    CustomEvent: ctx.CustomEvent
+    CustomEvent: ctx.CustomEvent,
+    modelBadge,
+    activeMockPlayers,
+    getVideoStats: () => ({ videoInitCount, videoDisposeCount }),
+    context: ctx,
+    setCatalogData: (d) => { catalogData = d; },
+    setFetchFails: (f) => { fetchFails = f; },
+    setManualVendorLoad: (v) => { manualVendorLoad = v; }
   };
 }
 
@@ -549,11 +674,11 @@ async function testMemeAndStarters() {
   assert.ok(h.win.__zpTest, 'zephyy-orb.js exports __zpTest');
   const { renderContent, parseMediaUrl, getOrderedStarters } = h.win.__zpTest;
 
-  // 1. Stash image markdown -> rendered as canonical RELATIVE path, neutral stash attribution, NO "Generated by Zephyy", NO "Copy prompt"
+  // 1. Stash image markdown -> rendered as canonical RELATIVE path, neutral stash attribution, NO "Generated by Zephyy", NO "Copy prompt", NO unverified visible description
   const stashImgHtml = renderContent('Here is a meme: ![A cool cat](https://doshus.net/assets/memes/20230607_060826.webp)');
   assert.match(stashImgHtml, /<img src="\/assets\/memes\/20230607_060826\.webp"/, 'stash image rendered as canonical relative path');
-  assert.match(stashImgHtml, /alt="A cool cat"/);
-  assert.match(stashImgHtml, /<span class="zp-chat-stash-desc">A cool cat<\/span>/, 'stash image visible description rendered');
+  assert.match(stashImgHtml, /alt="Doshus\.NET meme stash image"/);
+  assert.doesNotMatch(stashImgHtml, /<span class="zp-chat-stash-desc">/, 'stash image unverified description NOT rendered in synchronous content');
   assert.match(stashImgHtml, /<span>Doshus\.NET Meme Stash<\/span>/);
   assert.doesNotMatch(stashImgHtml, /Generated by Zephyy/);
   assert.doesNotMatch(stashImgHtml, /Copy prompt/);
@@ -561,10 +686,11 @@ async function testMemeAndStarters() {
 
   // 2. Stash video markdown -> <video controls playsinline preload="metadata"> rendered as canonical relative path, NO autoplay, NO auto-unmute
   const stashVidHtml = renderContent('Watch this: ![Funny dog](https://doshus.net/assets/memes/1687785524275.mp4)');
-  assert.match(stashVidHtml, /<video controls playsinline preload="metadata" class="zp-chat-video zp-chat-stash-video" src="\/assets\/memes\/1687785524275\.mp4" aria-label="Funny dog">/, 'stash video rendered as canonical relative path with controls');
+  assert.match(stashVidHtml, /<video controls playsinline preload="metadata" class="video-js zp-chat-video zp-chat-stash-video" src="\/assets\/memes\/1687785524275\.mp4" aria-label="Doshus\.NET meme stash video">/, 'stash video rendered as canonical relative path with controls');
   assert.doesNotMatch(stashVidHtml, /autoplay/i);
   assert.doesNotMatch(stashVidHtml, /muted/i);
-  assert.match(stashVidHtml, /<span class="zp-chat-stash-desc">Funny dog<\/span>/, 'stash video visible description rendered');
+  assert.doesNotMatch(stashVidHtml, /<span class="zp-chat-stash-desc">/, 'stash video unverified description NOT rendered in synchronous content');
+  assert.doesNotMatch(stashVidHtml, /Funny dog/);
   assert.match(stashVidHtml, /<span>Doshus\.NET Meme Stash<\/span>/);
   assert.doesNotMatch(stashVidHtml, /Generated by Zephyy/);
   assert.doesNotMatch(stashVidHtml, /Copy prompt/);
@@ -572,14 +698,14 @@ async function testMemeAndStarters() {
   // 3. Percent-encoded filenames with parentheses and brackets
   const encodedHtml = renderContent('![Instagram](https://doshus.net/assets/memes/Screenshot_20260226_053636_Instagram%281%29.webp)');
   assert.match(encodedHtml, /Screenshot_20260226_053636_Instagram%281%29\.webp/);
-  assert.match(encodedHtml, /<span class="zp-chat-stash-desc">Instagram<\/span>/);
+  assert.doesNotMatch(encodedHtml, /<span class="zp-chat-stash-desc">/);
   assert.match(encodedHtml, /<span>Doshus\.NET Meme Stash<\/span>/);
 
   const bracketHtml = renderContent('![Bracket](https://doshus.net/assets/memes/clip%5B1%5D.mp4)');
   assert.match(bracketHtml, /<video controls playsinline preload="metadata"/);
   assert.match(bracketHtml, /clip%5B1%5D\.mp4/);
-  assert.match(bracketHtml, /aria-label="Bracket"/);
-  assert.match(bracketHtml, /<span class="zp-chat-stash-desc">Bracket<\/span>/);
+  assert.match(bracketHtml, /aria-label="Doshus\.NET meme stash video"/);
+  assert.doesNotMatch(bracketHtml, /<span class="zp-chat-stash-desc">/);
   assert.match(bracketHtml, /<span>Doshus\.NET Meme Stash<\/span>/);
 
   // Relative path /assets/memes/...
@@ -662,39 +788,42 @@ async function testMemeAndStarters() {
   const dataVidHtml = renderContent('![data vid](data:video/mp4;base64,AAAA)');
   assert.doesNotMatch(dataVidHtml, /<video/);
 
-  // XSS injection in alt text: properly escaped
+  // XSS injection in alt text: untrusted alt is NOT injected or rendered
   const xssAltHtml = renderContent('![<script>alert("xss")</script>](https://doshus.net/assets/memes/20230607_060826.webp)');
   assert.doesNotMatch(xssAltHtml, /<script>/);
-  assert.match(xssAltHtml, /&lt;script&gt;alert\(&quot;xss&quot;\)&lt;\/script&gt;/);
+  assert.doesNotMatch(xssAltHtml, /<span class="zp-chat-stash-desc">/);
 
-  // Malicious quoted alt text: quotes and tags remain escaped in both aria-label and visible caption
+  // Malicious alt text: untrusted alt is NOT rendered as visible caption; no script execution
   const malAltHtml = renderContent('!["quote" & <script>alert(1)</script>](https://doshus.net/assets/memes/1687785524275.mp4)');
   assert.doesNotMatch(malAltHtml, /<script>/);
-  assert.match(malAltHtml, /aria-label="&quot;quote&quot; &amp; &lt;script&gt;alert\(1\)&lt;\/script&gt;"/);
-  assert.match(malAltHtml, /<span class="zp-chat-stash-desc">&quot;quote&quot; &amp; &lt;script&gt;alert\(1\)&lt;\/script&gt;<\/span>/);
+  assert.doesNotMatch(malAltHtml, /<span class="zp-chat-stash-desc">/);
+  assert.match(malAltHtml, /aria-label="Doshus\.NET meme stash video"/);
 
-  // 6. Page-aware starters:
+  // 6. Curated starters: 'Gimme a meme' + 'Make a Printmon theme'
   h.win.location.pathname = '/';
   const homeStarters = getOrderedStarters().map(s => s.label);
-  assert.equal(homeStarters.length, 6);
-  assert.ok(homeStarters.includes('Make a Printmon theme'));
-  assert.ok(homeStarters.includes('Money, minus the myths'));
-  assert.ok(homeStarters.includes('Give me a quick game'));
-  assert.ok(homeStarters.includes('Show me something wild'));
-  assert.ok(homeStarters.includes('Find me a tech shortcut'));
-  assert.ok(homeStarters.includes('Send me a meme'));
+  assert.equal(homeStarters.length, 2);
+  assert.equal(homeStarters[0], 'Gimme a meme');
+  assert.equal(homeStarters[1], 'Make a Printmon theme');
+  assert.equal(getOrderedStarters()[0].prompt, 'Gimme a meme');
+  assert.equal(getOrderedStarters()[1].prompt, 'Help me make a Printmon theme');
 
   h.win.location.pathname = '/financehub';
-  assert.equal(getOrderedStarters()[0].label, 'Money, minus the myths');
+  assert.equal(getOrderedStarters().length, 2);
+  assert.equal(getOrderedStarters()[0].label, 'Gimme a meme');
 
   h.win.location.pathname = '/nexus';
-  assert.equal(getOrderedStarters()[0].label, 'Find me a tech shortcut');
+  assert.equal(getOrderedStarters()[0].label, 'Gimme a meme');
 
   h.win.location.pathname = '/thelounge';
-  assert.equal(getOrderedStarters()[0].label, 'Give me a quick game');
+  assert.equal(getOrderedStarters()[0].label, 'Gimme a meme');
 
   h.win.location.pathname = '/amazon/printmon/gallery';
+  assert.equal(getOrderedStarters().length, 2);
   assert.equal(getOrderedStarters()[0].label, 'Make a Printmon theme');
+  assert.equal(getOrderedStarters()[0].prompt, 'Help me make a Printmon theme');
+  assert.equal(getOrderedStarters()[1].label, 'Gimme a meme');
+  assert.equal(getOrderedStarters()[1].prompt, 'Gimme a meme');
 
   // 7. Defect 5: Driving Actual Open, Send, Forget through harness
   let sends = [];
@@ -724,7 +853,7 @@ async function testMemeAndStarters() {
   assert.ok(memeBtn, 'meme starter chip found');
   memeBtn.click();
   for (let i = 0; i < 20; i++) await Promise.resolve();
-  assert.deepEqual(sends, ['Send me a meme'], 'first send executes immediately with starter text without forcing a name prompt');
+  assert.deepEqual(sends, ['Gimme a meme'], 'first send executes immediately with starter text "Gimme a meme" without forcing a name prompt');
 
   // C. DRIVE FORGET
   h.localStorage.setItem('zp-visitor-id', 'visitor-xyz-789');
@@ -1376,5 +1505,530 @@ async function testFiveArchitecturalRepros() {
     spaceCard.querySelector('.zp-proposal-confirm').click();
     for (let i = 0; i < 20; i++) await Promise.resolve();
     assert.deepEqual(sends, [spacedCmd], 'REPRO 5: exact opaque command with spaces must be preserved without trimming');
+  }
+}
+
+async function testPolishRegressions() {
+  const orbSource = fs.readFileSync(path.join(__dirname, '../public/js/zephyy-orb.js'), 'utf8');
+
+  // 1. Curated starters: 'Gimme a meme' + 'Make a Printmon theme'
+  {
+    const h = buildHarness(orbSource);
+    const { getOrderedStarters } = h.win.__zpTest;
+    for (const route of ['/', '/financehub', '/nexus', '/thelounge', '/zephyy']) {
+      h.win.location.pathname = route;
+      const starters = getOrderedStarters();
+      assert.equal(starters.length, 2, `Route ${route} must have 2 starters`);
+      assert.equal(starters[0].label, 'Gimme a meme');
+      assert.equal(starters[0].prompt, 'Gimme a meme');
+      assert.equal(starters[1].label, 'Make a Printmon theme');
+      assert.equal(starters[1].prompt, 'Help me make a Printmon theme');
+    }
+    h.win.location.pathname = '/amazon/printmon';
+    const pmStarters = getOrderedStarters();
+    assert.equal(pmStarters.length, 2);
+    assert.equal(pmStarters[0].label, 'Make a Printmon theme');
+    assert.equal(pmStarters[0].prompt, 'Help me make a Printmon theme');
+    assert.equal(pmStarters[1].label, 'Gimme a meme');
+    assert.equal(pmStarters[1].prompt, 'Gimme a meme');
+  }
+
+  // 2. Truthful friendly badge ('Meme stash') for stash/deterministic routing; operator telemetry preserved
+  {
+    const h = buildHarness(orbSource);
+    assert.equal(h.modelBadge.textContent, 'Checking...');
+
+    // Internal stash model: friendly truthful badge 'Meme stash'; telemetry dataset records raw model
+    h.win.dispatchEvent(new h.CustomEvent('zephyy-msg', {
+      detail: { key: 'm1', role: 'assistant', content: 'Here is a meme', timestamp: Date.now(), model: 'stash' }
+    }));
+    assert.equal(h.modelBadge.textContent, 'Meme stash', 'internal "stash" routing label displayed as friendly "Meme stash"');
+    assert.equal(h.modelBadge.dataset.telemetryModel, 'stash', 'operator telemetry preserved in dataset');
+
+    // Internal deterministic routing label: displayed as friendly 'Meme stash'
+    h.win.dispatchEvent(new h.CustomEvent('zephyy-msg', {
+      detail: { key: 'm2', role: 'assistant', content: 'Another deterministic', timestamp: Date.now(), model: 'deterministic-stash' }
+    }));
+    assert.equal(h.modelBadge.textContent, 'Meme stash', 'internal "deterministic-stash" routing label displayed as "Meme stash"');
+    assert.equal(h.modelBadge.dataset.telemetryModel, 'deterministic-stash');
+
+    // Real AI model: displays cleanly
+    h.win.dispatchEvent(new h.CustomEvent('zephyy-msg', {
+      detail: { key: 'm3', role: 'assistant', content: 'AI reply', timestamp: Date.now(), model: 'gemini-2.0-flash' }
+    }));
+    assert.equal(h.modelBadge.textContent, 'gemini-2.0-flash', 'real AI model displays in header');
+    assert.equal(h.modelBadge.dataset.telemetryModel, 'gemini-2.0-flash');
+  }
+
+  // 3. Normalized suggestion chips (natural language requests) & fabricated visitor message avoidance
+  {
+    const h = buildHarness(orbSource);
+    const { renderSuggestions, isFabricatedProtocolMessage, isLegacyProtocolSuggestion, normalizeSuggestion } = h.win.__zpTest;
+
+    // Normalization transforms legacy/shorthand chips to explicit natural-language requests
+    const normAnother = normalizeSuggestion({ label: 'Another', message: '[MEME:random]' });
+    assert.ok(normAnother);
+    assert.equal(normAnother.label, 'Another meme');
+    assert.equal(normAnother.message, 'Show me another meme');
+
+    const normVideo = normalizeSuggestion({ label: 'Video', message: '[MEME:video]' });
+    assert.ok(normVideo);
+    assert.equal(normVideo.label, 'Show a video');
+    assert.equal(normVideo.message, 'Show me a video meme');
+
+    const normAnotherMeme = normalizeSuggestion({ label: 'Another meme', message: '[MEME:next]' });
+    assert.ok(normAnotherMeme);
+    assert.equal(normAnotherMeme.label, 'Another meme');
+    assert.equal(normAnotherMeme.message, 'Show me another meme');
+
+    const normPrintmon = normalizeSuggestion({ label: 'Make a Printmon theme', message: 'Help me make a Printmon theme' });
+    assert.ok(normPrintmon);
+    assert.equal(normPrintmon.label, 'Make a Printmon theme');
+    assert.equal(normPrintmon.message, 'Help me make a Printmon theme');
+
+    // Unusable raw protocol syntax is dropped
+    assert.equal(normalizeSuggestion({ label: '[CMD_INTERNAL]', message: '[CMD_INTERNAL]' }), null);
+
+    // Unrelated conversation suggestions are preserved without rewrite (no broad video/meme matching)
+    const normUnrelated = normalizeSuggestion({ label: 'Video editing tips', message: 'Can you give me tips on video editing for memes?' });
+    assert.ok(normUnrelated);
+    assert.equal(normUnrelated.label, 'Video editing tips', 'unrelated suggestion label preserved');
+    assert.equal(normUnrelated.message, 'Can you give me tips on video editing for memes?', 'unrelated suggestion message preserved');
+
+    // Render suggestions from legacy/protocol chips produces explicit chips
+    const normalizedRow = renderSuggestions([
+      { label: 'Another', message: '[MEME:random]' },
+      { label: 'Video', message: '[MEME:video]' }
+    ], 'k_sug_normalized');
+    assert.ok(normalizedRow, 'normalized suggestions produce rendered chips');
+    const chips = normalizedRow.querySelectorAll('.zp-suggestion-chip');
+    assert.equal(chips.length, 2);
+    assert.equal(chips[0].textContent, 'Another meme');
+    assert.equal(chips[1].textContent, 'Show a video');
+
+    // Clicking chip sends natural language request, never [MEME] protocol
+    let sentAction = null;
+    h.win.__zpConnect = async () => ({
+      sendMessage: async (txt) => { sentAction = txt; }
+    });
+    chips[0].click();
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    assert.equal(sentAction, 'Show me another meme', 'clicked suggestion chip sends natural language, not [MEME]');
+
+    // Legitimate non-meme suggestion renders
+    const cleanRow = renderSuggestions([
+      { label: 'Tell me more', message: 'Tell me more about this' }
+    ], 'k_sug_clean');
+    assert.ok(cleanRow, 'clean suggestion rendered');
+    assert.equal(cleanRow.querySelectorAll('.zp-suggestion-chip').length, 1);
+
+    // Fabricated visitor protocol messages: detected
+    assert.equal(isFabricatedProtocolMessage('[MEME:random]'), true);
+    assert.equal(isFabricatedProtocolMessage('[MEME:video]'), true);
+    assert.equal(isFabricatedProtocolMessage('[THEME:generate]'), true);
+    assert.equal(isFabricatedProtocolMessage('Can you show me a meme?'), false);
+
+    // Open panel so incoming messages are appended to transcript
+    h.orb.click();
+
+    // User message with [MEME:random] is translated to readable text, NOT erased from transcript
+    h.win.dispatchEvent(new h.CustomEvent('zephyy-msg', {
+      detail: { key: 'm_fab', role: 'user', content: '[MEME:random]', timestamp: Date.now() }
+    }));
+    const userFabMsgs = h.messagesEl.querySelectorAll('.zp-chat-msg-user');
+    assert.ok(userFabMsgs.length > 0, 'user message must not be dropped from transcript');
+    const lastUserMsg = userFabMsgs[userFabMsgs.length - 1];
+    assert.equal(lastUserMsg.dataset.content, 'Show me another meme', 'synthetic legacy entry translated to readable text');
+    assert.match(lastUserMsg.innerHTML, /Show me another meme/, 'user message displays translated natural language');
+
+    // Display known legacy actions readably without dropping real visitor messages.
+    for (const [key, content, expected] of [
+      ['m_legacy_cat', '[MEME:cats]', 'Show me a meme about cats'],
+      ['m_legacy_theme', '[THEME:generate]', 'Help me make a Printmon theme'],
+      ['m_literal_tag', '[ASCII:literal]', '[ASCII:literal]'],
+      ['m_inline_tag', 'Explain [THEME:generate] to me', 'Explain [THEME:generate] to me']
+    ]) {
+      h.win.dispatchEvent(new h.CustomEvent('zephyy-msg', {
+        detail: { key, role: 'user', content, timestamp: Date.now() }
+      }));
+      const message = h.messagesEl.children.find(c => c.dataset && c.dataset.msgKey === key);
+      assert.ok(message, 'visitor message must not be silently erased: ' + key);
+      assert.equal(message.dataset.content, expected, 'legacy request displays readably: ' + key);
+    }
+
+    // Real user conversation is preserved exactly as typed
+    h.win.dispatchEvent(new h.CustomEvent('zephyy-msg', {
+      detail: { key: 'm_real', role: 'user', content: 'What about video editing for memes?', timestamp: Date.now() }
+    }));
+    const realUserMsg = h.messagesEl.children.find(c => c.dataset && c.dataset.msgKey === 'm_real');
+    assert.ok(realUserMsg, 'real user message is preserved');
+    assert.equal(realUserMsg.dataset.content, 'What about video editing for memes?');
+    assert.match(realUserMsg.innerHTML, /What about video editing for memes\?/);
+  }
+
+  // 4. Stash captions safe provenance architecture: unreviewed vs human
+  {
+    const h = buildHarness(orbSource);
+    const { renderContent, resolveStashCaptions } = h.win.__zpTest;
+
+    // Test 4a: Old persisted message with descriptive alt: visible caption NOT shown synchronously
+    const oldMsgHtml = renderContent('Here: ![Cats clustered beside parked cars](/assets/memes/-_internete_bunun_ic_in_para_veriyorum_aDBN9F.webm)');
+    assert.doesNotMatch(oldMsgHtml, /<span class="zp-chat-stash-desc">/, 'old descriptive alt NOT shown as visible caption');
+    assert.match(oldMsgHtml, /data-stash-url="\/assets\/memes\/-_internete_bunun_ic_in_para_veriyorum_aDBN9F\.webm"/);
+
+    // Test 4b: Catalog lookup with default unreviewed: NO visible caption
+    const containerUnreviewed = h.doc.createElement('div');
+    containerUnreviewed.innerHTML = oldMsgHtml;
+    h.doc.body.appendChild(containerUnreviewed);
+
+    resolveStashCaptions(containerUnreviewed);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+
+    assert.equal(containerUnreviewed.querySelector('.zp-chat-stash-desc'), null, 'unreviewed catalog item has NO visible caption (fail closed)');
+
+    // Test 4c: Catalog lookup with human-approved caption (captionReview: 'human')
+    const humanApprovedUrl = '/assets/memes/human_test.webm';
+    h.win.__zpTest.setStashCatalogMap({
+      [humanApprovedUrl]: {
+        id: 'human_test.webm',
+        path: humanApprovedUrl,
+        type: 'video',
+        description: 'Verified human approved caption for cat video',
+        reviewed: true,
+        captionReview: 'human'
+      }
+    });
+
+    const containerHuman = h.doc.createElement('div');
+    containerHuman.innerHTML = renderContent('![Unused alt](' + humanApprovedUrl + ')');
+    h.doc.body.appendChild(containerHuman);
+
+    resolveStashCaptions(containerHuman);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+
+    const humanDescSpan = containerHuman.querySelector('.zp-chat-stash-desc');
+    assert.ok(humanDescSpan, 'human approved caption rendered');
+    assert.equal(humanDescSpan.textContent, 'Verified human approved caption for cat video');
+    const vidEl = containerHuman.querySelector('video');
+    assert.equal(vidEl.getAttribute('aria-label'), 'Verified human approved caption for cat video');
+
+    // Test 4d: Catalog fetch failure / error -> fails closed, NO caption
+    h.setFetchFails(true);
+    h.win.__zpTest.setStashCatalogMap(null); // force reload
+    const containerFail = h.doc.createElement('div');
+    containerFail.innerHTML = renderContent('![Another meme](/assets/memes/cat2.webm)');
+    h.doc.body.appendChild(containerFail);
+
+    resolveStashCaptions(containerFail);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+    assert.equal(containerFail.querySelector('.zp-chat-stash-desc'), null, 'network/fetch failure fails closed with no caption');
+    h.setFetchFails(false);
+
+    // Test 4e: Real parentheses in filename (encoded in URL -> decoded for catalog lookup)
+    const parenUrl = '/assets/memes/artblessedsofunny-20250619-0001%281%29.jpg';
+    h.win.__zpTest.setStashCatalogMap({
+      'artblessedsofunny-20250619-0001(1).jpg': {
+        id: 'artblessedsofunny-20250619-0001(1).jpg',
+        path: '/assets/memes/artblessedsofunny-20250619-0001(1).jpg',
+        type: 'image',
+        description: 'Verified human approved caption with parens',
+        reviewed: true,
+        captionReview: 'human'
+      }
+    });
+    const containerParen = h.doc.createElement('div');
+    containerParen.innerHTML = renderContent('![Paren meme](' + parenUrl + ')');
+    h.doc.body.appendChild(containerParen);
+    resolveStashCaptions(containerParen);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+    const parenDesc = containerParen.querySelector('.zp-chat-stash-desc');
+    assert.ok(parenDesc, 'human caption with parentheses in filename rendered');
+    assert.equal(parenDesc.textContent, 'Verified human approved caption with parens');
+
+    // Test 4f: Real Unicode in filename
+    const unicodeUrl = '/assets/memes/test_unicode_%C3%A7%C4%9F%C3%B6%281%29.jpg';
+    h.win.__zpTest.setStashCatalogMap({
+      'test_unicode_çğö(1).jpg': {
+        id: 'test_unicode_çğö(1).jpg',
+        path: '/assets/memes/test_unicode_çğö(1).jpg',
+        type: 'image',
+        description: 'Verified human approved caption with unicode',
+        reviewed: true,
+        captionReview: 'human'
+      }
+    });
+    const containerUnicode = h.doc.createElement('div');
+    containerUnicode.innerHTML = renderContent('![Unicode meme](' + unicodeUrl + ')');
+    h.doc.body.appendChild(containerUnicode);
+    resolveStashCaptions(containerUnicode);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+    const unicodeDesc = containerUnicode.querySelector('.zp-chat-stash-desc');
+    assert.ok(unicodeDesc, 'human caption with unicode in filename rendered');
+    assert.equal(unicodeDesc.textContent, 'Verified human approved caption with unicode');
+
+    // Test 4g: Real spaces in filename
+    const spacesUrl = '/assets/memes/test%20meme%20with%20spaces%20%282%29.jpg';
+    h.win.__zpTest.setStashCatalogMap({
+      'test meme with spaces (2).jpg': {
+        id: 'test meme with spaces (2).jpg',
+        path: '/assets/memes/test meme with spaces (2).jpg',
+        type: 'image',
+        description: 'Verified human approved caption with spaces',
+        reviewed: true,
+        captionReview: 'human'
+      }
+    });
+    const containerSpaces = h.doc.createElement('div');
+    containerSpaces.innerHTML = renderContent('![Spaces meme](' + spacesUrl + ')');
+    h.doc.body.appendChild(containerSpaces);
+    resolveStashCaptions(containerSpaces);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+    const spacesDesc = containerSpaces.querySelector('.zp-chat-stash-desc');
+    assert.ok(spacesDesc, 'human caption with spaces in filename rendered');
+    assert.equal(spacesDesc.textContent, 'Verified human approved caption with spaces');
+
+    // Test 4h: Malformed percent-encoding and traversal attempts fail closed
+    const { normalizeStashPath } = h.win.__zpTest;
+    assert.equal(normalizeStashPath('/assets/memes/%E0%A4%A'), null, 'malformed percent encoding fails closed');
+    assert.equal(normalizeStashPath('/assets/memes/%999'), null, 'invalid percent encoding fails closed');
+    assert.equal(normalizeStashPath('/assets/memes/..%2Fsecret.jpg'), null, 'traversal attempt fails closed');
+    assert.equal(normalizeStashPath('https://evil.com/assets/memes/cat.jpg'), null, 'foreign host fails closed');
+  }
+
+  // 5. Video.js player lifecycle: init, duplicate-init, close/forget/history cleanup, native fallback
+  {
+    const h = buildHarness(orbSource);
+    const { initChatVideoPlayers, disposeChatVideoPlayers, getActiveChatPlayers } = h.win.__zpTest;
+
+    // Render a video message
+    const videoMsg = h.doc.createElement('div');
+    videoMsg.className = 'zp-chat-msg zp-chat-msg-bot';
+    videoMsg.innerHTML = '<figure class="zp-chat-img-card zp-chat-video-card zp-chat-stash-card" data-stash-url="/assets/memes/clip.webm">' +
+      '<video controls playsinline preload="metadata" class="video-js zp-chat-video zp-chat-stash-video" src="/assets/memes/clip.webm"></video>' +
+      '<figcaption class="zp-chat-img-meta zp-chat-stash-meta"><span>Doshus.NET Meme Stash</span></figcaption></figure>';
+    h.messagesEl.appendChild(videoMsg);
+
+    initChatVideoPlayers(videoMsg);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+
+    const videoEl = videoMsg.querySelector('video');
+    assert.ok(videoEl._zpPlayer, 'Video.js player initialized on chat stash video');
+    assert.equal(videoEl._zpPlayer.isDisposed(), false, 'Player is active and not disposed');
+    assert.equal(h.getVideoStats().videoInitCount, 1, 'Exactly one player initialized');
+
+    // Duplicate-init check: calling initChatVideoPlayers again does NOT create a second player
+    initChatVideoPlayers(videoMsg);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+    assert.equal(h.getVideoStats().videoInitCount, 1, 'Duplicate init safely ignored');
+
+    // Panel close pauses playing video
+    h.orb.click(); // opens panel (isOpen -> true)
+    videoEl._zpPlayer._paused = false;
+    assert.equal(videoEl._zpPlayer.paused(), false);
+    h.orb.click(); // closes panel (isOpen -> false)
+    assert.equal(videoEl._zpPlayer.paused(), true, 'Closing panel pauses active video player');
+
+    // Forget / reset disposes players
+    assert.equal(getActiveChatPlayers().size > 0, true, 'Active players tracked');
+    disposeChatVideoPlayers();
+    assert.equal(videoEl._zpPlayer, null, 'disposeChatVideoPlayers clears player reference');
+    assert.equal(getActiveChatPlayers().size, 0, 'Active players set cleared after dispose');
+
+    // Native fallback on Video.js load failure
+    const failedVideoMsg = h.doc.createElement('div');
+    failedVideoMsg.className = 'zp-chat-msg zp-chat-msg-bot';
+    failedVideoMsg.innerHTML = '<figure class="zp-chat-img-card zp-chat-video-card zp-chat-stash-card">' +
+      '<video controls playsinline preload="metadata" class="video-js zp-chat-video zp-chat-stash-video" src="/assets/memes/fallback.webm"></video>' +
+      '</figure>';
+    h.messagesEl.appendChild(failedVideoMsg);
+
+    // Mock loader failure
+    h.win.attachVideoJsPlayer = async (vEl) => {
+      vEl.controls = true;
+      vEl.classList.remove('video-js');
+      throw new Error('Video.js failed to load');
+    };
+    initChatVideoPlayers(failedVideoMsg);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+
+    const fallbackVideoEl = failedVideoMsg.querySelector('video');
+    assert.equal(fallbackVideoEl.controls, true, 'Fallback video has native controls enabled');
+    assert.equal(fallbackVideoEl.classList.contains('video-js'), false, 'video-js class removed on fallback');
+
+    // Async race safety: if element disconnected before player attaches, player is not created or is disposed
+    const detachedVideoMsg = h.doc.createElement('div');
+    detachedVideoMsg.innerHTML = '<figure class="zp-chat-img-card zp-chat-video-card">' +
+      '<video controls class="video-js zp-chat-stash-video" src="/assets/memes/race.webm"></video></figure>';
+    h.win.attachVideoJsPlayer = async (vEl) => {
+      if (!vEl.isConnected) return null;
+      return new h.win.videojs(vEl, {});
+    };
+    initChatVideoPlayers(detachedVideoMsg);
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+    assert.equal(detachedVideoMsg.querySelector('video')._zpPlayer, undefined, 'Disconnected element does NOT initialize player');
+  }
+
+  // 6. Single canonical Video.js loader architecture (no parallel stack)
+  {
+    const mainSource = fs.readFileSync(path.join(__dirname, '../public/js/main.js'), 'utf8');
+    const orbSource = fs.readFileSync(path.join(__dirname, '../public/js/zephyy-orb.js'), 'utf8');
+    const loaderSource = fs.readFileSync(path.join(__dirname, '../public/js/video-loader.js'), 'utf8');
+
+    // Vendor paths are ONLY defined in public/js/video-loader.js
+    assert.doesNotMatch(mainSource, /\/assets\/vendor\/videojs\/video\.min\.js/, 'main.js does not define vendor script path');
+    assert.doesNotMatch(orbSource, /\/assets\/vendor\/videojs\/video\.min\.js/, 'zephyy-orb.js does not define vendor script path');
+    assert.doesNotMatch(mainSource, /function ensureVideoLoader/, 'main.js does not define loader');
+    assert.doesNotMatch(orbSource, /function ensureVideoLoader/, 'zephyy-orb.js does not define loader');
+    assert.doesNotMatch(mainSource, /loadVideoJs\._isStub/, 'main.js has no loader stubs');
+    assert.doesNotMatch(orbSource, /loadVideoJs\._isStub/, 'zephyy-orb.js has no loader stubs');
+    assert.match(loaderSource, /\/assets\/vendor\/videojs\/video\.min\.js/, 'video-loader.js defines canonical vendor script path');
+    assert.match(loaderSource, /\/assets\/vendor\/videojs\/video-js\.min\.css/, 'video-loader.js defines canonical vendor sheet path');
+  }
+
+  // 7. Concurrent home board + chat video load (shared readiness for BOTH JS and CSS, in-flight gate, dedupe)
+  {
+    const loaderSource = fs.readFileSync(path.join(__dirname, '../public/js/video-loader.js'), 'utf8');
+    const h = buildHarness(orbSource);
+    h.setManualVendorLoad(true);
+
+    // Place existing meme-video.css in head to test cascade order preservation
+    const memeCss = h.doc.createElement('link');
+    memeCss.setAttribute('rel', 'stylesheet');
+    memeCss.setAttribute('href', '/css/meme-video.css');
+    h.doc.head.appendChild(memeCss);
+
+    // Run video-loader.js inside the harness environment (without vendor videojs pre-loaded)
+    delete h.win.videojs;
+    const vm = require('node:vm');
+    vm.runInContext(loaderSource, h.context);
+
+    assert.equal(typeof h.win.loadVideoJs, 'function', 'loadVideoJs exported by video-loader.js');
+    assert.equal(typeof h.win.attachVideoJsPlayer, 'function', 'attachVideoJsPlayer exported by video-loader.js');
+
+    // Simulate concurrent loadVideoJs calls (e.g. home board meme card + chat panel at same time)
+    const p1 = h.win.loadVideoJs();
+    const p2 = h.win.loadVideoJs();
+
+    // Verify only ONE stylesheet link was added
+    const sheets = h.doc.head.children.filter(c => c.tagName === 'LINK' && c.href && c.href.includes('video-js.min.css'));
+    assert.equal(sheets.length, 1, 'Only one vendor stylesheet link created on concurrent loads');
+
+    // Verify stylesheet was inserted BEFORE meme-video.css in head
+    const sheetIdx = h.doc.head.children.indexOf(sheets[0]);
+    const memeCssIdx = h.doc.head.children.indexOf(memeCss);
+    assert.ok(sheetIdx < memeCssIdx, 'video-js stylesheet must be inserted before meme-video.css');
+
+    // Verify only ONE vendor script was added
+    const scripts = h.doc.head.children.filter(c => c.tagName === 'SCRIPT' && c.src && c.src.includes('video.min.js'));
+    assert.equal(scripts.length, 1, 'Only one vendor script tag created on concurrent loads');
+
+    // Script publishes global before CSS loads
+    const mockVjs = function(el, opts) {
+      return { el, opts, isDisposed: () => false, dispose: () => {} };
+    };
+    h.win.videojs = mockVjs;
+    scripts[0].onload();
+
+    // In-flight CSS gate: verify p1 and p2 have NOT resolved because CSS is still in flight
+    let p1Resolved = false;
+    p1.then(() => { p1Resolved = true; });
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    assert.equal(p1Resolved, false, 'loader must NOT resolve when CSS is still in-flight even if window.videojs exists');
+
+    // Second attach arrives while CSS is in flight: must also await CSS
+    const videoEl2 = h.doc.createElement('video');
+    videoEl2.src = '/assets/memes/second.webm';
+    h.doc.body.appendChild(videoEl2);
+    const attachPromise2 = h.win.attachVideoJsPlayer(videoEl2);
+    let attach2Resolved = false;
+    attachPromise2.then(() => { attach2Resolved = true; });
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    assert.equal(attach2Resolved, false, 'second attach must await in-flight CSS settlement');
+
+    // Dedupe check: still only one script and one sheet in head
+    assert.equal(h.doc.head.children.filter(c => c.tagName === 'SCRIPT' && c.src && c.src.includes('video.min.js')).length, 1);
+    assert.equal(h.doc.head.children.filter(c => c.tagName === 'LINK' && c.href && c.href.includes('video-js.min.css')).length, 1);
+
+    // CSS finishes loading: both resolve
+    sheets[0].onload();
+    const [vjs1, vjs2, player2] = await Promise.all([p1, p2, attachPromise2]);
+    assert.equal(vjs1, mockVjs);
+    assert.equal(vjs2, mockVjs);
+    assert.equal(vjs1, vjs2, 'Concurrent callers resolve with identical videojs instance');
+    assert.ok(player2, 'Second attach resolves player after CSS settlement');
+  }
+
+  // 8. Failed load retry (CSS failure then retry, script failure then retry)
+  {
+    const loaderSource = fs.readFileSync(path.join(__dirname, '../public/js/video-loader.js'), 'utf8');
+    const h = buildHarness(orbSource);
+    h.setManualVendorLoad(true);
+    delete h.win.videojs;
+    const vm = require('node:vm');
+    vm.runInContext(loaderSource, h.context);
+
+    const mockVjs = function(el, opts) {
+      return { el, opts, isDisposed: () => false, dispose: () => {} };
+    };
+
+    // 8a. CSS failure rejects promise and cleans up DOM; subsequent call retries cleanly
+    const cssFailPromise = h.win.loadVideoJs();
+    const failSheet = h.doc.head.children.find(c => c.tagName === 'LINK' && c.href && c.href.includes('video-js.min.css'));
+    assert.ok(failSheet, 'stylesheet created');
+    failSheet.onerror();
+    await assert.rejects(cssFailPromise, /Video\.js stylesheet failed to load/);
+    assert.equal(h.doc.head.children.filter(c => c.tagName === 'LINK' && c.href && c.href.includes('video-js.min.css')).length, 0, 'failed sheet removed from DOM');
+
+    const cssRetryPromise = h.win.loadVideoJs();
+    const newRetrySheet = h.doc.head.children.find(c => c.tagName === 'LINK' && c.href && c.href.includes('video-js.min.css'));
+    const newRetryScript = h.doc.head.children.find(c => c.tagName === 'SCRIPT' && c.src && c.src.includes('video.min.js'));
+    assert.ok(newRetrySheet && newRetryScript, 'new script and sheet created on retry after CSS failure');
+    h.win.videojs = mockVjs;
+    newRetryScript.onload();
+    newRetrySheet.onload();
+    const resolvedAfterCss = await cssRetryPromise;
+    assert.equal(resolvedAfterCss, mockVjs, 'Retry succeeds after CSS failure');
+
+    // 8b. Script failure rejects promise and cleans up DOM; subsequent call retries cleanly
+    delete h.win.videojs;
+    vm.runInContext(loaderSource, h.context);
+    const scriptFailPromise = h.win.loadVideoJs();
+    const failScript = h.doc.head.children.filter(c => c.tagName === 'SCRIPT' && c.src && c.src.includes('video.min.js')).pop();
+    assert.ok(failScript, 'script created');
+    failScript.onerror();
+    await assert.rejects(scriptFailPromise, /Video\.js failed to load/);
+
+    const scriptRetryPromise = h.win.loadVideoJs();
+    const retryScript2 = h.doc.head.children.filter(c => c.tagName === 'SCRIPT' && c.src && c.src.includes('video.min.js')).pop();
+    const retrySheet2 = h.doc.head.children.filter(c => c.tagName === 'LINK' && c.href && c.href.includes('video-js.min.css')).pop();
+    assert.ok(retryScript2 && retrySheet2, 'new script and sheet created on retry after script failure');
+    h.win.videojs = mockVjs;
+    retrySheet2.onload();
+    retryScript2.onload();
+    const resolvedAfterScript = await scriptRetryPromise;
+    assert.equal(resolvedAfterScript, mockVjs, 'Retry succeeds after script failure');
+  }
+
+  // 9. All 11 page entry points wired in load order (including 404 and 4 Zephyy subpages)
+  {
+    const wiredPages = [
+      { path: '../public/amazon/printmon/gallery.html', pattern: /<script src="\.\.\/\.\.\/js\/video-loader\.js"><\/script>/ },
+      { path: '../public/index.html', pattern: /<script src="js\/video-loader\.js"><\/script>/ },
+      { path: '../public/financehub.html', pattern: /<script src="js\/video-loader\.js"><\/script>/ },
+      { path: '../public/nexus.html', pattern: /<script src="js\/video-loader\.js"><\/script>/ },
+      { path: '../public/thelounge.html', pattern: /<script src="js\/video-loader\.js"><\/script>/ },
+      { path: '../public/zephyy.html', pattern: /<script src="\/js\/video-loader\.js"><\/script>/ },
+      { path: '../public/404.html', pattern: /<script src="\/js\/video-loader\.js"><\/script>/ },
+      { path: '../public/zephyy/status/index.html', pattern: /<script src="\/js\/video-loader\.js"><\/script>/ },
+      { path: '../public/zephyy/crew/index.html', pattern: /<script src="\/js\/video-loader\.js"><\/script>/ },
+      { path: '../public/zephyy/qa/index.html', pattern: /<script src="\/js\/video-loader\.js"><\/script>/ },
+      { path: '../public/zephyy/changelog/index.html', pattern: /<script src="\/js\/video-loader\.js"><\/script>/ }
+    ];
+
+    assert.equal(wiredPages.length, 11, 'exactly 11 site pages wired with video-loader.js');
+    for (const pg of wiredPages) {
+      const html = fs.readFileSync(path.join(__dirname, pg.path), 'utf8');
+      assert.match(html, pg.pattern, `${pg.path} wires video-loader.js`);
+    }
   }
 }
