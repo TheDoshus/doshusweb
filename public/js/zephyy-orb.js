@@ -150,6 +150,13 @@
             }, 350);
         } else {
             if (typeof chatActionState !== 'undefined') chatActionState.disposeTimer();
+            activeChatPlayers.forEach(function(player) {
+                try {
+                    if (player && typeof player.pause === 'function' && !player.isDisposed() && !player.paused()) {
+                        player.pause();
+                    }
+                } catch (e) {}
+            });
             orb.focus();
         }
     }
@@ -254,20 +261,18 @@
             var html;
             if (p.isStash && p.mediaType === 'video') {
                 html =
-                    '<figure class="zp-chat-img-card zp-chat-video-card zp-chat-stash-card">' +
-                        '<video controls playsinline preload="metadata" class="zp-chat-video zp-chat-stash-video" src="' + url + '"' + (alt ? ' aria-label="' + alt + '"' : '') + '>' +
+                    '<figure class="zp-chat-img-card zp-chat-video-card zp-chat-stash-card" data-stash-url="' + url + '">' +
+                        '<video controls playsinline preload="metadata" class="video-js zp-chat-video zp-chat-stash-video" src="' + url + '" aria-label="Doshus.NET meme stash video">' +
                         '</video>' +
                         '<figcaption class="zp-chat-img-meta zp-chat-stash-meta">' +
-                            (alt ? '<span class="zp-chat-stash-desc">' + alt + '</span>' : '') +
                             '<span>Doshus.NET Meme Stash</span>' +
                         '</figcaption>' +
                     '</figure>';
             } else if (p.isStash) {
                 html =
-                    '<figure class="zp-chat-img-card zp-chat-stash-card">' +
-                        '<img src="' + url + '" alt="' + alt + '" class="zp-chat-img zp-chat-stash-img" loading="lazy">' +
+                    '<figure class="zp-chat-img-card zp-chat-stash-card" data-stash-url="' + url + '">' +
+                        '<img src="' + url + '" alt="Doshus.NET meme stash image" class="zp-chat-img zp-chat-stash-img" loading="lazy">' +
                         '<figcaption class="zp-chat-img-meta zp-chat-stash-meta">' +
-                            (alt ? '<span class="zp-chat-stash-desc">' + alt + '</span>' : '') +
                             '<span>Doshus.NET Meme Stash</span>' +
                         '</figcaption>' +
                     '</figure>';
@@ -294,6 +299,163 @@
         // 7. Newlines to <br>
         text = text.replace(/\n/g, '<br>');
         return text;
+    }
+
+    /* ── Canonical stash catalog & human-approved caption resolution ── */
+    var stashCatalogPromise = null;
+    var stashCatalogMap = null;
+
+    function normalizeStashPath(urlStr) {
+        if (!urlStr || typeof urlStr !== 'string') return null;
+        var prefix = '/assets/memes/';
+        var rawPath = urlStr.trim();
+        if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+            try {
+                var location = typeof window !== 'undefined' && window.location;
+                var base = location && location.href || 'https://doshus.net/';
+                var u = new URL(rawPath, base);
+                var currentOrigin = location && location.origin || new URL(base).origin;
+                var canonical = u.hostname === 'doshus.net' || u.hostname === 'www.doshus.net';
+                var trusted = u.origin === currentOrigin || (canonical && u.port === '');
+                if (!trusted) return null;
+                rawPath = u.pathname;
+            } catch (e) {
+                return null;
+            }
+        }
+        if (!rawPath.startsWith(prefix)) return null;
+        var encodedFilename = rawPath.slice(prefix.length);
+        var decodedFilename;
+        try {
+            decodedFilename = decodeURIComponent(encodedFilename);
+        } catch (e) {
+            return null; // Malformed percent-encoding fails closed
+        }
+        // Strict boundary: single file under /assets/memes/, no traversal, no separators
+        if (!decodedFilename || /[\/\\]/.test(decodedFilename) || decodedFilename.includes('..')) {
+            return null;
+        }
+        return {
+            path: prefix + decodedFilename,
+            id: decodedFilename
+        };
+    }
+
+    function loadStashCatalog() {
+        if (stashCatalogMap) return Promise.resolve(stashCatalogMap);
+        if (!stashCatalogPromise) {
+            stashCatalogPromise = fetch('/assets/memes/meme-catalog.json')
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error('Catalog fetch failed: ' + resp.status);
+                    return resp.json();
+                })
+                .then(function(data) {
+                    var map = {};
+                    if (data && Array.isArray(data.items)) {
+                        data.items.forEach(function(item) {
+                            if (item && typeof item.path === 'string') {
+                                map[item.path] = item;
+                                var filename = item.path.slice('/assets/memes/'.length);
+                                map[filename] = item;
+                            }
+                            if (item && typeof item.id === 'string') {
+                                map[item.id] = item;
+                            }
+                        });
+                    }
+                    stashCatalogMap = map;
+                    return map;
+                })
+                .catch(function() {
+                    stashCatalogPromise = null;
+                    return null;
+                });
+        }
+        return stashCatalogPromise;
+    }
+
+    function resolveStashCaptions(container) {
+        if (!container) return;
+        var figures = container.querySelectorAll ? container.querySelectorAll('figure.zp-chat-stash-card[data-stash-url]') : [];
+        if (!figures || figures.length === 0) return;
+        loadStashCatalog().then(function(catalogMap) {
+            if (!catalogMap) return;
+            for (var f = 0; f < figures.length; f++) {
+                var fig = figures[f];
+                var stashUrl = fig.dataset ? fig.dataset.stashUrl : fig.getAttribute('data-stash-url');
+                if (!stashUrl) continue;
+                var norm = normalizeStashPath(stashUrl);
+                if (!norm) continue;
+                var item = catalogMap[norm.path] || catalogMap[norm.id];
+                if (item && item.captionReview === 'human' && typeof item.description === 'string' && item.description.trim()) {
+                    var approvedText = item.description.trim();
+                    var meta = fig.querySelector('.zp-chat-stash-meta');
+                    if (meta && !meta.querySelector('.zp-chat-stash-desc')) {
+                        var descSpan = document.createElement('span');
+                        descSpan.className = 'zp-chat-stash-desc';
+                        descSpan.textContent = approvedText;
+                        meta.insertBefore(descSpan, meta.firstChild);
+                    }
+                    var mediaEl = fig.querySelector('video') || fig.querySelector('img');
+                    if (mediaEl) {
+                        if (mediaEl.tagName === 'VIDEO') mediaEl.setAttribute('aria-label', approvedText);
+                        else mediaEl.setAttribute('alt', approvedText);
+                    }
+                }
+            }
+        }).catch(function() {});
+    }
+
+
+    /* ── Shared Video.js player lifecycle for chat stash videos ── */
+    var activeChatPlayers = new Set();
+
+    function initChatVideoPlayers(container) {
+        if (!container) return;
+        var videos = container.querySelectorAll ? container.querySelectorAll('video.zp-chat-stash-video') : [];
+        if (!videos || videos.length === 0) return;
+        var epochAtInit = sessionEpoch;
+        for (var i = 0; i < videos.length; i++) {
+            (function(videoEl) {
+                if (videoEl._zpPlayer && !videoEl._zpPlayer.isDisposed()) return;
+                if (!videoEl.isConnected) return;
+                if (!window.attachVideoJsPlayer) return;
+
+                var p = window.attachVideoJsPlayer(videoEl, { controls: true, preload: 'metadata', playsinline: true, responsive: true, fluid: true });
+
+                p.then(function(player) {
+                    if (!player) return;
+                    if (sessionEpoch !== epochAtInit || !videoEl.isConnected) {
+                        if (typeof player.dispose === 'function' && !player.isDisposed()) player.dispose();
+                        return;
+                    }
+                    videoEl._zpPlayer = player;
+                    activeChatPlayers.add(player);
+                    if (typeof player.one === 'function') {
+                        player.one('dispose', function() {
+                            if (videoEl._zpPlayer === player) videoEl._zpPlayer = null;
+                            activeChatPlayers.delete(player);
+                        });
+                    }
+                }).catch(function() {
+                    if (videoEl.isConnected) {
+                        videoEl.controls = true;
+                        videoEl.classList.remove('video-js');
+                    }
+                });
+            })(videos[i]);
+        }
+    }
+
+    function disposeChatVideoPlayers() {
+        activeChatPlayers.forEach(function(player) {
+            try {
+                if (player && typeof player.dispose === 'function' && !player.isDisposed()) {
+                    player.dispose();
+                }
+            } catch (e) {}
+        });
+        activeChatPlayers.clear();
     }
 
     /* ── Action proposals & suggestions lifecycle & state manager ── */
@@ -551,18 +713,66 @@
         return card;
     }
 
+    function isLegacyProtocolSuggestion(s) {
+        if (!s || typeof s !== 'object') return false;
+        var label = typeof s.label === 'string' ? s.label.trim() : '';
+        var msg = typeof s.message === 'string' ? s.message.trim() : '';
+        return /^(another|video)(\s+meme)?$/i.test(label) ||
+               /^\[MEME(?::(?:random|video|next))?\]$/i.test(msg) ||
+               /^\[[A-Z0-9_:-]+\]$/i.test(msg);
+    }
+
+    function normalizeSuggestion(s) {
+        if (!s || typeof s !== 'object') return null;
+        var label = typeof s.label === 'string' ? s.label.trim() : '';
+        var msg = typeof s.message === 'string' ? s.message.trim() : '';
+        if (!label || !msg) return null;
+
+        // Exact supported legacy tokens and exact known label/message pairs ONLY, anchored whole input
+        var isLegacyVideo = /^\[MEME(?::|\s+)?video\]$/i.test(msg) ||
+                            (/^(video|show\s+a\s+video|video\s+meme|show\s+me\s+a\s+video\s+meme)$/i.test(label) &&
+                             (/^(video|show\s+a\s+video|video\s+meme|show\s+me\s+a\s+video\s+meme)$/i.test(msg) || /^\[MEME(?::|\s+)?video\]$/i.test(msg)));
+        var isLegacyAnother = /^\[MEME(?::|\s+)?(random|next)\]$/i.test(msg) ||
+                              (/^\[MEME\]$/i.test(msg) && /^(another|another\s+meme|next|next\s+meme)$/i.test(label)) ||
+                              (/^(another|another\s+meme|show\s+me\s+another\s+meme|next|next\s+meme)$/i.test(label) &&
+                               /^(another|another\s+meme|show\s+me\s+another\s+meme|next|next\s+meme)$/i.test(msg));
+
+        if (isLegacyVideo) {
+            return {
+                label: 'Show a video',
+                message: 'Show me a video meme'
+            };
+        }
+        if (isLegacyAnother) {
+            return {
+                label: 'Another meme',
+                message: 'Show me another meme'
+            };
+        }
+
+        var cleanMsg = msg;
+        if (/^\[[A-Z0-9_:-]+\]$/i.test(cleanMsg) || cleanMsg.startsWith('[')) {
+            if (label && !label.startsWith('[')) {
+                cleanMsg = label;
+            } else {
+                return null;
+            }
+        }
+
+        var cleanLabel = label || cleanMsg;
+        if (!cleanLabel || cleanLabel.length > 60 || !cleanMsg || cleanMsg.length > 2000) return null;
+        return {
+            label: cleanLabel,
+            message: cleanMsg
+        };
+    }
+
     function renderSuggestions(suggestions, msgKey) {
         if (!Array.isArray(suggestions) || suggestions.length === 0) return null;
         var valid = [];
         for (var i = 0; i < suggestions.length && valid.length < 2; i++) {
-            var s = suggestions[i];
-            if (s && typeof s.label === 'string' && s.label.trim() &&
-                typeof s.message === 'string' && s.message.length && s.message.length <= 2000) {
-                valid.push({
-                    label: s.label.trim().slice(0, 60),
-                    message: s.message
-                });
-            }
+            var norm = normalizeSuggestion(suggestions[i]);
+            if (norm) valid.push(norm);
         }
         if (valid.length === 0) return null;
 
@@ -592,8 +802,39 @@
         return row;
     }
 
+    function isFabricatedProtocolMessage(content) {
+        if (typeof content !== 'string') return false;
+        var trimmed = content.trim();
+        return /^\[MEME(?::[^\]]*)?\]$/i.test(trimmed) || /^\[[A-Z_]+(?::[^\]]*)?\]$/i.test(trimmed);
+    }
+
+    function translateLegacyUserContent(content) {
+        if (typeof content !== 'string') return content;
+        var trimmed = content.trim();
+        if (/^\[MEME(?::|\s+)?video\]$/i.test(trimmed)) {
+            return 'Show me a video meme';
+        }
+        if (/^\[MEME(?::|\s+)?(random|next)\]$/i.test(trimmed)) {
+            return 'Show me another meme';
+        }
+        if (/^\[MEME\]$/i.test(trimmed)) {
+            return 'Gimme a meme';
+        }
+        var memeQuery = trimmed.match(/^\[MEME(?::|\s+)([^\]\r\n]+)\]$/i);
+        if (memeQuery && memeQuery[1].trim()) {
+            return 'Show me a meme about ' + memeQuery[1].trim();
+        }
+        if (/^\[THEME:generate\]$/i.test(trimmed)) {
+            return 'Help me make a Printmon theme';
+        }
+        return content;
+    }
+
     function addMessage(role, content, timestamp, meta, key) {
         if (role === 'assistant') role = 'bot';
+        if (role === 'user') {
+            content = translateLegacyUserContent(content);
+        }
 
         var msgKey = key || (meta && meta.key);
         if (msgKey) {
@@ -640,6 +881,8 @@
             div.appendChild(time);
         }
         messagesEl.appendChild(div);
+        initChatVideoPlayers(div);
+        resolveStashCaptions(div);
         scrollToBottom();
         return div;
     }
@@ -838,24 +1081,14 @@
      * ================================================ */
 
     var STARTERS = [
-        { id: 'printmon', label: 'Make a Printmon theme', prompt: 'Make a Printmon theme' },
-        { id: 'finance', label: 'Money, minus the myths', prompt: 'Money, minus the myths' },
-        { id: 'game', label: 'Give me a quick game', prompt: 'Give me a quick game' },
-        { id: 'wild', label: 'Show me something wild', prompt: 'Show me something wild' },
-        { id: 'tech', label: 'Find me a tech shortcut', prompt: 'Find me a tech shortcut' },
-        { id: 'meme', label: 'Send me a meme', prompt: 'Send me a meme' }
+        { id: 'meme', label: 'Gimme a meme', prompt: 'Gimme a meme' },
+        { id: 'printmon', label: 'Make a Printmon theme', prompt: 'Help me make a Printmon theme' }
     ];
 
     function getOrderedStarters() {
         var p = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '';
         var priorityId = null;
-        if (p.includes('/financehub') || p.includes('finance')) {
-            priorityId = 'finance';
-        } else if (p.includes('/nexus')) {
-            priorityId = 'tech';
-        } else if (p.includes('/thelounge')) {
-            priorityId = 'game';
-        } else if (p.includes('/amazon/printmon') || p.includes('/printmon')) {
+        if (p.includes('/amazon/printmon') || p.includes('/printmon')) {
             priorityId = 'printmon';
         }
 
@@ -953,6 +1186,7 @@
             });
             if (keys.length === 0) { showStarters(); return; }
 
+            disposeChatVideoPlayers();
             while (messagesEl.firstChild) {
                 messagesEl.removeChild(messagesEl.firstChild);
             }
@@ -1059,7 +1293,10 @@
     window.addEventListener('zephyy-msg', function(e) {
         var msg = e.detail;
         var badge = document.getElementById('zp-model-badge');
-        if (badge && msg.model) badge.textContent = msg.model;
+        if (badge && msg.model) {
+            badge.dataset.telemetryModel = msg.model;
+            badge.textContent = /stash|deterministic/i.test(msg.model) ? 'Meme stash' : msg.model;
+        }
         var panelOpen = panel.classList.contains('open');
         if (!panelOpen) {
             orb.classList.add('unread');
@@ -1169,6 +1406,7 @@
         resettingSession = true;
         sessionEpoch++;
         chatActionState.reset(sessionEpoch);
+        disposeChatVideoPlayers();
         sessionEnded = false;
         touchActivity(); /* don't let the idle timer instantly re-fire on the new session */
         /* A fresh session greets like a first visit: new session, rebound Firebase refs */
@@ -1268,7 +1506,18 @@
             renderProposalCard: renderProposalCard,
             renderSuggestions: renderSuggestions,
             chatActionState: chatActionState,
-            sendOpaqueAction: sendOpaqueAction
+            sendOpaqueAction: sendOpaqueAction,
+            loadStashCatalog: loadStashCatalog,
+            resolveStashCaptions: resolveStashCaptions,
+            initChatVideoPlayers: initChatVideoPlayers,
+            disposeChatVideoPlayers: disposeChatVideoPlayers,
+            getActiveChatPlayers: function() { return activeChatPlayers; },
+            setStashCatalogMap: function(m) { stashCatalogMap = m; },
+            isFabricatedProtocolMessage: isFabricatedProtocolMessage,
+            isLegacyProtocolSuggestion: isLegacyProtocolSuggestion,
+            normalizeSuggestion: normalizeSuggestion,
+            normalizeStashPath: normalizeStashPath,
+            translateLegacyUserContent: translateLegacyUserContent
         };
     }
 })();

@@ -370,8 +370,6 @@ if (starsContainer) {
     }
 }
 
-let videoJsLoadPromise;
-
 // The one "meme unavailable" image every fallback uses
 function memeUnavailable() {
     const img = document.createElement('img');
@@ -391,34 +389,6 @@ const memeVideoObserver = 'IntersectionObserver' in window && new IntersectionOb
     });
 }, { threshold: 0.25 });
 
-// Video.js, its script and its stylesheet, fetched once a video meme is dealt (a page dealt only pictures never loads
-// either). The sheet goes where it sat in the head, right before meme-video.css, so the cascade is as it was
-function loadVideoJs() {
-    if (window.videojs) return Promise.resolve(window.videojs);
-
-    if (!videoJsLoadPromise) {
-        const sheet = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: '/assets/vendor/videojs/video-js.min.css' });
-        const styled = new Promise((resolve) => { sheet.onload = sheet.onerror = resolve; }); // unstyled, it still plays
-        const ours = document.querySelector('link[href$="meme-video.css"]');
-        ours ? ours.before(sheet) : document.head.appendChild(sheet);
-        videoJsLoadPromise = new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = '/assets/vendor/videojs/video.min.js';
-            script.async = true;
-            script.onload = () => {
-                if (window.videojs) {
-                    styled.then(() => resolve(window.videojs));
-                } else {
-                    reject(new Error('Video.js loaded without exposing videojs'));
-                }
-            };
-            script.onerror = () => reject(new Error('Video.js failed to load'));
-            document.head.appendChild(script);
-        });
-    }
-
-    return videoJsLoadPromise;
-}
 
 function createMemeIcon(className, paths) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -540,10 +510,11 @@ async function renderVideoMeme(container, randomFile) {
     container.appendChild(video);
 
     try {
-        const videojs = await loadVideoJs();
-        if (!video.isConnected || hasFailed) return;
-
-        player = videojs(video, {
+        if (!window.attachVideoJsPlayer) {
+            showFallback();
+            return;
+        }
+        player = await window.attachVideoJsPlayer(video, {
             autoplay: false,
             loop: true,
             muted: true,
@@ -552,7 +523,13 @@ async function renderVideoMeme(container, randomFile) {
             controls: false,
             bigPlayButton: false,
             controlBar: false,
+            responsive: false,
+            fluid: false
         });
+        if (!player || !video.isConnected || hasFailed) {
+            if (player && !player.isDisposed()) player.dispose();
+            return;
+        }
         player.one('error', showFallback);
         container.appendChild(createMemeVideoControls(player));
         player.ready(() => {

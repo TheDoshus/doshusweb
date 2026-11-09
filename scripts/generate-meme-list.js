@@ -49,6 +49,9 @@ function deriveMemeData({ dir = memesDir, descFile = descriptionsFile } = {}) {
         if (typeof item.reviewed !== 'boolean') {
             throw new Error(`${descFile}: item ${key} missing boolean reviewed property`);
         }
+        if (item.captionReview !== undefined && item.captionReview !== 'unreviewed' && item.captionReview !== 'human') {
+            throw new Error(`${descFile}: item ${key} captionReview must be 'unreviewed' or 'human'`);
+        }
         if (item.description !== undefined && typeof item.description !== 'string') {
             throw new Error(`${descFile}: item ${key} description must be string`);
         }
@@ -89,6 +92,7 @@ function deriveMemeData({ dir = memesDir, descFile = descriptionsFile } = {}) {
             : [];
         // Reviewed is true only when explicitly reviewed AND non-empty description
         const reviewed = Boolean(authored && authored.reviewed === true && description.length > 0);
+        const captionReview = (authored && authored.captionReview === 'human') ? 'human' : 'unreviewed';
 
         return {
             id: file,
@@ -96,7 +100,8 @@ function deriveMemeData({ dir = memesDir, descFile = descriptionsFile } = {}) {
             type: isVideo ? 'video' : 'image',
             description: description,
             tags: tags,
-            reviewed: reviewed
+            reviewed: reviewed,
+            captionReview: captionReview
         };
     });
 
