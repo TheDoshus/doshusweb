@@ -67,3 +67,6 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Per-machine session checkpoint; the dated handoff/YYYY-MM-DD.md entries are the shared record
+handoff/.last_session
