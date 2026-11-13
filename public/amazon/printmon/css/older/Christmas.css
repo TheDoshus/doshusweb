@@ -92,7 +92,6 @@ p {
 
 .grid-container {
 	display: grid;
-	grid-template-columns: repeat(3, 33%);
 	grid-gap: 1%;
 	width: 98%;
 	margin: auto;
@@ -148,6 +147,26 @@ button {
 	color: #59227e;
 	background: linear-gradient(to bottom, #f7f8fa, #e7e9ec);
 	margin-top: 5px;
+}
+
+button3 {
+	border-style: solid;
+	border-width: .125rem;
+	border-radius: .5rem;
+	border-color: #d74848 #007cff #007cff;
+	font-family: Bauhaus 93, Amazon Ember Medium, sans-serif;
+	font-weight: bold;
+	padding: 10px;
+	color: #ffdede;
+	background: linear-gradient(to bottom, #45ba5d, #172489);
+	margin-top: 5px;
+	text-align: center;
+}
+
+button3:hover {
+	color: #000000;
+	border: 3px solid #1500ff;
+	cursor: pointer;
 }
 
 button:hover {
