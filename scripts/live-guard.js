@@ -19,7 +19,8 @@ const API = 'https://firebasehosting.googleapis.com/v1beta1';
 const readJson = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 
 // An ignore glob as firebase-tools matches it against a file's path: `**/` any leading folders, `*`
-// and `?` within one segment. So `**/.*` skips a dot-named file, never a file in .well-known/.
+// and `?` within one segment (no [classes] or {braces}). So `**/.*` skips a dot-named file, never a
+// file in .well-known/.
 const globRe = (g) => new RegExp(`^${g.split(/(\*\*\/|\*\*|\*|\?)/).map((t) => ({ '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' })[t]
     ?? t.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('')}$`);
 
@@ -29,20 +30,22 @@ const globRe = (g) => new RegExp(`^${g.split(/(\*\*\/|\*\*|\*|\?)/).map((t) => (
 function localPaths(publicDir, ignore) {
     const globs = ignore.map(globRe);
     const out = new Set();
-    const seen = new Set();  // real paths of folders walked, so a linked folder can't loop
-    const walk = (dir, rel) => {
-        if (seen.has(fs.realpathSync(dir))) return;
-        seen.add(fs.realpathSync(dir));
+    // above: real paths of the folders this one sits in. A link back to one of them is a loop and
+    // stops; a second path to a folder elsewhere is walked, since firebase-tools uploads both
+    const walk = (dir, rel, above) => {
+        const real = fs.realpathSync(dir);
+        if (above.has(real)) return;
+        const chain = new Set(above).add(real);
         for (const name of fs.readdirSync(dir)) {
             const p = rel + name;
             let st;
             // statSync follows links, as firebase-tools' lister does (lib/listFiles.js, follow: true)
             try { st = fs.statSync(path.join(dir, name)); } catch { continue; }  // a dangling link uploads nothing
-            if (st.isDirectory()) walk(path.join(dir, name), `${p}/`);
+            if (st.isDirectory()) walk(path.join(dir, name), `${p}/`, chain);
             else if (st.isFile() && !globs.some((g) => g.test(p))) out.add(`/${p}`);
         }
     };
-    walk(publicDir, '');
+    walk(publicDir, '', new Set());
     return out;
 }
 

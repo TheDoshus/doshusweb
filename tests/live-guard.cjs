@@ -40,7 +40,14 @@ try {
     fs.mkdirSync(path.join(pub, 'linked'));
     fs.symlinkSync(path.join(pub, 'index.html'), path.join(pub, 'linked', 'page.html'));
     assert.ok(localPaths(pub, ignore).has('/linked/page.html'), 'a symlinked file deploys: firebase-tools follows links');
-    console.log('PASS  live guard: 7 cases');
+
+    // a-alias sorts first, so a walk that remembers every folder it saw would skip linked/ itself
+    fs.symlinkSync(path.join(pub, 'linked'), path.join(pub, 'a-alias'));
+    fs.symlinkSync(pub, path.join(pub, 'linked', 'loop'));
+    const both = localPaths(pub, ignore);
+    assert.ok(both.has('/a-alias/page.html') && both.has('/linked/page.html'),
+        'a folder reached by two paths deploys under both; a link back up to public/ stops instead of looping');
+    console.log('PASS  live guard: 8 cases');
 } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
 }
