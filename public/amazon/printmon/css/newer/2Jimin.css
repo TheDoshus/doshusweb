@@ -1,0 +1,453 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+/* ─── JIMIN THEME: "FACE // LIQUID CHROME & IRIDESCENT WATER RIPPLE" (FINAL POLISH) ─── */
+
+:root {
+    /* Abyssal Water & Liquid Chrome Primitives */
+    --abyss-water: rgba(11, 15, 29, 0.80);
+    --mirror-pool: rgba(15, 21, 40, 0.84);
+    --chrome-bright: #F8FAFC;
+    --mercury-silver: #CBD5E1;
+    --mercury-edge: rgba(226, 232, 240, 0.48);
+
+    /* Iridescent "Like Crazy" Refraction Accents */
+    --moonlight-ice: #7DD3FC;
+    --prism-indigo: #818CF8;
+    --prism-violet: #C084FC;
+    --satin-rose: #F472B6;
+
+    /* Specular Liquid Metal Inner Reflection */
+    --mercury-sheen: 
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.6),
+        inset 0 -2px 6px rgba(129, 140, 248, 0.25),
+        0 12px 32px rgba(5, 8, 20, 0.65);
+
+    /* Theme Swap Button Tokens (OKLCH) */
+    --swap-accent: oklch(74% 0.15 285);
+    --swap-glow: oklch(84% 0.11 215);
+}
+
+/* ─── BASE TYPOGRAPHY ─── */
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    color: var(--chrome-bright);
+}
+
+.left {
+    margin: 45px 10px 40px 0px;
+}
+
+/* ─── PRIMARY CONTAINER: CONCENTRIC WATER RIPPLE POOL ─── */
+.printbox {
+    background-color: var(--abyss-water);
+    background-image: 
+        repeating-radial-gradient(
+            circle at 50% 24%,
+            rgba(226, 232, 240, 0.065) 0px,
+            rgba(226, 232, 240, 0.065) 1.5px,
+            transparent 1.5px,
+            transparent 26px
+        ),
+        radial-gradient(circle at 15% 15%, rgba(125, 211, 252, 0.20) 0%, transparent 50%),
+        radial-gradient(circle at 85% 85%, rgba(192, 132, 252, 0.20) 0%, transparent 50%);
+    border: 1.5px solid var(--mercury-edge);
+    border-radius: 28px;
+    box-shadow: 
+        var(--mercury-sheen),
+        0 0 28px rgba(129, 140, 248, 0.24);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    position: relative;
+    margin: 0px 35px 0px 0px;
+}
+
+/* ─── DECORATIVE 1: FLOATING MERCURY DROPLET HALO ─── */
+.printbox::before {
+    content: '✦ FACE ✦';
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #E2E8F0 0%, #94A3B8 50%, #F8FAFC 100%);
+    color: #0F172A;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    padding: 4px 18px;
+    border-radius: 999px;
+    border: 1px solid #FFFFFF;
+    box-shadow: 
+        0 4px 15px rgba(125, 211, 252, 0.45),
+        inset 0 1px 2px #FFFFFF;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* ─── DECORATIVE 2: ORBITING CRESCENT WATER DROP ─── */
+.printbox::after {
+    content: '☽';
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    font-size: 22px;
+    color: var(--moonlight-ice);
+    text-shadow: 0 0 12px var(--prism-violet);
+    animation: lunarFloat 3.6s infinite ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes lunarFloat {
+    0%, 100% { transform: translateY(0) rotate(-8deg); opacity: 0.85; }
+    50% { transform: translateY(-5px) rotate(8deg); opacity: 1; }
+}
+
+/* ─── TITLE: CHROME ENGRAVED EDITORIAL HEADER ─── */
+h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 900;
+    font-size: 23pt;
+    color: #FFFFFF;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    text-shadow: 
+        0 2px 12px rgba(125, 211, 252, 0.55),
+        0 0 28px rgba(192, 132, 252, 0.45);
+}
+
+/* ─── SUBTITLE: ETHEREAL LIKE CRAZY WHISPER ─── */
+.subtitle {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1.35rem;
+    line-height: 1.25;
+    color: var(--moonlight-ice);
+    letter-spacing: 0.6px;
+    margin-top: 12px;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 10px rgba(129, 140, 248, 0.6);
+}
+
+/* ─── LABELS & CHECKBOXES ─── */
+.options label {
+    color: #F1F5F9;
+    font-weight: 600;
+}
+
+.input-group label {
+    color: #F1F5F9;
+    font-weight: 600;
+    font-size: 13.5px;
+    padding-right: 4px;
+}
+
+.input-group label span {
+    color: var(--moonlight-ice);
+    background: none;
+    padding: 0;
+    font-weight: 700;
+    font-size: 10px;
+    text-shadow: 0 0 8px rgba(125, 211, 252, 0.45);
+}
+
+.options input[type="checkbox"] {
+    accent-color: var(--prism-violet);
+}
+
+/* ─── INPUTS: STILL MIRROR POOL ─── */
+input[type="text"], input[type="number"], #textAreaID {
+    background: rgba(11, 16, 32, 0.78);
+    border: 1.5px solid rgba(203, 213, 225, 0.38);
+    border-radius: 14px;
+    color: #FFFFFF;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+    box-shadow: 
+        inset 0 2px 6px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+input[type="text"]:focus, input[type="number"]:focus, #textAreaID:focus {
+    outline: none;
+    background: rgba(15, 23, 42, 0.92);
+    border-color: var(--moonlight-ice);
+    box-shadow: 
+        0 0 0 4px rgba(125, 211, 252, 0.22),
+        0 0 20px rgba(192, 132, 252, 0.35),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* ─── PRIMARY ACTION BUTTONS: MOLTEN MERCURY CAPSULE ─── */
+.print-button, .multiButton {
+    background: linear-gradient(
+        135deg,
+        rgba(226, 232, 240, 0.94) 0%,
+        rgba(165, 180, 252, 0.90) 50%,
+        rgba(244, 114, 182, 0.88) 100%
+    );
+    color: #090D16;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    border: 1.5px solid #FFFFFF;
+    border-radius: 999px;
+    box-shadow: 
+        inset 0 2px 4px #FFFFFF,
+        0 6px 20px rgba(129, 140, 248, 0.45),
+        0 0 32px rgba(125, 211, 252, 0.25);
+    margin: -5px 0 0 0;
+    transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.print-button:hover, .multiButton:hover {
+    background: linear-gradient(
+        135deg,
+        #FFFFFF 0%,
+        var(--moonlight-ice) 48%,
+        var(--prism-violet) 100%
+    );
+    color: #060911;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        inset 0 2px 6px #FFFFFF,
+        0 10px 28px rgba(125, 211, 252, 0.6),
+        0 0 42px rgba(244, 114, 182, 0.45);
+}
+
+.print-button:active, .multiButton:active {
+    transform: translateY(1px) scale(0.99);
+}
+
+/* ─── QUICK BUTTONS: SMOKED MERCURY DROPLETS (HIGH CONTRAST OVER LIGHT WALLPAPERS) ─── */
+.buttonsLine1, .buttonsLine2, .buttonsLine3, .scroll-button {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-shadow: 0 1px 3px rgba(6, 9, 20, 0.9), 0 0 8px rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(226, 232, 240, 0.55);
+    border-radius: 999px;
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    box-shadow: 
+        inset 0 1.5px 2px rgba(255, 255, 255, 0.55),
+        inset 0 -2px 5px rgba(11, 15, 29, 0.65),
+        0 6px 16px rgba(6, 9, 20, 0.55);
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Row 1: Smoked Moonlight Ice & Silver Chrome */
+.buttonsLine1 {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.68), rgba(56, 189, 248, 0.38));
+}
+
+/* Row 2: Smoked Like Crazy Indigo & Violet */
+.buttonsLine2 {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.68), rgba(139, 92, 246, 0.42));
+}
+
+/* Row 3 & Scroll: Smoked Serendipity Rose & Orchid */
+.buttonsLine3, .scroll-button {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.68), rgba(236, 72, 153, 0.38));
+}
+
+/* Water Surface-Tension Ripple on Hover */
+.buttonsLine1:hover, .buttonsLine2:hover, .buttonsLine3:hover, .scroll-button:hover {
+    background: linear-gradient(
+        135deg,
+        rgba(30, 41, 59, 0.82) 0%,
+        rgba(56, 189, 248, 0.55) 50%,
+        rgba(192, 132, 252, 0.55) 100%
+    );
+    color: #FFFFFF;
+    border-color: #FFFFFF;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 
+        inset 0 2px 4px rgba(255, 255, 255, 0.85),
+        0 0 0 3px rgba(125, 211, 252, 0.28),
+        0 8px 22px rgba(129, 140, 248, 0.55);
+}
+
+.buttonsLine1:active, .buttonsLine2:active, .buttonsLine3:active, .scroll-button:active {
+    transform: translateY(1px) scale(0.97);
+}
+
+.scroll-button:hover::after {
+    background-color: rgba(15, 23, 42, 0.96);
+    color: var(--moonlight-ice);
+    border: 1px solid var(--mercury-edge);
+}
+
+/* ─── MULTI BARCODE PRINTER: RESONANCE WAVE CHAMBER ─── */
+.MultiBarcode-printer {
+    margin-top: 165px;
+    background-color: var(--mirror-pool);
+    background-image: 
+        repeating-radial-gradient(
+            circle at 50% 50%,
+            rgba(125, 211, 252, 0.055) 0px,
+            rgba(125, 211, 252, 0.055) 1.5px,
+            transparent 1.5px,
+            transparent 22px
+        );
+    border: 1.5px solid var(--mercury-edge);
+    border-radius: 28px;
+    box-shadow: 
+        var(--mercury-sheen),
+        0 0 25px rgba(192, 132, 252, 0.22);
+    backdrop-filter: blur(18px) saturate(160%);
+}
+
+.MultiBarcode-printer h2 {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 14px rgba(192, 132, 252, 0.55);
+}
+
+/* ─── ASIN STICKER CONTAINER: PRISMATIC MIRROR CARD ─── */
+.asin-sticker-container {
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.80),
+        rgba(49, 46, 129, 0.68)
+    );
+    border: 1.5px solid var(--mercury-edge);
+    border-radius: 22px;
+    box-shadow: var(--mercury-sheen);
+    backdrop-filter: blur(16px);
+}
+
+.asin-sticker-header {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--moonlight-ice);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.25);
+    text-shadow: 0 2px 8px rgba(125, 211, 252, 0.35);
+}
+
+.asin-sticker-content p {
+    color: #F8FAFC;
+    font-weight: 600;
+}
+
+.asin-sticker-content button {
+    background: linear-gradient(135deg, rgba(125, 211, 252, 0.38), rgba(192, 132, 252, 0.38));
+    color: #FFFFFF;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    border: 1px solid #FFFFFF;
+    border-radius: 999px;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.65);
+    transition: all 0.2s ease;
+}
+
+.asin-sticker-content button:hover {
+    background: linear-gradient(135deg, var(--moonlight-ice), var(--prism-violet));
+    color: #090D16;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(125, 211, 252, 0.5);
+}
+
+/* ─── CRYPTOHOPPER BITCOIN WIDGET POLISH ─── */
+.cryptohopper-web-widget {
+    border-radius: 22px !important;
+    border: 1.5px solid var(--mercury-edge) !important;
+    box-shadow: var(--mercury-sheen), 0 0 22px rgba(125, 211, 252, 0.25) !important;
+    backdrop-filter: blur(16px) saturate(160%);
+    overflow: hidden;
+}
+
+/* ─── SCROLLBAR: LIQUID SILVER STREAM ─── */
+.scroll-container {
+    scrollbar-color: var(--moonlight-ice) rgba(15, 23, 42, 0.6);
+    scrollbar-width: thin;
+}
+
+.scroll-container::-webkit-scrollbar {
+    height: 10px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 999px;
+    border: 1px solid rgba(226, 232, 240, 0.2);
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, var(--moonlight-ice), var(--prism-violet), var(--satin-rose));
+    border-radius: 999px;
+}
+
+/* ─── QUICKBUTTONS & UIS STICKERS DROPDOWN (FIXED tsOpx CONTRAST) ─── */
+#quickbuttons-dropdown .qb-dropbtn {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(129, 140, 248, 0.38));
+    border: 1px solid var(--mercury-edge);
+    border-radius: 999px;
+    box-shadow: var(--mercury-sheen);
+}
+
+#quickbuttons-dropdown:hover .qb-dropbtn {
+    border-color: #FFFFFF;
+    box-shadow: 0 0 22px rgba(125, 211, 252, 0.5);
+}
+
+#quickbuttons-dropdown .qb-dropdown-content {
+    background: rgba(11, 16, 32, 0.94);
+    border: 1.5px solid var(--mercury-edge);
+    border-radius: 20px;
+    box-shadow: 
+        var(--mercury-sheen),
+        0 16px 36px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    overflow: hidden;
+}
+
+#quickbuttons-dropdown .qb-dropdown-content a {
+    color: #F8FAFC;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.12);
+    transition: all 0.2s ease;
+}
+
+#quickbuttons-dropdown .qb-dropdown-content a:hover {
+    background: linear-gradient(90deg, rgba(125, 211, 252, 0.25), rgba(192, 132, 252, 0.25));
+    color: var(--moonlight-ice);
+    padding-left: 22px;
+}
+
+/* Fixes invisible dark text on UIS Stickers "tsOpx ## PS / Short" */
+#quickbuttons-dropdown .structured-input {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(226, 232, 240, 0.2);
+    border-radius: 12px;
+    padding: 4px 8px;
+}
+
+#quickbuttons-dropdown .structured-input span {
+    color: var(--moonlight-ice) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+#quickbuttons-dropdown .structured-input input[type="text"] {
+    background: rgba(7, 10, 20, 0.9);
+    color: #FFFFFF;
+    border: 1.5px solid var(--moonlight-ice);
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.buttonsLine1:before, .buttonsLine2:before, .buttonsLine3:before {
+    display: none;
+}

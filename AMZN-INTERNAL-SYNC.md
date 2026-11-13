@@ -27,7 +27,7 @@ PrintmonGenerator.js prompt-cleanup regex keeps `skin` as a stopword (users stil
 
 | Date | Change | Files touched (external) | Notes for internal edit |
 |---|---|---|---|
-_(none)_
+| 2026-11-13 | **Jimin + Suga (BTS) themes** ported from the internal pages Doshus supplied: `Jimin (BTS)` listed after Howl's Moving Castle and `Suga (BTS)` after StrawberryShortcake in every Swap Themes dropdown, and both added to the RANDOM 🎲 loader's pool | new `TheDoshusPrintmon2Jimin.html`, `TheDoshusPrintmon2Suga.html`, `css/newer/2Jimin.css`, `css/newer/2Suga.css` (byte-identical to the internal `css/P2/` copies); dropdowns on all 32 strip/classic pages + `template.html`; `Printmon2Doshus.html` | The two new internal pages already list both. Check the **other internal pages' dropdowns** and the **internal RANDOM loader** (`/view/aaustinp@/Printmon2Doshus.html`) carry the same two anchors / pool entries. External-only, **no sync needed**: the doubled `drive-render…comhttps://drive-render…` Printmon2LATEST link on 28 pages (from 9dd7cc1's find/replace; internal links are relative) is repaired, and Butterfly + Strawberry now say Glass / StrawberryShortcake like the rest |
 
 ## Synced history
 
