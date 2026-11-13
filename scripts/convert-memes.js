@@ -11,7 +11,7 @@
 // at 27%). A video over its budget must also land under it: one no rung gets there stays as it is
 // (trim it, or keep it on check.js's MEME_BASELINE), so a WebM is never re-encoded from its own
 // re-encode. Images: WebP q85 (animated for GIFs), judged by SSIM. Needs ffmpeg/ffprobe with
-// libvpx-vp9, libopus, libwebp and libvmaf on PATH; HEIC also needs heif-convert (libheif).
+// libvpx-vp9, libopus, libwebp and libvmaf on PATH; HEIC also needs libheif's decoder (heif-dec).
 // Encodes run one at a time: parallel ffmpeg gets OOM-killed on small machines. Candidates and
 // scores are cached in node_modules/.cache/memes-convert, so --apply reuses them, and an unchanged
 // meme is never re-encoded.
@@ -50,12 +50,14 @@ if (encoders.error) {
     console.log('ffmpeg not found on PATH. Install it (Firebase Studio: .idx/dev.nix has ffmpeg-full; rebuild the environment).');
     process.exit(1);
 }
+// libheif 1.19 renamed heif-convert to heif-dec (nixpkgs 25.05 ships only heif-dec); older builds have heif-convert
+const HEIF = ['heif-dec', 'heif-convert'].find((c) => !run(c, ['--help'], 1).error);
 const can = {
     video: /libvpx-vp9/.test(encoders.stdout) && /libopus/.test(encoders.stdout),
     image: /\blibwebp\b/.test(encoders.stdout),
     gif: /libwebp_anim/.test(encoders.stdout),
     vmaf: /\blibvmaf\b/.test(run('ffmpeg', ['-hide_banner', '-filters']).stdout),
-    heic: !run('heif-convert', ['--help'], 1).error,
+    heic: Boolean(HEIF),
 };
 
 // A JPEG's EXIF orientation (1 = upright). WebP output drops EXIF, so a phone photo that relies on
@@ -103,9 +105,9 @@ function measure(name, src, size) {
     // A real HEIC (ISO box 'ftyp' at byte 4) needs decoding to a lossless PNG first, since ffmpeg
     // can't read its tiles; a phone's JPEG saved as .heic just goes straight in
     if (/\.heic$/i.test(name) && fs.readFileSync(src).subarray(4, 8).toString() === 'ftyp') {
-        if (!can.heic) return { verdict: 'skip', note: 'HEIC needs heif-convert (libheif)' };
+        if (!can.heic) return { verdict: 'skip', note: 'HEIC needs heif-dec or heif-convert (libheif)' };
         input = path.join(CACHE, `${name}.png`);
-        const dec = run('heif-convert', [src, input], 5);
+        const dec = run(HEIF, [src, input], 5);
         if (dec.status !== 0) return { verdict: 'fail', note: lastLine(dec.stderr || dec.stdout) };
     }
     const bar = kind === 'video' ? QUALITY.vmaf : QUALITY.ssim;

@@ -11,7 +11,7 @@
     pkgs.python3
     pkgs.bun          # the repo's scripts run through bun (bun run check, memes, ...)
     pkgs.ffmpeg-full  # bun run memes:convert: VP9/Opus/WebP encoders + libvmaf
-    pkgs.libheif      # heif-convert, for .heic memes ffmpeg can't read
+    pkgs.libheif      # heif-dec (heif-convert before libheif 1.19), for .heic memes ffmpeg can't read
   ];
   # Sets environment variables in the workspace
   env = {};
