@@ -27,7 +27,7 @@ PrintmonGenerator.js prompt-cleanup regex keeps `skin` as a stopword (users stil
 
 | Date | Change | Files touched (external) | Notes for internal edit |
 |---|---|---|---|
-_(none)_
+| 2026-11-13 | **ChatOPS** strip button added to the 8 theme pages that lacked it (same button, tooltip and spot as the other 13: right after the Doshus.NET dock, before Outlook); **Christmas 2023** gets the Tote Arcs + Download Bookmarks block every other classic has (after the ASIN Print), and its sheet gains a `button3` rule in its own palette; its `.grid-container` drops the unused `grid-template-columns: repeat(3, 33%)` so the buttons run full width like Christmas 2024's | `TheDoshusPrintmon2{Butterfly,Chiikawa,Glass,OP,Solo,Strawberry,Jimin,Suga}.html`, `Printmon2DoshusChristmas.html`, `css/older/Christmas.css` | ChatOPS: paste `<button onclick="window.open('https://chatops.aces.amazon.dev/')" class="scroll-button" data-tooltip="A ChatGPT-like assistant that answers questions about warehouse operations and more">ChatOPS</button>` above the Outlook button on those 8 internal pages. Christmas: copy the two `grid-container` divs from Christmas 2024's internal page (this side closes them `</button3>`; yours may say `</button>`, both render), then the `button3`/`button3:hover` rules and the `.grid-container` line removal from external `css/older/Christmas.css` (internal path may differ) |
 
 ## Synced history
 
