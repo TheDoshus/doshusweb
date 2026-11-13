@@ -1,11 +1,13 @@
 # To learn more about how to use Nix to configure your environment
 # see: https://developers.google.com/idx/guides/customize-idx-env
 { pkgs, ... }: {
-  # Which nixpkgs channel to use.
-  channel = "stable-23.11"; # or "unstable"
+  # Which nixpkgs channel to use: the newest stable (2026-11-13: Bun 1.3.13, Node 24.22, ffmpeg 8.1.3).
+  # Firebase Studio's docs list stable-24.11/25.05/unstable as examples; if a rebuild rejects this
+  # one, "unstable" is the documented latest. Stay current: 23.11 shipped a Bun older than Bun.Glob.
+  channel = "stable-26.05";
   # Use https://search.nixos.org/packages to find packages
   packages = [
-    pkgs.nodejs_20
+    pkgs.nodejs_24    # the newest Node firebase-tools 15 lists in its engines
     pkgs.python3
     pkgs.bun          # the repo's scripts run through bun (bun run check, memes, ...)
     pkgs.ffmpeg-full  # bun run memes:convert: VP9/Opus/WebP encoders + libvmaf
