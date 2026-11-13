@@ -18,16 +18,31 @@ const ROOT = path.join(__dirname, '..');
 const API = 'https://firebasehosting.googleapis.com/v1beta1';
 const readJson = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 
-// What a deploy uploads: every file under public/ that firebase.json's ignore globs leave. Bun.Glob
-// matches them as Firebase does: `**/.*` skips a dot-named file, never a file in .well-known/.
+// An ignore glob as firebase-tools matches it against a file's path: `**/` any leading folders, `*`
+// and `?` within one segment. So `**/.*` skips a dot-named file, never a file in .well-known/.
+const globRe = (g) => new RegExp(`^${g.split(/(\*\*\/|\*\*|\*|\?)/).map((t) => ({ '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' })[t]
+    ?? t.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('')}$`);
+
+// What a deploy uploads: every file under public/ that firebase.json's ignore globs leave. Plain fs,
+// so any Bun or Node runs it: Firebase Studio's Nix Bun predates Bun.Glob (⚰️ 2026-11-13, a deploy
+// stopped here on "undefined is not a constructor").
 function localPaths(publicDir, ignore) {
-    const globs = ignore.map((g) => new Bun.Glob(g));
+    const globs = ignore.map(globRe);
     const out = new Set();
-    // followSymlinks: firebase-tools' lister follows them (lib/listFiles.js, follow: true)
-    for (const f of new Bun.Glob('**/*').scanSync({ cwd: publicDir, dot: true, onlyFiles: true, followSymlinks: true })) {
-        const p = f.split(path.sep).join('/');
-        if (!globs.some((g) => g.match(p))) out.add('/' + p);
-    }
+    const seen = new Set();  // real paths of folders walked, so a linked folder can't loop
+    const walk = (dir, rel) => {
+        if (seen.has(fs.realpathSync(dir))) return;
+        seen.add(fs.realpathSync(dir));
+        for (const name of fs.readdirSync(dir)) {
+            const p = rel + name;
+            let st;
+            // statSync follows links, as firebase-tools' lister does (lib/listFiles.js, follow: true)
+            try { st = fs.statSync(path.join(dir, name)); } catch { continue; }  // a dangling link uploads nothing
+            if (st.isDirectory()) walk(path.join(dir, name), `${p}/`);
+            else if (st.isFile() && !globs.some((g) => g.test(p))) out.add(`/${p}`);
+        }
+    };
+    walk(publicDir, '');
     return out;
 }
 
