@@ -72,7 +72,7 @@
     {
       "id": "agy",
       "name": "agy (Antigravity)",
-      "role": "Drafts builds on a separate model family, and reviews when asked."
+      "role": "An extra lane on Gemini 3.8 Flash: quick sweeps, a second reviewer, lookups."
     },
     {
       "id": "codex",
@@ -87,7 +87,7 @@
     {
       "id": "grok",
       "name": "Grok CLI",
-      "role": "A third model family for reviews and quick builds."
+      "role": "Builds and runs the security pass and sweeps, cross-family beside Sol."
     }
   ],
   "userAgent": {
