@@ -8,7 +8,7 @@
       "models": [
         "openai/gpt-6.1-sol",
         "xai/grok-4.7",
-        "anthropic-credits/claude-opus-5-5",
+        "anthropic-credits/claude-sonnet-5-5",
         "opencode/glm-5.3-flash",
         "openrouter/auto"
       ],
