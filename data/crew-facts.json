@@ -7,7 +7,6 @@
       "name": "Zephyy",
       "models": [
         "openai/gpt-6.1-sol",
-        "xai/grok-4.7",
         "anthropic-credits/claude-sonnet-5-5",
         "opencode/glm-5.3-flash",
         "openrouter/auto"
@@ -40,7 +39,6 @@
       "name": "Torgent",
       "models": [
         "openai/gpt-6.1-sol",
-        "xai/grok-4.7",
         "opencode/glm-5.3-flash",
         "openrouter/auto"
       ],
